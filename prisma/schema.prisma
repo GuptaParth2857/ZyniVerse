@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String?
+  provider  String?
+  createdAt DateTime @default(now())
+  entries   ListEntry[]
+  progress  EpisodeProgress[]
+  reviews   Review[]
+  dubRequests DubRequest[]
+  posts      Post[]
+  comments   Comment[]
+  savedPosts SavedPost[]
+}
+
+model ListEntry {
+  id        String    @id @default(cuid())
+  userId    String
+  mediaId   Int
+  type      String
+  status    String    @default("PLANNING")
+  progress  Int       @default(0)
+  total     Int       @default(0)
+  score     Int?
+  startedAt DateTime?
+  completedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, mediaId])
+  @@index([userId, status])
+}
+
+model EpisodeProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  mediaId   Int
+  episode   Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, mediaId, episode])
+  @@index([userId, mediaId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  mediaId   Int
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, mediaId])
+}
+
+model DubRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaId   Int
+  title     String
+  language  String
+  createdAt DateTime @default(now())
+  @@unique([userId, mediaId, language])
+  @@index([language])
+}
+
+model Post {
+  id        String      @id @default(cuid())
+  userId    String
+  author    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  type      String      @default("POST")
+  mediaId   Int?
+  rating    Int?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  savedBy   SavedPost[]
+  comments  Comment[]
+  @@index([userId])
+  @@index([type])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  author    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+  @@index([postId])
+}
+
+model SavedPost {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([userId, postId])
+}
