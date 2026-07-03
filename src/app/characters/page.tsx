@@ -368,12 +368,13 @@ export default function CharactersBrowsePage() {
         {/* ═══════════════ CHARACTER SEARCH ═══════════════ */}
         <style>{`
           @keyframes rgbShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-          .search-nwrap:focus-within .search-nbdr { opacity: 1; }
+          .search-nwrap{position:relative;border-radius:0.75rem}
+          .search-nwrap::before{content:"";position:absolute;inset:-2px;border-radius:0.85rem;background:linear-gradient(60deg,#ff00ff,#00ffff,#ff00ff,#00ffff,#ff00ff);background-size:300% 300%;animation:rgbShift 3s ease infinite;z-index:-1;opacity:0;transition:opacity 0.4s}
+          .search-nwrap:focus-within::before{opacity:1}
         `}</style>
         <div className="mx-auto max-w-lg">
-          <div className="relative search-nwrap">
-            <div className="absolute -inset-[2px] rounded-xl search-nbdr pointer-events-none opacity-0 transition-opacity duration-500 -z-10" style={{ background: "linear-gradient(60deg, #ff00ff, #00ffff, #ff00ff, #00ffff, #ff00ff)", backgroundSize: "300% 300%", animation: "rgbShift 3s ease infinite" }} />
-            <div className="relative flex items-center gap-2 rounded-xl border border-white/[0.06] bg-[var(--color-void)] backdrop-blur-sm px-4 py-3 transition-colors">
+          <div className="search-nwrap">
+            <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-[var(--color-void)] backdrop-blur-sm px-4 py-3 transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/30 shrink-0">
                 <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
               </svg>
