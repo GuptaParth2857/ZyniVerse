@@ -2,12 +2,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useWatchlist } from "./WatchlistProvider";
 import { getSuggestions } from "@/lib/anilist";
 import type { Suggestion } from "@/lib/anilist";
 import ThemeToggle from "./ThemeToggle";
+import NotificationBell from "./NotificationBell";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const PRIMARY_LINKS = [
   { to: "/", label: "Home" },
@@ -20,12 +23,45 @@ const PRIMARY_LINKS = [
 ];
 
 const SECONDARY_LINKS = [
+  { to: "/news", label: "News" },
+  { to: "/filler", label: "Filler Guides" },
+  { to: "/watch-order", label: "Watch Orders" },
+  { to: "/docs", label: "API Docs" },
   { to: "/awards", label: "Awards" },
   { to: "/manga", label: "Manga" },
+  { to: "/light-novels", label: "Light Novels" },
+  { to: "/doujinshi", label: "Doujinshi" },
+  { to: "/achievements", label: "Achievements" },
   { to: "/characters", label: "Characters" },
   { to: "/staff", label: "Staff" },
+  { to: "/recommendations", label: "Recommend" },
+  { to: "/quiz", label: "Quiz" },
+  { to: "/forum", label: "Forum" },
   { to: "/community", label: "Community" },
   { to: "/random", label: "Random" },
+  { to: "/activity", label: "Activity" },
+  { to: "/tierlist", label: "Tier Lists" },
+  { to: "/lists", label: "Lists" },
+  { to: "/ost", label: "OST" },
+  { to: "/conventions", label: "Events" },
+  { to: "/voice-actors", label: "Voice Actors" },
+  { to: "/voice-actors/indian", label: "Indian VAs" },
+  { to: "/voice-lines", label: "Quotes" },
+  { to: "/watch-party", label: "Watch Party" },
+  { to: "/cosplay", label: "Cosplay" },
+  { to: "/challenges", label: "Challenges" },
+  { to: "/blog", label: "Blog" },
+  { to: "/clubs", label: "Clubs" },
+  { to: "/wiki", label: "Wiki" },
+  { to: "/stats", label: "My Stats" },
+  { to: "/themes", label: "Theme Songs" },
+  { to: "/season/upcoming", label: "Season Preview" },
+  { to: "/compare", label: "Compare" },
+  { to: "/premium", label: "Premium" },
+  { to: "/status", label: "Status" },
+  { to: "/browse", label: "Browse" },
+  { to: "/indian-dubs", label: "Indian Dubs" },
+  { to: "/developer", label: "Developer" },
 ];
 
 export default function Navbar() {
@@ -83,7 +119,7 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-2 shrink-0 group">
           <div className="relative h-7 w-7 overflow-hidden rounded-md border border-[var(--color-magenta)]/30 group-hover:scale-110 transition-transform">
-            <img src="/logo.png" alt="ZyniVerse" width={28} height={28} className="object-cover" />
+            <Image src="/logo.png" alt="ZyniVerse" width={28} height={28} className="object-cover" />
           </div>
           <span className="font-display text-lg font-bold tracking-wide logo-text">
             ZyniVerse
@@ -124,31 +160,61 @@ export default function Navbar() {
               </svg>
             </button>
             {moreOpen && (
-              <div className="absolute top-full right-0 mt-1 w-44 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl overflow-hidden z-50">
-                {SECONDARY_LINKS.map((l) => (
-                  <Link key={l.to} href={l.to}
-                    onClick={() => setMoreOpen(false)}
-                    className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
-                      pathname === l.to ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
-                    }`}
-                  >{l.label}</Link>
-                ))}
-                {session && (
-                  <>
-                    <div className="border-t border-[var(--color-line)] my-1" />
-                    <Link href="/profile" onClick={() => setMoreOpen(false)}
-                      className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
-                        pathname === "/profile" ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
-                      }`}
-                    >Profile</Link>
-                  </>
-                )}
+              <div className="absolute top-full right-0 mt-1 w-[28rem] rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl z-50 overflow-hidden">
+                <div className="grid grid-cols-3 gap-0">
+                  <div>
+                    {SECONDARY_LINKS.slice(0, 14).map((l) => (
+                      <Link key={l.to} href={l.to}
+                        onClick={() => setMoreOpen(false)}
+                        className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
+                          pathname === l.to ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
+                        }`}
+                      >{l.label}</Link>
+                    ))}
+                  </div>
+                  <div className="border-l border-[var(--color-line)]">
+                    {SECONDARY_LINKS.slice(14, 28).map((l) => (
+                      <Link key={l.to} href={l.to}
+                        onClick={() => setMoreOpen(false)}
+                        className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
+                          pathname === l.to ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
+                        }`}
+                      >{l.label}</Link>
+                    ))}
+                  </div>
+                  <div className="border-l border-[var(--color-line)]">
+                    {SECONDARY_LINKS.slice(28).map((l) => (
+                      <Link key={l.to} href={l.to}
+                        onClick={() => setMoreOpen(false)}
+                        className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
+                          pathname === l.to ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
+                        }`}
+                      >{l.label}</Link>
+                    ))}
+                    {session && (
+                      <>
+                        <div className="border-t border-[var(--color-line)] my-1" />
+                        <Link href="/messages" onClick={() => setMoreOpen(false)}
+                          className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
+                            pathname === "/messages" ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
+                          }`}
+                        >Messages</Link>
+                        <Link href="/profile" onClick={() => setMoreOpen(false)}
+                          className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
+                            pathname === "/profile" ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
+                          }`}
+                        >Profile</Link>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
           {session ? (
             <div className="flex items-center gap-2 ml-2 pl-2 border-l border-[var(--color-line)]">
+              <NotificationBell />
               <span className="text-xs text-[var(--color-magenta)] font-semibold">{session.user?.name}</span>
               <button onClick={() => signOut({ callbackUrl: "/" })}
                 className="text-sm text-[var(--color-mute)] hover:text-red-400 transition-colors"
@@ -185,7 +251,9 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors border-b border-[var(--color-line)] last:border-0"
                     >
                       {s.poster && (
-                        <img src={s.poster} alt="" className="h-10 w-7 rounded object-cover border border-[var(--color-line)]" />
+                        <div className="relative h-10 w-7 rounded overflow-hidden border border-[var(--color-line)] shrink-0">
+                          <Image src={s.poster} alt="" fill className="object-cover" sizes="28px" />
+                        </div>
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate">{s.title}</p>
@@ -204,7 +272,8 @@ export default function Navbar() {
           </form>
         </div>
 
-        <div className="hidden sm:block">
+        <div className="hidden sm:flex items-center gap-2">
+          <LanguageSwitcher />
           <ThemeToggle />
         </div>
         <button
@@ -223,7 +292,10 @@ export default function Navbar() {
         <div className="md:hidden border-t border-[var(--color-line)] bg-[var(--color-void)] px-4 py-3 space-y-1">
           <div className="flex items-center justify-between mb-2 px-3">
             <span className="text-xs font-mono text-[var(--color-mute)] uppercase tracking-wider">Theme</span>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
           </div>
           <form onSubmit={handleSearchSubmit} className="mb-2 flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)]">
@@ -250,9 +322,17 @@ export default function Navbar() {
             </Link>
           ))}
           {session && (
-            <Link href="/profile" onClick={() => setOpen(false)}
-              className="block rounded-md px-3 py-2 text-sm font-medium text-[var(--color-mute)]"
-            >Profile</Link>
+            <>
+              <Link href="/messages" onClick={() => setOpen(false)}
+                className="block rounded-md px-3 py-2 text-sm font-medium text-[var(--color-mute)]"
+              >Messages</Link>
+              <Link href="/profile" onClick={() => setOpen(false)}
+                className="block rounded-md px-3 py-2 text-sm font-medium text-[var(--color-mute)]"
+              >Profile</Link>
+              <div className="px-3 py-2">
+                <NotificationBell />
+              </div>
+            </>
           )}
           {session ? (
             <div className="flex items-center justify-between px-3 py-2 border-t border-[var(--color-line)] mt-2 pt-2">

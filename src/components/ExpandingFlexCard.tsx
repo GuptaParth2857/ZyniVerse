@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
@@ -31,10 +32,12 @@ export default function ExpandingFlexCard({ items }: { items: Media[] }) {
               className="block h-full w-full"
             >
               {/* Background image */}
-              <img
-                src={item.coverImage?.extraLarge || item.coverImage?.large}
+              <Image
+                src={item.coverImage?.extraLarge || item.coverImage?.large || ""}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                sizes="(max-width: 768px) 50vw, 25vw"
               />
 
               {/* Gradient overlays */}

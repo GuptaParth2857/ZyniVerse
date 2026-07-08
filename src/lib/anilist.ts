@@ -152,6 +152,14 @@ export async function searchMedia({ search = "", genre = null, tag = null, sort 
   return d.Page as { pageInfo: { hasNextPage: boolean; total: number }; media: Media[] };
 }
 
+export async function searchLightNovels(query: string, perPage = 20) {
+  return searchMedia({ search: query, type: "MANGA", format: "NOVEL", perPage });
+}
+
+export async function getLightNovelDetail(id: number | string) {
+  return getMangaDetailFull(id) as Promise<MediaMangaFull>;
+}
+
 const ANIME_DETAIL_QUERY = `
   query ($id: Int) {
     Media(id: $id, type: ANIME) {
@@ -644,6 +652,28 @@ export async function getSuggestions(query: string) {
   })) as Suggestion[];
 }
 
+export async function getAiringAnime(perPage = 50) {
+  const q = `
+    query ($pp: Int) {
+      Page(page: 1, perPage: $pp) {
+        media(status: RELEASING, sort: POPULARITY_DESC, type: ANIME) {
+          id
+          title { english romaji native }
+          coverImage { large medium extraLarge }
+          episodes
+          nextAiringEpisode { episode airingAt timeUntilAiring }
+          popularity
+          trending
+          genres
+          season
+          seasonYear
+        }
+      }
+    }`;
+  const d = await gql(q, { pp: perPage });
+  return d.Page.media as Media[];
+}
+
 export async function getTrendingDaily(page = 1, perPage = 20) {
   const q = `query ($p: Int, $pp: Int) { Page(page: $p, perPage: $pp) { pageInfo { total hasNextPage } media(sort: TRENDING_DESC, type: ANIME, isAdult: false) { ${MEDIA_FIELDS} } } }`;
   const data = await gql(q, { p: page, pp: perPage });
@@ -660,6 +690,40 @@ export async function getSpotlight() {
   const q = `query { Page(page: 1, perPage: 10) { media(sort: [TRENDING_DESC, POPULARITY_DESC], type: ANIME, isAdult: false) { ${MEDIA_FIELDS} } } }`;
   const data = await gql(q);
   return data.Page.media as Media[];
+}
+
+export async function getAnimeListFromAniList(username: string) {
+  const q = `
+    query ($userName: String) {
+      MediaListCollection(userName: $userName, type: ANIME) {
+        lists {
+          entries {
+            id
+            mediaId
+            status
+            score
+            progress
+            repeat
+            startedAt { year month day }
+            completedAt { year month day }
+            media {
+              id
+              title { english romaji }
+              coverImage { large }
+              format
+              episodes
+            }
+          }
+        }
+      }
+    }`;
+  const data = await gql(q, { userName: username });
+  const lists: { entries: AniListEntry[] }[] = data.MediaListCollection?.lists || [];
+  const entries: AniListEntry[] = [];
+  for (const list of lists) {
+    if (list.entries) entries.push(...list.entries);
+  }
+  return entries;
 }
 
 export function bestTitle(titleObj: { english?: string | null; romaji?: string | null; native?: string | null; userPreferred?: string | null } | null | undefined): string {
@@ -890,6 +954,24 @@ export interface Tag {
   isGeneralSpoiler: boolean;
   isMediaSpoiler: boolean;
   isAdult: boolean;
+}
+
+export interface AniListEntry {
+  id: number;
+  mediaId: number;
+  status: string;
+  score: number;
+  progress: number;
+  repeat: number;
+  startedAt: { year?: number; month?: number; day?: number } | null;
+  completedAt: { year?: number; month?: number; day?: number } | null;
+  media: {
+    id: number;
+    title: { english?: string; romaji?: string };
+    coverImage: { large?: string };
+    format?: string;
+    episodes?: number;
+  };
 }
 
 export interface StaffBasic {

@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
 
@@ -137,11 +138,12 @@ export default function HorizontalScroll({
 
               <div className="relative z-10 ml-[30px]">
                 <div className="relative aspect-[2/3] overflow-hidden rounded-[8px] bg-[#161616] transition-all duration-500 group-hover/card:scale-[1.02] group-hover/card:shadow-[0_0_40px_-8px_var(--color-magenta)]">
-                  <img
-                    src={item.coverImage?.extraLarge || item.coverImage?.large}
+                  <Image
+                    src={item.coverImage?.extraLarge || item.coverImage?.large || ""}
                     alt=""
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-105"
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover/card:scale-105"
+                    sizes="(max-width: 768px) 50vw, 25vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
 

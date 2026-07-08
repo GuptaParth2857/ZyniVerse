@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -238,9 +239,9 @@ export default function LoginPage() {
                   transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.2 }}
                   className="relative inline-flex mx-auto mb-4"
                 >
-                  <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-[var(--color-cyan)]/40 shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)]">
-                    <img src="/logo.png" alt="ZyniVerse" width={64} height={64} className="object-cover" />
-                  </div>
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-[var(--color-cyan)]/40 shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)]">
+                      <Image src="/logo.png" alt="ZyniVerse" width={64} height={64} className="object-cover" />
+                    </div>
                   <div className="absolute inset-0 rounded-2xl animate-pulse" style={{ boxShadow: "0 0 30px rgba(0,255,224,0.4)" }} />
                 </motion.div>
                 <h1 className="font-display text-2xl font-bold tracking-tight text-white">ZyniVerse</h1>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRef } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { bestTitle } from "@/lib/anilist";
@@ -59,11 +60,12 @@ export default function AnimeCard({ anime }: { anime: Media }) {
       <Link href={href} className="glass-card block">
         <div className="glass-content">
           <div className="relative aspect-[2/3] overflow-hidden rounded-t-xl">
-            <img
-              src={anime.coverImage?.extraLarge || anime.coverImage?.large}
+            <Image
+              src={anime.coverImage?.extraLarge || anime.coverImage?.large || ""}
               alt={title}
-              loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+              fill
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+              sizes="(max-width: 768px) 50vw, 25vw"
             />
             <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 

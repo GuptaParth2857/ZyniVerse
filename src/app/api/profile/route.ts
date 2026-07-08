@@ -1,30 +1,16 @@
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-import { apiLimiter } from "@/lib/rate-limiter";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
-  if (rateCheck) return rateCheck;
+export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get("userId") || session.user.id;
-
   const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true, username: true, email: true, createdAt: true,
-      entries: {
-        orderBy: { updatedAt: "desc" },
-        take: 50,
-      },
-      reviews: {
-        orderBy: { createdAt: "desc" },
-        take: 20,
-        include: { user: { select: { username: true } } },
-      },
+    where: { id: session.user.id },
+    include: {
+      entries: { orderBy: { updatedAt: "desc" } },
+      reviews: { include: { user: { select: { username: true } } }, orderBy: { createdAt: "desc" }, take: 20 },
     },
   });
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -36,8 +22,39 @@ export async function GET(req: NextRequest) {
     completed: user.entries.filter((e) => e.status === "COMPLETED").length,
     dropped: user.entries.filter((e) => e.status === "DROPPED").length,
     paused: user.entries.filter((e) => e.status === "PAUSED").length,
-    episodesWatched: user.entries.reduce((sum, e) => sum + e.progress, 0),
+    episodesWatched: user.entries.reduce((s, e) => s + (e.progress || 0), 0),
   };
 
-  return NextResponse.json({ user: { ...user, email: user.id === session.user.id ? user.email : undefined }, stats });
+  return NextResponse.json({
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      banner: user.banner,
+      themeColor: user.themeColor,
+      signature: user.signature,
+      bio: user.bio,
+      createdAt: user.createdAt,
+      entries: user.entries,
+      reviews: user.reviews,
+    },
+    stats,
+  });
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { banner, themeColor, signature, bio, avatar } = await req.json();
+  const data: Record<string, string> = {};
+  if (banner !== undefined) data.banner = banner;
+  if (themeColor !== undefined) data.themeColor = themeColor;
+  if (signature !== undefined) data.signature = signature;
+  if (bio !== undefined) data.bio = bio;
+  if (avatar !== undefined) data.avatar = avatar;
+
+  const user = await prisma.user.update({ where: { id: session.user.id }, data });
+  return NextResponse.json({ user });
 }

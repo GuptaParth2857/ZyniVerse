@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { CardSkeleton, ErrorState } from "@/components/Loader";
@@ -56,11 +57,12 @@ function DubCard({ anime, index }: { anime: DubAnime; index: number }) {
       >
         {/* Cover */}
         <div className="relative w-20 shrink-0 overflow-hidden sm:w-24">
-          <img
+          <Image
             src={anime.image}
             alt=""
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+            fill
+            className="object-cover transition-transform duration-500 group-hover/card:scale-105"
+            sizes="(max-width: 640px) 80px, 96px"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--color-panel)]" />
         </div>

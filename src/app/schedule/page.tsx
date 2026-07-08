@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { getAiringSchedule, bestTitle } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import type { AiringScheduleEntry } from "@/lib/anilist";
 
@@ -100,7 +102,7 @@ export default function SchedulePage() {
 
   return (
     <PageTransition>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <ErrorBoundary label="Schedule"><div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         {/* Header */}
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -218,10 +220,8 @@ export default function SchedulePage() {
                               <Link href={`/anime/${item.media.id}`}
                                 className="group flex items-center gap-3 rounded-xl border border-[var(--color-line)]/50 bg-black/20 p-2.5 hover:border-[var(--color-cyan)]/40 hover:bg-[var(--color-cyan)]/5 transition-all"
                               >
-                                <div className="relative shrink-0">
-                                  <img src={item.media.coverImage?.large} alt=""
-                                    className="h-14 w-10 rounded-lg object-cover"
-                                  />
+                                <div className="relative shrink-0 h-14 w-10 rounded-lg overflow-hidden">
+                                  <Image src={item.media.coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
                                   <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-cyan)] text-[9px] font-bold text-black shadow-lg">
                                     {item.episode}
                                   </div>
@@ -267,7 +267,7 @@ export default function SchedulePage() {
             </div>
           </>
         )}
-      </div>
+      </div></ErrorBoundary>
     </PageTransition>
   );
 }

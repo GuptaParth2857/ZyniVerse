@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Generate ZyniVerse Extension Icons</title>
+<style>
+  body { background: #1a1a2e; display: flex; flex-direction: column; align-items: center; padding: 40px; font-family: system-ui, sans-serif; color: #e2e8f0; }
+  .icon-grid { display: flex; gap: 40px; align-items: flex-end; margin: 40px 0; }
+  .icon-wrapper { text-align: center; }
+  .icon-wrapper p { margin-top: 12px; font-size: 13px; color: #94a3b8; }
+  .icon { display: flex; align-items: center; justify-content: center; background: #0a0a0f; border-radius: 20%; border: 2px solid #2d2d44; }
+  .icon span { font-weight: 800; background: linear-gradient(135deg, #c084fc, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .icon-128 { width: 128px; height: 128px; }
+  .icon-128 span { font-size: 72px; }
+  .icon-48 { width: 48px; height: 48px; }
+  .icon-48 span { font-size: 28px; }
+  .icon-16 { width: 16px; height: 16px; }
+  .icon-16 span { font-size: 10px; }
+  .instructions { max-width: 500px; text-align: center; line-height: 1.6; color: #94a3b8; font-size: 14px; }
+  .instructions code { background: #2d2d44; padding: 2px 8px; border-radius: 4px; color: #c084fc; }
+  .instructions ol { text-align: left; }
+  .instructions li { margin-bottom: 8px; }
+  h2 { color: #c084fc; margin-top: 40px; }
+</style>
+</head>
+<body>
+  <h1 style="background:linear-gradient(135deg,#c084fc,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent">ZyniVerse Icons</h1>
+
+  <div class="icon-grid">
+    <div class="icon-wrapper">
+      <div class="icon icon-128"><span>Z</span></div>
+      <p>icon128.png (128×128)</p>
+    </div>
+    <div class="icon-wrapper">
+      <div class="icon icon-48"><span>Z</span></div>
+      <p>icon48.png (48×48)</p>
+    </div>
+    <div class="icon-wrapper">
+      <div class="icon icon-16"><span>Z</span></div>
+      <p>icon16.png (16×16)</p>
+    </div>
+  </div>
+
+  <div class="instructions">
+    <h2>How to generate PNG icons</h2>
+    <ol>
+      <li>Open this page in Chrome.</li>
+      <li>Right-click each icon and select <strong>"Save image as..."</strong> (not available — use screenshot method instead).</li>
+      <li>Alternatively, take a screenshot and crop each icon to the exact pixel size.</li>
+      <li>Save as <code>icon16.png</code>, <code>icon48.png</code>, and <code>icon128.png</code> in the <code>icons/</code> folder.</li>
+    </ol>
+
+    <h2>Automated approach</h2>
+    <p>Use an online favicon generator with these specs:</p>
+    <ul style="text-align:left;list-style:none;padding:0">
+      <li>🎨 Background: <code>#0a0a0f</code></li>
+      <li>🔤 Letter: <strong>Z</strong> in <code>#c084fc</code></li>
+      <li>⬜ Shape: Rounded square</li>
+    </ul>
+  </div>
+</body>
+</html>

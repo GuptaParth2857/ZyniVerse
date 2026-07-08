@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { bestTitle } from "@/lib/anilist";
 
@@ -161,11 +162,12 @@ function CarouselCard({
       >
         <Link href={href} className="block group">
           <div className="relative aspect-[2/3] overflow-hidden">
-            <img
-              src={item.coverImage?.extraLarge || item.coverImage?.large}
+            <Image
+              src={item.coverImage?.extraLarge || item.coverImage?.large || ""}
               alt={bestTitle(item.title)}
-              loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              sizes="(max-width: 768px) 50vw, 25vw"
             />
 
             <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />

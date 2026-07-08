@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import Loader from "@/components/Loader";
@@ -166,7 +167,7 @@ function CritiqueCard({ post, cover, onSave, sessionUserId }: { post: Post; cove
     >
       {cover && (
         <div className="relative h-32 sm:h-40 overflow-hidden">
-          <img src={cover.cover} alt="" className="w-full h-full object-cover" />
+          <Image src={cover.cover} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-[var(--color-panel)]/40 to-transparent" />
           <div className="absolute bottom-3 left-4 right-4">
             <h2 className="font-display text-lg font-bold text-white drop-shadow-lg">{post.title}</h2>

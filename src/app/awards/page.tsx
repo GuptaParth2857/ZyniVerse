@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
-import { AWARD_YEARS, getAwardsByYear } from "@/lib/awards-data";
-import { getMediaBatch } from "@/lib/anilist";
-import type { MediaBasic } from "@/lib/anilist";
+import type { AwardEntry } from "@/lib/awards-data";
 
 const CATEGORY_COLORS: Record<string, string> = {
   "Anime of the Year": "var(--color-magenta)",
@@ -18,6 +17,9 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Best Drama": "var(--color-violet)",
   "Best Score": "var(--color-magenta)",
   "Best New Series": "var(--color-cyan)",
+  "Best Visuals / Animation": "var(--color-cyan)",
+  "Fan Favorite": "var(--color-violet)",
+  "Best Drama / Storytelling": "var(--color-violet)",
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -30,22 +32,36 @@ const CATEGORY_ICONS: Record<string, string> = {
   "Best Drama": "🎭",
   "Best Score": "🎵",
   "Best New Series": "🆕",
+  "Best Visuals / Animation": "✨",
+  "Fan Favorite": "❤️",
+  "Best Drama / Storytelling": "📖",
 };
 
 export default function AwardsPage() {
-  const [selectedYear, setSelectedYear] = useState<number>(AWARD_YEARS[0]);
-  const [covers, setCovers] = useState<Map<number, MediaBasic>>(new Map());
+  const [awards, setAwards] = useState<AwardEntry[]>([]);
+  const [years, setYears] = useState<number[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number>(0);
+  const [source, setSource] = useState<"live" | "static">("static");
   const [hovered, setHovered] = useState<string | null>(null);
 
-  const awards = getAwardsByYear(selectedYear);
+  useEffect(() => {
+    fetch("/api/awards")
+      .then((r) => r.json())
+      .then((d) => {
+        const y = d.years || [];
+        setYears(y);
+        setSource(d.source || "static");
+        if (y.length > 0) setSelectedYear(y[0]);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
-    const ids = [...new Set(awards.map((a) => a.malId))];
-    getMediaBatch(ids).then((d) => {
-      const m = new Map<number, MediaBasic>();
-      d.forEach((item) => m.set(item.id, item));
-      setCovers(m);
-    }).catch(() => {});
+    if (!selectedYear) return;
+    fetch(`/api/awards?year=${selectedYear}`)
+      .then((r) => r.json())
+      .then((d) => setAwards(d.awards || []))
+      .catch(() => setAwards([]));
   }, [selectedYear]);
 
   return (
@@ -63,9 +79,14 @@ export default function AwardsPage() {
           </p>
         </div>
 
+        {source === "live" && (
+          <div className="mb-4">
+            <span className="rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold px-2.5 py-0.5 uppercase tracking-wider">Live — Powered by AniList Rankings</span>
+          </div>
+        )}
         {/* Year selector */}
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
-          {AWARD_YEARS.map((year) => (
+          {years.map((year) => (
             <button
               key={year}
               onClick={() => setSelectedYear(year)}
@@ -93,7 +114,6 @@ export default function AwardsPage() {
             {awards.map((award, i) => {
               const color = CATEGORY_COLORS[award.category] || "var(--color-violet)";
               const icon = CATEGORY_ICONS[award.category] || "🏅";
-              const cover = covers.get(award.malId);
               const key = `${award.year}-${award.category}`;
               const isHovered = hovered === key;
               return (
@@ -108,15 +128,17 @@ export default function AwardsPage() {
                   style={{ minWidth: 0 }}
                 >
                   <Link
-                    href={`/anime/${award.malId}`}
+                    href={`/anime/${award.anilistId || award.malId}`}
                     className="block h-full w-full"
                   >
                     {/* Cover image */}
-                    {cover?.coverImage ? (
-                      <img
-                        src={cover.coverImage.extraLarge || cover.coverImage.large}
+                    {award.image ? (
+                      <Image
+                        src={award.image}
                         alt=""
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        sizes="(max-width: 768px) 50vw, 25vw"
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-surface)] text-5xl">
@@ -165,13 +187,9 @@ export default function AwardsPage() {
                         <p className="font-display text-lg font-bold leading-tight text-white drop-shadow-lg">
                           {award.winner}
                         </p>
-                        {cover && (
-                          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-white/60">
-                            {cover.averageScore ? (
-                              <span className="text-[var(--color-cyan)]">★ {(cover.averageScore / 10).toFixed(1)}</span>
-                            ) : null}
-                            {cover.format ? <span className="text-[10px] uppercase">{cover.format}</span> : null}
-                            {cover.genres?.slice(0, 2).join(" · ")}
+                        {award.image && (
+                          <div className="mt-2 flex items-center gap-2 text-xs text-white/60">
+                            <span className="text-[var(--color-cyan)]">★ Award Winner</span>
                           </div>
                         )}
                         <motion.span

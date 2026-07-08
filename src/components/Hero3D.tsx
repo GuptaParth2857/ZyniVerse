@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
@@ -47,7 +48,9 @@ export default function Hero3D({ items }: { items: Media[] }) {
           className="absolute inset-0"
         >
           {hero?.bannerImage && (
-            <img src={hero.bannerImage} alt="" className="h-full w-full object-cover opacity-30" />
+            <div className="relative h-full w-full">
+              <Image src={hero.bannerImage} alt="" fill className="object-cover opacity-30" sizes="100vw" />
+            </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-void)] via-[var(--color-void)]/70 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-transparent to-[var(--color-void)]/30" />
@@ -140,10 +143,9 @@ export default function Hero3D({ items }: { items: Media[] }) {
               style={{ transformStyle: "preserve-3d", zIndex: active > 0 ? active : 1 }}
               onClick={() => goTo((active - 1 + total) % total)}
             >
-              <div className="h-72 w-48 overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl">
-                <img src={prev.coverImage?.extraLarge || prev.coverImage?.large} alt=""
-                  className="h-full w-full object-cover" />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-4">
+              <div className="relative h-72 w-48 overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl">
+                <Image src={prev.coverImage?.extraLarge || prev.coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent p-4 flex items-end">
                   <p className="text-sm font-bold truncate">{bestTitle(prev.title)}</p>
                 </div>
               </div>
@@ -163,8 +165,7 @@ export default function Hero3D({ items }: { items: Media[] }) {
               onClick={() => goTo(active)}
             >
               <div className="relative h-80 w-52 overflow-hidden rounded-2xl border-2 border-[var(--color-magenta)]/50 bg-[var(--color-panel)] shadow-2xl shadow-[var(--color-magenta)]/20">
-                <img src={hero.coverImage?.extraLarge || hero.coverImage?.large} alt=""
-                  className="h-full w-full object-cover" />
+                <Image src={hero.coverImage?.extraLarge || hero.coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-4">
                   <p className="font-display text-lg font-bold leading-tight">{bestTitle(hero.title)}</p>
@@ -188,10 +189,9 @@ export default function Hero3D({ items }: { items: Media[] }) {
               style={{ transformStyle: "preserve-3d" }}
               onClick={() => goTo((active + 1) % total)}
             >
-              <div className="h-72 w-48 overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl">
-                <img src={next.coverImage?.extraLarge || next.coverImage?.large} alt=""
-                  className="h-full w-full object-cover" />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-4">
+              <div className="relative h-72 w-48 overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl">
+                <Image src={next.coverImage?.extraLarge || next.coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent p-4 flex items-end">
                   <p className="text-sm font-bold truncate">{bestTitle(next.title)}</p>
                 </div>
               </div>

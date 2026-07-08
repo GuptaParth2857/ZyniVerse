@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { searchStaff, getPopularStaff } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
@@ -126,11 +127,13 @@ export default function StaffBrowsePage() {
                     {/* Collapsed: photo circle + vertical name */}
                     {!isHovered && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-3">
-                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-white/20 shadow-lg">
-                          <img
-                            src={staff.image?.medium || staff.image?.large}
+                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-white/20 shadow-lg">
+                          <Image
+                            src={staff.image?.medium || staff.image?.large || ""}
                             alt=""
-                            className="h-full w-full object-cover"
+                            fill
+                            className="object-cover"
+                            sizes="56px"
                           />
                         </div>
                         <p className="font-display text-[10px] font-bold leading-tight text-center text-white/80 [writing-mode:vertical-lr] rotate-180 truncate max-h-[120px]">
@@ -143,9 +146,8 @@ export default function StaffBrowsePage() {
                     {isHovered && (
                       <div className="absolute inset-x-0 bottom-0 p-5">
                         <div className="mb-3 flex items-center gap-3">
-                          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-white/30 shadow-lg">
-                            <img src={staff.image?.medium || staff.image?.large} alt=""
-                              className="h-full w-full object-cover" />
+                          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-white/30 shadow-lg">
+                            <Image src={staff.image?.medium || staff.image?.large || ""} alt="" fill className="object-cover" sizes="56px" />
                           </div>
                           <div className="min-w-0">
                             <p className="font-display text-lg font-bold leading-tight text-white drop-shadow-lg">
