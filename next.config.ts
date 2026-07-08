@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: process.env.NODE_ENV === "production" ? "standalone" : undefined,
   async redirects() {
     return [
       {
@@ -11,6 +12,21 @@ const nextConfig: NextConfig = {
       {
         source: "/dub-schedule",
         destination: "/dubbed",
+        permanent: true,
+      },
+      {
+        source: "/compare",
+        destination: "/search",
+        permanent: true,
+      },
+      {
+        source: "/calendar",
+        destination: "/schedule",
+        permanent: true,
+      },
+      {
+        source: "/browse",
+        destination: "/search",
         permanent: true,
       },
     ];
@@ -28,6 +44,14 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "img.anili.st",
+      },
+      {
+        protocol: "https",
+        hostname: "ui-avatars.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.myanimelist.net",
       },
     ],
   },

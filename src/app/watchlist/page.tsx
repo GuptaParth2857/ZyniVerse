@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useWatchlist } from "@/components/WatchlistProvider";
-import WatchlistCarousel3D from "@/components/WatchlistCarousel3D";
+import { DynamicWatchlistCarousel3D as WatchlistCarousel3D } from "@/components/lazy";
 import { PageTransition } from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
 

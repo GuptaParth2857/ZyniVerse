@@ -2,9 +2,11 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { bestTitle, searchCharacters } from "@/lib/anilist";
 import type { CharacterBasic, Media } from "@/lib/anilist";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ExpandingFlexCard from "@/components/ExpandingFlexCard";
 
 function hashColor(name = "") {
@@ -20,10 +22,8 @@ function CharCard({ c, rank }: { c: CharacterBasic; rank?: number }) {
   return (
     <Link href={`/character/${c.id}`} className="group block">
       <div className="relative overflow-hidden rounded-[16px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_0_30px_-10px_rgba(192,38,255,0.15)] hover:border-white/[0.12]">
-        <div className="aspect-[3/4] overflow-hidden bg-[#0a0a14] relative">
-          <img src={c.image?.large || c.image?.medium} alt={c.name?.full}
-            className="h-full w-full object-cover transition-all duration-500 group-hover:scale-110"
-          />
+        <div className="relative aspect-[3/4] overflow-hidden bg-[#0a0a14]">
+          <Image src={c.image?.large || c.image?.medium || ""} alt={c.name?.full || ""} fill className="object-cover transition-all duration-500 group-hover:scale-110" sizes="(max-width: 768px) 50vw, 25vw" />
           {rank != null && (
             <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full bg-black/70 backdrop-blur px-2 py-0.5 text-[9px] font-bold border border-white/[0.08]"
               style={{ color, borderColor: color }}
@@ -43,8 +43,8 @@ function CharCard({ c, rank }: { c: CharacterBasic; rank?: number }) {
           <p className="text-[13px] font-bold text-white/90 truncate leading-tight">{c.name?.full}</p>
           {anime && (
             <div className="flex items-center gap-1.5">
-              <div className="h-4 w-3 rounded overflow-hidden shrink-0 ring-1 ring-white/10">
-                <img src={anime.node.coverImage?.medium} alt="" className="h-full w-full object-cover" />
+              <div className="relative h-4 w-3 rounded overflow-hidden shrink-0 ring-1 ring-white/10">
+                <Image src={anime.node.coverImage?.medium || ""} alt="" fill className="object-cover" sizes="12px" />
               </div>
               <p className="text-[10px] text-white/40 truncate leading-tight">{bestTitle(anime.node.title)}</p>
             </div>
@@ -73,10 +73,8 @@ function AnimeGridCard({ media, active, onClick }: { media: Media; active: boole
       <div className={`relative overflow-hidden rounded-[12px] border transition-all duration-300 ${
         active ? "border-[#C026FF]/50 shadow-[0_0_20px_-8px_rgba(192,38,255,0.2)]" : "border-white/[0.06] hover:border-white/[0.12]"
       }`}>
-        <div className="aspect-[3/4] overflow-hidden bg-[#0a0a14]">
-                    <img src={media.coverImage?.large || media.coverImage?.medium} alt=""
-            className="h-full w-full object-cover transition-all duration-500 group-hover:scale-105"
-          />
+        <div className="relative aspect-[3/4] overflow-hidden bg-[#0a0a14]">
+                    <Image src={media.coverImage?.large || media.coverImage?.medium || ""} alt="" fill className="object-cover transition-all duration-500 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
         </div>
         <div className="p-2">
           <p className="text-[11px] font-semibold text-white/80 leading-tight line-clamp-1">{bestTitle(media.title)}</p>
@@ -133,10 +131,8 @@ function AnimeCharacterRow({ mediaId, visible }: { mediaId: number; visible: boo
               <div className="flex gap-2.5 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
                 {chars?.map((e: any) => (
                   <Link key={e.node.id} href={`/character/${e.node.id}`} className="flex-shrink-0 w-[110px] group">
-                    <div className="aspect-[3/4] rounded-[10px] overflow-hidden bg-[#0a0a14] border border-white/[0.06]">
-                      <img src={e.node.image?.large || e.node.image?.medium} alt={e.node.name?.full}
-                        className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105"
-                      />
+                    <div className="relative aspect-[3/4] rounded-[10px] overflow-hidden bg-[#0a0a14] border border-white/[0.06]">
+                      <Image src={e.node.image?.large || e.node.image?.medium} alt={e.node.name?.full || ""} fill className="object-cover transition-all duration-300 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
                     </div>
                     <p className="mt-1.5 text-[10px] font-medium text-white/70 leading-tight truncate">{e.node.name?.full}</p>
                     <p className="text-[8px] text-white/30 uppercase tracking-wider">{e.role}</p>
@@ -292,7 +288,7 @@ export default function CharactersBrowsePage() {
   ) : null;
 
   return (
-    <main className="min-h-dvh bg-[#05080f]">
+    <ErrorBoundary label="Characters"><main className="min-h-dvh bg-[#05080f]">
       {/* ═══════════════ HERO: Most Popular Characters ═══════════════ */}
       <div className="relative h-[70vh] min-h-[460px] border-b border-white/[0.06] overflow-hidden">
         {/* bg */}
@@ -300,7 +296,7 @@ export default function CharactersBrowsePage() {
           <div key={c.id} className={`absolute inset-0 transition-all duration-700 ${i === featuredIdx ? "opacity-100" : "opacity-0"}`}>
             <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 30% 50%, ${hashColor(c.name?.full)}44, transparent 70%), radial-gradient(ellipse at 70% 50%, ${hashColor(c.name?.full)}22, #05080f 70%)` }} />
             {c.media?.edges?.[0]?.node?.coverImage?.large && (
-              <img src={c.media.edges[0].node.bannerImage || c.media.edges[0].node.coverImage.extraLarge || c.media.edges[0].node.coverImage.large} alt="" className="absolute inset-0 h-full w-full object-cover opacity-[0.35]" />
+              <Image src={c.media.edges[0].node.bannerImage || c.media.edges[0].node.coverImage.extraLarge || c.media.edges[0].node.coverImage.large || ""} alt="" fill className="object-cover opacity-[0.35]" sizes="100vw" />
             )}
           </div>
         ))}
@@ -311,9 +307,10 @@ export default function CharactersBrowsePage() {
           <div className="flex flex-col sm:flex-row sm:items-end gap-5 w-full">
             <Link href={`/character/${featured.id}`} className="shrink-0 group relative">
               <div className="absolute -inset-2 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none" style={{ background: featColor }} />
-              <img src={featured.image?.large} alt={featured.name?.full}
+              <Image src={featured.image?.large || ""} alt={featured.name?.full || ""}
                 className="relative h-64 w-44 rounded-[14px] border-2 object-cover shadow-2xl sm:h-72 sm:w-48"
                 style={{ borderColor: featColor }}
+                width={176} height={256}
               />
               <div className="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur text-xs font-bold border" style={{ borderColor: featColor, color: featColor }}>
                 #{featuredIdx + 1}
@@ -413,6 +410,6 @@ export default function CharactersBrowsePage() {
 
         {trendingContent}
       </div>
-    </main>
+    </main></ErrorBoundary>
   );
 }

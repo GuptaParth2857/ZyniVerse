@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { createActivity } from "@/lib/activity";
 
 export async function GET(req: NextRequest) {
   const rateCheck = apiLimiter.middleware(req);
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { mediaId, rating, comment } = await req.json();
+  const { mediaId, rating, comment, mediaTitle, mediaImage } = await req.json();
   if (!mediaId || rating == null || rating < 1 || rating > 10) return NextResponse.json({ error: "Missing or invalid fields (rating must be 1-10)" }, { status: 400 });
 
   const review = await prisma.review.upsert({
@@ -34,5 +35,15 @@ export async function POST(req: NextRequest) {
     update: { rating, comment },
     create: { userId: session.user.id, mediaId, rating, comment },
   });
+
+  await createActivity({
+    userId: session.user.id,
+    type: "REVIEWED",
+    mediaId,
+    mediaTitle,
+    mediaImage,
+    message: comment || `Rated ${rating}/10`,
+  });
+
   return NextResponse.json({ review });
 }

@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
@@ -125,11 +126,12 @@ function CarouselCard({ item }: { item: Media }) {
       className="snap-start shrink-0 group/card w-[140px] sm:w-[160px] md:w-[180px]"
     >
       <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300 group-hover/card:border-[var(--color-magenta)] group-hover/card:shadow-[0_0_35px_-10px_var(--color-magenta)]">
-        <img
-          src={item.coverImage?.extraLarge || item.coverImage?.large || item.coverImage?.medium}
+        <Image
+          src={item.coverImage?.extraLarge || item.coverImage?.large || item.coverImage?.medium || ""}
           alt={title}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-110"
+          fill
+          className="object-cover transition-transform duration-500 group-hover/card:scale-110"
+          sizes="(max-width: 768px) 50vw, 25vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
         <div className="absolute inset-x-0 bottom-0 p-2.5 sm:p-3 translate-y-2 group-hover/card:translate-y-0 opacity-0 group-hover/card:opacity-100 transition-all duration-300">

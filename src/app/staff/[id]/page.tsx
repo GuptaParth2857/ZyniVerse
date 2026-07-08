@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { getStaffBasic, getStaffMedia, bestTitle } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
@@ -74,10 +75,12 @@ export default function StaffPage() {
               <div className="relative">
                 <div className="absolute -inset-3 rounded-full opacity-40 blur-2xl" style={{ background: accent }} />
                 <div className="relative h-56 w-56 sm:h-64 sm:w-64 overflow-hidden rounded-full border-4" style={{ borderColor: accent }}>
-                  <img
-                    src={staff.image?.large}
-                    alt={staff.name?.full}
-                    className="h-full w-full object-cover"
+                  <Image
+                    src={staff.image?.large || ""}
+                    alt={staff.name?.full || ""}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 224px, 256px"
                   />
                 </div>
                 {staff.favourites != null && (
@@ -157,9 +160,8 @@ export default function StaffPage() {
                           className="group relative flex items-center gap-4 overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 transition-all hover:-translate-y-0.5 hover:shadow-lg"
                         >
                           <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl transition-all group-hover:w-1.5" style={{ background: mediaAccent }} />
-                          <div className="shrink-0">
-                            <img src={m.coverImage?.large} alt=""
-                              className="h-20 w-14 rounded-lg object-cover border border-[var(--color-line)] transition-transform group-hover:scale-105" />
+                          <div className="relative shrink-0 h-20 w-14 rounded-lg border border-[var(--color-line)] overflow-hidden">
+                            <Image src={m.coverImage?.large || ""} alt="" fill className="object-cover transition-transform group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="font-semibold truncate">{bestTitle(m.title)}</p>

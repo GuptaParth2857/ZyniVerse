@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import Loader, { ErrorState } from "@/components/Loader";
 import { getTrending, getPopular, getTopRated, getSeasonal, bestTitle } from "@/lib/anilist";
@@ -86,9 +88,11 @@ function LeaderboardRow({ item, rank, index }: { item: Media; rank: number; inde
       <Link href={`/anime/${item.id}`} className="shrink-0 relative">
         <div className="relative h-16 w-12 sm:h-20 sm:w-14 overflow-hidden rounded-lg border border-[var(--color-line)]">
           {item.coverImage?.large || item.coverImage?.extraLarge ? (
-            <img src={item.coverImage.extraLarge || item.coverImage.large} alt=""
-              onLoad={() => setImgLoaded(true)}
-              className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+            <Image src={item.coverImage.extraLarge || item.coverImage.large || ""} alt=""
+              onLoadingComplete={() => setImgLoaded(true)}
+              fill
+              className={`object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+              sizes="(max-width: 640px) 48px, 56px"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-[var(--color-line)]/20" />
@@ -196,7 +200,7 @@ export default function LeaderboardPage() {
 
   return (
     <PageTransition>
-      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+      <ErrorBoundary label="Leaderboard"><div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -289,7 +293,7 @@ export default function LeaderboardPage() {
             )}
           </div>
         )}
-      </div>
+      </div></ErrorBoundary>
     </PageTransition>
   );
 }

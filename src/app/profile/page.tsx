@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Loader, { ErrorState } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
-import { getMediaBatch } from "@/lib/anilist";
-import type { MediaBasic } from "@/lib/anilist";
+import ApiKeyManager from "@/components/ApiKeyManager";
+import StatsDashboard from "@/components/StatsDashboard";
+import WatchHistory from "@/components/WatchHistory";
 
 interface ProfileData {
   user: {
-    id: string; username: string; email?: string; createdAt: string;
+    id: string; username: string; email?: string; avatar?: string; banner?: string; bio?: string; themeColor?: string; signature?: string; createdAt: string;
     entries: { mediaId: number; type: string; status: string; progress: number; total: number; score: number | null }[];
     reviews: { id: string; mediaId: number; rating: number; comment?: string; createdAt: string; user: { username: string } }[];
   };
@@ -27,9 +28,12 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<"entries" | "reviews" | "stats">("entries");
+  const [tab, setTab] = useState<"entries" | "reviews" | "stats" | "import" | "api" | "lists" | "history">("entries");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [mediaMeta, setMediaMeta] = useState<Map<number, MediaBasic>>(new Map());
+  const [anilistUsername, setAnilistUsername] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{ imported: number; total: number } | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return; }
@@ -37,17 +41,8 @@ export default function ProfilePage() {
     setLoading(true); setError(null);
     fetch("/api/profile")
       .then((r) => r.json())
-      .then(async (d) => {
+      .then((d) => {
         setProfile(d);
-        const ids = d.user.entries.map((e: any) => e.mediaId).filter(Boolean);
-        if (ids.length > 0) {
-          try {
-            const batch = await getMediaBatch(ids);
-            const map = new Map<number, MediaBasic>();
-            batch.forEach((m) => map.set(m.id, m));
-            setMediaMeta(map);
-          } catch {}
-        }
         setLoading(false);
       })
       .catch((e) => { setError(e.message); setLoading(false); });
@@ -59,48 +54,37 @@ export default function ProfilePage() {
 
   const { user, stats } = profile;
 
-  const genreDist = useMemo(() => {
-    const counts = new Map<string, number>();
-    user.entries.forEach((e) => {
-      const meta = mediaMeta.get(e.mediaId);
-      meta?.genres?.forEach((g) => counts.set(g, (counts.get(g) || 0) + 1));
-    });
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
-  }, [user.entries, mediaMeta]);
-
-  const formatDist = useMemo(() => {
-    const counts = new Map<string, number>();
-    user.entries.forEach((e) => {
-      const meta = mediaMeta.get(e.mediaId);
-      if (meta?.format) counts.set(meta.format, (counts.get(meta.format) || 0) + 1);
-    });
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
-  }, [user.entries, mediaMeta]);
-
-  const statusDist = useMemo(() => {
-    const counts: Record<string, number> = { CURRENT: 0, PLANNING: 0, COMPLETED: 0, DROPPED: 0, PAUSED: 0, REWATCHING: 0 };
-    user.entries.forEach((e) => { if (counts[e.status] !== undefined) counts[e.status]++; });
-    return Object.entries(counts).filter(([, v]) => v > 0);
-  }, [user.entries]);
-
-  const maxGenre = Math.max(...genreDist.map(([, v]) => v), 1);
-  const maxFormat = Math.max(...formatDist.map(([, v]) => v), 1);
-
   const filteredEntries = statusFilter === "ALL"
     ? user.entries
     : user.entries.filter((e) => e.status === statusFilter);
 
   return (
     <PageTransition><div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+      {/* Banner */}
+      {user.banner && (
+        <div className="relative h-48 -mx-4 -mt-10 sm:-mx-6 sm:-mt-10 mb-6 overflow-hidden">
+          <img src={user.banner} alt="Profile banner" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-transparent to-transparent" />
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6 pb-8 border-b border-[var(--color-line)]">
-        <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] text-3xl font-bold text-black">
-          {user.username.charAt(0).toUpperCase()}
+        <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] text-3xl font-bold text-black overflow-hidden">
+          {user.avatar ? (
+            <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
+          ) : (
+            user.username.charAt(0).toUpperCase()
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-3xl font-bold">{user.username}</h1>
-          <p className="text-sm text-[var(--color-mute)]">Joined {new Date(user.createdAt).toLocaleDateString()}</p>
+          {user.bio && <p className="text-sm text-white/60 mt-1">{user.bio}</p>}
+          <p className="text-sm text-[var(--color-mute)] mt-1">Joined {new Date(user.createdAt).toLocaleDateString()}</p>
         </div>
+        <Link href="/profile/edit" className="shrink-0 px-4 py-2 rounded-lg border border-[var(--color-line)] text-sm text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors">
+          Edit Profile
+        </Link>
       </div>
 
       {/* Stats */}
@@ -122,12 +106,12 @@ export default function ProfilePage() {
 
       {/* Tabs */}
       <div className="mt-8 flex items-center gap-2 border-b border-[var(--color-line)] pb-3">
-        {(["entries", "reviews", "stats"] as const).map((t) => (
+        {(["entries", "reviews", "lists", "stats", "history", "import", "api"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors ${
               tab === t ? "text-[var(--color-magenta)] border-b-2 border-[var(--color-magenta)]" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"
             }`}
-          >{t === "entries" ? "My List" : t === "reviews" ? "Reviews" : "Stats"}</button>
+          >{t === "entries" ? "My List" : t === "reviews" ? "Reviews" : t === "lists" ? "Lists" : t === "stats" ? "Stats" : t === "history" ? "Watch History" : t === "import" ? "Import" : "API Keys"}</button>
         ))}
         {tab === "entries" && (
           <div className="ml-auto flex gap-1">
@@ -209,65 +193,124 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {tab === "stats" && (
-        <div className="mt-6 space-y-8">
-          {/* Status Distribution */}
-          <div>
-            <h3 className="font-display text-sm font-bold mb-3">Status Breakdown</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-              {statusDist.map(([status, count]) => {
-                const colors: Record<string, string> = { CURRENT: "var(--color-cyan)", PLANNING: "var(--color-violet)", COMPLETED: "#22c55e", DROPPED: "var(--color-magenta)", PAUSED: "#eab308", REWATCHING: "#f97316" };
-                return (
-                  <div key={status} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-center">
-                    <div className="text-2xl font-bold font-mono" style={{ color: colors[status] || "var(--color-ink)" }}>{count}</div>
-                    <div className="text-xs text-[var(--color-mute)] mt-0.5 capitalize">{status.toLowerCase()}</div>
-                  </div>
-                );
-              })}
+      {tab === "lists" && (
+        <div className="mt-6">
+          <ProfileLists userId={user.id} />
+        </div>
+      )}
+
+      {tab === "stats" && <StatsDashboard />}
+
+      {tab === "import" && (
+        <div className="mt-6">
+          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6">
+            <h3 className="font-display text-sm font-bold mb-1">Import from AniList</h3>
+            <p className="text-xs text-[var(--color-mute)] mb-4">
+              Enter your AniList username to import your entire anime watchlist into ZyniVerse.
+            </p>
+            <div className="flex gap-3">
+              <input
+                type="text"
+                placeholder="AniList username"
+                value={anilistUsername}
+                onChange={(e) => { setAnilistUsername(e.target.value); setImportResult(null); setImportError(null); }}
+                className="flex-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
+              />
+              <button
+                onClick={async () => {
+                  if (!anilistUsername.trim()) return;
+                  setImporting(true);
+                  setImportResult(null);
+                  setImportError(null);
+                  try {
+                    const res = await fetch("/api/import/anilist", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ username: anilistUsername.trim() }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Import failed");
+                    setImportResult(data);
+                  } catch (err: any) {
+                    setImportError(err.message);
+                  } finally {
+                    setImporting(false);
+                  }
+                }}
+                disabled={importing || !anilistUsername.trim()}
+                className="rounded-lg bg-[var(--color-magenta)] px-5 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {importing ? "Importing..." : "Import from AniList"}
+              </button>
             </div>
+            {importResult && (
+              <p className="mt-3 text-sm text-green-400">
+                Successfully imported {importResult.imported} of {importResult.total} entries.
+              </p>
+            )}
+            {importError && (
+              <p className="mt-3 text-sm text-[var(--color-magenta)]">{importError}</p>
+            )}
           </div>
+        </div>
+      )}
 
-          {/* Genre Distribution */}
-          {genreDist.length > 0 && (
-            <div>
-              <h3 className="font-display text-sm font-bold mb-3">Top Genres</h3>
-              <div className="space-y-2">
-                {genreDist.map(([genre, count]) => (
-                  <div key={genre} className="flex items-center gap-3">
-                    <span className="w-28 text-xs text-[var(--color-mute)] truncate text-right">{genre}</span>
-                    <div className="flex-1 h-5 rounded-md bg-[var(--color-line)] overflow-hidden">
-                      <div className="h-full rounded-md bg-gradient-to-r from-[var(--color-magenta)] to-[var(--color-cyan)] transition-all" style={{ width: `${(count / maxGenre) * 100}%` }} />
-                    </div>
-                    <span className="w-6 text-xs font-mono text-[var(--color-mute)] text-right">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+      {tab === "api" && (
+        <div className="mt-6">
+          <ApiKeyManager />
+        </div>
+      )}
 
-          {/* Format Distribution */}
-          {formatDist.length > 0 && (
-            <div>
-              <h3 className="font-display text-sm font-bold mb-3">Format Breakdown</h3>
-              <div className="space-y-2">
-                {formatDist.map(([format, count]) => (
-                  <div key={format} className="flex items-center gap-3">
-                    <span className="w-24 text-xs text-[var(--color-mute)] truncate text-right">{format.replace(/_/g, " ")}</span>
-                    <div className="flex-1 h-5 rounded-md bg-[var(--color-line)] overflow-hidden">
-                      <div className="h-full rounded-md bg-gradient-to-r from-[var(--color-violet)] to-[var(--color-cyan)] transition-all" style={{ width: `${(count / maxFormat) * 100}%` }} />
-                    </div>
-                    <span className="w-6 text-xs font-mono text-[var(--color-mute)] text-right">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {genreDist.length === 0 && formatDist.length === 0 && (
-            <p className="text-center text-sm text-[var(--color-mute)] py-10">Add items to your list to see stats.</p>
-          )}
+      {tab === "history" && (
+        <div className="mt-6">
+          <WatchHistory />
         </div>
       )}
     </div></PageTransition>
+  );
+}
+
+function ProfileLists({ userId }: { userId: string }) {
+  const [lists, setLists] = useState<Array<{ id: string; title: string; type: string; isPublic: boolean; itemCount: number; likes: number; createdAt: string }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/lists?userId=${userId}&sort=recent&limit=50`)
+      .then((r) => r.json())
+      .then((d) => setLists(d.lists || []))
+      .catch(() => setLists([]))
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  if (loading) return <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-[var(--color-panel)]" />)}</div>;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-[var(--color-mute)]">{lists.length} list{lists.length !== 1 ? "s" : ""}</p>
+        <Link href="/lists/create" className="rounded-lg bg-[var(--color-cyan)] px-3 py-1.5 text-sm font-semibold text-black">Create List</Link>
+      </div>
+      {lists.length === 0 ? (
+        <p className="py-8 text-center text-sm text-[var(--color-mute)]">No custom lists yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {lists.map((l) => (
+            <Link key={l.id} href={`/lists/${l.id}`}
+              className="flex items-center justify-between rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 hover:border-[var(--color-cyan)]/40 transition-all"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{l.title}</p>
+                <p className="text-[11px] text-[var(--color-mute)] mt-0.5">
+                  {l.itemCount} items · ♥ {l.likes} · {!l.isPublic && "Private · "}{l.type} · {new Date(l.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)] shrink-0 ml-2">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

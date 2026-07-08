@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { bestTitle } from "@/lib/anilist";
@@ -105,8 +106,8 @@ export default function RandomPage() {
   }
 
   const current = picks[currentIdx];
-  const imgSrc = current.bannerImage || current.coverImage?.extraLarge || current.coverImage?.large;
-  const coverSrc = current.coverImage?.large || current.coverImage?.medium;
+  const imgSrc = current.bannerImage || current.coverImage?.extraLarge || current.coverImage?.large || "";
+  const coverSrc = current.coverImage?.large || current.coverImage?.medium || "";
 
   return (
     <PageTransition><div className="relative min-h-dvh flex flex-col overflow-hidden select-none"
@@ -122,7 +123,9 @@ export default function RandomPage() {
           transition={{ duration: 0.5 }}
           className="absolute inset-0 pointer-events-none"
         >
-          <img src={imgSrc} alt="" className="w-full h-full object-cover object-top" />
+          <div className="relative w-full h-full">
+            <Image src={imgSrc} alt="" fill className="object-cover object-top" sizes="(max-width: 768px) 50vw, 25vw" />
+          </div>
           <div className="absolute inset-0 bg-gradient-to-b from-[#05080f]/70 via-[#05080f]/50 to-[#05080f]/90" />
         </motion.div>
       </AnimatePresence>
@@ -176,7 +179,7 @@ export default function RandomPage() {
 
                 {/* hero */}
                 <div className="relative w-full h-[220px] sm:h-[260px] overflow-hidden rounded-t-[22px] bg-[#0a0a14] z-[3]">
-                  <img src={imgSrc} alt="" className="w-full h-full object-cover object-top transition-all duration-700 group-hover:scale-[1.03]" />
+                  <Image src={imgSrc} alt="" fill className="object-cover object-top transition-all duration-700 group-hover:scale-[1.03]" sizes="(max-width: 768px) 50vw, 25vw" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#05080f]/85 via-[#05080f]/15 to-transparent" />
 
                   {current.averageScore && (
@@ -203,8 +206,8 @@ export default function RandomPage() {
                         <p className="text-[11px] text-white/20 font-mono truncate">{current.title.native}</p>
                       )}
                     </div>
-                    <div className="flex-shrink-0 w-[42px] h-[60px] rounded-[8px] overflow-hidden border border-white/[0.08] -mt-1 shadow-lg">
-                      <img src={coverSrc} alt="" className="w-full h-full object-cover" />
+                    <div className="relative flex-shrink-0 w-[42px] h-[60px] rounded-[8px] overflow-hidden border border-white/[0.08] -mt-1 shadow-lg">
+                      <Image src={coverSrc} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
                     </div>
                   </div>
 
@@ -276,7 +279,7 @@ export default function RandomPage() {
                 }`}
               >
                 <div className="relative w-[30px] h-[42px] rounded-[4px] overflow-hidden flex-shrink-0">
-                  <img src={m.coverImage?.medium || m.coverImage?.large} alt="" className="w-full h-full object-cover" />
+                  <Image src={m.coverImage?.medium || m.coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className={`text-[10px] font-semibold leading-tight truncate ${i === currentIdx ? "text-white/90" : "text-white/50"}`}>

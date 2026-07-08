@@ -2,16 +2,31 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
 import CountdownChip from "@/components/CountdownChip";
 import { useWatchlist } from "@/components/WatchlistProvider";
-import Carousel3D from "@/components/Carousel3D";
+import { DynamicCarousel3D as Carousel3D } from "@/components/lazy";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import FillerGuide from "@/components/FillerGuide";
 import ReviewsSection from "@/components/ReviewsSection";
 import WhereToWatch from "@/components/WhereToWatch";
+import EpisodeTracker from "@/components/EpisodeTracker";
+import AffiliateLink from "@/components/AffiliateLink";
+import AdBanner from "@/components/AdBanner";
+import ForumDiscussionWidget from "@/components/ForumDiscussionWidget";
+import ThemeSongsSection from "@/components/features/ThemeSongsSection";
+import ScoreDistributionChart from "@/components/features/ScoreDistributionChart";
+import UsersAlsoLiked from "@/components/features/UsersAlsoLiked";
+import MetadataPanel from "@/components/MetadataPanel";
+import TagVotePanel from "@/components/TagVotePanel";
+import ShareButton from "@/components/ShareButton";
+import RecRelationships from "@/components/RecRelationships";
+import DiscussionLinks from "@/components/DiscussionLinks";
+import CharacterVoteWidget from "@/components/CharacterVoteWidget";
 import type { MediaAnimeFull } from "@/lib/anilist";
 
 const DUB_LANG_STYLES: Record<string, { bg: string; text: string; border: string }> = {
@@ -83,13 +98,15 @@ export default function AnimeDetailsPage() {
   const heroCharName = heroChar?.name?.full;
 
   return (
-    <PageTransition><div>
+    <PageTransition><ErrorBoundary label="AnimeDetails"><div>
       {/* ── Hero ── */}
       <div className="relative min-h-[70vh] flex items-end border-b border-[var(--color-line)] overflow-hidden">
         {/* Background banner */}
         {anime.bannerImage && (
           <div className="absolute inset-0">
-            <img src={anime.bannerImage} alt="" className="h-full w-full object-cover opacity-25" />
+            <div className="relative h-full w-full">
+              <Image src={anime.bannerImage} alt="" fill className="object-cover opacity-25" sizes="100vw" />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-[var(--color-void)]/70 to-[var(--color-void)]/20" />
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-void)]/80 via-transparent to-[var(--color-void)]/40" />
           </div>
@@ -98,12 +115,14 @@ export default function AnimeDetailsPage() {
         {/* Character art — right side */}
         {heroCharImage && (
           <div className="absolute bottom-0 right-0 hidden lg:block pointer-events-none">
-            <div className="relative">
+            <div className="relative h-[85vh] aspect-[2/3]">
               <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-void)] via-transparent to-transparent z-10" />
-              <img
+              <Image
                 src={heroCharImage}
-                alt={heroCharName}
-                className="h-[85vh] w-auto object-contain [mask-image:linear-gradient(to_left,black_50%,transparent_90%)]"
+                alt={heroCharName || ""}
+                fill
+                className="object-contain [mask-image:linear-gradient(to_left,black_50%,transparent_90%)]"
+                sizes="50vw"
               />
             </div>
           </div>
@@ -114,11 +133,13 @@ export default function AnimeDetailsPage() {
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
             {/* Cover */}
             <div className="shrink-0 -mb-16 sm:-mb-20 z-20">
-              <div className="relative">
-                <img
-                  src={anime.coverImage?.extraLarge || anime.coverImage?.large}
+              <div className="relative h-64 w-44 sm:h-80 sm:w-56">
+                <Image
+                  src={anime.coverImage?.extraLarge || anime.coverImage?.large || ""}
                   alt={title}
-                  className="h-64 w-44 rounded-xl border-2 border-[var(--color-magenta)]/30 object-cover shadow-2xl shadow-[var(--color-magenta)]/10 sm:h-80 sm:w-56"
+                  fill
+                  className="rounded-xl border-2 border-[var(--color-magenta)]/30 object-cover shadow-2xl shadow-[var(--color-magenta)]/10"
+                  sizes="(max-width: 768px) 50vw, 25vw"
                 />
                 {anime.averageScore ? (
                   <div className="absolute -top-3 -right-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-magenta)] text-sm font-bold text-black shadow-lg">
@@ -198,6 +219,9 @@ export default function AnimeDetailsPage() {
                     className="rounded-full border border-white/20 bg-white/5 px-6 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-cyan)]/10 hover:border-[var(--color-cyan)] transition-all backdrop-blur"
                   >▶ Trailer</button>
                 )}
+                <div className="flex items-center gap-2">
+                  <ShareButton mediaId={anime.id} title={title} />
+                </div>
                 <Link href={`/search?sort=TRENDING_DESC`}
                   className="rounded-full border border-white/10 px-6 py-2.5 text-sm text-white/50 hover:text-white transition-all"
                 >Discover More →</Link>
@@ -257,6 +281,13 @@ export default function AnimeDetailsPage() {
                 ))}
               </div>
             )}
+            <div className="mt-6">
+              <h3 className="text-sm font-bold mb-3 flex items-center gap-2">
+                <span className="h-3 w-1 rounded-full bg-[var(--color-magenta)]" />
+                Community Tags
+              </h3>
+              <TagVotePanel mediaId={anime.id} />
+            </div>
           </section>
 
           {/* Characters */}
@@ -272,17 +303,20 @@ export default function AnimeDetailsPage() {
                     <Link key={char.id} href={`/character/${char.id}`}
                       className="flex items-center gap-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all group"
                     >
-                      <img src={char.image?.medium} alt={char.name?.full}
-                        className="h-14 w-14 rounded-full object-cover border-2 border-[var(--color-line)] group-hover:border-[var(--color-magenta)]/50 transition-colors" />
+                      <div className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-[var(--color-line)] group-hover:border-[var(--color-magenta)]/50 transition-colors shrink-0">
+                        <Image src={char.image?.medium || ""} alt={char.name?.full || ""} fill className="object-cover" sizes="56px" />
+                      </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold truncate">{char.name?.full}</p>
                         <p className="text-[11px] text-[var(--color-mute)]">{edge.role}</p>
                       </div>
-                      <div className="flex items-center gap-3 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
+                        <CharacterVoteWidget characterId={char.id} mediaId={anime.id} characterName={char.name?.full || ""} characterImage={char.image?.medium || ""} />
                         {jpVA && (
                           <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-black/30 px-3 py-1.5">
-                            <img src={jpVA.image?.medium} alt={jpVA.name?.full}
-                              className="h-7 w-7 rounded-full object-cover" />
+                            <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0">
+                              <Image src={jpVA.image?.medium || ""} alt={jpVA.name?.full || ""} fill className="object-cover" sizes="28px" />
+                            </div>
                             <div className="text-right">
                               <p className="text-xs font-medium truncate max-w-[100px]">{jpVA.name?.full}</p>
                               <p className="text-[9px] text-[var(--color-mute)]">Japanese</p>
@@ -291,8 +325,9 @@ export default function AnimeDetailsPage() {
                         )}
                         {enVA && (
                           <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-black/30 px-3 py-1.5">
-                            <img src={enVA.image?.medium} alt={enVA.name?.full}
-                              className="h-7 w-7 rounded-full object-cover" />
+                            <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0">
+                              <Image src={enVA.image?.medium || ""} alt={enVA.name?.full || ""} fill className="object-cover" sizes="28px" />
+                            </div>
                             <div className="text-right">
                               <p className="text-xs font-medium truncate max-w-[100px]">{enVA.name?.full}</p>
                               <p className="text-[9px] text-[var(--color-mute)]">English</p>
@@ -326,8 +361,9 @@ export default function AnimeDetailsPage() {
                   <Link key={`${s.node.id}-${i}`} href={`/staff/${s.node.id}`}
                     className="flex items-center gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all group"
                   >
-                    <img src={s.node.image?.medium} alt={s.node.name?.full}
-                      className="h-10 w-10 rounded-full object-cover border border-[var(--color-line)] group-hover:border-[var(--color-magenta)]/50 transition-colors" />
+                    <div className="relative h-10 w-10 rounded-full overflow-hidden border border-[var(--color-line)] group-hover:border-[var(--color-magenta)]/50 transition-colors shrink-0">
+                      <Image src={s.node.image?.medium || ""} alt={s.node.name?.full || ""} fill className="object-cover" sizes="40px" />
+                    </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{s.node.name?.full}</p>
                       <p className="text-[10px] text-[var(--color-mute)]">{s.role}</p>
@@ -373,11 +409,59 @@ export default function AnimeDetailsPage() {
 
         {/* ── Right Column (Sidebar) ── */}
         <aside className="space-y-6">
+          {/* Episode Tracker */}
+          {anime.episodes && (
+            <EpisodeTracker mediaId={anime.id} totalEpisodes={anime.episodes} animeTitle={title} />
+          )}
+
           {/* Filler Guide */}
           <FillerGuide anilistId={anime.id} animeTitle={title} />
 
+          {/* Ad Placement */}
+          <AdBanner placement="anime-detail" type="sidebar" />
+
+          {/* Theme Songs */}
+          <ThemeSongsSection mediaId={anime.id} />
+
+          {/* Detailed Metadata */}
+          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+            <h3 className="font-display text-sm font-bold mb-3">Details</h3>
+            <MetadataPanel mediaId={anime.id} />
+          </div>
+
+          {/* Recommendation Relationships */}
+          <RecRelationships mediaId={anime.id} />
+
+          {/* Reddit Discussions */}
+          <DiscussionLinks mediaId={anime.id} />
+
+          {/* Users Also Liked */}
+          <UsersAlsoLiked mediaId={anime.id} />
+
+          {/* Forum Discussion */}
+          <ForumDiscussionWidget animeId={anime.id} animeTitle={title} animeImage={anime.coverImage?.large || ""} />
+
           {/* Where to Watch */}
-          <WhereToWatch streamingLinks={streamingLinks.map((l) => ({ site: l.site, url: l.url }))} />
+          <WhereToWatch streamingLinks={streamingLinks.map((l) => ({ site: l.site, url: l.url }))} title={title} />
+
+          {/* Affiliate Links */}
+          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+            <h3 className="font-display text-sm font-bold mb-3">Support Us</h3>
+            <div className="space-y-2">
+              <AffiliateLink partner="amazon" path="https://www.amazon.com/s?k=anime" className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all">
+                <span className="text-[10px] font-bold">📦</span>
+                Buy on Amazon
+              </AffiliateLink>
+              <AffiliateLink partner="cdjapan" path="https://www.cdjapan.co.jp" className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all">
+                <span className="text-[10px] font-bold">💿</span>
+                Buy Blu-ray on CDJapan
+              </AffiliateLink>
+              <AffiliateLink partner="playasia" path="https://www.play-asia.com" className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all">
+                <span className="text-[10px] font-bold">🎮</span>
+                Merch on PlayAsia
+              </AffiliateLink>
+            </div>
+          </div>
 
           {/* Official Links */}
           {infoLinks.length > 0 && (
@@ -420,22 +504,7 @@ export default function AnimeDetailsPage() {
           )}
 
           {/* Score Distribution */}
-          {scoreDist.length > 0 && (
-            <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
-              <h3 className="font-display text-sm font-bold mb-3">Score Distribution</h3>
-              <div className="space-y-1">
-                {scoreDist.filter((s) => s.amount > 0).slice(0, 10).map((s) => (
-                  <div key={s.score} className="flex items-center gap-2 text-[11px]">
-                    <span className="w-4 text-right font-mono text-[var(--color-mute)]">{s.score * 10}%</span>
-                    <div className="flex-1 h-2 rounded-full bg-[var(--color-line)] overflow-hidden">
-                      <div className="h-full rounded-full bg-[var(--color-cyan)]" style={{ width: `${Math.min(100, (s.amount / Math.max(...scoreDist.map((d) => d.amount))) * 100)}%` }} />
-                    </div>
-                    <span className="w-8 text-right font-mono text-[var(--color-mute)]">{s.amount}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <ScoreDistributionChart scoreDistribution={scoreDist} />
 
           {anime.favourites ? (
             <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 text-center">
@@ -467,7 +536,7 @@ export default function AnimeDetailsPage() {
           </div>
         </div>
       )}
-    </div></PageTransition>
+    </div></ErrorBoundary></PageTransition>
   );
 }
 

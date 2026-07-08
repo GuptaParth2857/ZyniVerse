@@ -4,9 +4,12 @@ import { Suspense, useCallback, useEffect, useState, useRef, useMemo } from "rea
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { searchMedia, searchAll, getGenres, getAllTags, getAnimeByStudioName as searchByStudio, getPopular, getSuggestions } from "@/lib/anilist";
 import Link from "next/link";
+import Image from "next/image";
 import AnimeCard from "@/components/AnimeCard";
+import AdBanner from "@/components/AdBanner";
 import ExpandingFlexCard from "@/components/ExpandingFlexCard";
 import { CardSkeleton, ErrorState } from "@/components/Loader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
 
@@ -242,7 +245,7 @@ function SearchInner() {
   return (
     <PageTransition>
       {isLanding && popularAnime.length > 0 ? (
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-16">
+        <ErrorBoundary label="Search"><div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-16">
           {/* Neon Search Bar */}
           <div className="mb-10 max-w-2xl mx-auto text-center relative" ref={suggestRef}>
             <p className="font-mono text-xs uppercase tracking-[0.25em] text-[var(--color-magenta)] mb-3">// Discover Anime</p>
@@ -300,7 +303,9 @@ function SearchInner() {
                     className="flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors border-b border-[var(--color-line)] last:border-0"
                   >
                     {s.poster && (
-                      <img src={s.poster} alt="" className="h-12 w-8 rounded object-cover border border-[var(--color-line)]" />
+                      <div className="relative h-12 w-8 rounded overflow-hidden border border-[var(--color-line)] shrink-0">
+                        <Image src={s.poster} alt="" fill className="object-cover" sizes="32px" />
+                      </div>
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{s.title}</p>
@@ -333,9 +338,9 @@ function SearchInner() {
             </Link>
           </div>
           <ExpandingFlexCard items={popularAnime} />
-        </div>
+        </div></ErrorBoundary>
       ) : (
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+        <ErrorBoundary label="Search"><div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
           <div className="flex items-end justify-between gap-2 flex-wrap">
             <div className="min-w-0">
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">// Search</p>
@@ -486,7 +491,9 @@ function SearchInner() {
                       className="flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors border-b border-[var(--color-line)] last:border-0"
                     >
                       {s.poster && (
-                        <img src={s.poster} alt="" className="h-10 w-7 rounded object-cover border border-[var(--color-line)]" />
+                        <div className="relative h-10 w-7 rounded overflow-hidden border border-[var(--color-line)] shrink-0">
+                          <Image src={s.poster} alt="" fill className="object-cover" sizes="28px" />
+                        </div>
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate">{s.title}</p>
@@ -532,6 +539,11 @@ function SearchInner() {
                   </div>
                 ) : (
                   <>
+                    {displayAnime.length > 0 && displayAll && (
+                      <div className="mb-6">
+                        <AdBanner placement="search" type="sidebar" />
+                      </div>
+                    )}
                     {displayAnime.length > 0 && (
                       <div>
                         {displayAll && <h3 className="font-display text-lg font-bold mb-3">Anime</h3>}
@@ -570,10 +582,25 @@ function SearchInner() {
                     <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-cyan)] border-t-transparent" />
                   </div>
                 )}
+                {/* Affiliate CTA */}
+                {!loading && (displayAnime.length > 0 || displayManga.length > 0) && (
+                  <div className="mt-8 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+                    <span className="text-xs text-[var(--color-mute)]">Watch legally on:</span>
+                    <a href="https://www.crunchyroll.com/search?ref=zyniverse" target="_blank" rel="noopener noreferrer sponsored"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F47521] to-[#f59e0b] px-3 py-1.5 text-[10px] font-bold text-black hover:opacity-90 transition-opacity"
+                    >▶ Crunchyroll</a>
+                    <a href="https://www.netflix.com/in/browse/genus/7424?ref=zyniverse" target="_blank" rel="noopener noreferrer sponsored"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#E50914] px-3 py-1.5 text-[10px] font-bold text-white hover:opacity-90 transition-opacity"
+                    >▶ Netflix</a>
+                    <a href="https://www.amazon.com/s?k=anime&tag=zyniverse-21" target="_blank" rel="noopener noreferrer sponsored"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[10px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+                    >📦 Amazon</a>
+                  </div>
+                )}
               </>
             )}
           </div>
-        </div>
+        </div></ErrorBoundary>
       )}
     </PageTransition>
   );

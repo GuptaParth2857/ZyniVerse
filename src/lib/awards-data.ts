@@ -3,6 +3,86 @@ export interface AwardEntry {
   category: string;
   winner: string;
   malId: number;
+  anilistId?: number;
+  image?: string;
+}
+
+const ANILIST_ENDPOINT = "https://graphql.anilist.co";
+
+const ANIME_QUERY = `
+  query ($year: Int, $p: Int) {
+    Page(page: $p, perPage: 20) {
+      media(seasonYear: $year, type: ANIME, isAdult: false, sort: SCORE_DESC, status: FINISHED) {
+        id title { romaji english }
+        coverImage { large }
+        averageScore
+        meanScore
+        popularity
+        genres
+        format
+        episodes
+        studios(isMain: true) { nodes { name } }
+      }
+    }
+  }`;
+
+let liveAwardsCache: { data: AwardEntry[]; timestamp: number } | null = null;
+const LIVE_TTL = 24 * 60 * 60 * 1000;
+
+async function fetchAnilistTopByYear(year: number): Promise<{ id: number; title: string; image: string; score: number }[]> {
+  try {
+    const res = await fetch(ANILIST_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ query: ANIME_QUERY, variables: { year, p: 1 } }),
+      signal: AbortSignal.timeout(10000),
+    });
+    const data = await res.json();
+    const media: any[] = data?.Page?.media || [];
+    return media.map((m: any) => ({
+      id: m.id,
+      title: m.title?.romaji || m.title?.english || "Unknown",
+      image: m.coverImage?.large || "",
+      score: m.averageScore || m.meanScore || 0,
+    }));
+  } catch { return []; }
+}
+
+export async function getLiveAwards(): Promise<AwardEntry[]> {
+  if (liveAwardsCache && Date.now() - liveAwardsCache.timestamp < LIVE_TTL) {
+    return liveAwardsCache.data;
+  }
+
+  const currentYear = new Date().getFullYear();
+  const years = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3, currentYear - 4];
+
+  const results: AwardEntry[] = [];
+
+  for (const year of years) {
+    const topAnime = await fetchAnilistTopByYear(year);
+    if (topAnime.length === 0) continue;
+
+    if (topAnime[0]) {
+      results.push({ year, category: "Anime of the Year", winner: topAnime[0].title, malId: 0, anilistId: topAnime[0].id, image: topAnime[0].image });
+    }
+    if (topAnime[1]) {
+      results.push({ year, category: "Best Drama / Storytelling", winner: topAnime[1].title, malId: 0, anilistId: topAnime[1].id, image: topAnime[1].image });
+    }
+    if (topAnime[2]) {
+      results.push({ year, category: "Best Visuals / Animation", winner: topAnime[2].title, malId: 0, anilistId: topAnime[2].id, image: topAnime[2].image });
+    }
+    if (topAnime.length > 3) {
+      const popular = [...topAnime].sort((a, b) => b.score - a.score);
+      if (popular[3]) results.push({ year, category: "Fan Favorite", winner: popular[3].title, malId: 0, anilistId: popular[3].id, image: popular[3].image });
+    }
+    if (topAnime.length > 5) {
+      const actionGenres = topAnime.filter((a) => a.title.includes("Solo") || a.title.includes("Attack") || a.title.includes("Demon"));
+      if (actionGenres[0]) results.push({ year, category: "Best Action", winner: actionGenres[0].title, malId: 0, anilistId: actionGenres[0].id, image: actionGenres[0].image });
+    }
+  }
+
+  liveAwardsCache = { data: results, timestamp: Date.now() };
+  return results;
 }
 
 export const CRUNCHYROLL_AWARDS: AwardEntry[] = [

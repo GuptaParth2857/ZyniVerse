@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { getMediaBatch, bestTitle } from "@/lib/anilist";
@@ -57,12 +58,14 @@ export default function ContinueWatching() {
           <Link key={item.mediaId} href={`/${item.type.toLowerCase()}/${item.mediaId}`}
             className="shrink-0 w-40 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 hover:border-[var(--color-cyan)]/40 transition-all"
           >
-            <div className="aspect-[3/4] rounded-lg bg-[var(--color-void)] overflow-hidden mb-2">
+            <div className="relative aspect-[3/4] rounded-lg bg-[var(--color-void)] overflow-hidden mb-2">
               {item.meta?.coverImage?.large ? (
-                <img
+                <Image
                   src={item.meta.coverImage.large}
                   alt={bestTitle(item.meta.title)}
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 25vw"
                 />
               ) : (
                 <div className="flex h-full items-center justify-center">

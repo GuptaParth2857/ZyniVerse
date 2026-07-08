@@ -1,4 +1,4 @@
-const CACHE_NAME = "zyniverse-v1";
+const CACHE_NAME = "zyniverse-v2";
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
@@ -8,20 +8,17 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
-      );
-    })
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    ).then(() => self.clients.claim())
   );
 });
 
@@ -31,20 +28,37 @@ self.addEventListener("fetch", (event) => {
 
   if (request.method !== "GET") return;
 
+  // AniList GraphQL API — network first, cache fallback
   if (url.hostname === "graphql.anilist.co") {
     event.respondWith(networkFirstWithCache(request));
     return;
   }
 
+  // Same-origin requests
   if (url.origin === self.location.origin) {
-    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/_next/")) {
+    // API and image proxy routes — network first
+    if (url.pathname.startsWith("/api/")) {
       event.respondWith(networkFirstWithCache(request));
       return;
     }
-    event.respondWith(cacheFirstWithNetwork(request));
+    // Next.js static assets (_next/static) — cache first for fast loads
+    if (url.pathname.startsWith("/_next/static")) {
+      event.respondWith(cacheFirstWithNetwork(request));
+      return;
+    }
+    // Pages (HTML) — network first, fallback to cache for offline reading
+    if (url.pathname.startsWith("/anime/") || url.pathname.startsWith("/manga/") ||
+        url.pathname.startsWith("/character/") || url.pathname.startsWith("/staff/") ||
+        url.pathname.startsWith("/studio/") || url.pathname.startsWith("/genre/")) {
+      event.respondWith(networkFirstWithCache(request));
+      return;
+    }
+    // Other same-origin (homepage, search, etc.) — network first
+    event.respondWith(networkFirstWithCache(request));
     return;
   }
 
+  // Third-party (images, fonts, etc.) — network first
   event.respondWith(networkFirstWithCache(request));
 });
 

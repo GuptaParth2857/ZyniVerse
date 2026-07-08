@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 const FADE_UP = { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5 } };
 
@@ -29,19 +31,29 @@ const LINK_COLUMNS = [
       { href: "/manga", label: "Manga", icon: "book" },
       { href: "/seasonal", label: "Seasonal", icon: "calendar" },
       { href: "/schedule", label: "Schedule", icon: "clock" },
-      { href: "/leaderboard", label: "Leaderboard", icon: "bar-chart" },
       { href: "/dubbed", label: "Regional Dubs", icon: "globe" },
+      { href: "/indian-dubs", label: "Indian Dubs", icon: "globe" },
     ],
   },
   {
     title: "Community",
     links: [
+      { href: "/forum", label: "Forum", icon: "message-circle" },
       { href: "/community", label: "Discussions", icon: "message-circle" },
-      { href: "/critiques", label: "Critiques", icon: "edit" },
-      { href: "/random", label: "Random Anime", icon: "shuffle" },
+      { href: "/clubs", label: "Clubs", icon: "users" },
       { href: "/characters", label: "Characters", icon: "users" },
-      { href: "/staff", label: "Staff", icon: "user-check" },
-      { href: "/awards", label: "Awards", icon: "award" },
+      { href: "/leaderboard", label: "Leaderboard", icon: "bar-chart" },
+    ],
+  },
+  {
+    title: "Guides",
+    links: [
+      { href: "/filler", label: "Filler Guides", icon: "edit" },
+      { href: "/watch-order", label: "Watch Orders", icon: "list" },
+      { href: "/wiki", label: "Wiki", icon: "book" },
+      { href: "/blog", label: "Blog", icon: "edit" },
+      { href: "/docs", label: "API Docs", icon: "code" },
+      { href: "/status", label: "Status", icon: "bar-chart" },
     ],
   },
   {
@@ -52,6 +64,7 @@ const LINK_COLUMNS = [
       { href: "/saved", label: "Saved Posts", icon: "bookmark" },
       { href: "/login", label: "Login", icon: "log-in" },
       { href: "/register", label: "Register", icon: "user-plus" },
+      { href: "/premium", label: "Premium", icon: "award" },
     ],
   },
 ];
@@ -74,9 +87,12 @@ const ICON_PATHS: Record<string, string> = {
   "bookmark": "M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z",
   "log-in": "M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1",
   "user-plus": "M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2m8-10a4 4 0 100-8 4 4 0 000 8zm13 0v6m-3-3h6",
+  "code": "M16 18l6-6-6-6M8 6l-6 6 6 6",
 };
 
 export default function Footer() {
+  const [year, setYear] = useState(2026);
+  useEffect(() => { setYear(new Date().getFullYear()); }, []);
   return (
     <footer className="border-t border-[var(--color-line)] bg-[var(--color-void)] relative z-20">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
@@ -85,7 +101,7 @@ export default function Footer() {
           <motion.div {...FADE_UP} className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-3 mb-3 group">
               <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-[var(--color-magenta)]/30 shadow-[0_0_15px_rgba(255,0,255,0.2)] group-hover:shadow-[0_0_20px_rgba(255,0,255,0.4)] transition-shadow">
-                <img src="/logo.png" alt="ZyniVerse" width={40} height={40} className="object-cover" />
+                <Image src="/logo.png" alt="ZyniVerse" width={40} height={40} className="object-cover" />
               </div>
               <span className="font-display text-xl font-bold logo-text">ZyniVerse</span>
             </Link>
@@ -142,9 +158,32 @@ export default function Footer() {
           ))}
         </div>
 
+        {/* Support / Donate */}
+        <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.35 }}
+          className="mt-6 p-5 bg-gradient-to-r from-[var(--color-magenta)]/10 to-[var(--color-violet)]/10 rounded-2xl border border-[var(--color-line)] flex flex-col sm:flex-row items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[var(--color-magenta)]/20 flex items-center justify-center shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-magenta)" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-[var(--color-ink)]">Support ZyniVerse</p>
+              <p className="text-xs text-[var(--color-mute)]">Help us keep running — no ads, just passion.</p>
+            </div>
+          </div>
+          <div className="flex gap-3 shrink-0">
+            <a href="https://www.buymeacoffee.com/zyniverse" target="_blank" rel="noopener noreferrer"
+              className="px-5 py-2.5 bg-[var(--color-magenta)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-magenta)]/30"
+            >☕ Buy me a coffee</a>
+            <Link href="/premium"
+              className="px-5 py-2.5 bg-[var(--color-cyan)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-cyan)]/30"
+            >Go Premium</Link>
+          </div>
+        </motion.div>
+
         {/* Community CTA */}
         <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-10 p-5 bg-gradient-to-r from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10 rounded-2xl border border-[var(--color-line)] flex flex-col sm:flex-row items-center justify-between gap-4"
+          className="mt-6 p-5 bg-gradient-to-r from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10 rounded-2xl border border-[var(--color-line)] flex flex-col sm:flex-row items-center justify-between gap-4"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[var(--color-cyan)]/20 flex items-center justify-center shrink-0">
@@ -166,14 +205,20 @@ export default function Footer() {
         >
           <div className="flex flex-wrap gap-4 text-xs">
             <Link href="/search" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Browse Anime</Link>
+            <Link href="/forum" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Forum</Link>
+            <Link href="/filler" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Filler Guides</Link>
+            <Link href="/watch-order" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Watch Orders</Link>
+            <Link href="/docs" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">API Docs</Link>
             <Link href="/seasonal" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Seasonal</Link>
             <Link href="/leaderboard" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Leaderboard</Link>
             <Link href="/dubbed" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Regional Dubs</Link>
+            <Link href="/manga/read/1" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Read Manga</Link>
           </div>
           <div className="flex gap-3 text-xs text-[var(--color-mute)]">
             <Link href="/privacy" className="hover:text-[var(--color-cyan)] transition">Privacy</Link>
             <Link href="/terms" className="hover:text-[var(--color-cyan)] transition">Terms</Link>
-            <Link href="/contact" className="hover:text-[var(--color-cyan)] transition">Contact</Link>
+            <Link href="/community" className="hover:text-[var(--color-cyan)] transition">Contact</Link>
+            <Link href="/developer" className="hover:text-[var(--color-cyan)] transition">Developer</Link>
             <a href="https://anilist.co" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-cyan)] transition">AniList</a>
           </div>
         </motion.div>
@@ -183,7 +228,7 @@ export default function Footer() {
       <div className="border-t border-[var(--color-line)] bg-black/10">
         <div className="mx-auto max-w-7xl px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-2">
           <p className="text-xs text-[var(--color-mute)]">
-            &copy; {new Date().getFullYear()} ZyniVerse. All data from{" "}
+            &copy; {year} ZyniVerse. All data from{" "}
             <a href="https://anilist.co" target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-cyan)]">AniList</a>.
           </p>
           <p className="text-[10px] text-[var(--color-mute)]/50">

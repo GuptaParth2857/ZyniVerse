@@ -156,4 +156,41 @@ export async function getFillerForAnime(anilistId: number, animeTitle?: string) 
   };
 }
 
+export async function getPopularFillerAnime(limit = 20) {
+  const all = await getFillerData();
+  const popularIds = [
+    20, 1735, 21, 5114, 22319, 813, 16498, 11757, 23755,
+    22147, 11061, 9253, 15335, 37521, 19815, 30276, 41467, 100, 150, 5116,
+  ];
+  const result: {
+    id: number;
+    title: string;
+    slug: string;
+    episodes: number;
+    fillerPct: number;
+    canonPct: number;
+    mixedPct: number;
+  }[] = [];
+  for (const id of popularIds) {
+    const show = all.find((s) => s.mappings.anilist_id === id);
+    if (!show || show.episodes.length === 0) continue;
+    const total = show.episodes.length;
+    const filler = show.episodes.filter((e) => e.type === "filler").length;
+    const mangaCanon = show.episodes.filter((e) => e.type === "manga-canon").length;
+    const animeCanon = show.episodes.filter((e) => e.type === "anime-canon").length;
+    const mixed = show.episodes.filter((e) => e.type === "mixed-manga").length;
+    const canonTotal = mangaCanon + animeCanon;
+    const fillerPct = total > 0 ? Math.round((filler / total) * 100) : 0;
+    const canonPct = total > 0 ? Math.round((canonTotal / total) * 100) : 0;
+    const mixedPct = total > 0 ? Math.round((mixed / total) * 100) : 0;
+    result.push({ id, title: show.title, slug: show.slug, episodes: total, fillerPct, canonPct, mixedPct });
+    if (result.length >= limit) break;
+  }
+  return result;
+}
+
+export function clearFillerCache(): void {
+  fillerCache = null;
+}
+
 export type FillerResult = Awaited<ReturnType<typeof getFillerForAnime>>;

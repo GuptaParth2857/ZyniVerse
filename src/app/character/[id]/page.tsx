@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { getCharacter, bestTitle } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
@@ -67,10 +68,12 @@ export default function CharacterPage() {
               <div className="relative">
                 <div className="absolute -inset-3 rounded-full opacity-40 blur-2xl" style={{ background: accent }} />
                 <div className="relative h-56 w-56 sm:h-72 sm:w-72 overflow-hidden rounded-full border-4" style={{ borderColor: accent }}>
-                  <img
-                    src={char.image?.large}
-                    alt={char.name?.full}
-                    className="h-full w-full object-cover"
+                  <Image
+                    src={char.image?.large || ""}
+                    alt={char.name?.full || ""}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 224px, 288px"
                   />
                 </div>
                 {char.favourites != null && (
@@ -166,9 +169,8 @@ export default function CharacterPage() {
                   <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl transition-all group-hover:w-1.5" style={{ background: mediaAccent }} />
 
                   {/* Cover art */}
-                  <div className="shrink-0">
-                    <img src={m.coverImage?.large || m.coverImage?.medium} alt=""
-                      className="h-20 w-14 rounded-lg object-cover border border-[var(--color-line)] transition-transform group-hover:scale-105" />
+                  <div className="relative shrink-0 h-20 w-14 rounded-lg border border-[var(--color-line)] overflow-hidden">
+                    <Image src={m.coverImage?.large || m.coverImage?.medium || ""} alt="" fill className="object-cover transition-transform group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
                   </div>
 
                   {/* Info */}
@@ -189,8 +191,10 @@ export default function CharacterPage() {
                   <div className="hidden sm:flex items-center gap-3 shrink-0">
                     {jpVA && (
                       <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-black/30 px-3 py-1.5">
-                        <img src={jpVA.image?.medium} alt={jpVA.name?.full}
-                          className="h-8 w-8 rounded-full object-cover" />
+                        <div className="relative h-8 w-8 rounded-full overflow-hidden shrink-0">
+                        <Image src={jpVA.image?.medium || ""} alt={jpVA.name?.full || ""}
+                          fill className="object-cover" sizes="32px" />
+                        </div>
                         <div className="text-right min-w-0 max-w-[100px]">
                           <p className="text-xs font-medium truncate">{jpVA.name?.full}</p>
                           <p className="text-[9px] text-[var(--color-mute)]">Japanese</p>
@@ -199,8 +203,10 @@ export default function CharacterPage() {
                     )}
                     {enVA && (
                       <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-black/30 px-3 py-1.5">
-                        <img src={enVA.image?.medium} alt={enVA.name?.full}
-                          className="h-8 w-8 rounded-full object-cover" />
+                        <div className="relative h-8 w-8 rounded-full overflow-hidden shrink-0">
+                        <Image src={enVA.image?.medium || ""} alt={enVA.name?.full || ""}
+                          fill className="object-cover" sizes="32px" />
+                        </div>
                         <div className="text-right min-w-0 max-w-[100px]">
                           <p className="text-xs font-medium truncate">{enVA.name?.full}</p>
                           <p className="text-[9px] text-[var(--color-mute)]">English</p>
@@ -219,7 +225,15 @@ export default function CharacterPage() {
           </motion.div>
         </AnimatePresence>
 
-        <div className="mt-8 text-center text-xs text-[var(--color-mute)]">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <a href="https://www.crunchyroll.com/search?ref=zyniverse" target="_blank" rel="noopener noreferrer sponsored"
+            className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F47521] to-[#f59e0b] px-3 py-1.5 text-[9px] font-bold text-black hover:opacity-90 transition-opacity"
+          >▶ Watch on Crunchyroll</a>
+          <a href="https://www.amazon.com/s?k=anime&tag=zyniverse-21" target="_blank" rel="noopener noreferrer sponsored"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+          >📦 Buy Anime on Amazon</a>
+        </div>
+        <div className="mt-4 text-center text-xs text-[var(--color-mute)]">
           Data from <a href={char.siteUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-cyan)]">AniList</a>.
         </div>
       </div>

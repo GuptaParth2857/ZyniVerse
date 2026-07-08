@@ -2,16 +2,42 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { getMangaDetailFull, bestTitle } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
-import { useWatchlist } from "@/components/WatchlistProvider";
-import Carousel3D from "@/components/Carousel3D";
+import { DynamicCarousel3D as Carousel3D } from "@/components/lazy";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
+import MangaProgress from "@/components/MangaProgress";
+import { STATUS_LABELS, STATUS_COLORS } from "@/lib/manga";
 import type { MediaMangaFull } from "@/lib/anilist";
 
 function stripHtml(str = "") { return str.replace(/<[^>]*>/g, ""); }
 function formatScore(score?: number) { return score ? (score / 10).toFixed(1) : "—"; }
+
+interface MangaEntryDB {
+  id: string;
+  mediaId: number;
+  title: string;
+  coverImage: string | null;
+  status: string;
+  chapters: number;
+  volumes: number;
+  totalChapters: number | null;
+  totalVolumes: number | null;
+  score: number | null;
+}
+
+interface MangaChapterDB {
+  id: string;
+  chapter: number;
+  title: string | null;
+  read: boolean;
+  readAt: string | null;
+}
+
+const STATUS_OPTIONS = ["READING", "COMPLETED", "PLANNING", "DROPPED", "PAUSED", "REREADING"];
 
 export default function MangaDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -19,25 +45,136 @@ export default function MangaDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAllStaff, setShowAllStaff] = useState(false);
-  const { isSaved, toggle } = useWatchlist();
+  const [entry, setEntry] = useState<MangaEntryDB | null>(null);
+  const [chapters, setChapters] = useState<MangaChapterDB[]>([]);
+  const [showChapters, setShowChapters] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("PLANNING");
+
+  async function fetchEntry() {
+    try {
+      const res = await fetch(`/api/manga/list/${id}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setEntry(data.entry);
+    } catch {}
+  }
+
+  async function fetchChapters() {
+    try {
+      const res = await fetch(`/api/manga/chapters?mediaId=${id}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setChapters(data.chapters || []);
+      setShowChapters(true);
+    } catch {}
+  }
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true); setError(null); setManga(null);
     window.scrollTo(0, 0);
-    getMangaDetailFull(id!)
-      .then((d) => !cancelled && setManga(d))
+    Promise.all([
+      getMangaDetailFull(id!),
+      fetch(`/api/manga/list/${id}`).then((r) => r.ok ? r.json() : { entry: null }).catch(() => ({ entry: null })),
+    ])
+      .then(([m, d]) => {
+        if (!cancelled) {
+          setManga(m);
+          setEntry(d.entry || null);
+          if (d.entry) {
+            setShowChapters(true);
+            fetchChapters();
+          }
+        }
+      })
       .catch((e: Error) => !cancelled && setError(e.message))
       .finally(() => !cancelled && setLoading(false));
     return () => { cancelled = true; };
   }, [id]);
+
+  async function addToList(status: string) {
+    if (!manga) return;
+    try {
+      const res = await fetch("/api/manga/list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mediaId: manga.id,
+          title: bestTitle(manga.title),
+          coverImage: manga.coverImage?.extraLarge || manga.coverImage?.large,
+          status,
+          totalChapters: manga.chapters,
+          totalVolumes: manga.volumes,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEntry(data.entry);
+        fetchChapters();
+      }
+    } catch (e) {
+      console.error("Failed to add manga", e);
+    }
+  }
+
+  async function removeFromList() {
+    try {
+      const res = await fetch("/api/manga/list", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mediaId: Number(id) }),
+      });
+      if (res.ok) {
+        setEntry(null);
+        setChapters([]);
+        setShowChapters(false);
+      }
+    } catch (e) {
+      console.error("Failed to remove manga", e);
+    }
+  }
+
+  async function handleStatusChange(status: string) {
+    try {
+      const res = await fetch(`/api/manga/list/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEntry(data.entry);
+      }
+    } catch (e) {
+      console.error("Failed to update status", e);
+    }
+  }
+
+  async function markChapter(chapter: number, read: boolean) {
+    try {
+      const res = await fetch("/api/manga/chapters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mediaId: Number(id), chapter, read }),
+      });
+      if (res.ok) {
+        fetchChapters();
+        fetchEntry();
+      }
+    } catch (e) {
+      console.error("Failed to mark chapter", e);
+    }
+  }
+
+  function handleProgressUpdate(chapters: number, volumes: number) {
+    setEntry((prev) => prev ? { ...prev, chapters, volumes } : prev);
+  }
 
   if (loading) return <Loader label="Loading manga details..." />;
   if (error) return <div className="mx-auto max-w-3xl px-4 py-16"><ErrorState message={error} /></div>;
   if (!manga) return null;
 
   const title = bestTitle(manga.title);
-  const saved = isSaved(manga.id);
   const chars = manga.characters?.edges || [];
   const staffEdges = manga.staff?.edges || [];
   const links = (manga.externalLinks || []).filter((l) => !l.isDisabled);
@@ -49,22 +186,26 @@ export default function MangaDetailsPage() {
   const scoreDist = manga.stats?.scoreDistribution || [];
 
   return (
-    <PageTransition><div>
+    <PageTransition><ErrorBoundary label="MangaDetails"><div>
       {/* Hero */}
       <div className="relative border-b border-[var(--color-line)]">
         {manga.bannerImage && (
           <div className="absolute inset-0">
-            <img src={manga.bannerImage} alt="" className="h-full w-full object-cover opacity-20" />
+            <div className="relative h-full w-full">
+              <Image src={manga.bannerImage} alt="" fill className="object-cover opacity-20" sizes="100vw" />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-[var(--color-void)]/80 to-[var(--color-void)]/30" />
           </div>
         )}
 
         <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:px-6 sm:py-14">
-          <div className="shrink-0">
-            <img
-              src={manga.coverImage?.extraLarge || manga.coverImage?.large}
+          <div className="relative shrink-0 h-64 w-44 sm:h-80 sm:w-56 rounded-xl border border-[var(--color-line)] shadow-2xl overflow-hidden">
+            <Image
+              src={manga.coverImage?.extraLarge || manga.coverImage?.large || ""}
               alt={title}
-              className="h-64 w-44 rounded-xl border border-[var(--color-line)] object-cover shadow-2xl sm:h-80 sm:w-56"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 50vw, 25vw"
             />
           </div>
 
@@ -102,28 +243,40 @@ export default function MangaDetailsPage() {
               ) : null}
             </div>
 
-            {manga.format && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="rounded border border-[var(--color-line)] px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider">
-                  {manga.format}
-                </span>
-                {manga.isLicensed && (
-                  <span className="rounded border border-[var(--color-violet)]/30 px-2 py-0.5 text-[10px] font-mono text-[var(--color-violet)]">
-                    LICENSED
-                  </span>
-                )}
-              </div>
-            )}
-
-            <div className="mt-6">
-              <button
-                onClick={() => toggle(manga as any)}
-                className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all ${
-                  saved ? "bg-[var(--color-magenta)] text-black" : "border border-[var(--color-line)] hover:border-[var(--color-magenta)]"
-                }`}
-              >
-                {saved ? "✓ Saved" : "+ Save"}
-              </button>
+            {/* Add to List / Status selector */}
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              {entry ? (
+                <>
+                  <span className="rounded-full px-3 py-1 text-xs font-semibold text-black"
+                    style={{ backgroundColor: STATUS_COLORS[entry.status] || "var(--color-mute)" }}
+                  >{STATUS_LABELS[entry.status] || entry.status}</span>
+                  <select value={entry.status} onChange={(e) => handleStatusChange(e.target.value)}
+                    className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-1.5 text-xs outline-none focus:border-[var(--color-violet)]"
+                  >
+                    {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABELS[s] || s}</option>)}
+                  </select>
+                  <button onClick={removeFromList}
+                    className="rounded-lg border border-red-500/30 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+                  >Remove</button>
+                  {entry && (
+                    <span className="text-xs text-[var(--color-mute)]">
+                      Ch: {entry.chapters}{entry.totalChapters ? `/${entry.totalChapters}` : ""}
+                      {entry.volumes > 0 && ` | Vol: ${entry.volumes}${entry.totalVolumes ? `/${entry.totalVolumes}` : ""}`}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-1.5 text-xs outline-none focus:border-[var(--color-violet)]"
+                  >
+                    {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABELS[s] || s}</option>)}
+                  </select>
+                  <button onClick={() => addToList(selectedStatus)}
+                    className="rounded-full bg-[var(--color-violet)] px-5 py-2 text-sm font-semibold text-black hover:opacity-90 transition-opacity"
+                  >Add to My List</button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -139,6 +292,35 @@ export default function MangaDetailsPage() {
               {stripHtml(manga.description) || "No description available."}
             </p>
           </section>
+
+          {/* Chapter list */}
+          {entry && showChapters && chapters.length > 0 && (
+            <section>
+              <SectionTitle>Chapter List</SectionTitle>
+              <div className="rounded-xl border border-[var(--color-line)] divide-y divide-[var(--color-line)] max-h-80 overflow-y-auto">
+                {chapters.map((ch) => (
+                  <button key={ch.id} onClick={() => markChapter(ch.chapter, !ch.read)}
+                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:bg-white/5 ${
+                      ch.read ? "opacity-50" : ""
+                    }`}
+                  >
+                    <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+                      ch.read ? "bg-green-500 border-green-500" : "border-[var(--color-line)]"
+                    }`}>
+                      {ch.read && (
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3">
+                          <path d="M20 6L9 17l-5-5" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="font-mono text-xs text-[var(--color-mute)] w-12">Ch. {ch.chapter}</span>
+                    <span className="flex-1 truncate">{ch.title || `Chapter ${ch.chapter}`}</span>
+                    {ch.readAt && <span className="text-[10px] text-[var(--color-mute)]">{new Date(ch.readAt).toLocaleDateString()}</span>}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Rankings */}
           {rankings.length > 0 && (
@@ -166,8 +348,9 @@ export default function MangaDetailsPage() {
                   <Link key={edge.node.id} href={`/character/${edge.node.id}`}
                     className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-2 hover:border-[var(--color-violet)]/30 transition-colors"
                   >
-                    <img src={edge.node.image?.medium} alt={edge.node.name?.full}
-                      className="h-8 w-8 rounded-full object-cover border border-[var(--color-line)]" />
+                    <div className="relative h-8 w-8 rounded-full overflow-hidden border border-[var(--color-line)] shrink-0">
+                      <Image src={edge.node.image?.medium || ""} alt={edge.node.name?.full || ""} fill className="object-cover" sizes="32px" />
+                    </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium truncate">{edge.node.name?.full}</p>
                       <p className="text-[9px] text-[var(--color-mute)] truncate uppercase tracking-wider">{edge.role}</p>
@@ -178,7 +361,7 @@ export default function MangaDetailsPage() {
             </section>
           )}
 
-          {/* Staff (authors/artists) */}
+          {/* Staff */}
           {staffEdges.length > 0 && (
             <section>
               <SectionTitle>
@@ -194,8 +377,9 @@ export default function MangaDetailsPage() {
                   <Link key={`${s.node.id}-${i}`} href={`/staff/${s.node.id}`}
                     className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-2 hover:border-[var(--color-violet)]/30 transition-colors"
                   >
-                    <img src={s.node.image?.medium} alt={s.node.name?.full}
-                      className="h-8 w-8 rounded-full object-cover" />
+                    <div className="relative h-8 w-8 rounded-full overflow-hidden shrink-0">
+                      <Image src={s.node.image?.medium || ""} alt={s.node.name?.full || ""} fill className="object-cover" sizes="32px" />
+                    </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium truncate">{s.node.name?.full}</p>
                       <p className="text-[9px] text-[var(--color-mute)] truncate">{s.role}</p>
@@ -218,7 +402,7 @@ export default function MangaDetailsPage() {
                   type: r.node.type,
                 }))}
                 accent="violet"
-                hrefFn={(item) => item.type === "ANIME" ? `/anime/${item.id}` : `/manga/${item.id}`}
+                hrefFn={(item: {id: number; type?: string}) => item.type === "ANIME" ? `/anime/${item.id}` : `/manga/${item.id}`}
               />
             </section>
           )}
@@ -230,7 +414,7 @@ export default function MangaDetailsPage() {
               <Carousel3D
                 items={recs.map((e) => e.node.mediaRecommendation)}
                 accent="violet"
-                hrefFn={(m) => m.type === "ANIME" ? `/anime/${m.id}` : `/manga/${m.id}`}
+                hrefFn={(m: {id: number; type?: string}) => m.type === "ANIME" ? `/anime/${m.id}` : `/manga/${m.id}`}
               />
             </section>
           )}
@@ -238,6 +422,18 @@ export default function MangaDetailsPage() {
 
         {/* Sidebar */}
         <aside className="space-y-6">
+          {/* Progress (when added to list) */}
+          {entry && (
+            <MangaProgress
+              mediaId={Number(id)}
+              chapters={entry.chapters}
+              volumes={entry.volumes}
+              totalChapters={entry.totalChapters}
+              totalVolumes={entry.totalVolumes}
+              onUpdate={handleProgressUpdate}
+            />
+          )}
+
           {/* External Links */}
           {links.length > 0 && (
             <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
@@ -283,13 +479,27 @@ export default function MangaDetailsPage() {
             </div>
           ) : null}
 
+          {/* Affiliate CTA */}
+          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+            <div className="flex flex-wrap gap-2 justify-center">
+              <a href={`https://www.amazon.com/s?k=${encodeURIComponent(bestTitle(manga.title) + " manga")}&tag=zyniverse-21`}
+                target="_blank" rel="noopener noreferrer sponsored"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
+              >📦 Buy on Amazon</a>
+              <a href="https://global.bookwalker.jp/search/?q=&ref=zyniverse"
+                target="_blank" rel="noopener noreferrer sponsored"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
+              >📚 BookWalker</a>
+            </div>
+          </div>
+
           <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 text-xs text-[var(--color-mute)]">
             Data from <a href={manga.siteUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-violet)]">AniList</a>.
             {manga.idMal && <> Also on <a href={`https://myanimelist.net/manga/${manga.idMal}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-violet)]">MyAnimeList</a>.</>}
           </div>
         </aside>
       </div>
-    </div></PageTransition>
+    </div></ErrorBoundary></PageTransition>
   );
 }
 
