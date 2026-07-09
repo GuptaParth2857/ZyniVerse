@@ -14,32 +14,38 @@ const RINGS = [
   { r: 70, dash: 60, gap: 379.82, color: COLORS.violet, duration: 3.5, dir: 1, tilt: 45 },
 ];
 
-const PARTICLES = Array.from({ length: 14 }, (_, i) => {
-  const angle = (i / 14) * Math.PI * 2;
-  const radius = 70 + Math.random() * 35;
+const PARTICLES = Array.from({ length: 20 }, (_, i) => {
+  const angle = (i / 20) * Math.PI * 2;
+  const radius = 60 + Math.random() * 50;
   return {
     id: i,
     x: Math.cos(angle) * radius,
     y: Math.sin(angle) * radius,
-    size: 1.5 + Math.random() * 2,
-    delay: Math.random() * 3,
-    duration: 2 + Math.random() * 2.5,
+    size: 2 + Math.random() * 2.5,
+    delay: Math.random() * 4,
+    duration: 2.5 + Math.random() * 3,
     color: [COLORS.cyan, COLORS.blue, COLORS.violet][i % 3],
   };
 });
 
 export default function FluidNeonOrb() {
   return (
-    <div className="relative flex items-center justify-center w-full min-h-[40vh] py-20 overflow-hidden select-none">
-      {/* Deep void */}
-      <div className="absolute inset-0" style={{ background: "#050505" }} />
+    <div className="relative flex items-center justify-center w-full min-h-[60vh] overflow-hidden select-none">
+      {/* Ambient page glow */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.06) 0%, rgba(59,130,246,0.03) 25%, rgba(139,92,246,0.02) 50%, transparent 70%)",
+        }}
+      />
 
       {/* Animated background glows */}
       <motion.div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.04) 0%, transparent 60%)",
+            "radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.05) 0%, transparent 60%)",
         }}
         animate={{ opacity: [0.3, 0.7, 0.3], scale: [1, 1.08, 1] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -48,7 +54,7 @@ export default function FluidNeonOrb() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at 60% 40%, rgba(59,130,246,0.03) 0%, transparent 50%)",
+            "radial-gradient(ellipse at 60% 40%, rgba(59,130,246,0.04) 0%, transparent 50%)",
         }}
         animate={{ opacity: [0.2, 0.6, 0.2], scale: [1, 1.05, 1] }}
         transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
@@ -57,7 +63,7 @@ export default function FluidNeonOrb() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at 40% 60%, rgba(139,92,246,0.03) 0%, transparent 50%)",
+            "radial-gradient(ellipse at 40% 60%, rgba(139,92,246,0.04) 0%, transparent 50%)",
         }}
         animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.06, 1] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 2 }}
@@ -67,6 +73,8 @@ export default function FluidNeonOrb() {
       <motion.div
         className="relative flex items-center justify-center"
         style={{ perspective: "800px" }}
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       >
         <motion.div
           className="relative"
@@ -153,7 +161,7 @@ export default function FluidNeonOrb() {
                       r={ring.r}
                       fill="none"
                       stroke={`url(#ringGrad${i})`}
-                      strokeWidth="1.5"
+                      strokeWidth="2"
                       strokeDasharray={`${ring.dash} ${ring.gap}`}
                       strokeLinecap="round"
                     />
@@ -164,11 +172,11 @@ export default function FluidNeonOrb() {
 
             {/* Glassmorphism glow behind center */}
             <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 sm:w-40 sm:h-40 rounded-full pointer-events-none"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 sm:w-64 sm:h-64 rounded-full pointer-events-none"
               style={{
                 background:
-                  "radial-gradient(circle, rgba(0,229,255,0.1) 0%, rgba(59,130,246,0.05) 30%, transparent 60%)",
-                filter: "blur(40px)",
+                  "radial-gradient(circle, rgba(0,229,255,0.15) 0%, rgba(59,130,246,0.08) 20%, rgba(139,92,246,0.05) 40%, transparent 65%)",
+                filter: "blur(50px)",
               }}
             />
 
@@ -178,9 +186,9 @@ export default function FluidNeonOrb() {
                 className="w-16 h-16 sm:w-20 sm:h-20 rounded-full"
                 style={{
                   background:
-                    "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.4) 0%, rgba(0,229,255,0.6) 25%, rgba(59,130,246,0.4) 50%, rgba(139,92,246,0.3) 75%, rgba(10,10,15,0) 100%)",
+                    "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.5) 0%, rgba(0,229,255,0.7) 20%, rgba(59,130,246,0.5) 45%, rgba(139,92,246,0.35) 70%, rgba(10,10,15,0) 100%)",
                   boxShadow:
-                    "0 0 30px rgba(0,229,255,0.25), 0 0 60px rgba(59,130,246,0.15), 0 0 100px rgba(139,92,246,0.1)",
+                    "0 0 40px rgba(0,229,255,0.35), 0 0 80px rgba(59,130,246,0.2), 0 0 120px rgba(139,92,246,0.15)",
                 }}
                 animate={{ scale: [0.95, 1.05, 0.95] }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
@@ -193,12 +201,12 @@ export default function FluidNeonOrb() {
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               >
                 <div
-                  className="w-4 h-4 sm:w-5 sm:h-5 rounded-full"
+                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-full"
                   style={{
                     background:
-                      "radial-gradient(circle, rgba(255,255,255,0.9), rgba(0,229,255,0.4))",
+                      "radial-gradient(circle, rgba(255,255,255,1), rgba(0,229,255,0.5))",
                     boxShadow:
-                      "0 0 15px rgba(255,255,255,0.4), 0 0 40px rgba(0,229,255,0.3)",
+                      "0 0 20px rgba(255,255,255,0.5), 0 0 50px rgba(0,229,255,0.4)",
                   }}
                 />
               </motion.div>
@@ -215,12 +223,13 @@ export default function FluidNeonOrb() {
                   left: `calc(50% + ${p.x}px)`,
                   top: `calc(50% + ${p.y}px)`,
                   backgroundColor: p.color,
-                  boxShadow: `0 0 8px ${p.color}`,
+                  boxShadow: `0 0 12px ${p.color}, 0 0 24px ${p.color}40`,
                 }}
                 animate={{
-                  opacity: [0, 0.9, 0],
-                  y: [0, -15 - Math.random() * 20],
-                  scale: [0, 1.4, 0],
+                  opacity: [0, 1, 0],
+                  y: [0, -20 - Math.random() * 25],
+                  x: [0, (Math.random() - 0.5) * 20],
+                  scale: [0, 1.6, 0],
                 }}
                 transition={{
                   duration: p.duration,
