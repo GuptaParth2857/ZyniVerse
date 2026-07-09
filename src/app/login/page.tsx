@@ -337,7 +337,7 @@ export default function LoginPage() {
                   <motion.button key={s.id} type="button"
                     whileHover={{ y: -2, scale: 1.03 }}
                     whileTap={{ scale: 0.96 }}
-                    onClick={() => signIn(s.id, { redirect: false })}
+                    onClick={() => signIn(s.id, { callbackUrl: "/" })}
                     className="flex flex-1 items-center justify-center gap-2 rounded-[14px] border border-[rgba(0,255,224,0.1)] bg-[rgba(255,255,255,0.02)] py-3 text-[13px] font-medium text-[rgba(255,255,255,0.4)] transition-all duration-300 hover:border-[#00ffe0]/30 hover:bg-[rgba(0,255,224,0.03)] hover:text-[#00ffe0] hover:shadow-[0_0_25px_-10px_rgba(0,255,224,0.15)]"
                   >
                     {s.icon}
