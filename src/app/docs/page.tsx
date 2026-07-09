@@ -1,17 +1,16 @@
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "API Documentation — ZyniVerse Public API | ZyniVerse",
-  description:
-    "Full documentation for the ZyniVerse Public API. Free anime filler guides, airing schedules, dub status, and anime details. Get your API key and start building.",
-  robots: { index: true, follow: true },
-};
+import { useState } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { PageTransition } from "@/components/PageTransition";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const SECTIONS = [
   {
     id: "overview",
     title: "Overview",
+    endpoint: null,
     content: (
       <>
         <p className="text-sm text-[var(--color-mute)] leading-relaxed">
@@ -28,6 +27,7 @@ const SECTIONS = [
   {
     id: "authentication",
     title: "Authentication",
+    endpoint: null,
     content: (
       <>
         <p className="text-sm text-[var(--color-mute)] leading-relaxed">
@@ -56,6 +56,7 @@ const SECTIONS = [
   {
     id: "rate-limits",
     title: "Rate Limits & Tiers",
+    endpoint: null,
     content: (
       <>
         <p className="text-sm text-[var(--color-mute)] leading-relaxed">
@@ -104,7 +105,9 @@ const SECTIONS = [
             { name: "Pro", price: "₹499/mo", requests: "10,000/day", features: ["All endpoints", "Priority support", "Usage analytics"] },
             { name: "Enterprise", price: "₹4,999/mo", requests: "100,000/day", features: ["SLA guarantee", "Dedicated support", "Custom integrations"] },
           ].map((tier) => (
-            <div key={tier.name} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-center">
+            <motion.div key={tier.name} whileHover={{ y: -4, scale: 1.02 }}
+              className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-center transition-shadow hover:shadow-lg hover:border-[var(--color-cyan)]/30"
+            >
               <h4 className="font-bold text-sm">{tier.name}</h4>
               <p className="text-lg font-bold font-mono text-[var(--color-magenta)] mt-1">{tier.price}</p>
               <p className="text-[10px] text-[var(--color-mute)] mt-1">{tier.requests}</p>
@@ -113,7 +116,7 @@ const SECTIONS = [
                   <li key={f} className="text-[10px] text-[var(--color-mute)]">✓ {f}</li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           ))}
         </div>
         <p className="text-sm text-[var(--color-mute)] mt-4">
@@ -125,10 +128,11 @@ const SECTIONS = [
   },
   {
     id: "filler",
-    title: "Get Filler Guide",
+    title: "Filler Guide",
+    endpoint: { method: "GET", path: "/api/v1/filler/:id" },
     content: (
       <>
-        <div className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+        <div className="rounded-lg border border-[var(--color-cyan)]/20 bg-[var(--color-cyan)]/5 p-4">
           <p className="text-xs font-semibold mb-1">
             <span className="text-green-400">GET</span>{" "}
             <span className="text-[var(--color-ink)]">/api/v1/filler/</span>
@@ -211,10 +215,11 @@ const SECTIONS = [
   },
   {
     id: "schedule",
-    title: "Get Airing Schedule",
+    title: "Airing Schedule",
+    endpoint: { method: "GET", path: "/api/v1/schedule" },
     content: (
       <>
-        <div className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+        <div className="rounded-lg border border-[var(--color-cyan)]/20 bg-[var(--color-cyan)]/5 p-4">
           <p className="text-xs font-semibold mb-1">
             <span className="text-green-400">GET</span>{" "}
             <span className="text-[var(--color-ink)]">/api/v1/schedule</span>
@@ -276,10 +281,11 @@ const SECTIONS = [
   },
   {
     id: "dub-status",
-    title: "Get Dub Status",
+    title: "Dub Status",
+    endpoint: { method: "GET", path: "/api/v1/dub-status/:malId" },
     content: (
       <>
-        <div className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+        <div className="rounded-lg border border-[var(--color-cyan)]/20 bg-[var(--color-cyan)]/5 p-4">
           <p className="text-xs font-semibold mb-1">
             <span className="text-green-400">GET</span>{" "}
             <span className="text-[var(--color-ink)]">/api/v1/dub-status/</span>
@@ -327,10 +333,11 @@ const SECTIONS = [
   },
   {
     id: "anime",
-    title: "Get Anime Details",
+    title: "Anime Details",
+    endpoint: { method: "GET", path: "/api/v1/anime/:id" },
     content: (
       <>
-        <div className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+        <div className="rounded-lg border border-[var(--color-cyan)]/20 bg-[var(--color-cyan)]/5 p-4">
           <p className="text-xs font-semibold mb-1">
             <span className="text-green-400">GET</span>{" "}
             <span className="text-[var(--color-ink)]">/api/v1/anime/</span>
@@ -388,6 +395,7 @@ const SECTIONS = [
   {
     id: "errors",
     title: "Error Handling",
+    endpoint: null,
     content: (
       <>
         <p className="text-sm text-[var(--color-mute)] leading-relaxed">
@@ -434,114 +442,184 @@ const SECTIONS = [
   },
 ];
 
-export default function DocsPage() {
+function EndpointBadge({ method }: { method: string }) {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
-      {/* Header */}
-      <div className="text-center mb-12">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">API v1</p>
-        <h1 className="font-display text-4xl font-bold sm:text-5xl mt-2">Developer Docs</h1>
-        <p className="mt-3 text-[var(--color-mute)] max-w-lg mx-auto">
-          Build anime apps, bots, and tools with the ZyniVerse Public API. Free tier available.
-        </p>
-      </div>
-
-      {/* Quick Links */}
-      <div className="flex flex-wrap gap-3 justify-center mb-12">
-        <a href="#overview" className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
-          Overview
-        </a>
-        <a href="#authentication" className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
-          Auth
-        </a>
-        <a href="#rate-limits" className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
-          Rate Limits
-        </a>
-        <a href="#filler" className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
-          Filler Guide
-        </a>
-        <a href="#schedule" className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
-          Schedule
-        </a>
-        <a href="#dub-status" className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
-          Dub Status
-        </a>
-        <a href="#anime" className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
-          Anime Details
-        </a>
-        <a href="#errors" className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
-          Errors
-        </a>
-        <Link href="/docs/changelog" className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
-          Changelog
-        </Link>
-        <Link href="/status" className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
-          Status
-        </Link>
-      </div>
-
-      {/* Sections */}
-      <div className="space-y-10">
-        {SECTIONS.map((section) => (
-          <section key={section.id} id={section.id} className="scroll-mt-20">
-            <h2 className="font-display text-2xl font-bold mb-4">{section.title}</h2>
-            {section.content}
-          </section>
-        ))}
-      </div>
-
-      {/* SDK Quickstart */}
-      <div className="mt-16 border-t border-[var(--color-line)] pt-10">
-        <h2 className="font-display text-2xl font-bold mb-4">Quickstart Examples</h2>
-        <div className="space-y-6">
-          <div>
-            <p className="text-sm font-semibold mb-2">JavaScript / TypeScript</p>
-            <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto">{`const API_KEY = "zvn_your_key_here";
-const BASE = "https://zyniverse.vercel.app/api/v1";
-
-async function getFiller(anilistId) {
-  const url = BASE + "/filler/" + anilistId;
-  const res = await fetch(url, {
-    headers: { Authorization: "Bearer " + API_KEY },
-  });
-  return res.json();
+    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
+      method === "GET" ? "bg-green-500/15 text-green-400" : "bg-[var(--color-magenta)]/15 text-[var(--color-magenta)]"
+    }`}>
+      {method}
+    </span>
+  );
 }
 
-// Get One Piece filler guide
-getFiller(21).then(console.log);`}</pre>
+export default function DocsPage() {
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [activeSection, setActiveSection] = useState("overview");
+
+  function copyCode(text: string, idx: number) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx(null), 2000);
+    }).catch(() => {});
+  }
+
+  return (
+    <PageTransition>
+      <ErrorBoundary label="Docs">
+        <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+          {/* Hero */}
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-12">
+            <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+              className="font-mono text-xs uppercase tracking-[0.25em] text-[var(--color-magenta)]"
+            >
+              <span className="text-[var(--color-cyan)]">✦</span> API v1 <span className="text-[var(--color-cyan)]">✦</span>
+            </motion.p>
+            <motion.h1 initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
+              className="font-display text-5xl sm:text-7xl font-black tracking-tight mt-2"
+            >
+              Developer Docs
+            </motion.h1>
+            <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+              className="mt-4 text-[var(--color-mute)] max-w-lg mx-auto"
+            >
+              Build anime apps, bots, and tools with the ZyniVerse Public API. Free tier available.
+            </motion.p>
+          </motion.div>
+
+          {/* Quick Nav */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="flex flex-wrap gap-2 justify-center mb-12"
+          >
+            {SECTIONS.map((s) => (
+              <a key={s.id} href={`#${s.id}`}
+                className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+                  activeSection === s.id
+                    ? "bg-[var(--color-magenta)] text-black shadow-lg"
+                    : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)]"
+                }`}
+                onClick={() => setActiveSection(s.id)}
+              >
+                {s.title}
+              </a>
+            ))}
+            <Link href="/docs/changelog"
+              className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
+            >
+              Changelog
+            </Link>
+            <Link href="/status"
+              className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
+            >
+              Status
+            </Link>
+          </motion.div>
+
+          {/* Sections */}
+          <div className="space-y-12">
+            {SECTIONS.map((section, idx) => (
+              <motion.section
+                key={section.id}
+                id={section.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.4, delay: idx * 0.05 }}
+                className="scroll-mt-24 rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6 sm:p-8 hover:border-[var(--color-cyan)]/20 transition-colors"
+                onViewportEnter={() => setActiveSection(section.id)}
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  {section.endpoint ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <EndpointBadge method={section.endpoint.method} />
+                      <code className="text-xs font-mono text-[var(--color-cyan)] bg-[var(--color-void)] px-2 py-1 rounded">{section.endpoint.path}</code>
+                    </div>
+                  ) : (
+                    <span className="h-6 w-1 rounded-full bg-[var(--color-magenta)]" />
+                  )}
+                  <h2 className="font-display text-xl font-bold">{section.title}</h2>
+                </div>
+                {section.content}
+              </motion.section>
+            ))}
           </div>
-          <div>
-            <p className="text-sm font-semibold mb-2">Python</p>
-            <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto">{`import requests
 
-API_KEY = "zvn_your_key_here"
-BASE = "https://zyniverse.vercel.app/api/v1"
+          {/* Quickstart */}
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="mt-16 border-t border-[var(--color-line)] pt-12"
+          >
+            <h2 className="font-display text-2xl font-bold mb-6">Quickstart Examples</h2>
+            <div className="grid gap-6 sm:grid-cols-2">
+              {[
+                { lang: "JavaScript / TypeScript", icon: "⎈",
+                  code: `const API_KEY = "zvn_your_key_here";
+      const BASE = "https://zyniverse.vercel.app/api/v1";
 
-headers = {"Authorization": "Bearer " + API_KEY}
+      async function getFiller(anilistId) {
+        const url = BASE + "/filler/" + anilistId;
+        const res = await fetch(url, {
+          headers: { Authorization: "Bearer " + API_KEY },
+        });
+        return res.json();
+      }
 
-# Get airing schedule
-resp = requests.get(BASE + "/schedule?hours_ahead=24", headers=headers)
-data = resp.json()
-print(data)`}</pre>
-          </div>
+      // Get One Piece filler guide
+      getFiller(21).then(console.log);` },
+                { lang: "Python", icon: "🐍",
+                  code: `import requests
+
+      API_KEY = "zvn_your_key_here"
+      BASE = "https://zyniverse.vercel.app/api/v1"
+
+      headers = {"Authorization": "Bearer " + API_KEY}
+
+      # Get airing schedule
+      resp = requests.get(BASE + "/schedule?hours_ahead=24", headers=headers)
+      data = resp.json()
+      print(data)` },
+              ].map((ex, i) => (
+                <motion.div key={ex.lang} whileHover={{ y: -2 }}
+                  className="group relative rounded-xl border border-[var(--color-line)] bg-[var(--color-void)] overflow-hidden transition-shadow hover:shadow-lg hover:border-[var(--color-cyan)]/30"
+                >
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--color-line)] bg-[var(--color-panel)]">
+                    <p className="text-xs font-semibold flex items-center gap-2">
+                      <span>{ex.icon}</span> {ex.lang}
+                    </p>
+                    <button onClick={() => copyCode(ex.code, i)}
+                      className="text-[10px] font-mono text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors"
+                    >
+                      {copiedIdx === i ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
+                  <pre className="p-4 text-xs overflow-x-auto">{ex.code}</pre>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* CTA */}
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="mt-16 text-center rounded-2xl border border-[var(--color-line)] bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] p-8 relative overflow-hidden"
+          >
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full pointer-events-none"
+              style={{ background: "radial-gradient(circle, rgba(255,45,120,0.06) 0%, transparent 60%)" }}
+            />
+            <div className="relative">
+              <h2 className="font-display text-xl font-bold mb-2">Ready to Build?</h2>
+              <p className="text-sm text-[var(--color-mute)] mb-6">
+                Get your free API key and start integrating anime data into your app.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Link href="/register" className="rounded-xl bg-[var(--color-magenta)] px-6 py-3 text-sm font-bold text-black hover:opacity-90 transition">
+                  Create Account
+                </Link>
+                <Link href="/profile" className="rounded-xl border border-[var(--color-line)] px-6 py-3 text-sm font-bold text-[var(--color-ink)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
+                  API Keys
+                </Link>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </div>
-
-      {/* CTA */}
-      <div className="mt-16 text-center rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-8">
-        <h2 className="font-display text-xl font-bold mb-2">Ready to Build?</h2>
-        <p className="text-sm text-[var(--color-mute)] mb-6">
-          Get your free API key and start integrating anime data into your app.
-        </p>
-        <div className="flex gap-3 justify-center">
-          <Link href="/register" className="rounded-xl bg-[var(--color-magenta)] px-6 py-3 text-sm font-bold text-black hover:opacity-90 transition">
-            Create Account
-          </Link>
-          <Link href="/profile" className="rounded-xl border border-[var(--color-line)] px-6 py-3 text-sm font-bold text-[var(--color-ink)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
-            API Keys
-          </Link>
-        </div>
-      </div>
-    </div>
+      </ErrorBoundary>
+    </PageTransition>
   );
 }

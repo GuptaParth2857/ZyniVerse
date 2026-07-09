@@ -45,7 +45,7 @@ export async function getAnimeNews(): Promise<NewsItem[]> {
     getAiringAnime(50).catch(() => [] as Media[]),
   ]);
 
-  const now = new Date();
+  const now = Date.now();
 
   trending.forEach((m, i) => {
     items.push({
@@ -56,7 +56,7 @@ export async function getAnimeNews(): Promise<NewsItem[]> {
       image: mediaToImage(m),
       source: "AniList",
       type: "trending",
-      publishedAt: new Date(now.getTime() - i * 60_000).toISOString(),
+      publishedAt: new Date(now + (i + 1) * 60_000).toISOString(),
       tags: m.genres?.slice(0, 3) || [],
     });
   });
@@ -75,14 +75,14 @@ export async function getAnimeNews(): Promise<NewsItem[]> {
       type: "airing",
       publishedAt: ep
         ? new Date(ep.airingAt * 1000).toISOString()
-        : new Date(now.getTime() - Math.random() * 86400000).toISOString(),
+        : new Date(now - Math.random() * 86400000).toISOString(),
       tags: m.genres?.slice(0, 3) || [],
     });
   });
 
   items.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
-  return items.slice(0, 50);
+  return items;
 }
 
 export async function getSeasonalAnnouncements(season?: string, year?: number): Promise<NewsItem[]> {
