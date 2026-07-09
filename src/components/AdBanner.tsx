@@ -9,21 +9,21 @@ interface AdBannerProps {
   type?: "banner" | "sidebar" | "in-content" | "native";
 }
 
-function injectAdScript(container: HTMLElement, code: string) {
-  const temp = document.createElement("div");
-  temp.innerHTML = code;
-  const scripts = temp.querySelectorAll("script");
-  scripts.forEach((oldScript) => {
-    const newScript = document.createElement("script");
-    if (oldScript.src) {
-      newScript.src = oldScript.src;
-      newScript.async = true;
-    }
-    if (oldScript.textContent) {
-      newScript.textContent = oldScript.textContent;
-    }
-    container.appendChild(newScript);
-  });
+function injectAdScript(container: HTMLElement, code: string, dimensions?: { width: number; height: number }) {
+  const iframe = document.createElement("iframe");
+  iframe.width = dimensions?.width?.toString() || "100%";
+  iframe.height = dimensions?.height?.toString() || "100%";
+  iframe.style.border = "none";
+  iframe.style.overflow = "hidden";
+  iframe.scrolling = "no";
+  container.appendChild(iframe);
+  
+  const doc = iframe.contentWindow?.document || iframe.contentDocument;
+  if (doc) {
+    doc.open();
+    doc.write(`<!DOCTYPE html><html><head></head><body style="margin:0;padding:0;display:flex;justify-content:center;align-items:center;">${code}</body></html>`);
+    doc.close();
+  }
 }
 
 export default function AdBanner({ placement, type = "banner" }: AdBannerProps) {
@@ -41,19 +41,8 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
   const showAds = shouldShowAds(user);
 
   useEffect(() => {
-    if (!showAds) return;
-    const checkAdBlock = async () => {
-      try {
-        const resp = await fetch(AD_TRACKING_PIXEL, { method: "HEAD", cache: "no-store" });
-        if (!resp.ok || resp.status !== 200) {
-          setAdBlocked(true);
-        }
-      } catch {
-        setAdBlocked(true);
-      }
-    };
-    const timer = setTimeout(checkAdBlock, 1000);
-    return () => clearTimeout(timer);
+    // Disable ad-block check for now as it causes false positives
+    setAdBlocked(false);
   }, [showAds]);
 
   useEffect(() => {
@@ -61,7 +50,7 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
     const ads = getAdsForLocation(placement);
     const ad = ads[0];
     if (ad && ad.network === "adsterra") {
-      injectAdScript(adSlotRef.current, ad.code);
+      injectAdScript(adSlotRef.current, ad.code, ad.dimensions);
       setInjected(true);
     }
   }, [showAds, adBlocked, placement, injected]);

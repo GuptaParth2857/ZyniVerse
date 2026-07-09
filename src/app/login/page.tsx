@@ -288,10 +288,10 @@ export default function LoginPage() {
                     </button>
                     <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.4)" }}>Remember me</span>
                   </div>
-                  <button type="button" onClick={() => { setComingSoon("Password reset coming soon!"); setTimeout(() => setComingSoon(""), 3000); }}
+                  <Link href="/forgot-password"
                     className="text-[13px] font-medium text-[#00ffe0] hover:text-[#ff00e6] transition-colors">
                     Forgot password?
-                  </button>
+                  </Link>
                 </div>
 
                 {/* Error / Coming Soon */}
