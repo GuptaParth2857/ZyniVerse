@@ -36,7 +36,7 @@ export default function Hero3D({ items }: { items: Media[] }) {
   const next = items[(active + 1) % total];
 
   return (
-    <section className="relative h-[90vh] min-h-[600px] flex items-center overflow-hidden border-b border-[var(--color-line)]">
+    <section className="relative h-[90vh] min-h-[400px] sm:min-h-[600px] flex items-center overflow-hidden border-b border-[var(--color-line)]">
       {/* Background layers */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -59,7 +59,7 @@ export default function Hero3D({ items }: { items: Media[] }) {
 
       <div className="relative mx-auto flex w-full max-w-7xl items-center gap-8 px-4 sm:px-6">
         {/* Left content */}
-        <div className="max-w-2xl shrink-0">
+        <div className="max-w-2xl">
           <span className="font-mono text-xs uppercase tracking-[0.3em] text-[var(--color-cyan)]">
             {hero?.type === "MANGA" ? "// Manga Spotlight" : "// Live Discovery Platform"}
           </span>
@@ -72,11 +72,10 @@ export default function Hero3D({ items }: { items: Media[] }) {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4 }}
             >
-              <h1 className="mt-4 font-display text-5xl font-bold leading-[1.05] sm:text-7xl">
-                {hero && bestTitle(hero.title).split(" ").slice(0, 4).join(" ")}
-                <br />
-                <span className="glow-text text-[var(--color-magenta)]">
-                  {hero ? bestTitle(hero.title).split(" ").slice(4).join(" ") || "✦ Spotlight" : "✦ Spotlight"}
+              <h1 className="mt-4 font-display text-3xl font-bold leading-[1.1] break-words sm:text-5xl lg:text-7xl">
+                {hero && bestTitle(hero.title).split(" ").slice(0, 3).join(" ")}{" "}
+                <span className="glow-text text-[var(--color-magenta)] break-words">
+                  {hero ? bestTitle(hero.title).split(" ").slice(3).join(" ") || "✦ Spotlight" : "✦ Spotlight"}
                 </span>
               </h1>
 

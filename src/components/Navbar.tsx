@@ -289,15 +289,15 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-[var(--color-line)] bg-[var(--color-void)] px-4 py-3 space-y-1">
-          <div className="flex items-center justify-between mb-2 px-3">
+        <div className="md:hidden border-t border-[var(--color-line)] bg-[var(--color-void)] px-4 py-3 max-h-[80vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-3 px-3">
             <span className="text-xs font-mono text-[var(--color-mute)] uppercase tracking-wider">Theme</span>
             <div className="flex items-center gap-2">
               <LanguageSwitcher />
               <ThemeToggle />
             </div>
           </div>
-          <form onSubmit={handleSearchSubmit} className="mb-2 flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2">
+          <form onSubmit={handleSearchSubmit} className="mb-3 flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2.5">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)]">
               <circle cx="11" cy="11" r="8" />
               <path d="M21 21l-4.35-4.35" />
@@ -309,42 +309,57 @@ export default function Navbar() {
               className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-mute)]"
             />
           </form>
-          {[...PRIMARY_LINKS, ...SECONDARY_LINKS].map((l) => (
-            <Link
-              key={l.to}
-              href={l.to}
-              onClick={() => setOpen(false)}
-              className={`block rounded-md px-3 py-2 text-sm font-medium ${
-                pathname === l.to ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
-              }`}
-            >
-              {l.label}
-            </Link>
-          ))}
+
           {session && (
-            <>
-              <Link href="/messages" onClick={() => setOpen(false)}
-                className="block rounded-md px-3 py-2 text-sm font-medium text-[var(--color-mute)]"
-              >Messages</Link>
-              <Link href="/profile" onClick={() => setOpen(false)}
-                className="block rounded-md px-3 py-2 text-sm font-medium text-[var(--color-mute)]"
-              >Profile</Link>
-              <div className="px-3 py-2">
-                <NotificationBell />
-              </div>
-            </>
-          )}
-          {session ? (
-            <div className="flex items-center justify-between px-3 py-2 border-t border-[var(--color-line)] mt-2 pt-2">
-              <span className="text-sm text-[var(--color-magenta)] font-semibold">{session.user?.name}</span>
+            <div className="flex items-center gap-3 mb-3 px-3 py-2 rounded-lg bg-[var(--color-panel)] border border-[var(--color-line)]">
+              <NotificationBell />
+              <span className="flex-1 text-sm text-[var(--color-magenta)] font-semibold">{session.user?.name}</span>
               <button onClick={() => { setOpen(false); signOut({ callbackUrl: "/" }); }}
-                className="text-sm text-red-400"
+                className="text-xs text-red-400 font-medium"
               >Logout</button>
             </div>
-          ) : (
+          )}
+
+          {/* Primary links */}
+          <div className="mb-3">
+            <p className="px-3 text-[10px] font-mono text-[var(--color-mute)] uppercase tracking-wider mb-1">Main</p>
+            <div className="grid grid-cols-2 gap-1">
+              {[...PRIMARY_LINKS, ...(session ? [{ to: "/profile", label: "Profile" }] : [])].map((l) => (
+                <Link key={l.to} href={l.to} onClick={() => setOpen(false)}
+                  className={`block rounded-md px-3 py-3 text-sm font-medium text-center ${
+                    pathname === l.to ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/5" : "text-[var(--color-mute)] hover:bg-white/5"
+                  }`}
+                >{l.label}</Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Secondary links grouped */}
+          {[
+            { title: "Browse", items: SECONDARY_LINKS.filter(l => ["/search", "/schedule", "/seasonal", "/browse", "/random", "/season/upcoming", "/recommendations"].includes(l.to)) },
+            { title: "Anime", items: SECONDARY_LINKS.filter(l => ["/filler", "/watch-order", "/dubbed", "/indian-dubs", "/dub-schedule", "/themes", "/ost"].includes(l.to)) },
+            { title: "Manga & More", items: SECONDARY_LINKS.filter(l => ["/manga", "/light-novels", "/doujinshi", "/characters", "/staff", "/voice-actors", "/voice-actors/indian", "/voice-lines"].includes(l.to)) },
+            { title: "Community", items: SECONDARY_LINKS.filter(l => ["/forum", "/community", "/clubs", "/blog", "/challenges", "/quiz", "/tierlist", "/lists", "/cosplay", "/conventions", "/watch-party", "/messages", "/activity"].includes(l.to)) },
+            { title: "Tools", items: SECONDARY_LINKS.filter(l => ["/compare", "/achievements", "/awards", "/leaderboard", "/stats", "/news", "/docs", "/developer", "/premium", "/status", "/wiki"].includes(l.to)) },
+          ].map((group) => group.items.length > 0 && (
+            <div key={group.title} className="mb-3">
+              <p className="px-3 text-[10px] font-mono text-[var(--color-mute)] uppercase tracking-wider mb-1">{group.title}</p>
+              <div className="grid grid-cols-2 gap-1">
+                {group.items.map((l) => (
+                  <Link key={l.to} href={l.to} onClick={() => setOpen(false)}
+                    className={`block rounded-md px-3 py-2.5 text-sm font-medium ${
+                      pathname === l.to ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/5" : "text-[var(--color-mute)] hover:bg-white/5"
+                    }`}
+                  >{l.label}</Link>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {!session && (
             <Link href="/login" onClick={() => setOpen(false)}
-              className="block rounded-md px-3 py-2 text-sm font-medium text-[var(--color-mute)]"
-            >Login</Link>
+              className="block rounded-md px-3 py-3 text-sm font-semibold text-center text-[var(--color-cyan)] border border-[var(--color-cyan)]/30 mt-1"
+            >Sign In</Link>
           )}
         </div>
       )}

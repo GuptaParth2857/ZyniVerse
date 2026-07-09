@@ -106,12 +106,12 @@ export default function AnimeCard({ anime }: { anime: Media }) {
           <div className="px-3 py-2.5 border-t border-white/5">
             <div className="flex flex-wrap items-center gap-1.5">
               {anime.genres?.slice(0, 3).map((g) => (
-                <span key={g} className="text-[9px] font-medium text-[var(--color-mute)] uppercase tracking-wider">
+                <span key={g} className="text-[10px] font-medium text-[var(--color-mute)] uppercase tracking-wider">
                   {g}
                 </span>
               ))}
               {anime.format && (
-                <span className="ml-auto text-[9px] font-mono text-white/30">{anime.format}</span>
+                <span className="ml-auto text-[10px] font-mono text-white/30">{anime.format}</span>
               )}
             </div>
           </div>
@@ -122,11 +122,11 @@ export default function AnimeCard({ anime }: { anime: Media }) {
         onClick={() => toggle(anime)}
         aria-label={saved ? "Remove from watchlist" : "Add to watchlist"}
         aria-pressed={saved}
-        className={`absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full ${
+        className={`absolute right-2 top-2 z-20 flex h-9 w-9 sm:h-7 sm:w-7 items-center justify-center rounded-full ${
           saved ? "glass-bookmark active" : "glass-bookmark text-white/70"
         }`}
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+        <svg width="14" height="14" className="sm:w-3 sm:h-3" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
           <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
         </svg>
       </button>
