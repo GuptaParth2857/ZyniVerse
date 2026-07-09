@@ -1,15 +1,14 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { CardSkeleton, ErrorState } from "@/components/Loader";
+import DubExpandingCard from "@/components/DubExpandingCard";
 
 type LangKey = "english" | "hindi" | "tamil" | "telugu";
 
-interface DubAnime {
+export interface DubAnime {
   mal_id: number;
   title: string;
   displayTitle: string;
@@ -31,84 +30,6 @@ const LANG_TABS: { key: LangKey; label: string; accent: string }[] = [
   { key: "tamil", label: "Tamil", accent: "#e84a5f" },
   { key: "telugu", label: "Telugu", accent: "#6c63ff" },
 ];
-
-function DubCard({ anime, index }: { anime: DubAnime; index: number }) {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setShow(true), index * 30);
-    return () => clearTimeout(t);
-  }, [index]);
-
-  const langs: string[] = [];
-  if (anime.hasEnglish) langs.push("English");
-  if (anime.hasHindi) langs.push("Hindi");
-  if (anime.hasTamil) langs.push("Tamil");
-  if (anime.hasTelugu) langs.push("Telugu");
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Link
-        href={`/search?q=${encodeURIComponent(anime.displayTitle || anime.title)}`}
-        className="group/card relative flex items-stretch gap-0 overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-all hover:border-[var(--color-cyan)]/40 hover:shadow-lg hover:-translate-y-0.5"
-      >
-        {/* Cover */}
-        <div className="relative w-20 shrink-0 overflow-hidden sm:w-24">
-          <Image
-            src={anime.image}
-            alt=""
-            fill
-            className="object-cover transition-transform duration-500 group-hover/card:scale-105"
-            sizes="(max-width: 640px) 80px, 96px"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--color-panel)]" />
-        </div>
-
-        <div className="flex flex-1 items-center justify-between gap-2 p-3 pl-4">
-          <div className="min-w-0 flex-1">
-            <h3 className="font-display text-sm font-bold leading-tight truncate">
-              {anime.displayTitle || anime.title}
-            </h3>
-            <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-              {anime.isCurrentSeason && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cyan)]/10 px-2 py-0.5 text-[10px] sm:text-[8px] font-bold uppercase tracking-wider text-[var(--color-cyan)] border border-[var(--color-cyan)]/30">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-cyan)]" style={{ animation: "pulse 1.5s ease-in-out infinite" }} />
-                  Current Season
-                </span>
-              )}
-              {anime.comingSoonLanguages.length > 0 && (
-                <span className="rounded-full bg-[var(--color-amber)]/10 px-2 py-0.5 text-[10px] sm:text-[8px] font-bold uppercase tracking-wider text-[var(--color-amber)] border border-[var(--color-amber)]/30">
-                  Coming Soon
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {langs.map((l) => {
-                const style = l === "English" ? { bg: "#3b82f622", text: "#3b82f6", border: "#3b82f644" }
-                  : l === "Hindi" ? { bg: "#ff993322", text: "#ff9933", border: "#ff993344" }
-                  : l === "Tamil" ? { bg: "#e84a5f22", text: "#e84a5f", border: "#e84a5f44" }
-                  : { bg: "#6c63ff22", text: "#6c63ff", border: "#6c63ff44" };
-                return (
-                  <span key={l} className="text-[10px] sm:text-[8px] font-medium px-1.5 py-0.5 rounded-full backdrop-blur"
-                    style={{ backgroundColor: style.bg, color: style.text, border: `1px solid ${style.border}` }}
-                  >{l}</span>
-                );
-              })}
-            </div>
-          </div>
-          {anime.score && anime.score !== "No Ratings" && (
-            <div className="shrink-0 text-[10px] font-mono font-semibold text-[var(--color-cyan)] bg-black/30 px-2 py-0.5 rounded-full">
-              ★ {anime.score}
-            </div>
-          )}
-        </div>
-      </Link>
-    </motion.div>
-  );
-}
 
 export default function DubbedPage() {
   const [language, setLanguage] = useState<LangKey>("hindi");
@@ -139,6 +60,21 @@ export default function DubbedPage() {
   const currentSeason = useMemo(() => data?.currentSeason || [], [data]);
   const recent = useMemo(() => data?.recent || [], [data]);
   const total = counts?.[language] || counts?.total || 0;
+
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  function toggleExpand(section: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(section)) next.delete(section);
+      else next.add(section);
+      return next;
+    });
+  }
+
+  const SECTION_LIMIT = 8;
+  function sectionItems(all: DubAnime[], key: string) {
+    return expanded.has(key) ? all : all.slice(0, SECTION_LIMIT);
+  }
 
   return (
     <PageTransition>
@@ -208,73 +144,85 @@ export default function DubbedPage() {
           <div className="space-y-8">
             {currentSeason.length > 0 && (
               <section>
-                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-3">
+                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4">
                   <span className="h-3 w-1 rounded-full bg-[var(--color-cyan)]" />
                   Current Season ({currentSeason.length})
                 </h2>
-                <div className="space-y-2">
-                  <AnimatePresence mode="wait">
-                    <motion.div key={language} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
-                      {currentSeason.map((dub, i) => (
-                        <DubCard key={`${dub.mal_id}-cs-${i}`} anime={dub} index={i} />
-                      ))}
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div key={language} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <DubExpandingCard items={sectionItems(currentSeason, "cs")} />
+                    {currentSeason.length > SECTION_LIMIT && (
+                      <button onClick={() => toggleExpand("cs")}
+                        className="mt-3 w-full rounded-xl border border-dashed border-[var(--color-line)] py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+                      >
+                        {expanded.has("cs") ? "Show less ↑" : `View all ${currentSeason.length} →`}
+                      </button>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </section>
             )}
 
             {recent.length > 0 && (
               <section>
-                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-3">
+                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4">
                   <span className="h-3 w-1 rounded-full bg-[var(--color-magenta)]" />
                   Recently Added ({recent.length})
                 </h2>
-                <div className="space-y-2">
-                  <AnimatePresence mode="wait">
-                    <motion.div key={language} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
-                      {recent.map((dub, i) => (
-                        <DubCard key={`${dub.mal_id}-re-${i}`} anime={dub} index={i} />
-                      ))}
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div key={language} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <DubExpandingCard items={sectionItems(recent, "re")} />
+                    {recent.length > SECTION_LIMIT && (
+                      <button onClick={() => toggleExpand("re")}
+                        className="mt-3 w-full rounded-xl border border-dashed border-[var(--color-line)] py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+                      >
+                        {expanded.has("re") ? "Show less ↑" : `View all ${recent.length} →`}
+                      </button>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </section>
             )}
 
             {comingSoon.length > 0 && (
               <section>
-                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-3">
+                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4">
                   <span className="h-3 w-1 rounded-full bg-[var(--color-amber)]" />
                   Coming Soon ({comingSoon.length})
                 </h2>
-                <div className="space-y-2">
-                  <AnimatePresence mode="wait">
-                    <motion.div key={language} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
-                      {comingSoon.map((dub, i) => (
-                        <DubCard key={`${dub.mal_id}-cs2-${i}`} anime={dub} index={i} />
-                      ))}
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div key={language} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <DubExpandingCard items={sectionItems(comingSoon, "co")} />
+                    {comingSoon.length > SECTION_LIMIT && (
+                      <button onClick={() => toggleExpand("co")}
+                        className="mt-3 w-full rounded-xl border border-dashed border-[var(--color-line)] py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+                      >
+                        {expanded.has("co") ? "Show less ↑" : `View all ${comingSoon.length} →`}
+                      </button>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </section>
             )}
 
             {available.length > 0 && (
               <section>
-                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-3">
+                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4">
                   <span className="h-3 w-1 rounded-full bg-[var(--color-cyan)]" />
                   Available Now ({available.length})
                 </h2>
-                <div className="space-y-2">
-                  <AnimatePresence mode="wait">
-                    <motion.div key={language} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
-                      {available.map((dub, i) => (
-                        <DubCard key={`${dub.mal_id}-av-${i}`} anime={dub} index={i} />
-                      ))}
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div key={language} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <DubExpandingCard items={sectionItems(available, "av")} />
+                    {available.length > SECTION_LIMIT && (
+                      <button onClick={() => toggleExpand("av")}
+                        className="mt-3 w-full rounded-xl border border-dashed border-[var(--color-line)] py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+                      >
+                        {expanded.has("av") ? "Show less ↑" : `View all ${available.length} →`}
+                      </button>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </section>
             )}
 
