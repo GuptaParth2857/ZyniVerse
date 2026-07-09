@@ -11,6 +11,7 @@ import RouteTransition from "@/components/RouteTransition";
 import MobileNav from "@/components/MobileNav";
 import AdBanner from "@/components/AdBanner";
 import ChatWidget from "@/components/ChatWidget";
+import SplashScreen from "@/components/SplashScreen";
 
 export const metadata: Metadata = {
   title: { default: "ZyniVerse — Anime Filler Guides, Indian Dubs & Manga Tracker", template: "%s | ZyniVerse" },
@@ -104,6 +105,7 @@ export default function RootLayout({
             <CookieConsent />
             <ServiceWorkerRegistration />
             <ChatWidget />
+            <SplashScreen />
           </Providers>
         </AuthProvider>
       </body>

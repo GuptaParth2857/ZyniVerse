@@ -30,7 +30,7 @@ export default function ForumHomeClient() {
           <div className="flex gap-2">
             {["recent", "popular", "top"].map((s) => (
               <button key={s} onClick={() => { setSort(s); setPage(1); }}
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold transition-colors ${
+                className={`rounded-full px-3 py-2 sm:py-1 text-[11px] font-semibold transition-colors ${
                   sort === s
                     ? "bg-[var(--color-cyan)] text-black"
                     : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]"

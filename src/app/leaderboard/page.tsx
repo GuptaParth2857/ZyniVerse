@@ -123,7 +123,7 @@ function LeaderboardRow({ item, rank, index }: { item: Media; rank: number; inde
           <div className="flex flex-wrap gap-1 mt-1">
             {item.genres.slice(0, 3).map((g) => (
               <Link key={g} href={`/genre/${g.toLowerCase()}`}
-                className="text-[9px] font-medium text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors rounded bg-[var(--color-line)]/20 px-1.5 py-0.5"
+                className="text-[10px] sm:text-[9px] font-medium text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors rounded bg-[var(--color-line)]/20 px-1.5 py-0.5"
               >{g}</Link>
             ))}
           </div>

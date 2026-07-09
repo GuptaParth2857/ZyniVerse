@@ -83,7 +83,7 @@ export default function WikiPageClient() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search wiki..."
-          className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)] w-64"
+          className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)] w-full sm:w-64"
         />
         {session && (
           <Link href="/wiki/create" className="rounded-xl bg-[var(--color-magenta)] px-4 py-2 text-xs font-bold text-black hover:opacity-90 transition-opacity">
@@ -125,7 +125,7 @@ export default function WikiPageClient() {
                 </h3>
                 {page.summary && <p className="text-xs text-[var(--color-mute)] mt-0.5 line-clamp-1">{page.summary}</p>}
                 <div className="flex items-center gap-3 mt-1.5 text-[10px] text-[var(--color-mute)]">
-                  <span className="rounded-full bg-[var(--color-cyan)]/10 px-2 py-0.5 text-[9px] font-medium text-[var(--color-cyan)]">{page.category}</span>
+                  <span className="rounded-full bg-[var(--color-cyan)]/10 px-2 py-0.5 text-[10px] sm:text-[9px] font-medium text-[var(--color-cyan)]">{page.category}</span>
                   <span>v{page.version}</span>
                   <span>by {page.editor.username}</span>
                   <span>{new Date(page.updatedAt).toLocaleDateString()}</span>

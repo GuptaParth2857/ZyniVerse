@@ -25,6 +25,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 32,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/db2777/2563eb?text=Eastern%20Wonderland%20~%20Touhou...",
     externalUrl: "https://mangadex.org/title/abcdefg",
   },
   {
@@ -38,6 +39,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 28,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/0891b2/e11d48?text=Ghostly%20Field%20Club%20~%20Dr.Lat...",
     externalUrl: "https://mangadex.org/title/ghostly-field-club",
   },
   {
@@ -51,6 +53,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 48,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/e11d48/a855f7?text=Kafka",
     externalUrl: "https://mangadex.org/title/kafka-clamp",
   },
   {
@@ -64,6 +67,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 36,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/9333ea/ef4444?text=Shirahime-Syo",
     externalUrl: "https://mangadex.org/title/shirahime-syo",
   },
   {
@@ -77,6 +81,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 64,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/2563eb/6366f1?text=Koe%20no%20Katachi%20Prototype",
     externalUrl: "https://mangadex.org/title/koe-no-katachi-prototype",
   },
   {
@@ -90,6 +95,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 24,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/ef4444/f59e0b?text=Welcome%20to%20Japari%20Park!",
     externalUrl: "https://mangadex.org/title/welcome-to-japari-park",
   },
   {
@@ -103,6 +109,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 40,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/0891b2/e11d48?text=The%20Girl%20Who%20Leapt%20Through%20...",
     externalUrl: "https://mangadex.org/title/the-girl-who-leapt-through-time",
   },
   {
@@ -116,6 +123,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 36,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/9333ea/ef4444?text=Voices%20of%20a%20Distant%20Star",
     externalUrl: "https://mangadex.org/title/voices-of-a-distant-star",
   },
   {
@@ -129,6 +137,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 30,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/9333ea/ef4444?text=Curiosities%20of%20Lotus%20Asia",
     externalUrl: "https://mangadex.org/title/curiosities-of-lotus-asia",
   },
   {
@@ -142,6 +151,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 34,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/c026d3/059669?text=Eastern%20and%20Little%20Nature%20D...",
     externalUrl: "https://mangadex.org/title/eastern-and-little-nature-deity",
   },
   {
@@ -155,6 +165,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 44,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/c026d3/059669?text=5%20Centimeters%20Per%20Second",
     externalUrl: "https://mangadex.org/title/5-centimeters-per-second",
   },
   {
@@ -168,6 +179,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 38,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/059669/06b6d4?text=The%20Place%20Promised%20in%20Our%20E...",
     externalUrl: "https://mangadex.org/title/the-place-promised-in-our-early-days",
   },
   {
@@ -181,6 +193,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 42,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/059669/06b6d4?text=Silent%20Sinner%20in%20Blue",
     externalUrl: "https://mangadex.org/title/silent-sinner-in-blue",
   },
   {
@@ -194,6 +207,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 28,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/a21caf/9333ea?text=Inaba%20of%20the%20Moon%20and%20Inaba...",
     externalUrl: "https://mangadex.org/title/inaba-of-the-moon-and-inaba-of-the-earth",
   },
   {
@@ -207,6 +221,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 48,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/a21caf/9333ea?text=Children%20Who%20Chase%20Lost%20Voices",
     externalUrl: "https://mangadex.org/title/children-who-chase-lost-voices",
   },
   {
@@ -220,6 +235,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 36,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/e11d48/a855f7?text=Eastern%20Judgement%20in%20the%20Si...",
     externalUrl: "https://mangadex.org/title/foul-detective-satori",
   },
   {
@@ -233,6 +249,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 32,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/e11d48/a855f7?text=Garden%20of%20Words",
     externalUrl: "https://mangadex.org/title/garden-of-words",
   },
   {
@@ -246,6 +263,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 40,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/0d9488/db2777?text=Wild%20and%20Horned%20Hermit",
     externalUrl: "https://mangadex.org/title/wild-and-horned-hermit",
   },
   {
@@ -259,6 +277,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 24,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/0d9488/db2777?text=She%20and%20Her%20Cat",
     externalUrl: "https://mangadex.org/title/she-and-her-cat",
   },
   {
@@ -272,6 +291,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 26,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/7c3aed/0891b2?text=Japari%20Park%20Survival%20Guide",
     externalUrl: "https://mangadex.org/title/japari-park-survival-guide",
   },
   {
@@ -285,6 +305,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 44,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/6366f1/0d9488?text=Forbidden%20Scrollery",
     externalUrl: "https://mangadex.org/title/forbidden-scrollery",
   },
   {
@@ -298,6 +319,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 36,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/6366f1/0d9488?text=Cross%20Game%20Collection",
     externalUrl: "https://mangadex.org/title/cross-game-collection",
   },
   {
@@ -311,6 +333,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 38,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/db2777/2563eb?text=Lotus%20Eaters",
     externalUrl: "https://mangadex.org/title/lotus-eaters",
   },
   {
@@ -324,6 +347,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 52,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/a855f7/7c3aed?text=Voices%20from%20the%20Sea",
     externalUrl: "https://mangadex.org/title/voices-from-the-sea",
   },
   {
@@ -337,6 +361,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 28,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/2563eb/6366f1?text=Friends%20of%20the%20Savannah",
     externalUrl: "https://mangadex.org/title/friends-of-the-savannah",
   },
   {
@@ -350,6 +375,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 44,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/0891b2/e11d48?text=Starlight%20Memories",
     externalUrl: "https://mangadex.org/title/starlight-memories",
   },
   {
@@ -363,6 +389,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 34,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/0891b2/e11d48?text=Doll%20Master's%20Dream",
     externalUrl: "https://mangadex.org/title/doll-masters-dream",
   },
   {
@@ -376,6 +403,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 48,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/9333ea/ef4444?text=The%20Music%20of%20the%20Spheres",
     externalUrl: "https://mangadex.org/title/the-music-of-the-spheres",
   },
   {
@@ -389,6 +417,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 30,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/9333ea/ef4444?text=Rainbow-Colored%20World",
     externalUrl: "https://mangadex.org/title/rainbow-colored-world",
   },
   {
@@ -402,6 +431,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 40,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/c026d3/059669?text=Clockwork%20Hearts",
     externalUrl: "https://mangadex.org/title/clockwork-hearts",
   },
   {
@@ -415,6 +445,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 26,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/c026d3/059669?text=Memorizable%20Gensokyo",
     externalUrl: "https://mangadex.org/title/memorizable-gensokyo",
   },
   {
@@ -428,6 +459,7 @@ const DOUJINSHI: DoujinshiEntry[] = [
     pages: 36,
     language: "japanese",
     isTranslated: true,
+    image: "https://placehold.co/400x560/059669/06b6d4?text=Wanderer's%20Journal",
     externalUrl: "https://mangadex.org/title/wanderers-journal",
   },
 ];

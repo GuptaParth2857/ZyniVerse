@@ -102,7 +102,7 @@ export default async function BlogPage() {
                     )}
                     <div className="p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] text-[8px] font-bold text-black">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] text-[10px] sm:text-[8px] font-bold text-black">
                           {post.user?.username?.charAt(0).toUpperCase() || "?"}
                         </div>
                         <span className="text-xs text-[var(--color-mute)]">{post.user?.username}</span>
@@ -121,7 +121,7 @@ export default async function BlogPage() {
                       {tags.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {tags.slice(0, 3).map((tag: string) => (
-                            <span key={tag} className="rounded-full bg-[var(--color-cyan)]/10 px-2 py-0.5 text-[9px] font-medium text-[var(--color-cyan)]">{tag.trim()}</span>
+                            <span key={tag} className="rounded-full bg-[var(--color-cyan)]/10 px-2 py-0.5 text-[10px] sm:text-[9px] font-medium text-[var(--color-cyan)]">{tag.trim()}</span>
                           ))}
                         </div>
                       )}

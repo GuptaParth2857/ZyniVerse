@@ -70,7 +70,7 @@ export default function ForumThreadCard({ thread }: ForumThreadCardProps) {
               {thread.user.avatar ? (
                 <Image src={thread.user.avatar} alt="" fill className="object-cover" sizes="16px" />
               ) : (
-                <span className="flex h-full w-full items-center justify-center text-[8px] font-bold text-[var(--color-mute)]">
+                <span className="flex h-full w-full items-center justify-center text-[10px] sm:text-[8px] font-bold text-[var(--color-mute)]">
                   {thread.user.username[0]?.toUpperCase()}
                 </span>
               )}

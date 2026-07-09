@@ -121,7 +121,7 @@ export default function Footer() {
             <div className="flex gap-2.5">
               {SOCIAL_LINKS.map((s) => (
                 <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full bg-[var(--color-panel)] flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 border border-[var(--color-line)] hover:border-[var(--color-cyan)]/30 transition-all"
+                  className="w-11 h-11 sm:w-9 sm:h-9 rounded-full bg-[var(--color-panel)] flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 border border-[var(--color-line)] hover:border-[var(--color-cyan)]/30 transition-all"
                   aria-label={s.label}
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -173,10 +173,10 @@ export default function Footer() {
           </div>
           <div className="flex gap-3 shrink-0">
             <a href="https://www.buymeacoffee.com/zyniverse" target="_blank" rel="noopener noreferrer"
-              className="px-5 py-2.5 bg-[var(--color-magenta)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-magenta)]/30"
+              className="px-5 py-3 sm:py-2.5 bg-[var(--color-magenta)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-magenta)]/30"
             >☕ Buy me a coffee</a>
             <Link href="/premium"
-              className="px-5 py-2.5 bg-[var(--color-cyan)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-cyan)]/30"
+              className="px-5 py-3 sm:py-2.5 bg-[var(--color-cyan)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-cyan)]/30"
             >Go Premium</Link>
           </div>
         </motion.div>
@@ -195,7 +195,7 @@ export default function Footer() {
             </div>
           </div>
           <Link href="/community"
-            className="px-5 py-2.5 bg-[var(--color-cyan)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-cyan)]/30 shrink-0"
+            className="px-5 py-3 sm:py-2.5 bg-[var(--color-cyan)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-cyan)]/30 shrink-0"
           >Explore Community</Link>
         </motion.div>
 

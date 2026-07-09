@@ -186,7 +186,7 @@ export default function SchedulePage() {
                         </div>
                         <div className="flex items-center gap-2">
                           {isToday && (
-                            <span className="rounded-full bg-[var(--color-magenta)] px-2 py-0.5 text-[9px] font-bold text-black">
+                            <span className="rounded-full bg-[var(--color-magenta)] px-2 py-0.5 text-[10px] sm:text-[9px] font-bold text-black">
                               TODAY
                             </span>
                           )}
@@ -197,7 +197,7 @@ export default function SchedulePage() {
                       </div>
 
                       {/* Episode list */}
-                      <div className="flex-1 space-y-2 p-3 overflow-y-auto max-h-[420px] custom-scroll">
+                      <div className="flex-1 space-y-2 p-3 overflow-y-auto max-h-[50vh] sm:max-h-[420px] custom-scroll">
                         {items.length === 0 && (
                           <div className="flex flex-col items-center justify-center py-8 text-center">
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--color-mute)]/30 mb-2">
@@ -222,7 +222,7 @@ export default function SchedulePage() {
                               >
                                 <div className="relative shrink-0 h-14 w-10 rounded-lg overflow-hidden">
                                   <Image src={item.media.coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
-                                  <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-cyan)] text-[9px] font-bold text-black shadow-lg">
+                                  <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-cyan)] text-[10px] sm:text-[9px] font-bold text-black shadow-lg">
                                     {item.episode}
                                   </div>
                                 </div>
@@ -236,14 +236,14 @@ export default function SchedulePage() {
                                       {formatTime(item.airingAt)}
                                     </span>
                                     {item.media.format && (
-                                      <span className="uppercase tracking-wider text-[9px] border border-[var(--color-line)] px-1.5 py-0.5 rounded">
+                                      <span className="uppercase tracking-wider text-[10px] sm:text-[9px] border border-[var(--color-line)] px-1.5 py-0.5 rounded">
                                         {item.media.format}
                                       </span>
                                     )}
                                   </div>
                                   <div className="mt-1 flex gap-1 flex-wrap">
                                     {item.media.genres?.slice(0, 2).map((g) => (
-                                      <span key={g} className="text-[8px] text-[var(--color-mute)]/60 bg-[var(--color-void)]/50 px-1.5 py-0.5 rounded-full">
+                                      <span key={g} className="text-[10px] sm:text-[8px] text-[var(--color-mute)]/60 bg-[var(--color-void)]/50 px-1.5 py-0.5 rounded-full">
                                         {g}
                                       </span>
                                     ))}

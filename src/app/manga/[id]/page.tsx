@@ -353,7 +353,7 @@ export default function MangaDetailsPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium truncate">{edge.node.name?.full}</p>
-                      <p className="text-[9px] text-[var(--color-mute)] truncate uppercase tracking-wider">{edge.role}</p>
+                      <p className="text-[10px] sm:text-[9px] text-[var(--color-mute)] truncate uppercase tracking-wider">{edge.role}</p>
                     </div>
                   </Link>
                 ))}
@@ -382,7 +382,7 @@ export default function MangaDetailsPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium truncate">{s.node.name?.full}</p>
-                      <p className="text-[9px] text-[var(--color-mute)] truncate">{s.role}</p>
+                      <p className="text-[10px] sm:text-[9px] text-[var(--color-mute)] truncate">{s.role}</p>
                     </div>
                   </Link>
                 ))}
@@ -445,7 +445,7 @@ export default function MangaDetailsPage() {
                       className="flex items-center gap-2 rounded px-2 py-1 text-xs text-[var(--color-mute)] hover:text-[var(--color-violet)]"
                     >
                       <span>{l.site}</span>
-                      {l.notes && <span className="text-[9px] opacity-60">— {l.notes}</span>}
+                      {l.notes && <span className="text-[10px] sm:text-[9px] opacity-60">— {l.notes}</span>}
                       <span className="ml-auto">↗</span>
                     </a>
                   </li>
@@ -484,11 +484,11 @@ export default function MangaDetailsPage() {
             <div className="flex flex-wrap gap-2 justify-center">
               <a href={`https://www.amazon.com/s?k=${encodeURIComponent(bestTitle(manga.title) + " manga")}&tag=zyniverse-21`}
                 target="_blank" rel="noopener noreferrer sponsored"
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[10px] sm:text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
               >📦 Buy on Amazon</a>
               <a href="https://global.bookwalker.jp/search/?q=&ref=zyniverse"
                 target="_blank" rel="noopener noreferrer sponsored"
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[10px] sm:text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
               >📚 BookWalker</a>
             </div>
           </div>

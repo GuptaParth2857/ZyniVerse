@@ -79,7 +79,7 @@ export default function ClubsPageClient() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search clubs..."
-            className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-1.5 text-sm outline-none focus:border-[var(--color-cyan)] w-48"
+            className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-1.5 text-sm outline-none focus:border-[var(--color-cyan)] w-full sm:w-48"
           />
           <Link href="/clubs/create" className="rounded-xl bg-[var(--color-magenta)] px-4 py-1.5 text-xs font-bold text-black hover:opacity-90 transition-opacity">
             + Create Club
