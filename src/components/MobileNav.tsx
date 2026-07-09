@@ -25,7 +25,7 @@ export default function MobileNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 text-[10px] font-semibold transition-colors ${
+              className={`relative flex flex-col items-center gap-0.5 rounded-lg px-3 py-2.5 text-[10px] font-semibold transition-colors min-h-[44px] ${
                 active
                   ? "text-[var(--color-cyan)]"
                   : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"
@@ -34,7 +34,7 @@ export default function MobileNav() {
               <span className="text-lg leading-none">{item.icon}</span>
               <span>{item.label}</span>
               {item.href === "/watchlist" && items.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[14px] items-center justify-center rounded-full bg-[var(--color-magenta)] px-1 text-[8px] font-bold text-black">
+                <span className="absolute -top-1 -right-1 flex h-5 min-w-[18px] items-center justify-center rounded-full bg-[var(--color-magenta)] px-1 text-[10px] font-bold text-black">
                   {items.length > 99 ? "99+" : items.length}
                 </span>
               )}

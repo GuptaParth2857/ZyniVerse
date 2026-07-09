@@ -100,7 +100,7 @@ export default function AnimeDetailsPage() {
   return (
     <PageTransition><ErrorBoundary label="AnimeDetails"><div>
       {/* ── Hero ── */}
-      <div className="relative min-h-[70vh] flex items-end border-b border-[var(--color-line)] overflow-hidden">
+      <div className="relative min-h-[50vh] sm:min-h-[70vh] flex items-end border-b border-[var(--color-line)] overflow-hidden">
         {/* Background banner */}
         {anime.bannerImage && (
           <div className="absolute inset-0">
@@ -156,7 +156,7 @@ export default function AnimeDetailsPage() {
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-magenta)] pulse-dot" /> On Air
                 </span>
               )}
-              <h1 className="font-display text-4xl font-bold leading-tight sm:text-6xl drop-shadow-lg">{title}</h1>
+              <h1 className="font-display text-2xl font-bold leading-tight break-words sm:text-4xl lg:text-6xl drop-shadow-lg">{title}</h1>
               {anime.title.native && <p className="mt-1 text-[var(--color-mute)] text-lg">{anime.title.native}</p>}
 
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-[var(--color-mute)]">

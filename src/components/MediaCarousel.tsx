@@ -50,7 +50,9 @@ export default function MediaCarousel({
 
       <div className="space-y-3 sm:space-y-4">
         {rowItems.map((row, ri) => (
-          <CarouselRow key={ri} items={row} />
+          <div key={ri} className={ri > 0 ? "hidden sm:block" : ""}>
+            <CarouselRow items={row} />
+          </div>
         ))}
       </div>
     </section>
