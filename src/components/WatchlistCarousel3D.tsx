@@ -10,8 +10,16 @@ import type { Media } from "@/lib/anilist";
 
 export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
   const [active, setActive] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const { toggle } = useWatchlist();
   const total = items.length;
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   function goNext() { setActive((a) => (a + 1) % total); }
   function goPrev() { setActive((a) => (a - 1 + total) % total); }
@@ -20,8 +28,12 @@ export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
 
   const getIndex = (offset: number) => (active + offset + total) % total;
 
+  // Mobile specific offsets
+  const X_OFFSET = isMobile ? 35 : 60;
+  const X_BASE = isMobile ? 30 : 60;
+
   return (
-    <div className="relative flex items-center justify-center py-10 perspective-[1200px]">
+    <div className="relative flex items-center justify-center py-10 perspective-[1200px] w-full max-w-full overflow-hidden sm:overflow-visible">
       {/* Carousel stage */}
       <div className="relative flex items-center justify-center h-[420px] w-full" style={{ transformStyle: "preserve-3d" }}>
         {/* Left cards */}
@@ -29,7 +41,7 @@ export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
           const idx = getIndex(offset);
           const item = items[idx];
           const z = offset * 50;
-          const x = offset * 60 - 60;
+          const x = offset * X_OFFSET - X_BASE;
           const scale = 1 - Math.abs(offset) * 0.15;
           const opacity = 1 - Math.abs(offset) * 0.25;
           const rotateY = offset * 15;
@@ -49,7 +61,7 @@ export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
               transition={{ type: "spring", stiffness: 200, damping: 25 }}
               onClick={goPrev}
             >
-              <div className="relative h-64 w-40 overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl">
+              <div className="relative h-64 w-40 overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl hidden sm:block">
                 <Image src={item.coverImage?.extraLarge || item.coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent p-3 flex items-end">
                   <p className="text-xs font-bold truncate">{bestTitle(item.title)}</p>
@@ -91,7 +103,7 @@ export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
         {[1, 2, 3].map((offset) => {
           const idx = getIndex(offset);
           const item = items[idx];
-          const x = offset * 60 + 60;
+          const x = offset * X_OFFSET + X_BASE;
           const scale = 1 - offset * 0.15;
           const opacity = 1 - offset * 0.25;
           const rotateY = offset * -15;
@@ -111,7 +123,7 @@ export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
               transition={{ type: "spring", stiffness: 200, damping: 25 }}
               onClick={goNext}
             >
-              <div className="relative h-64 w-40 overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl">
+              <div className="relative h-64 w-40 overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl hidden sm:block">
                 <Image src={item.coverImage?.extraLarge || item.coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent p-3 flex items-end">
                   <p className="text-xs font-bold truncate">{bestTitle(item.title)}</p>
@@ -124,13 +136,13 @@ export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
 
       {/* Navigation arrows */}
       <button onClick={goPrev}
-        className="absolute left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-line)] bg-[var(--color-panel)]/80 backdrop-blur text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
+        className="absolute left-2 sm:left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-line)] bg-[var(--color-panel)]/80 backdrop-blur text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
         aria-label="Previous"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
       <button onClick={goNext}
-        className="absolute right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-line)] bg-[var(--color-panel)]/80 backdrop-blur text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
+        className="absolute right-2 sm:right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-line)] bg-[var(--color-panel)]/80 backdrop-blur text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
         aria-label="Next"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
