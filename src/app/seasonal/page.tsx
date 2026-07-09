@@ -29,24 +29,21 @@ export default function SeasonalPage() {
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
   const gridRef = useRef<HTMLDivElement>(null);
-  const loadingRef = useRef(false);
 
   useEffect(() => {
-    if (loadingRef.current) return;
-    loadingRef.current = true;
+    let cancelled = false;
     setLoading(true);
     setError(null);
-    let cancelled = false;
     if (type === "ANIME") {
       getSeasonal(year, season, 50)
         .then((d) => { if (!cancelled) { setList(d.media); setTotalCount(d.pageInfo?.total || d.media.length); } })
-        .catch((e: Error) => !cancelled && setError(e.message))
-        .finally(() => { if (!cancelled) setLoading(false); loadingRef.current = false; });
+        .catch((e: Error) => { if (!cancelled) setError(e.message); })
+        .finally(() => { if (!cancelled) setLoading(false); });
     } else {
       getMangaPopular(50)
         .then((d) => { if (!cancelled) { setList(d); setTotalCount(d.length); } })
-        .catch((e: Error) => !cancelled && setError(e.message))
-        .finally(() => { if (!cancelled) setLoading(false); loadingRef.current = false; });
+        .catch((e: Error) => { if (!cancelled) setError(e.message); })
+        .finally(() => { if (!cancelled) setLoading(false); });
     }
     return () => { cancelled = true; };
   }, [year, season, type]);
@@ -97,7 +94,7 @@ export default function SeasonalPage() {
                 Previous
               </button>
 
-              <div className="flex rounded-xl border border-[var(--color-line)] overflow-hidden">
+              <div className="flex rounded-xl border border-[var(--color-line)] overflow-x-auto">
                 {SEASONS.map((s) => (
                   <button key={s} onClick={() => setSeason(s)}
                     className={`px-4 py-2 text-sm font-semibold transition-all ${
@@ -131,7 +128,7 @@ export default function SeasonalPage() {
             ))}
           </select>
 
-          <div className="flex rounded-xl border border-[var(--color-line)] overflow-hidden">
+          <div className="flex rounded-xl border border-[var(--color-line)] overflow-x-auto">
             {(["ANIME", "MANGA"] as const).map((t) => (
               <button key={t} onClick={() => setType(t)}
                 className={`px-4 py-2 text-sm font-semibold transition-colors ${

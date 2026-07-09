@@ -78,13 +78,13 @@ function PostCard({ post, onSave, sessionUserId }: { post: Post; onSave: (id: st
           </div>
           <div>
             <p className="text-xs font-semibold">{post.author.username}</p>
-            <p className="text-[9px] font-mono text-[var(--color-mute)]">
+            <p className="text-[10px] sm:text-[9px] font-mono text-[var(--color-mute)]">
               {new Date(post.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           </div>
         </div>
         {post.type === "CRITIQUE" && (
-          <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--color-magenta)] bg-[var(--color-magenta)]/10 px-2 py-0.5 rounded-full border border-[var(--color-magenta)]/30">
+          <span className="text-[10px] sm:text-[9px] font-bold uppercase tracking-wider text-[var(--color-magenta)] bg-[var(--color-magenta)]/10 px-2 py-0.5 rounded-full border border-[var(--color-magenta)]/30">
             Critique
           </span>
         )}
@@ -192,11 +192,11 @@ function CritiqueCard({ post, cover, onSave, sessionUserId }: { post: Post; cove
       )}
       <div className="p-4 pt-3">
         <div className="flex items-center gap-2 mb-2">
-          <div className="h-5 w-5 rounded-full bg-[var(--color-magenta)]/20 flex items-center justify-center text-[8px] font-bold text-[var(--color-magenta)]">
+          <div className="h-5 w-5 rounded-full bg-[var(--color-magenta)]/20 flex items-center justify-center text-[10px] sm:text-[8px] font-bold text-[var(--color-magenta)]">
             {post.author.username.charAt(0).toUpperCase()}
           </div>
           <p className="text-[10px] font-semibold">{post.author.username}</p>
-          <p className="text-[9px] font-mono text-[var(--color-mute)] ml-auto">
+          <p className="text-[10px] sm:text-[9px] font-mono text-[var(--color-mute)] ml-auto">
             {new Date(post.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
           </p>
         </div>

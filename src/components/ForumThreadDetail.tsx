@@ -128,7 +128,7 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
               {thread.user.avatar ? (
                 <Image src={thread.user.avatar} alt="" fill className="object-cover" sizes="24px" />
               ) : (
-                <span className="flex h-full w-full items-center justify-center text-[9px] font-bold">{thread.user.username[0]?.toUpperCase()}</span>
+                <span className="flex h-full w-full items-center justify-center text-[10px] sm:text-[9px] font-bold">{thread.user.username[0]?.toUpperCase()}</span>
               )}
             </div>
             <span className="font-medium text-[var(--color-ink)]">{thread.user.username}</span>

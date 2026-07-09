@@ -34,27 +34,67 @@ export function getAnilistCacheStats(): { size: number } {
   return { size: responseCache.size };
 }
 
+const FETCH_TIMEOUT = 15_000;
+const MAX_RETRIES = 1;
+
 async function gql(query: string, variables: Record<string, unknown> = {}) {
   const cacheKey = getCacheKey(query, variables);
   const cached = getFromCache(cacheKey);
   if (cached) return cached;
 
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ query, variables }),
-    next: { revalidate: 300 },
-  });
-  if (!res.ok) {
-    if (res.status === 429) throw new Error("Rate limited by AniList — try again later.");
-    const body = await res.text().catch(() => "");
-    throw new Error(`AniList request failed (${res.status}): ${body.slice(0, 200)}`);
-  }
-  const json = await res.json();
-  if (json.errors) throw new Error(json.errors[0]?.message || "AniList returned an error");
+  let lastError: Error | null = null;
 
-  setCache(cacheKey, json.data);
-  return json.data;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ query, variables }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timer);
+
+      if (!res.ok) {
+        if (res.status === 429) {
+          if (attempt < MAX_RETRIES) {
+            await new Promise((r) => setTimeout(r, 1000));
+            continue;
+          }
+          throw new Error("Rate limited by AniList — try again later.");
+        }
+        const body = await res.text().catch(() => "");
+        throw new Error(`AniList request failed (${res.status}): ${body.slice(0, 200)}`);
+      }
+
+      const json = await res.json();
+      if (json.errors) {
+        const msg = json.errors[0]?.message || "AniList returned an error";
+        if (attempt < MAX_RETRIES) {
+          await new Promise((r) => setTimeout(r, 500));
+          continue;
+        }
+        throw new Error(msg);
+      }
+
+      setCache(cacheKey, json.data);
+      return json.data;
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e));
+      if (lastError.name === "AbortError") {
+        lastError = new Error("AniList request timed out — try again.");
+      }
+      if (attempt < MAX_RETRIES) {
+        await new Promise((r) => setTimeout(r, 800));
+        continue;
+      }
+    }
+  }
+
+  throw lastError || new Error("AniList request failed");
 }
 
 const MEDIA_FIELDS = `

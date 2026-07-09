@@ -74,13 +74,13 @@ function DubCard({ anime, index }: { anime: DubAnime; index: number }) {
             </h3>
             <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
               {anime.isCurrentSeason && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cyan)]/10 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-[var(--color-cyan)] border border-[var(--color-cyan)]/30">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cyan)]/10 px-2 py-0.5 text-[10px] sm:text-[8px] font-bold uppercase tracking-wider text-[var(--color-cyan)] border border-[var(--color-cyan)]/30">
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-cyan)]" style={{ animation: "pulse 1.5s ease-in-out infinite" }} />
                   Current Season
                 </span>
               )}
               {anime.comingSoonLanguages.length > 0 && (
-                <span className="rounded-full bg-[var(--color-amber)]/10 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-[var(--color-amber)] border border-[var(--color-amber)]/30">
+                <span className="rounded-full bg-[var(--color-amber)]/10 px-2 py-0.5 text-[10px] sm:text-[8px] font-bold uppercase tracking-wider text-[var(--color-amber)] border border-[var(--color-amber)]/30">
                   Coming Soon
                 </span>
               )}
@@ -92,7 +92,7 @@ function DubCard({ anime, index }: { anime: DubAnime; index: number }) {
                   : l === "Tamil" ? { bg: "#e84a5f22", text: "#e84a5f", border: "#e84a5f44" }
                   : { bg: "#6c63ff22", text: "#6c63ff", border: "#6c63ff44" };
                 return (
-                  <span key={l} className="text-[8px] font-medium px-1.5 py-0.5 rounded-full backdrop-blur"
+                  <span key={l} className="text-[10px] sm:text-[8px] font-medium px-1.5 py-0.5 rounded-full backdrop-blur"
                     style={{ backgroundColor: style.bg, color: style.text, border: `1px solid ${style.border}` }}
                   >{l}</span>
                 );

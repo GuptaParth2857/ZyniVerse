@@ -10,22 +10,52 @@ interface Props {
   trackedStatus?: string | null;
 }
 
+const GRADIENT_PAIRS = [
+  ["#7c3aed", "#2563eb"],
+  ["#db2777", "#7c3aed"],
+  ["#0891b2", "#059669"],
+  ["#9333ea", "#c026d3"],
+  ["#2563eb", "#0891b2"],
+  ["#a21caf", "#e11d48"],
+  ["#0d9488", "#0369a1"],
+  ["#6366f1", "#a855f7"],
+];
+
+function CoverPlaceholder({ entry }: { entry: DoujinshiEntry }) {
+  const index = entry.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const [c1, c2] = GRADIENT_PAIRS[index % GRADIENT_PAIRS.length];
+  return (
+    <div
+      className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-5 text-center"
+      style={{ background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)` }}
+    >
+      <div className="rounded-full bg-white/10 p-3 backdrop-blur-sm">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" className="opacity-80">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5V4.5A2.5 2.5 0 016.5 2H20v15H6.5A2.5 2.5 0 004 19.5z" />
+        </svg>
+      </div>
+      <div>
+        <p className="text-xs font-bold text-white leading-tight line-clamp-3 drop-shadow-lg">{entry.title}</p>
+        {entry.circle && <p className="mt-1 text-[10px] text-white/70">{entry.circle}</p>}
+      </div>
+      <span className="rounded-full border border-white/20 px-3 py-0.5 text-[9px] font-mono text-white/60">
+        Read Online
+      </span>
+    </div>
+  );
+}
+
 export default function DoujinshiCard({ entry, onTrack, trackedStatus }: Props) {
   const { data: session } = useSession();
 
   return (
     <div className="group relative flex flex-col rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden hover:border-[var(--color-magenta)]/30 transition-all duration-300">
       {/* Cover */}
-      <div className="relative aspect-[3/4] w-full bg-gradient-to-br from-[var(--color-magenta)]/10 to-[var(--color-violet)]/10 overflow-hidden">
+      <div className="relative aspect-[3/4] w-full overflow-hidden">
         {entry.image ? (
           <img src={entry.image} alt={entry.title} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[var(--color-mute)]">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5V4.5A2.5 2.5 0 016.5 2H20v15H6.5A2.5 2.5 0 004 19.5z" />
-            </svg>
-            <span className="text-[10px] font-mono opacity-60">Read Online</span>
-          </div>
+          <CoverPlaceholder entry={entry} />
         )}
       </div>
 

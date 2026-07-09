@@ -105,7 +105,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Tabs */}
-      <div className="mt-8 flex items-center gap-2 border-b border-[var(--color-line)] pb-3">
+      <div className="mt-8 flex items-center gap-2 border-b border-[var(--color-line)] pb-3 overflow-x-auto flex-nowrap">
         {(["entries", "reviews", "lists", "stats", "history", "import", "api"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors ${
