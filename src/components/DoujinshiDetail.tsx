@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import type { DoujinshiEntry } from "@/lib/doujinshi-data";
+import type { DoujinshiEntry } from "@/lib/mangadex-api";
 
 interface Props {
   entry: DoujinshiEntry;
@@ -72,13 +72,19 @@ export default function DoujinshiDetail({ entry }: Props) {
       <div className="flex flex-col gap-8 sm:flex-row">
         {/* Cover */}
         <div className="shrink-0">
-          <div className="h-64 w-44 rounded-xl border border-[var(--color-line)] bg-gradient-to-br from-[var(--color-magenta)]/10 to-[var(--color-violet)]/10 flex items-center justify-center overflow-hidden">
-            <div className="flex flex-col items-center gap-2 text-[var(--color-mute)]">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5V4.5A2.5 2.5 0 016.5 2H20v15H6.5A2.5 2.5 0 004 19.5z" />
-              </svg>
-              <span className="text-xs font-mono opacity-60">Doujinshi</span>
-            </div>
+          <div className="h-64 w-44 rounded-xl border border-[var(--color-line)] overflow-hidden">
+            {entry.image ? (
+              <img src={entry.image} alt={entry.title} className="w-full h-full object-cover" loading="lazy" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-[var(--color-magenta)]/10 to-[var(--color-violet)]/10 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2 text-[var(--color-mute)]">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5V4.5A2.5 2.5 0 016.5 2H20v15H6.5A2.5 2.5 0 004 19.5z" />
+                  </svg>
+                  <span className="text-xs font-mono opacity-60">Doujinshi</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

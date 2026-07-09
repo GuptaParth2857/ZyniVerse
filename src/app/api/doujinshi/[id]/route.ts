@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDynamicDoujinshiById } from "@/lib/doujinshi-data";
+import { getDoujinshiById } from "@/lib/mangadex-api";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const entry = await getDynamicDoujinshiById(id);
-
+  const entry = await getDoujinshiById(id);
   if (!entry) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-
   return NextResponse.json({ entry });
 }

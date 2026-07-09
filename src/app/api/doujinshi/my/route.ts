@@ -1,8 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-import { getDoujinshiById } from "@/lib/doujinshi-data";
-import type { DoujinshiEntry } from "@/lib/doujinshi-data";
+import { getDoujinshiById } from "@/lib/mangadex-api";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -21,13 +20,15 @@ export async function GET(req: NextRequest) {
     orderBy: { updatedAt: "desc" },
   });
 
-  const enriched = entries
-    .map((e) => {
-      const data = getDoujinshiById(e.doujinshiId);
-      if (!data) return null;
-      return { entry: e, doujinshi: data };
-    })
-    .filter((e): e is { entry: typeof entries[0]; doujinshi: DoujinshiEntry } => e !== null);
+  const enriched = (
+    await Promise.all(
+      entries.map(async (e) => {
+        const data = await getDoujinshiById(e.doujinshiId);
+        if (!data) return null;
+        return { entry: e, doujinshi: data } as const;
+      }),
+    )
+  ).filter(<T>(e: T | null | undefined): e is T => e != null);
 
   return NextResponse.json({ entries: enriched });
 }

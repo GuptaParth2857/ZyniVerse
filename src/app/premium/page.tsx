@@ -68,14 +68,24 @@ const FAQS = [
 
 function MouseGlow() {
   const [pos, setPos] = useState({ x: -500, y: -500 });
-  const handle = useCallback((e: MouseEvent) => setPos({ x: e.clientX, y: e.clientY }), []);
   useEffect(() => {
-    window.addEventListener("mousemove", handle);
-    return () => window.removeEventListener("mousemove", handle);
-  }, [handle]);
+    let frame: number | null = null;
+    const handle = (e: MouseEvent) => {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(() => {
+        setPos({ x: e.clientX, y: e.clientY });
+        frame = null;
+      });
+    };
+    window.addEventListener("mousemove", handle, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handle);
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
+  }, []);
   return (
     <div className="pointer-events-none fixed inset-0 z-50 transition duration-700"
-      style={{ background: `radial-gradient(500px circle at ${pos.x}px ${pos.y}px, rgba(0,255,224,0.04) 0%, transparent 100%)` }}
+      style={{ background: `radial-gradient(500px circle at ${pos.x}px ${pos.y}px, rgba(0,255,224,0.04) 0%, transparent 100%)`, willChange: "background" }}
     />
   );
 }
@@ -103,12 +113,14 @@ function NeonOrbs() {
 }
 
 function Particles() {
-  const pts = useRef<{ x: number; y: number; s: number; d: number; o: number }[]>([]);
+  const pts = useRef<{ x: number; y: number; s: number; d: number; o: number; c: string; ty: number; delay: number }[]>([]);
   if (pts.current.length === 0) {
-    for (let i = 0; i < 40; i++) {
+    const colors = ["#00ffe0", "#ff00e6", "#7000ff"];
+    for (let i = 0; i < 20; i++) {
       pts.current.push({
         x: Math.random() * 100, y: Math.random() * 100,
-        s: Math.random() * 2.5 + 0.5, d: Math.random() * 12 + 6, o: Math.random() * 0.4 + 0.1,
+        s: Math.random() * 2.5 + 0.5, d: Math.random() * 6 + 4, o: Math.random() * 0.4 + 0.1,
+        c: colors[i % 3], ty: -(Math.random() * 40 + 8), delay: Math.random() * 5,
       });
     }
   }
@@ -118,27 +130,26 @@ function Particles() {
         <motion.div key={i} className="absolute rounded-full"
           style={{
             left: `${p.x}%`, top: `${p.y}%`, width: p.s, height: p.s,
-            background: i % 3 === 0 ? "#00ffe0" : i % 3 === 1 ? "#ff00e6" : "#7000ff",
-            opacity: p.o, boxShadow: i % 2 === 0 ? "0 0 6px rgba(0,255,224,0.3)" : "0 0 6px rgba(255,0,230,0.3)",
+            background: p.c, opacity: p.o,
+            boxShadow: i % 2 === 0 ? "0 0 6px rgba(0,255,224,0.3)" : "0 0 6px rgba(255,0,230,0.3)",
+            willChange: "transform, opacity",
           }}
-          animate={{ y: [0, -(Math.random() * 50 + 10), 0], opacity: [p.o * 0.2, p.o, p.o * 0.2] }}
-          transition={{ duration: p.d, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
+          animate={{ y: [0, p.ty, 0], opacity: [p.o * 0.2, p.o, p.o * 0.2] }}
+          transition={{ duration: p.d, repeat: Infinity, ease: "easeInOut", delay: p.delay }}
         />
       ))}
     </div>
   );
 }
 
-function NeonBorder({ children, highlighted }: { children: React.ReactNode; highlighted?: boolean }) {
+function NeonBorder({ children }: { children: React.ReactNode; highlighted?: boolean }) {
   return (
     <div className="relative rounded-[24px]">
       <div className="absolute inset-0 rounded-[24px] overflow-hidden pointer-events-none">
-        <motion.div className="absolute inset-[-50%]"
-          style={{ background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)" }}
-          animate={{ rotate: 360 }}
-          transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+        <div className="absolute inset-0"
+          style={{ background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)", animation: "spin 6s linear infinite", willChange: "transform" }}
         />
-        <div className="absolute inset-[1.5px] rounded-[22.5px]" style={{ background: "rgba(10,10,15,0.85)", backdropFilter: "blur(30px)" }} />
+        <div className="absolute inset-[1.5px] rounded-[22.5px]" style={{ background: "rgba(10,10,15,0.92)" }} />
       </div>
       <div className="relative z-10">{children}</div>
     </div>
@@ -172,8 +183,9 @@ export default function PremiumPage() {
       <MouseGlow />
       <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
-        <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+        <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
+          backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
         }} />
         <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.6)" }} />
         <NeonOrbs />

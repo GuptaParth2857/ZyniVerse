@@ -587,6 +587,12 @@ body {
   }
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ─────────── Upgraded Glassmorphism Utilities ─────────── */
 
 .glass-strong {
