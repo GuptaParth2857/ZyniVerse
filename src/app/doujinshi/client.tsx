@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { getDoujinshi, getParodies, getCircles } from "@/lib/doujinshi-data";
-import type { DoujinshiEntry } from "@/lib/doujinshi-data";
+import type { DoujinshiEntry } from "@/lib/mangadex-api";
 import DoujinshiCard from "@/components/DoujinshiCard";
 import { PageTransition } from "@/components/PageTransition";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -12,25 +11,28 @@ import Loader from "@/components/Loader";
 export default function DoujinshiBrowseClient() {
   const { data: session } = useSession();
   const [search, setSearch] = useState("");
-  const [selectedParody, setSelectedParody] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
+  const [entries, setEntries] = useState<DoujinshiEntry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [trackedMap, setTrackedMap] = useState<Record<string, string>>({});
 
-  const entries = useMemo(() => {
-    return getDoujinshi(
-      search || undefined,
-      selectedParody || undefined,
-      selectedTag || undefined,
-    );
-  }, [search, selectedParody, selectedTag]);
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
 
-  const parodies = useMemo(() => getParodies(), []);
-  const circles = useMemo(() => getCircles(), []);
-  const allTags = useMemo(() => {
-    const tags = new Set<string>();
-    getDoujinshi().forEach((d) => d.tags.forEach((t) => tags.add(t)));
-    return Array.from(tags).sort();
-  }, []);
+  useEffect(() => {
+    setLoading(true);
+    const sp = new URLSearchParams();
+    if (debouncedSearch) sp.set("search", debouncedSearch);
+    sp.set("perPage", "50");
+    fetch(`/api/doujinshi?${sp.toString()}`)
+      .then((r) => r.json())
+      .then((data) => setEntries(data.entries || []))
+      .catch(() => setEntries([]))
+      .finally(() => setLoading(false));
+  }, [debouncedSearch]);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -46,7 +48,18 @@ export default function DoujinshiBrowseClient() {
       .catch(() => {});
   }, [session]);
 
-  async function handleTrack(id: string, status: string) {
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    entries.forEach((d) => d.tags.forEach((t) => tags.add(t)));
+    return Array.from(tags).sort();
+  }, [entries]);
+
+  const filtered = useMemo(() => {
+    if (!selectedTag) return entries;
+    return entries.filter((e) => e.tags.includes(selectedTag));
+  }, [entries, selectedTag]);
+
+  const handleTrack = useCallback(async (id: string, status: string) => {
     if (!session?.user?.id) return;
     try {
       const res = await fetch(`/api/doujinshi/${id}/track`, {
@@ -63,21 +76,19 @@ export default function DoujinshiBrowseClient() {
         });
       }
     } catch {}
-  }
+  }, [session]);
 
   return (
     <PageTransition>
       <ErrorBoundary label="DoujinshiBrowse">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="font-display text-3xl font-bold mb-2">Doujinshi</h1>
             <p className="text-sm text-[var(--color-mute)]">
-              Discover and track doujinshi — fan works, original creations, and community favorites.
+              Discover and track doujinshi from MangaDex.
             </p>
           </div>
 
-          {/* Filters */}
           <div className="mb-8 space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               <div className="relative flex-1 min-w-[200px]">
@@ -89,20 +100,10 @@ export default function DoujinshiBrowseClient() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search doujinshi..."
+                  placeholder="Search MangaDex doujinshi..."
                   className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/90 backdrop-blur-sm py-3.5 pl-12 pr-4 text-sm text-white placeholder-[var(--color-mute)]/50 outline-none transition-all duration-300 focus:border-[var(--color-magenta)]"
                 />
               </div>
-              <select
-                value={selectedParody}
-                onChange={(e) => setSelectedParody(e.target.value)}
-                className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2 text-sm outline-none focus:border-[var(--color-magenta)]"
-              >
-                <option value="">All Parodies</option>
-                {parodies.map((p) => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
               <select
                 value={selectedTag}
                 onChange={(e) => setSelectedTag(e.target.value)}
@@ -116,15 +117,16 @@ export default function DoujinshiBrowseClient() {
             </div>
           </div>
 
-          {/* Results */}
-          {entries.length === 0 ? (
+          {loading ? (
+            <Loader />
+          ) : filtered.length === 0 ? (
             <div className="py-20 text-center">
               <div className="text-4xl mb-4">🔍</div>
-              <p className="text-[var(--color-mute)] text-sm">No doujinshi found matching your criteria.</p>
+              <p className="text-[var(--color-mute)] text-sm">No doujinshi found matching your search.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {entries.map((entry) => (
+              {filtered.map((entry) => (
                 <DoujinshiCard
                   key={entry.id}
                   entry={entry}
@@ -134,15 +136,6 @@ export default function DoujinshiBrowseClient() {
               ))}
             </div>
           )}
-
-          {/* Info */}
-          <div className="mt-12 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
-            <h3 className="font-display text-sm font-bold mb-2">About Doujinshi</h3>
-            <p className="text-xs text-[var(--color-mute)] leading-relaxed">
-              Doujinshi are self-published works, often fan-made, that celebrate anime, manga, and gaming culture.
-              This directory only includes original works and fan works available through legal free sources like MangaDex.
-            </p>
-          </div>
         </div>
       </ErrorBoundary>
     </PageTransition>

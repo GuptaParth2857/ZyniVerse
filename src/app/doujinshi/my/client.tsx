@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { PageTransition } from "@/components/PageTransition";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Loader from "@/components/Loader";
-import type { DoujinshiEntry } from "@/lib/doujinshi-data";
+import type { DoujinshiEntry } from "@/lib/mangadex-api";
 
 interface TrackedItem {
   entry: {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import type { DoujinshiEntry } from "@/lib/doujinshi-data";
+import type { DoujinshiEntry } from "@/lib/mangadex-api";
 
 interface Props {
   entry: DoujinshiEntry;
