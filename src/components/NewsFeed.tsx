@@ -148,7 +148,8 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
       const res = await fetch(`/api/news?type=${t}`);
       const d = await res.json();
       setNews(d.news || []);
-    } catch {
+    } catch (e) {
+      console.error("[NewsFeed] fetch failed:", e);
       setNews([]);
     } finally {
       setLoading(false);
