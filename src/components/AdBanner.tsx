@@ -13,6 +13,7 @@ function injectAdScript(container: HTMLElement, code: string, dimensions?: { wid
   const iframe = document.createElement("iframe");
   iframe.width = dimensions?.width?.toString() || "100%";
   iframe.height = dimensions?.height?.toString() || "100%";
+  iframe.style.maxWidth = "100%";
   iframe.style.border = "none";
   iframe.style.overflow = "hidden";
   iframe.scrolling = "no";
