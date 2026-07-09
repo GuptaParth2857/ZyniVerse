@@ -117,8 +117,7 @@ export default function WatchOrderPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-[var(--color-panel)]/40 to-transparent" />
                       <div className="absolute top-3 left-3">
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-black/50 backdrop-blur-sm px-2.5 py-1 text-[10px] font-mono font-bold text-white/80 border border-white/10">
-                          {order.emoji}
-                          <span>{order.entries} entries</span>
+                          {order.entries} entries
                         </span>
                       </div>
                     </div>
