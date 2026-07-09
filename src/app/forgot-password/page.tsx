@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -171,37 +170,65 @@ function RippleButton({ children, className = "", ...props }: { children: React.
 }
 
 /* ─── MAIN ─── */
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [step, setStep] = useState<"email" | "otp">("email");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [comingSoon, setComingSoon] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
-  useEffect(() => {
-    const saved = localStorage.getItem("zyniverse_remember_email");
-    if (saved) { setEmail(saved); setRemember(true); }
-  }, []);
-
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSendEmail(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
-    if (remember) {
-      localStorage.setItem("zyniverse_remember_email", email);
-    } else {
-      localStorage.removeItem("zyniverse_remember_email");
+    
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStep("otp");
+      } else {
+        setError(data.error || "Failed to send email");
+      }
+    } catch {
+      setError("Network error");
+    } finally {
+      setLoading(false);
     }
-    const result = await signIn("credentials", { email, password, redirect: false });
-    setLoading(false);
-    if (result?.error) {
-      setError("Invalid email or password");
-    } else {
-      router.push("/");
-      router.refresh();
+  }
+
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, token: otp, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccessMsg("Password reset successfully!");
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        setError(data.error || "Failed to reset password");
+      }
+    } catch {
+      setError("Network error");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -250,108 +277,87 @@ export default function LoginPage() {
               {/* Header */}
               <div className="text-center mb-8">
                 <h2 className="font-display text-[32px] font-bold bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
-                  Login
+                  Reset Password
                 </h2>
                 <p className="mt-2 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  Enter your credentials to access your account.
+                  {step === "email" ? "Enter your email to receive an OTP." : "Enter the OTP sent to your email and a new password."}
                 </p>
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <GlowInput
-                  type="email"
-                  value={email}
-                  onChange={setEmail}
-                  placeholder="Email address"
-                  icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 7l-10 7L2 7" /></svg>}
-                />
+              {step === "email" ? (
+                <form onSubmit={handleSendEmail} className="space-y-5">
+                  <GlowInput
+                    type="email"
+                    value={email}
+                    onChange={setEmail}
+                    placeholder="Email address"
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 7l-10 7L2 7" /></svg>}
+                  />
 
-                <GlowInput
-                  type="password"
-                  value={password}
-                  onChange={setPassword}
-                  placeholder="Password"
-                  icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>}
-                  toggle={{ show: showPw, onToggle: () => setShowPw(!showPw) }}
-                />
+                  {/* Error */}
+                  <AnimatePresence>
+                    {error && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                        <div className="rounded-[12px] border px-4 py-2.5 border-red-500/20 bg-red-500/5">
+                          <p className="text-center text-[13px] text-red-400">{error}</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                {/* Options */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <button type="button" onClick={() => setRemember(!remember)}
-                      className={`relative flex h-5 w-9 shrink-0 items-center rounded-full transition-all duration-300 ${remember ? "bg-[#00ffe0]" : "bg-[rgba(255,255,255,0.06)]"}`}
-                    >
-                      <motion.span layout transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm ${remember ? "ml-[19px]" : "ml-[3px]"}`}
-                      />
-                    </button>
-                    <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.4)" }}>Remember me</span>
-                  </div>
-                  <Link href="/forgot-password"
-                    className="text-[13px] font-medium text-[#00ffe0] hover:text-[#ff00e6] transition-colors">
-                    Forgot password?
-                  </Link>
-                </div>
-
-                {/* Error / Coming Soon */}
-                <AnimatePresence>
-                  {(error || comingSoon) && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                      <div className={`rounded-[12px] border px-4 py-2.5 ${error ? "border-red-500/20 bg-red-500/5" : "border-[#00ffe0]/20 bg-[#00ffe0]/5"}`}>
-                        <p className={`text-center text-[13px] ${error ? "text-red-400" : "text-[#00ffe0]"}`}>{error || comingSoon}</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Submit */}
-                <RippleButton type="submit" disabled={loading}
-                  className="w-full h-[56px] rounded-[16px] bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] text-[15px] font-bold text-white tracking-wide shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_50px_-6px_rgba(0,255,224,0.5),0_0_80px_-20px_rgba(255,0,230,0.2)] active:scale-[0.98] disabled:opacity-60"
-                >
-                  {loading ? (
-                    <span className="inline-flex items-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Signing in...
-                    </span>
-                  ) : "Sign In"}
-                </RippleButton>
-              </form>
-
-              {/* Divider */}
-              <div className="mt-7 flex items-center gap-4">
-                <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.05)" }} />
-                <span className="text-[12px] font-medium" style={{ color: "rgba(255,255,255,0.25)" }}>or continue with</span>
-                <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.05)" }} />
-              </div>
-
-              {/* Social */}
-              <div className="mt-5 flex gap-3">
-                {[
-                  { name: "Google", id: "google", icon: <svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> },
-                  { name: "GitHub", id: "github", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.63 0 12 0z"/></svg> },
-                ].map((s) => (
-                  <motion.button key={s.id} type="button"
-                    whileHover={{ y: -2, scale: 1.03 }}
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => signIn(s.id, { callbackUrl: "/" })}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-[14px] border border-[rgba(0,255,224,0.1)] bg-[rgba(255,255,255,0.02)] py-3 text-[13px] font-medium text-[rgba(255,255,255,0.4)] transition-all duration-300 hover:border-[#00ffe0]/30 hover:bg-[rgba(0,255,224,0.03)] hover:text-[#00ffe0] hover:shadow-[0_0_25px_-10px_rgba(0,255,224,0.15)]"
+                  {/* Submit */}
+                  <RippleButton type="submit" disabled={loading}
+                    className="w-full h-[56px] rounded-[16px] bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] text-[15px] font-bold text-white tracking-wide shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_50px_-6px_rgba(0,255,224,0.5),0_0_80px_-20px_rgba(255,0,230,0.2)] active:scale-[0.98] disabled:opacity-60"
                   >
-                    {s.icon}
-                    <span className="hidden sm:inline">{s.name}</span>
-                  </motion.button>
-                ))}
-              </div>
+                    {loading ? "Sending..." : "Send Reset Code"}
+                  </RippleButton>
+                </form>
+              ) : (
+                <form onSubmit={handleResetPassword} className="space-y-5">
+                  <GlowInput
+                    type="text"
+                    value={otp}
+                    onChange={setOtp}
+                    placeholder="6-digit OTP"
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>}
+                  />
+
+                  <GlowInput
+                    type="password"
+                    value={newPassword}
+                    onChange={setNewPassword}
+                    placeholder="New Password"
+                    icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>}
+                    toggle={{ show: showPw, onToggle: () => setShowPw(!showPw) }}
+                  />
+
+                  {/* Error / Success */}
+                  <AnimatePresence>
+                    {(error || successMsg) && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                        <div className={`rounded-[12px] border px-4 py-2.5 ${error ? "border-red-500/20 bg-red-500/5" : "border-[#00ffe0]/20 bg-[#00ffe0]/5"}`}>
+                          <p className={`text-center text-[13px] ${error ? "text-red-400" : "text-[#00ffe0]"}`}>{error || successMsg}</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Submit */}
+                  <RippleButton type="submit" disabled={loading}
+                    className="w-full h-[56px] rounded-[16px] bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] text-[15px] font-bold text-white tracking-wide shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_50px_-6px_rgba(0,255,224,0.5),0_0_80px_-20px_rgba(255,0,230,0.2)] active:scale-[0.98] disabled:opacity-60"
+                  >
+                    {loading ? "Resetting..." : "Reset Password"}
+                  </RippleButton>
+                </form>
+              )}
 
               {/* Footer */}
               <div className="mt-8 text-center">
                 <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-                  Don&apos;t have an account?{" "}
-                  <Link href="/register" className="font-semibold text-[#00ffe0] hover:text-[#ff00e6] transition-colors">
-                    Sign Up
+                  Remember your password?{" "}
+                  <Link href="/login" className="font-semibold text-[#00ffe0] hover:text-[#ff00e6] transition-colors">
+                    Sign In
                   </Link>
                 </p>
               </div>
