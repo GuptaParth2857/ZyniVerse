@@ -8,15 +8,18 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import Loader, { ErrorState } from "@/components/Loader";
 import { getTrending, getPopular, getTopRated, getSeasonal, bestTitle } from "@/lib/anilist";
+import { getUserLeaderboard } from "@/lib/leaderboard";
 import type { Media } from "@/lib/anilist";
+import type { UserLeaderboardEntry } from "@/lib/leaderboard";
 
-type Tab = "trending" | "popular" | "toprated" | "seasonal";
+type Tab = "trending" | "popular" | "toprated" | "seasonal" | "users";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "trending", label: "Trending" },
   { key: "popular", label: "Most Popular" },
   { key: "toprated", label: "Top Rated" },
   { key: "seasonal", label: "Seasonal" },
+  { key: "users", label: "Top Users" },
 ];
 
 const MEDALS = ["🥇", "🥈", "🥉"];
@@ -44,6 +47,44 @@ function RankBadge({ rank }: { rank: number }) {
     <span className="font-mono text-lg font-black text-[var(--color-mute)] w-8 text-center">
       #{rank}
     </span>
+  );
+}
+
+function UserRow({ item, rank, index }: { item: UserLeaderboardEntry; rank: number; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.025, type: "spring", stiffness: 260, damping: 24 }}
+      className="group relative flex items-center gap-3 sm:gap-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 sm:p-4 transition-all hover:border-[var(--color-violet)]/40 hover:shadow-lg"
+    >
+      <div className="flex items-center justify-center w-10 shrink-0">
+        <RankBadge rank={rank} />
+      </div>
+
+      <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden border border-[var(--color-line)] bg-[var(--color-void)]">
+        {item.avatar ? (
+          <img src={item.avatar} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[var(--color-mute)]">
+            {item.username[0]?.toUpperCase()}
+          </div>
+        )}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <span className="font-display text-sm font-bold">{item.username}</span>
+        <div className="flex flex-wrap gap-2 mt-0.5">
+          <span className="text-[10px] font-mono text-[var(--color-cyan)]">Lv.{item.level}</span>
+          <span className="text-[10px] text-[var(--color-mute)]">{item.achievements} achievements</span>
+        </div>
+      </div>
+
+      <div className="text-right shrink-0">
+        <span className="font-mono text-sm font-bold text-[var(--color-amber)]">{item.points.toLocaleString()}</span>
+        <div className="text-[10px] text-[var(--color-mute)]">points</div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -158,6 +199,8 @@ function LeaderboardRow({ item, rank, index }: { item: Media; rank: number; inde
 export default function LeaderboardPage() {
   const [tab, setTab] = useState<Tab>("trending");
   const [data, setData] = useState<Media[]>([]);
+  const [userData, setUserData] = useState<UserLeaderboardEntry[]>([]);
+  const [userTotal, setUserTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [seasonYear, setSeasonYear] = useState(CURRENT_YEAR);
@@ -169,15 +212,23 @@ export default function LeaderboardPage() {
     setError(null);
     dataRef.current = t;
     try {
-      let items: Media[];
-      if (t === "trending") items = await getTrending(50);
-      else if (t === "popular") items = await getPopular(50);
-      else if (t === "toprated") items = await getTopRated(50);
-      else {
-        const res = await getSeasonal(seasonYear, seasonName, 50);
-        items = res.media;
+      if (t === "users") {
+        const result = await getUserLeaderboard(50);
+        if (dataRef.current === t) {
+          setUserData(result.entries);
+          setUserTotal(result.total);
+        }
+      } else {
+        let items: Media[];
+        if (t === "trending") items = await getTrending(50);
+        else if (t === "popular") items = await getPopular(50);
+        else if (t === "toprated") items = await getTopRated(50);
+        else {
+          const res = await getSeasonal(seasonYear, seasonName, 50);
+          items = res.media;
+        }
+        if (dataRef.current === t) setData(items);
       }
-      if (dataRef.current === t) setData(items);
     } catch (e: any) {
       if (dataRef.current === t) setError(e.message || "Failed to load data");
     } finally {
@@ -190,7 +241,8 @@ export default function LeaderboardPage() {
   const heading =
     tab === "trending" ? "Trending Now" :
     tab === "popular" ? "Most Popular" :
-    tab === "toprated" ? "Top Rated" : `${seasonName} ${seasonYear}`;
+    tab === "toprated" ? "Top Rated" :
+    tab === "users" ? "Top Users" : `${seasonName} ${seasonYear}`;
 
   const subtitle =
     tab === "trending" ? "What the world is watching right now." :
@@ -272,8 +324,25 @@ export default function LeaderboardPage() {
 
         {!loading && !error && (
           <div className="space-y-2">
-            {data.length > 0 ? (
-              <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait">
+              {tab === "users" ? (
+                <motion.div key="users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
+                  {userData.length > 0 ? (
+                    userData.map((item, i) => (
+                      <UserRow key={item.userId} item={item} rank={i + 1} index={i} />
+                    ))
+                  ) : (
+                    <div className="py-16 text-center">
+                      <p className="text-[var(--color-mute)]">No users with points yet.</p>
+                    </div>
+                  )}
+                  {userTotal > 50 && (
+                    <p className="text-center text-[10px] text-[var(--color-mute)] font-mono mt-4">
+                      Showing top 50 of {userTotal} users
+                    </p>
+                  )}
+                </motion.div>
+              ) : (
                 <motion.div
                   key={`${tab}-${seasonYear}-${seasonName}`}
                   initial={{ opacity: 0 }}
@@ -281,16 +350,18 @@ export default function LeaderboardPage() {
                   exit={{ opacity: 0 }}
                   className="space-y-2"
                 >
-                  {data.map((item, i) => (
-                    <LeaderboardRow key={item.id} item={item} rank={i + 1} index={i} />
-                  ))}
+                  {data.length > 0 ? (
+                    data.map((item, i) => (
+                      <LeaderboardRow key={item.id} item={item} rank={i + 1} index={i} />
+                    ))
+                  ) : (
+                    <div className="py-16 text-center">
+                      <p className="text-[var(--color-mute)]">No data available.</p>
+                    </div>
+                  )}
                 </motion.div>
-              </AnimatePresence>
-            ) : (
-              <div className="py-16 text-center">
-                <p className="text-[var(--color-mute)]">No data available.</p>
-              </div>
-            )}
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div></ErrorBoundary>
