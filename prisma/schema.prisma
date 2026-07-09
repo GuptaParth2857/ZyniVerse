@@ -69,6 +69,10 @@ model User {
   tagVotes              TagVote[]
   characterVotes        CharacterVote[]
   mangaChapterData      MangaChapterData[]
+  polls                 Poll[]
+  pollVotes             PollVote[]
+  sentFriendRequests    FriendRequest[]         @relation("SentRequests")
+  receivedFriendRequests FriendRequest[]        @relation("ReceivedRequests")
 }
 
 model Follow {
@@ -351,6 +355,65 @@ model WatchPartyMember {
 
   @@unique([partyId, userId])
   @@index([partyId])
+}
+
+model Poll {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  createdById String
+  isActive    Boolean  @default(true)
+  endsAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  options   PollOption[]
+  votes     PollVote[]
+
+  @@index([isActive, createdAt])
+}
+
+model PollOption {
+  id      String @id @default(cuid())
+  pollId  String
+  label   String
+  image   String?
+
+  poll  Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes PollVote[]
+
+  @@index([pollId])
+}
+
+model PollVote {
+  id        String   @id @default(cuid())
+  pollId    String
+  optionId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  poll   Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId])
+  @@index([pollId])
+}
+
+model FriendRequest {
+  id          String   @id @default(cuid())
+  senderId    String
+  receiverId  String
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
 }
 
 model Cosplay {
