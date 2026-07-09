@@ -34,13 +34,13 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { userId } = await req.json();
-  if (!userId) return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+  const { recipientId } = await req.json();
+  if (!recipientId) return NextResponse.json({ error: "Missing recipientId" }, { status: 400 });
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({ where: { id: recipientId } });
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-  const conversation = await getOrCreateConversation(session.user.id, userId);
+  const conversation = await getOrCreateConversation(session.user.id, recipientId);
   return NextResponse.json({ conversation });
 }
 
