@@ -18,6 +18,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: "Wiki — ZyniVerse" };
 }
 
-export default function WikiDetailPage({ params }: Props) {
-  return <WikiDetailPageClient params={params} />;
+export default function WikiDetailPage() {
+  return <WikiDetailPageClient />;
 }

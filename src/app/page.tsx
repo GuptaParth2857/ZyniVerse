@@ -12,6 +12,7 @@ import ContinueWatching from "@/components/ContinueWatching";
 import Recommendations from "@/components/Recommendations";
 import AdBanner from "@/components/AdBanner";
 import QuoteOfTheDay from "@/components/QuoteOfTheDay";
+import HomeMomentButton from "@/components/HomeMomentButton";
 import FriendActivityFeed from "@/components/features/FriendActivityFeed";
 import MonthlyCalendar from "@/components/features/MonthlyCalendar";
 import type { Media } from "@/lib/anilist";
@@ -206,6 +207,7 @@ export default async function Home() {
               <Link href="/manga" className="rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold hover:border-[var(--color-cyan)] transition-colors">Browse Manga</Link>
               <Link href="/schedule" className="rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold hover:border-[var(--color-cyan)] transition-colors">View Schedule</Link>
               <Link href="/watchlist" className="rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold hover:border-[var(--color-cyan)] transition-colors">My Watchlist</Link>
+              <HomeMomentButton />
             </div>
           </div>
         </FadeIn>

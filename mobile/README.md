@@ -53,8 +53,8 @@ eas build --platform all    # Both platforms
 
 ## Links
 
-- Web App: [https://zyniverse.app](https://zyniverse.app)
-- API: [https://zyniverse.app/api/v1](https://zyniverse.app/api/v1)
+- Web App: [https://zyverse.in](https://zyverse.in)
+- API: [https://zyverse.in/api/v1](https://zyverse.in/api/v1)
 
 ## Tech Stack
 

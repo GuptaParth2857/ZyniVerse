@@ -45,7 +45,7 @@ export async function PUT(
       ...(description !== undefined && { description }),
       ...(character !== undefined && { character }),
       ...(animeTitle !== undefined && { animeTitle }),
-      ...(animeId !== undefined && { animeId: animeId ? parseInt(animeId) : null }),
+      ...(animeId !== undefined && { animeId: animeId ? Number(animeId) : null }),
       ...(imageUrl !== undefined && { imageUrl }),
       ...(tags !== undefined && { tags }),
     },

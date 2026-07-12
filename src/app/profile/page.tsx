@@ -40,7 +40,11 @@ export default function ProfilePage() {
     if (status !== "authenticated") return;
     setLoading(true); setError(null);
     fetch("/api/profile")
-      .then((r) => r.json())
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || "Failed to load profile");
+        return data;
+      })
       .then((d) => {
         setProfile(d);
         setLoading(false);

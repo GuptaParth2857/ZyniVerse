@@ -1,4 +1,4 @@
-const ZYNI_URL = 'https://zyniverse.app';
+const ZYNI_URL = 'https://zyverse.in';
 
 chrome.runtime.onInstalled.addListener((details) => {
   // Set default settings

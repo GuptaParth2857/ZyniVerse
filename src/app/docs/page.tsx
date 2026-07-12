@@ -19,7 +19,7 @@ const SECTIONS = [
           standard HTTP GET requests with Bearer token authentication.
         </p>
         <p className="text-sm text-[var(--color-mute)] leading-relaxed mt-4">
-          Base URL: <code className="rounded bg-[var(--color-panel)] px-2 py-0.5 text-[var(--color-cyan)]">https://zyniverse.vercel.app/api/v1</code>
+          Base URL: <code className="rounded bg-[var(--color-panel)] px-2 py-0.5 text-[var(--color-cyan)]">https://zyverse.in/api/v1</code>
         </p>
       </>
     ),
@@ -185,7 +185,7 @@ const SECTIONS = [
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Request</span></p>
           <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
-  https://zyniverse.vercel.app/api/v1/filler/21</pre>
+  https://zyverse.in/api/v1/filler/21</pre>
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Response</span></p>
@@ -255,7 +255,7 @@ const SECTIONS = [
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Request</span></p>
           <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
-  &quot;https://zyniverse.vercel.app/api/v1/schedule?hours_back=12&hours_ahead=48&quot;</pre>
+  &quot;https://zyverse.in/api/v1/schedule?hours_back=12&hours_ahead=48&quot;</pre>
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Response</span></p>
@@ -317,7 +317,7 @@ const SECTIONS = [
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Request</span></p>
           <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
-  https://zyniverse.vercel.app/api/v1/dub-status/21</pre>
+  https://zyverse.in/api/v1/dub-status/21</pre>
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Response</span></p>
@@ -369,7 +369,7 @@ const SECTIONS = [
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Request</span></p>
           <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
-  https://zyniverse.vercel.app/api/v1/anime/21</pre>
+  https://zyverse.in/api/v1/anime/21</pre>
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Response</span></p>
@@ -552,7 +552,7 @@ export default function DocsPage() {
               {[
                 { lang: "JavaScript / TypeScript", icon: "⎈",
                   code: `const API_KEY = "zvn_your_key_here";
-      const BASE = "https://zyniverse.vercel.app/api/v1";
+      const BASE = "https://zyverse.in/api/v1";
 
       async function getFiller(anilistId) {
         const url = BASE + "/filler/" + anilistId;
@@ -568,7 +568,7 @@ export default function DocsPage() {
                   code: `import requests
 
       API_KEY = "zvn_your_key_here"
-      BASE = "https://zyniverse.vercel.app/api/v1"
+      BASE = "https://zyverse.in/api/v1"
 
       headers = {"Authorization": "Bearer " + API_KEY}
 

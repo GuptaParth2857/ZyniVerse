@@ -132,6 +132,16 @@ function SearchInner() {
     getPopular(24).then(setPopularAnime).catch(() => {});
   }, [isLanding]);
 
+  useEffect(() => {
+    if (query && query.length > 1) {
+      fetch("/api/activity/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "search", query }),
+      }).catch(() => {});
+    }
+  }, [query]);
+
   const searchOpts = useMemo(() => ({
     search: query,
     genre: genre || null,

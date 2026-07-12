@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyniverse.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
   const now = new Date();
 
   const staticPages: MetadataRoute.Sitemap = [

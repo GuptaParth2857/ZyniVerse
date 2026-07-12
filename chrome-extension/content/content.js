@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const ZYNI_API = 'https://zyniverse.app/api/v1';
+  const ZYNI_API = 'https://zyverse.in/api/v1';
 
   function getPageType() {
     const host = window.location.hostname;
@@ -127,8 +127,8 @@
     badge.title = 'Click to open ZyniVerse filler guide';
     badge.addEventListener('click', () => {
       const url = animeId
-        ? `https://zyniverse.app/anime/${animeId}/filler`
-        : 'https://zyniverse.app/filler';
+        ? `https://zyverse.in/anime/${animeId}/filler`
+        : 'https://zyverse.in/filler';
       window.open(url, '_blank');
     });
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { checkAndAwardAchievement } from "@/lib/achievements";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -53,6 +54,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     where: { id },
     data: { postCount: { increment: 1 }, updatedAt: new Date() },
   });
+
+  const replyCount = await prisma.forumPost.count({
+    where: { userId: session.user.id, isDeleted: false },
+  });
+  if (replyCount >= 50) checkAndAwardAchievement(session.user.id, "HELPER").catch(() => {});
 
   return NextResponse.json({ post }, { status: 201 });
 }

@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function NewsPage() {
   return (
     <PageTransition>
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="mb-6">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">
             News & Updates

@@ -363,16 +363,11 @@ export default function CharactersBrowsePage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 space-y-10">
 
         {/* ═══════════════ CHARACTER SEARCH ═══════════════ */}
-        <style>{`
-          @keyframes rgbShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-          .search-nwrap{position:relative;border-radius:0.75rem}
-          .search-nwrap::before{content:"";position:absolute;inset:-2px;border-radius:0.85rem;background:linear-gradient(60deg,#ff00ff,#00ffff,#ff00ff,#00ffff,#ff00ff);background-size:300% 300%;animation:rgbShift 3s ease infinite;z-index:-1;opacity:0;transition:opacity 0.4s}
-          .search-nwrap:focus-within::before{opacity:1}
-        `}</style>
         <div className="mx-auto max-w-lg">
-          <div className="search-nwrap">
-            <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-[var(--color-void)] backdrop-blur-sm px-4 py-3 transition-colors">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/30 shrink-0">
+          <div className="group relative">
+            <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[var(--color-magenta)] via-[var(--color-cyan)] to-[var(--color-violet)] opacity-0 group-focus-within:opacity-100 blur-sm transition-all duration-700 animate-neon-rgb" />
+            <div className="relative flex items-center gap-2 rounded-xl border border-white/[0.06] bg-[var(--color-void)] backdrop-blur-sm px-4 py-3 transition-colors group-focus-within:border-white/[0.12]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/30 shrink-0 group-focus-within:text-[var(--color-magenta)] transition-colors">
                 <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
               </svg>
               <input
@@ -382,7 +377,11 @@ export default function CharactersBrowsePage() {
                 className="w-full bg-transparent text-sm outline-none text-white/80 placeholder:text-white/30"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="text-white/30 hover:text-white/60 text-xs">✕</button>
+                <button onClick={() => setSearchQuery("")} className="text-white/30 hover:text-[var(--color-magenta)] transition-colors">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
               )}
             </div>
           </div>

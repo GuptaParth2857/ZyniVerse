@@ -26,7 +26,21 @@ interface WikiPageSummary {
   updatedAt: string;
   editor: { id: string; username: string };
   _count: { history: number };
+  isExternal?: boolean;
+  coverImage?: string | null;
 }
+
+interface TrendingItem {
+  title: string;
+  extract: string;
+  thumbnail: string | null;
+  slug: string;
+}
+
+const TRENDING_TOPICS = [
+  "Naruto", "Attack_on_Titan", "One_Piece", "Demon_Slayer:_Kimetsu_no_Yaiba",
+  "Jujutsu_Kaisen",
+];
 
 export default function WikiPageClient() {
   const { data: session } = useSession();
@@ -34,20 +48,47 @@ export default function WikiPageClient() {
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [trending, setTrending] = useState<TrendingItem[]>([]);
 
   useEffect(() => {
+    const abort = new AbortController();
     setLoading(true);
     const params = new URLSearchParams();
     if (category) params.set("category", category);
     if (search) params.set("search", search);
     params.set("limit", "50");
 
-    fetch(`/api/wiki?${params.toString()}`)
+    fetch(`/api/wiki?${params.toString()}`, { signal: abort.signal })
       .then((r) => r.json())
-      .then((data) => setPages(data.pages || []))
-      .catch(() => setPages([]))
-      .finally(() => setLoading(false));
+      .then((data) => { if (!abort.signal.aborted) setPages(data.pages || []); })
+      .catch(() => { if (!abort.signal.aborted) setPages([]); })
+      .finally(() => { if (!abort.signal.aborted) setLoading(false); });
+
+    return () => abort.abort();
   }, [category, search]);
+
+  useEffect(() => {
+    const abort = new AbortController();
+    fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages|extracts&exlimit=max&exintro&explaintext&pithumbsize=400&format=json&origin=*&titles=${TRENDING_TOPICS.join("|")}`,
+      { headers: { "User-Agent": "ZyniVerse/1.0" }, signal: abort.signal }
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        if (abort.signal.aborted) return;
+        const pages = data.query?.pages || {};
+        const items: TrendingItem[] = Object.values(pages).map((p: any) => ({
+          title: p.title,
+          extract: (p.extract || "").slice(0, 200),
+          thumbnail: p.thumbnail?.source || null,
+          slug: p.title.replace(/ /g, "_"),
+        }));
+        setTrending(items);
+      })
+      .catch(() => {});
+
+    return () => abort.abort();
+  }, []);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
@@ -59,35 +100,47 @@ export default function WikiPageClient() {
         </p>
       </div>
 
-      {/* Categories grid */}
+      {/* Neon category buttons */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
         {CATEGORIES.map((cat) => (
           <button
             key={cat.value}
             onClick={() => setCategory(cat.value)}
-            className={`flex flex-col items-center gap-1 rounded-xl border p-4 transition-all ${
-              category === cat.value
-                ? "border-[var(--color-magenta)] bg-[var(--color-magenta)]/10 text-[var(--color-magenta)]"
-                : "border-[var(--color-line)] bg-[var(--color-panel)] text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)]"
-            }`}
+            className="neon-premium rounded-lg"
           >
-            <span className="text-xl">{cat.icon}</span>
-            <span className="text-[10px] font-semibold text-center">{cat.label}</span>
+            <div className="neon-premium-track rounded-lg" />
+            <div className="neon-premium-overlay rounded-[6.5px]" />
+            <div className={`neon-premium-content flex flex-col items-center gap-1 p-3 rounded-lg transition-all duration-300 ${
+              category === cat.value
+                ? "bg-[var(--color-magenta)]/10 text-[var(--color-magenta)] shadow-[inset_0_0_20px_-8px_var(--color-magenta)]"
+                : "text-[var(--color-mute)] hover:bg-[var(--color-cyan)]/5 hover:text-[var(--color-cyan)]"
+            }`}>
+              <span className="text-xl">{cat.icon}</span>
+              <span className="text-[10px] font-semibold text-center">{cat.label}</span>
+            </div>
           </button>
         ))}
       </div>
 
-      {/* Search + Create */}
+      {/* Search + Create with neon */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search wiki..."
-          className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)] w-full sm:w-64"
-        />
+        <div className="neon-premium rounded-lg flex-1 max-w-xs">
+          <div className="neon-premium-track rounded-lg" />
+          <div className="neon-premium-overlay rounded-[6.5px]" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search wiki across Wikipedia..."
+            className="neon-premium-content rounded-lg border-0 bg-transparent px-3 py-1.5 text-sm outline-none w-full text-[var(--color-ink)] placeholder-[var(--color-mute)]"
+          />
+        </div>
         {session && (
-          <Link href="/wiki/create" className="rounded-xl bg-[var(--color-magenta)] px-4 py-2 text-xs font-bold text-black hover:opacity-90 transition-opacity">
-            + New Page
+          <Link href="/wiki/create" className="neon-premium rounded-xl no-underline shrink-0">
+            <div className="neon-premium-track rounded-xl" />
+            <div className="neon-premium-overlay rounded-[10.5px]" />
+            <span className="neon-premium-content flex items-center px-4 py-1.5 text-xs font-bold text-[var(--color-magenta)] hover:text-white transition-colors rounded-xl">
+              + New Page
+            </span>
           </Link>
         )}
       </div>
@@ -96,45 +149,142 @@ export default function WikiPageClient() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 animate-pulse">
-              <div className="h-5 w-1/3 bg-[var(--color-line)] rounded mb-2" />
-              <div className="h-3 w-2/3 bg-[var(--color-line)] rounded" />
+            <div key={i} className="neon-premium rounded-xl" style={{ minHeight: 72 }}>
+              <div className="neon-premium-track rounded-xl" />
+              <div className="neon-premium-overlay rounded-[10.5px]" />
+              <div className="neon-premium-content p-4 animate-pulse">
+                <div className="h-5 w-1/3 bg-[var(--color-line)] rounded mb-2" />
+                <div className="h-3 w-2/3 bg-[var(--color-line)] rounded" />
+              </div>
             </div>
           ))}
         </div>
       ) : pages.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-[var(--color-mute)] mb-4">No wiki pages yet</p>
-          {session && (
-            <Link href="/wiki/create" className="rounded-xl bg-[var(--color-magenta)] px-6 py-3 text-sm font-bold text-black hover:opacity-90 transition-opacity">
-              Create the first page
-            </Link>
-          )}
+        <div className="neon-premium rounded-xl text-center">
+          <div className="neon-premium-track rounded-xl" />
+          <div className="neon-premium-overlay rounded-[10.5px]" />
+          <div className="neon-premium-content py-20 px-6">
+            <p className="text-[var(--color-mute)] mb-4">No wiki pages yet</p>
+            {session && (
+              <Link href="/wiki/create" className="neon-premium rounded-xl inline-flex no-underline">
+                <div className="neon-premium-track rounded-xl" />
+                <div className="neon-premium-overlay rounded-[10.5px]" />
+                <span className="neon-premium-content flex items-center px-6 py-3 text-sm font-bold text-[var(--color-magenta)] hover:text-white transition-colors rounded-xl">
+                  Create the first page
+                </span>
+              </Link>
+            )}
+          </div>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {pages.map((page) => (
             <Link
               key={page.id}
               href={`/wiki/${page.slug}`}
-              className="flex items-center justify-between rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 hover:border-[var(--color-cyan)]/40 transition-all group"
+              className="neon-premium rounded-xl no-underline group"
             >
-              <div className="min-w-0 flex-1">
-                <h3 className="font-display font-bold text-sm group-hover:text-[var(--color-cyan)] transition-colors">
-                  {page.title}
-                </h3>
-                {page.summary && <p className="text-xs text-[var(--color-mute)] mt-0.5 line-clamp-1">{page.summary}</p>}
-                <div className="flex items-center gap-3 mt-1.5 text-[10px] text-[var(--color-mute)]">
-                  <span className="rounded-full bg-[var(--color-cyan)]/10 px-2 py-0.5 text-[10px] sm:text-[9px] font-medium text-[var(--color-cyan)]">{page.category}</span>
-                  <span>v{page.version}</span>
-                  <span>by {page.editor.username}</span>
-                  <span>{new Date(page.updatedAt).toLocaleDateString()}</span>
+              <div className="neon-premium-track rounded-xl" />
+              <div className="neon-premium-overlay rounded-[10.5px]" />
+              <div className="neon-premium-content">
+                {page.coverImage ? (
+                  <div className="relative h-28 w-full overflow-hidden rounded-t-xl">
+                    <div
+                      className="h-full w-full transition-transform duration-300 group-hover:scale-105"
+                      style={{ background: `url(${page.coverImage}) center/cover` }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-transparent to-transparent" />
+                  </div>
+                ) : (
+                  <div className="h-28 w-full rounded-t-xl bg-gradient-to-br from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10 flex items-center justify-center">
+                    <span className="text-[10px] font-semibold text-[var(--color-mute)] uppercase tracking-wider">{page.category}</span>
+                  </div>
+                )}
+                <div className="p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-display font-bold text-xs group-hover:text-[var(--color-cyan)] transition-colors line-clamp-2">
+                      {page.title}
+                    </h3>
+                    {page.isExternal && (
+                      <svg className="w-3 h-3 text-[var(--color-cyan)]/40 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    )}
+                  </div>
+                  {page.summary && (
+                    <p className="text-[10px] text-[var(--color-mute)] mt-1 line-clamp-2 leading-relaxed">
+                      {page.summary}
+                      {page.isExternal && (
+                        <span className="text-[var(--color-cyan)] ml-1 text-[8px]">(Wikipedia)</span>
+                      )}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2 mt-2 text-[9px] text-[var(--color-mute)] flex-wrap">
+                    <span className="rounded-full bg-[var(--color-cyan)]/10 px-1.5 py-0.5 text-[8px] font-medium text-[var(--color-cyan)]">
+                      {page.category}
+                    </span>
+                    {!page.isExternal && (
+                      <>
+                        <span>v{page.version}</span>
+                        <span>by {page.editor.username}</span>
+                      </>
+                    )}
+                    {page.isExternal && (
+                      <span className="text-[var(--color-cyan)]/60">via Wikipedia</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </Link>
           ))}
         </div>
       )}
+
+      {/* Trending */}
+      {!search && trending.length > 0 && (
+        <div className="mt-16">
+          <div className="flex items-center gap-3 mb-6">
+            <h2 className="font-display text-xl font-bold">Trending on Wikipedia</h2>
+            <div className="h-px flex-1 bg-gradient-to-r from-[var(--color-cyan)]/30 to-transparent" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {trending.map((item) => (
+              <Link
+                key={item.title}
+                href={`/wiki/${item.slug}`}
+                className="neon-premium rounded-xl no-underline group"
+              >
+                <div className="neon-premium-track rounded-xl" />
+                <div className="neon-premium-overlay rounded-[10.5px]" />
+                <div className="neon-premium-content">
+                  {item.thumbnail ? (
+                    <div className="relative h-32 w-full overflow-hidden rounded-t-xl">
+                      <div
+                        className="h-full w-full transition-transform duration-300 group-hover:scale-105"
+                        style={{ background: `url(${item.thumbnail}) center/cover` }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-transparent to-transparent" />
+                    </div>
+                  ) : (
+                    <div className="h-32 w-full rounded-t-xl bg-gradient-to-br from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10 flex items-center justify-center">
+                      <span className="text-[10px] font-semibold text-[var(--color-mute)] uppercase tracking-wider">trending</span>
+                    </div>
+                  )}
+                  <div className="p-3">
+                    <h3 className="font-display font-bold text-xs group-hover:text-[var(--color-cyan)] transition-colors line-clamp-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-[10px] text-[var(--color-mute)] mt-1 line-clamp-2 leading-relaxed">
+                      {item.extract}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

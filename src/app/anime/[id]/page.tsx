@@ -24,6 +24,7 @@ import UsersAlsoLiked from "@/components/features/UsersAlsoLiked";
 import MetadataPanel from "@/components/MetadataPanel";
 import TagVotePanel from "@/components/TagVotePanel";
 import ShareButton from "@/components/ShareButton";
+import MomentMaker from "@/components/MomentMaker";
 import RecRelationships from "@/components/RecRelationships";
 import DiscussionLinks from "@/components/DiscussionLinks";
 import CharacterVoteWidget from "@/components/CharacterVoteWidget";
@@ -51,6 +52,7 @@ export default function AnimeDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [trailerOpen, setTrailerOpen] = useState(false);
+  const [momentMakerOpen, setMomentMakerOpen] = useState(false);
   const [showAllStaff, setShowAllStaff] = useState(false);
   const [dubLangs, setDubLangs] = useState<string[] | null>(null);
   const { isSaved, toggle } = useWatchlist();
@@ -222,6 +224,9 @@ export default function AnimeDetailsPage() {
                 <div className="flex items-center gap-2">
                   <ShareButton mediaId={anime.id} title={title} />
                 </div>
+                <button onClick={() => setMomentMakerOpen(true)}
+                  className="rounded-full border border-[var(--color-cyan)]/30 bg-[var(--color-cyan)]/5 px-6 py-2.5 text-sm font-semibold text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 transition-all backdrop-blur"
+                >✦ Create Moment</button>
                 <Link href={`/search?sort=TRENDING_DESC`}
                   className="rounded-full border border-white/10 px-6 py-2.5 text-sm text-white/50 hover:text-white transition-all"
                 >Discover More →</Link>
@@ -519,6 +524,15 @@ export default function AnimeDetailsPage() {
           </div>
         </aside>
       </div>
+
+      {/* ── Moment Maker ── */}
+      <MomentMaker
+        isOpen={momentMakerOpen}
+        onClose={() => setMomentMakerOpen(false)}
+        animeId={anime.id}
+        animeTitle={title}
+        animeCover={anime.coverImage?.extraLarge || anime.coverImage?.large}
+      />
 
       {/* ── Trailer Modal ── */}
       {trailerOpen && anime.trailer?.id && (

@@ -18,8 +18,8 @@ const WIDGETS_DATA: Record<string, Omit<WidgetDef, "id">> = {
     type: "filler",
     width: 300,
     height: 400,
-    script: `<script src="https://zyniverse.app/widgets/filler.js" data-anime-id="{ID}" data-theme="dark"></script>`,
-    iframe: `<iframe src="https://zyniverse.app/embed/filler/{ID}" width="300" height="400" frameborder="0"></iframe>`,
+    script: `<script src="https://zyverse.in/widgets/filler.js" data-anime-id="{ID}" data-theme="dark"></script>`,
+    iframe: `<iframe src="https://zyverse.in/embed/filler/{ID}" width="300" height="400" frameborder="0"></iframe>`,
   },
   dub: {
     name: "Dub Status Badge",
@@ -27,8 +27,8 @@ const WIDGETS_DATA: Record<string, Omit<WidgetDef, "id">> = {
     type: "dub",
     width: 200,
     height: 60,
-    script: `<script src="https://zyniverse.app/widgets/dub.js" data-mal-id="{ID}"></script>`,
-    iframe: `<iframe src="https://zyniverse.app/embed/dub/{ID}" width="200" height="60" frameborder="0"></iframe>`,
+    script: `<script src="https://zyverse.in/widgets/dub.js" data-mal-id="{ID}"></script>`,
+    iframe: `<iframe src="https://zyverse.in/embed/dub/{ID}" width="200" height="60" frameborder="0"></iframe>`,
   },
   progress: {
     name: "Watch Progress Widget",
@@ -36,8 +36,8 @@ const WIDGETS_DATA: Record<string, Omit<WidgetDef, "id">> = {
     type: "progress",
     width: 400,
     height: 300,
-    script: `<script src="https://zyniverse.app/widgets/progress.js" data-user="{USERNAME}" data-theme="dark"></script>`,
-    iframe: `<iframe src="https://zyniverse.app/embed/progress/{USERNAME}" width="400" height="300" frameborder="0"></iframe>`,
+    script: `<script src="https://zyverse.in/widgets/progress.js" data-user="{USERNAME}" data-theme="dark"></script>`,
+    iframe: `<iframe src="https://zyverse.in/embed/progress/{USERNAME}" width="400" height="300" frameborder="0"></iframe>`,
   },
   schedule: {
     name: "Airing Schedule Widget",
@@ -45,7 +45,7 @@ const WIDGETS_DATA: Record<string, Omit<WidgetDef, "id">> = {
     type: "schedule",
     width: 300,
     height: 500,
-    iframe: `<iframe src="https://zyniverse.app/embed/schedule" width="300" height="500" frameborder="0"></iframe>`,
+    iframe: `<iframe src="https://zyverse.in/embed/schedule" width="300" height="500" frameborder="0"></iframe>`,
   },
   badge: {
     name: "ZyniVerse Badge",
@@ -53,7 +53,7 @@ const WIDGETS_DATA: Record<string, Omit<WidgetDef, "id">> = {
     type: "badge",
     width: 120,
     height: 30,
-    iframe: `<iframe src="https://zyniverse.app/embed/badge" width="120" height="30" frameborder="0"></iframe>`,
+    iframe: `<iframe src="https://zyverse.in/embed/badge" width="120" height="30" frameborder="0"></iframe>`,
   },
 };
 

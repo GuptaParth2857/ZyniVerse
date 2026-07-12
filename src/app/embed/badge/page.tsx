@@ -10,7 +10,7 @@ export default function BadgeEmbedPage() {
       </head>
       <body style={{ margin: 0, padding: 0, background: "transparent" }}>
         <a
-          href="https://zyniverse.app"
+          href="https://zyverse.in"
           target="_blank"
           rel="noopener noreferrer"
           style={{

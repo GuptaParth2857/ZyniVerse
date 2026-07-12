@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { checkAndAwardAchievement } from "@/lib/achievements";
 
 export async function POST(req: NextRequest) {
   const rateCheck = apiLimiter.middleware(req);
@@ -22,6 +23,12 @@ export async function POST(req: NextRequest) {
     update: {},
     create: { followerId: session.user.id, followingId },
   });
+
+  const followingCount = await prisma.follow.count({ where: { followerId: session.user.id } });
+  if (followingCount >= 10) checkAndAwardAchievement(session.user.id, "SOCIAL_BUTTERFLY").catch(() => {});
+
+  const followerCount = await prisma.follow.count({ where: { followingId } });
+  if (followerCount >= 50) checkAndAwardAchievement(followingId, "INFLUENCER").catch(() => {});
 
   return NextResponse.json({ following: true });
 }

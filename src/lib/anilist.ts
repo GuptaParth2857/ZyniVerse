@@ -1,5 +1,5 @@
 const ENDPOINT = "https://graphql.anilist.co";
-const USER_AGENT = "ZyniVerse/1.0 (https://zyniverse.vercel.app)";
+const USER_AGENT = "ZyniVerse/1.0 (https://zyverse.in)";
 
 interface CacheEntry {
   data: unknown;

@@ -1,5 +1,13 @@
 import type { AchievementDef } from "@/lib/achievements";
 
+const CATEGORY_COLORS: Record<string, string> = {
+  watching: "#ff3366",
+  reading: "#00ffff",
+  community: "#ffd700",
+  social: "#ff69b4",
+  milestone: "#8a2be2",
+};
+
 interface Props {
   achievement: AchievementDef & { earned?: boolean; earnedAt?: string | null; progress?: number };
   isEarned?: boolean;
@@ -9,34 +17,63 @@ interface Props {
 export default function AchievementBadge({ achievement, isEarned: forceEarned, progress: forceProgress }: Props) {
   const earned = forceEarned ?? achievement.earned ?? false;
   const prog = forceProgress ?? achievement.progress ?? 0;
+  const color = CATEGORY_COLORS[achievement.category] || "#8a2be2";
 
   return (
-    <div
-      className={`group relative rounded-xl border p-4 text-center transition-all ${
-        earned
-          ? "border-[var(--color-violet)]/30 bg-[var(--color-violet)]/5"
-          : "border-[var(--color-line)] bg-[var(--color-panel)] opacity-60"
-      }`}
-    >
-      <div className={`text-3xl mb-2 ${!earned ? "grayscale" : ""}`}>
-        {achievement.icon}
-      </div>
-      <div className="text-xs font-semibold truncate">{achievement.name}</div>
-      <div className="text-[10px] text-[var(--color-mute)] mt-0.5">
-        {earned ? `${achievement.points} pts` : "🔒 Locked"}
-      </div>
-      {prog > 0 && !earned && (
-        <div className="mt-2 h-1 w-full rounded-full bg-[var(--color-line)] overflow-hidden">
-          <div className="h-full rounded-full bg-[var(--color-violet)]" style={{ width: `${prog}%` }} />
+    <div className="group relative">
+      <div className={`neon-premium rounded-xl transition-all duration-300 ${earned ? "" : "opacity-50"}`}>
+        <div className="neon-premium-track rounded-xl" />
+        <div className="neon-premium-overlay rounded-[10.5px]" />
+        <div className="neon-premium-content p-4 text-center">
+          <div className="relative mb-3">
+            <span className={`text-4xl block transition-transform duration-300 group-hover:scale-110 ${earned ? "" : "grayscale"}`}>
+              {achievement.icon}
+            </span>
+            {earned && (
+              <div
+                className="absolute -top-1 -right-1 h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                style={{ background: color, color: "#000" }}
+              >
+                ✓
+              </div>
+            )}
+          </div>
+          <p className="text-xs font-bold truncate">{achievement.name}</p>
+          <div className="mt-1 flex items-center justify-between">
+            <span className="text-[10px] font-mono font-bold" style={{ color }}>
+              {achievement.points} pts
+            </span>
+            {earned ? (
+              <span className="text-[8px] text-green-400 font-bold uppercase tracking-wider">Earned</span>
+            ) : (
+              <span className="text-[8px] text-[var(--color-mute)] uppercase tracking-wider">Locked</span>
+            )}
+          </div>
+          {!earned && prog > 0 && (
+            <div className="mt-2">
+              <div className="flex items-center justify-between text-[8px] text-[var(--color-mute)] mb-0.5">
+                <span>Progress</span>
+                <span>{prog}%</span>
+              </div>
+              <div className="h-1 w-full rounded-full bg-white/5 overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${prog}%`, background: color }} />
+              </div>
+            </div>
+          )}
+          {earned && achievement.earnedAt && (
+            <p className="text-[8px] text-[var(--color-mute)] mt-1.5">
+              {new Date(achievement.earnedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            </p>
+          )}
+          <p className="mt-1 text-[9px] text-[var(--color-mute)] line-clamp-2">{achievement.description}</p>
         </div>
+      </div>
+      {earned && (
+        <div
+          className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+          style={{ boxShadow: `0 0 30px ${color}22, inset 0 0 30px ${color}08` }}
+        />
       )}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-        <div className="bg-black/90 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap max-w-[200px] text-center">
-          <p className="font-semibold">{achievement.name}</p>
-          <p className="text-[10px] opacity-80 mt-0.5">{achievement.description}</p>
-          <p className="text-[10px] opacity-60 mt-0.5">{achievement.points} pts</p>
-        </div>
-      </div>
     </div>
   );
 }

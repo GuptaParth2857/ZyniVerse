@@ -171,7 +171,7 @@ export default async function FillerEmbedPage({
             </div>
 
             <a
-              href={`https://zyniverse.app/anime/${anilistId}`}
+              href={`https://zyverse.in/anime/${anilistId}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{

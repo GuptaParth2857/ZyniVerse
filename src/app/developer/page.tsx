@@ -99,7 +99,7 @@ export default function DeveloperPage() {
           <h3 className="font-semibold mb-2">2. Make your first request</h3>
           <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
             <pre className="text-xs font-mono text-[var(--color-mute)] overflow-x-auto">
-              <span className="text-[var(--color-cyan)]">curl</span> https://zyniverse.vercel.app/api/v1/schedule?hours_ahead=24 \<br />
+              <span className="text-[var(--color-cyan)]">curl</span> https://zyverse.in/api/v1/schedule?hours_ahead=24 \<br />
               &nbsp;&nbsp;-H <span className="text-[var(--color-magenta)]">&quot;Authorization: Bearer zvn_your_api_key_here&quot;</span>
             </pre>
           </div>
@@ -108,7 +108,7 @@ export default function DeveloperPage() {
           <h3 className="font-semibold mb-2">3. Try GraphQL</h3>
           <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
             <pre className="text-xs font-mono text-[var(--color-mute)] overflow-x-auto">
-              <span className="text-[var(--color-cyan)]">curl</span> -X POST https://zyniverse.vercel.app/api/v2/graphql \<br />
+              <span className="text-[var(--color-cyan)]">curl</span> -X POST https://zyverse.in/api/v2/graphql \<br />
               &nbsp;&nbsp;-H <span className="text-[var(--color-magenta)]">&quot;Authorization: Bearer zvn_your_api_key_here&quot;</span> \<br />
               &nbsp;&nbsp;-H <span className="text-[var(--color-magenta)]">&quot;Content-Type: application/json&quot;</span> \<br />
               &nbsp;&nbsp;-d <span className="text-[var(--color-magenta)]">{'{"query":"{ animeTrending { media { id title { romaji english } averageScore } } }"}'}</span>

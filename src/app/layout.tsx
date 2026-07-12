@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import Navbar from "@/components/Navbar";
@@ -12,6 +13,8 @@ import MobileNav from "@/components/MobileNav";
 import AdBanner from "@/components/AdBanner";
 import ChatWidget from "@/components/ChatWidget";
 import SplashScreen from "@/components/SplashScreen";
+import HeartbeatProvider from "@/components/HeartbeatProvider";
+import ActivityTracker from "@/components/ActivityTracker";
 
 export const metadata: Metadata = {
   title: { default: "ZyniVerse — Anime Filler Guides, Indian Dubs & Manga Tracker", template: "%s | ZyniVerse" },
@@ -74,12 +77,12 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "ZyniVerse",
-              url: process.env.NEXT_PUBLIC_BASE_URL || "https://zyniverse.vercel.app",
+              url: process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in",
               potentialAction: {
                 "@type": "SearchAction",
                 target: {
                   "@type": "EntryPoint",
-                  urlTemplate: `${process.env.NEXT_PUBLIC_BASE_URL || "https://zyniverse.vercel.app"}/search?q={search_term_string}`,
+                  urlTemplate: `${process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in"}/search?q={search_term_string}`,
                 },
                 "query-input": "required name=search_term_string",
               },
@@ -93,6 +96,10 @@ export default function RootLayout({
         <div className="scanlines" />
         <div className="noise-vignette" />
         <AuthProvider>
+          <HeartbeatProvider />
+          <Suspense fallback={null}>
+            <ActivityTracker />
+          </Suspense>
           <Providers>
             <Navbar />
             <main className="flex-1"><RouteTransition>{children}</RouteTransition></main>
