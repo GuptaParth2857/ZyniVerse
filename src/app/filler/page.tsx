@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import AffiliateLink from "@/components/AffiliateLink";
 import FillerSearch from "@/components/FillerSearch";
+import AdBanner from "@/components/AdBanner";
 import { getPopularFillerAnime } from "@/lib/filler";
 
 export const metadata: Metadata = {
@@ -47,6 +48,10 @@ export default async function FillerListingPage() {
         <AffiliateLink partner="amazon" path="https://www.amazon.com/s?k=anime+blu+ray&tag=zyniverse-21"
           className="inline-flex items-center gap-2 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
         >📦 Buy Anime on Amazon</AffiliateLink>
+      </div>
+
+      <div className="mb-6 max-w-[728px] mx-auto">
+        <AdBanner placement="filler" type="banner" />
       </div>
 
       <div className="mb-4 flex items-center gap-2">

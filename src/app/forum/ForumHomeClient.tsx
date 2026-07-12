@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import ForumThreadCard from "@/components/ForumThreadCard";
 import ForumSidebar from "@/components/ForumSidebar";
+import AdBanner from "@/components/AdBanner";
 
 export default function ForumHomeClient() {
   const [threads, setThreads] = useState<any[]>([]);
@@ -107,6 +108,13 @@ export default function ForumHomeClient() {
             {threads.map((t, i) => (
               <ForumThreadCard key={t.id} thread={t} index={i} />
             ))}
+          </div>
+        )}
+
+        {/* Mid-content ad */}
+        {threads.length > 0 && (
+          <div className="my-6 max-w-[728px] mx-auto">
+            <AdBanner placement="forum" type="banner" />
           </div>
         )}
 
