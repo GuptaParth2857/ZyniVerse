@@ -97,7 +97,7 @@ export default function NotificationList() {
           <button
             key={t}
             onClick={() => setFilter(t)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
+            className={`rounded-full px-5 py-2.5 text-xs font-medium whitespace-nowrap transition-colors ${
               filter === t
                 ? "bg-[var(--color-cyan)] text-black"
                 : "bg-[var(--color-panel)] text-[var(--color-mute)] border border-[var(--color-line)] hover:text-[var(--color-ink)]"

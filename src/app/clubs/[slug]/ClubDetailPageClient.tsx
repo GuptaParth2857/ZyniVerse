@@ -70,10 +70,19 @@ export default function ClubDetailPageClient({ params }: { params: Promise<{ slu
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-1/3 bg-[var(--color-line)] rounded" />
-          <div className="h-4 w-2/3 bg-[var(--color-line)] rounded" />
-          <div className="h-32 bg-[var(--color-line)] rounded-xl" />
+        <div className="neon-premium rounded-xl" style={{ minHeight: 200 }}>
+          <div className="neon-premium-track rounded-xl" />
+          <div className="neon-premium-overlay rounded-[10.5px]" />
+          <div className="neon-premium-content p-6 animate-pulse space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="h-20 w-20 rounded-xl bg-[var(--color-line)]" />
+              <div className="flex-1 space-y-2">
+                <div className="h-6 w-1/3 bg-[var(--color-line)] rounded" />
+                <div className="h-4 w-2/3 bg-[var(--color-line)] rounded" />
+              </div>
+            </div>
+            <div className="h-32 bg-[var(--color-line)] rounded-xl" />
+          </div>
         </div>
       </div>
     );

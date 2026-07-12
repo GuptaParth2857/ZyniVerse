@@ -30,7 +30,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 133,
     language: "english",
     type: "inspiring",
-    likes: 8540
+    likes: 0
   },
   {
     id: "naruto-2",
@@ -44,7 +44,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 167,
     language: "english",
     type: "badass",
-    likes: 12300
+    likes: 0
   },
   {
     id: "naruto-3",
@@ -57,7 +57,7 @@ const allVoiceLines: VoiceLine[] = [
     context: "Signature catchphrase",
     language: "english",
     type: "iconic",
-    likes: 7600
+    likes: 0
   },
   {
     id: "naruto-4",
@@ -70,7 +70,7 @@ const allVoiceLines: VoiceLine[] = [
     context: "His lifelong dream",
     language: "english",
     type: "inspiring",
-    likes: 6200
+    likes: 0
   },
   {
     id: "sasuke-1",
@@ -84,7 +84,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "iconic",
-    likes: 5200
+    likes: 0
   },
   {
     id: "sasuke-2",
@@ -98,7 +98,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 7,
     language: "english",
     type: "badass",
-    likes: 6800
+    likes: 0
   },
   {
     id: "sasuke-3",
@@ -112,7 +112,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 476,
     language: "english",
     type: "sad",
-    likes: 4900
+    likes: 0
   },
   {
     id: "itachi-1",
@@ -126,7 +126,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 138,
     language: "english",
     type: "sad",
-    likes: 15200
+    likes: 0
   },
   {
     id: "itachi-2",
@@ -140,7 +140,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 85,
     language: "english",
     type: "inspiring",
-    likes: 9800
+    likes: 0
   },
   {
     id: "itachi-3",
@@ -154,7 +154,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 85,
     language: "english",
     type: "iconic",
-    likes: 8700
+    likes: 0
   },
   {
     id: "kakashi-1",
@@ -168,7 +168,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 6,
     language: "english",
     type: "inspiring",
-    likes: 11300
+    likes: 0
   },
   {
     id: "kakashi-2",
@@ -182,7 +182,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 6,
     language: "english",
     type: "inspiring",
-    likes: 6100
+    likes: 0
   },
   {
     id: "kakashi-3",
@@ -196,7 +196,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 3,
     language: "english",
     type: "funny",
-    likes: 5900
+    likes: 0
   },
   {
     id: "madara-1",
@@ -210,7 +210,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 322,
     language: "english",
     type: "badass",
-    likes: 14100
+    likes: 0
   },
   {
     id: "madara-2",
@@ -224,7 +224,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 322,
     language: "english",
     type: "iconic",
-    likes: 9300
+    likes: 0
   },
   {
     id: "gaara-1",
@@ -238,7 +238,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 76,
     language: "english",
     type: "sad",
-    likes: 5600
+    likes: 0
   },
   {
     id: "gaara-2",
@@ -252,7 +252,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "inspiring",
-    likes: 7200
+    likes: 0
   },
   {
     id: "jiraiya-1",
@@ -266,7 +266,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 133,
     language: "english",
     type: "inspiring",
-    likes: 8800
+    likes: 0
   },
   {
     id: "pain-1",
@@ -280,7 +280,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 175,
     language: "english",
     type: "iconic",
-    likes: 6500
+    likes: 0
   },
   {
     id: "hinata-1",
@@ -294,7 +294,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 166,
     language: "english",
     type: "romantic",
-    likes: 11200
+    likes: 0
   },
   {
     id: "naruto-hindi-1",
@@ -307,7 +307,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 133,
     language: "hindi",
     type: "inspiring",
-    likes: 3400
+    likes: 0
   },
   {
     id: "naruto-hindi-2",
@@ -319,7 +319,7 @@ const allVoiceLines: VoiceLine[] = [
     context: "Hindi dub catchphrase - Believe it!",
     language: "hindi",
     type: "iconic",
-    likes: 2800
+    likes: 0
   },
   // ==================== ONE PIECE ====================
   {
@@ -334,7 +334,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "iconic",
-    likes: 16500
+    likes: 0
   },
   {
     id: "luffy-2",
@@ -348,7 +348,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 516,
     language: "english",
     type: "inspiring",
-    likes: 9800
+    likes: 0
   },
   {
     id: "luffy-3",
@@ -362,7 +362,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 797,
     language: "english",
     type: "inspiring",
-    likes: 12100
+    likes: 0
   },
   {
     id: "luffy-4",
@@ -376,7 +376,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "funny",
-    likes: 5100
+    likes: 0
   },
   {
     id: "zoro-1",
@@ -390,7 +390,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 24,
     language: "english",
     type: "badass",
-    likes: 9500
+    likes: 0
   },
   {
     id: "zoro-2",
@@ -404,7 +404,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 377,
     language: "english",
     type: "badass",
-    likes: 18500
+    likes: 0
   },
   {
     id: "zoro-3",
@@ -418,7 +418,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 2,
     language: "english",
     type: "inspiring",
-    likes: 7800
+    likes: 0
   },
   {
     id: "zoro-4",
@@ -432,7 +432,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 24,
     language: "english",
     type: "badass",
-    likes: 6800
+    likes: 0
   },
   {
     id: "sanji-1",
@@ -446,7 +446,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 39,
     language: "english",
     type: "iconic",
-    likes: 8200
+    likes: 0
   },
   {
     id: "sanji-2",
@@ -460,7 +460,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 808,
     language: "english",
     type: "sad",
-    likes: 10100
+    likes: 0
   },
   {
     id: "whitebeard-1",
@@ -474,7 +474,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 485,
     language: "english",
     type: "iconic",
-    likes: 13400
+    likes: 0
   },
   {
     id: "robin-1",
@@ -488,7 +488,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 278,
     language: "english",
     type: "inspiring",
-    likes: 14500
+    likes: 0
   },
   {
     id: "law-1",
@@ -502,7 +502,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 665,
     language: "english",
     type: "inspiring",
-    likes: 6300
+    likes: 0
   },
   {
     id: "nami-1",
@@ -516,7 +516,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 44,
     language: "english",
     type: "sad",
-    likes: 7900
+    likes: 0
   },
   {
     id: "ace-1",
@@ -530,7 +530,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 483,
     language: "english",
     type: "sad",
-    likes: 11100
+    likes: 0
   },
   {
     id: "shanks-1",
@@ -544,7 +544,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 316,
     language: "english",
     type: "inspiring",
-    likes: 7000
+    likes: 0
   },
   // ==================== ATTACK ON TITAN ====================
   {
@@ -559,7 +559,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 5,
     language: "english",
     type: "badass",
-    likes: 11900
+    likes: 0
   },
   {
     id: "eren-2",
@@ -573,7 +573,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 5,
     language: "english",
     type: "badass",
-    likes: 8700
+    likes: 0
   },
   {
     id: "eren-3",
@@ -587,7 +587,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 9,
     language: "english",
     type: "iconic",
-    likes: 7500
+    likes: 0
   },
   {
     id: "eren-4",
@@ -601,7 +601,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 80,
     language: "english",
     type: "badass",
-    likes: 13500
+    likes: 0
   },
   {
     id: "levi-1",
@@ -615,7 +615,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 23,
     language: "english",
     type: "badass",
-    likes: 10500
+    likes: 0
   },
   {
     id: "levi-2",
@@ -629,7 +629,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 25,
     language: "english",
     type: "inspiring",
-    likes: 6900
+    likes: 0
   },
   {
     id: "erwin-1",
@@ -643,7 +643,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 54,
     language: "english",
     type: "badass",
-    likes: 15800
+    likes: 0
   },
   {
     id: "erwin-2",
@@ -657,7 +657,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 54,
     language: "english",
     type: "inspiring",
-    likes: 9200
+    likes: 0
   },
   {
     id: "armin-1",
@@ -671,7 +671,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 10,
     language: "english",
     type: "iconic",
-    likes: 5600
+    likes: 0
   },
   {
     id: "armin-2",
@@ -685,7 +685,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 16,
     language: "english",
     type: "inspiring",
-    likes: 8000
+    likes: 0
   },
   {
     id: "mikasa-1",
@@ -699,7 +699,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 12,
     language: "english",
     type: "sad",
-    likes: 6400
+    likes: 0
   },
   {
     id: "mikasa-2",
@@ -713,7 +713,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 7,
     language: "english",
     type: "romantic",
-    likes: 5100
+    likes: 0
   },
   // ==================== DEATH NOTE ====================
   {
@@ -728,7 +728,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 2,
     language: "english",
     type: "badass",
-    likes: 10200
+    likes: 0
   },
   {
     id: "light-2",
@@ -742,7 +742,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 25,
     language: "english",
     type: "badass",
-    likes: 7800
+    likes: 0
   },
   {
     id: "light-3",
@@ -756,7 +756,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 7,
     language: "english",
     type: "iconic",
-    likes: 8800
+    likes: 0
   },
   {
     id: "l-1",
@@ -770,7 +770,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 2,
     language: "english",
     type: "iconic",
-    likes: 9100
+    likes: 0
   },
   {
     id: "l-2",
@@ -784,7 +784,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 2,
     language: "english",
     type: "funny",
-    likes: 4500
+    likes: 0
   },
   {
     id: "ryuk-1",
@@ -798,7 +798,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "funny",
-    likes: 7200
+    likes: 0
   },
   {
     id: "ryuk-2",
@@ -812,7 +812,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "funny",
-    likes: 5300
+    likes: 0
   },
   // ==================== DEMON SLAYER ====================
   {
@@ -827,7 +827,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "inspiring",
-    likes: 7800
+    likes: 0
   },
   {
     id: "tanjiro-2",
@@ -841,7 +841,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 19,
     language: "english",
     type: "inspiring",
-    likes: 6300
+    likes: 0
   },
   {
     id: "rengoku-1",
@@ -855,7 +855,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "inspiring",
-    likes: 14200
+    likes: 0
   },
   {
     id: "rengoku-2",
@@ -869,7 +869,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "inspiring",
-    likes: 10100
+    likes: 0
   },
   {
     id: "zenitsu-1",
@@ -883,7 +883,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 4,
     language: "english",
     type: "funny",
-    likes: 4200
+    likes: 0
   },
   {
     id: "zenitsu-2",
@@ -897,7 +897,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 5,
     language: "english",
     type: "funny",
-    likes: 3600
+    likes: 0
   },
   {
     id: "inosuke-1",
@@ -911,7 +911,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 11,
     language: "english",
     type: "funny",
-    likes: 4100
+    likes: 0
   },
   {
     id: "muzan-1",
@@ -925,7 +925,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 7,
     language: "english",
     type: "badass",
-    likes: 5500
+    likes: 0
   },
   {
     id: "nezuko-1",
@@ -939,7 +939,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 2,
     language: "japanese",
     type: "funny",
-    likes: 6200
+    likes: 0
   },
   // ==================== FULLMETAL ALCHEMIST ====================
   {
@@ -954,7 +954,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "iconic",
-    likes: 6800
+    likes: 0
   },
   {
     id: "edward-2",
@@ -968,7 +968,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "inspiring",
-    likes: 6200
+    likes: 0
   },
   {
     id: "roy-1",
@@ -982,7 +982,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 19,
     language: "english",
     type: "sad",
-    likes: 13500
+    likes: 0
   },
   {
     id: "alphonse-1",
@@ -996,7 +996,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 54,
     language: "english",
     type: "inspiring",
-    likes: 4900
+    likes: 0
   },
   // ==================== JUJUTSU KAISEN ====================
   {
@@ -1011,7 +1011,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 20,
     language: "english",
     type: "badass",
-    likes: 17600
+    likes: 0
   },
   {
     id: "gojo-2",
@@ -1025,7 +1025,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 7,
     language: "english",
     type: "badass",
-    likes: 12100
+    likes: 0
   },
   {
     id: "gojo-3",
@@ -1039,7 +1039,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "iconic",
-    likes: 15300
+    likes: 0
   },
   {
     id: "yuji-1",
@@ -1053,7 +1053,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 12,
     language: "english",
     type: "inspiring",
-    likes: 8900
+    likes: 0
   },
   {
     id: "yuji-2",
@@ -1067,7 +1067,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 5,
     language: "english",
     type: "sad",
-    likes: 4400
+    likes: 0
   },
   {
     id: "sukuna-1",
@@ -1081,7 +1081,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 2,
     language: "english",
     type: "badass",
-    likes: 8100
+    likes: 0
   },
   {
     id: "sukuna-2",
@@ -1095,7 +1095,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 2,
     language: "english",
     type: "badass",
-    likes: 6500
+    likes: 0
   },
   {
     id: "geto-1",
@@ -1109,7 +1109,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 29,
     language: "english",
     type: "iconic",
-    likes: 9200
+    likes: 0
   },
   // ==================== DRAGON BALL ====================
   {
@@ -1124,7 +1124,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 95,
     language: "english",
     type: "inspiring",
-    likes: 8700
+    likes: 0
   },
   {
     id: "goku-2",
@@ -1138,7 +1138,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 28,
     language: "english",
     type: "iconic",
-    likes: 11500
+    likes: 0
   },
   {
     id: "vegeta-1",
@@ -1152,7 +1152,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 24,
     language: "english",
     type: "badass",
-    likes: 9200
+    likes: 0
   },
   {
     id: "vegeta-2",
@@ -1166,7 +1166,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 55,
     language: "english",
     type: "badass",
-    likes: 6100
+    likes: 0
   },
   {
     id: "frieza-1",
@@ -1180,7 +1180,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 100,
     language: "english",
     type: "iconic",
-    likes: 9700
+    likes: 0
   },
   {
     id: "piccolo-1",
@@ -1194,7 +1194,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 9,
     language: "english",
     type: "funny",
-    likes: 5600
+    likes: 0
   },
   // ==================== COWBOY BEBOP ====================
   {
@@ -1209,7 +1209,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "iconic",
-    likes: 8600
+    likes: 0
   },
   {
     id: "spike-2",
@@ -1222,7 +1222,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 26,
     language: "english",
     type: "sad",
-    likes: 14700
+    likes: 0
   },
   {
     id: "spike-3",
@@ -1236,7 +1236,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 26,
     language: "english",
     type: "sad",
-    likes: 8100
+    likes: 0
   },
   // ==================== BLEACH ====================
   {
@@ -1251,7 +1251,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 63,
     language: "english",
     type: "sad",
-    likes: 6200
+    likes: 0
   },
   {
     id: "ichigo-2",
@@ -1265,7 +1265,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 57,
     language: "japanese",
     type: "iconic",
-    likes: 9100
+    likes: 0
   },
   {
     id: "aizen-1",
@@ -1279,7 +1279,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 55,
     language: "english",
     type: "iconic",
-    likes: 10200
+    likes: 0
   },
   {
     id: "aizen-2",
@@ -1293,7 +1293,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 55,
     language: "english",
     type: "badass",
-    likes: 7800
+    likes: 0
   },
   // ==================== EVANGELION ====================
   {
@@ -1308,7 +1308,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "inspiring",
-    likes: 7600
+    likes: 0
   },
   {
     id: "rei-1",
@@ -1322,7 +1322,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 14,
     language: "english",
     type: "iconic",
-    likes: 5400
+    likes: 0
   },
   {
     id: "misato-1",
@@ -1336,7 +1336,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "iconic",
-    likes: 8200
+    likes: 0
   },
   // ==================== HUNTER X HUNTER ====================
   {
@@ -1351,7 +1351,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 126,
     language: "english",
     type: "badass",
-    likes: 9400
+    likes: 0
   },
   {
     id: "killua-1",
@@ -1365,7 +1365,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 34,
     language: "english",
     type: "iconic",
-    likes: 7300
+    likes: 0
   },
   {
     id: "hisoka-1",
@@ -1379,7 +1379,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 40,
     language: "english",
     type: "badass",
-    likes: 6800
+    likes: 0
   },
   {
     id: "hisoka-2",
@@ -1393,7 +1393,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 44,
     language: "english",
     type: "funny",
-    likes: 7200
+    likes: 0
   },
   {
     id: "kurapika-1",
@@ -1407,7 +1407,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "badass",
-    likes: 4600
+    likes: 0
   },
   // ==================== OTHER POPULAR ANIME ====================
   {
@@ -1422,7 +1422,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "badass",
-    likes: 8800
+    likes: 0
   },
   {
     id: "thorfinn-1",
@@ -1436,7 +1436,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 24,
     language: "english",
     type: "inspiring",
-    likes: 8600
+    likes: 0
   },
   {
     id: "saitama-1",
@@ -1450,7 +1450,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "funny",
-    likes: 6300
+    likes: 0
   },
   {
     id: "saitama-2",
@@ -1464,7 +1464,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 9,
     language: "english",
     type: "inspiring",
-    likes: 5800
+    likes: 0
   },
   {
     id: "kaneki-1",
@@ -1478,7 +1478,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 12,
     language: "english",
     type: "sad",
-    likes: 7800
+    likes: 0
   },
   {
     id: "allmight-1",
@@ -1492,7 +1492,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "iconic",
-    likes: 10500
+    likes: 0
   },
   {
     id: "deku-1",
@@ -1506,7 +1506,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 10,
     language: "english",
     type: "inspiring",
-    likes: 7300
+    likes: 0
   },
   {
     id: "simon-1",
@@ -1519,7 +1519,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 8,
     language: "english",
     type: "inspiring",
-    likes: 9700
+    likes: 0
   },
   {
     id: "kamina-1",
@@ -1532,7 +1532,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "badass",
-    likes: 8400
+    likes: 0
   },
   {
     id: "denji-1",
@@ -1546,7 +1546,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "english",
     type: "funny",
-    likes: 8200
+    likes: 0
   },
   {
     id: "dio-1",
@@ -1559,7 +1559,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 22,
     language: "english",
     type: "funny",
-    likes: 10100
+    likes: 0
   },
   {
     id: "dio-2",
@@ -1572,7 +1572,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 22,
     language: "japanese",
     type: "iconic",
-    likes: 13000
+    likes: 0
   },
   {
     id: "jotaro-1",
@@ -1585,7 +1585,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "japanese",
     type: "iconic",
-    likes: 7800
+    likes: 0
   },
   {
     id: "makima-1",
@@ -1598,7 +1598,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 4,
     language: "english",
     type: "badass",
-    likes: 6100
+    likes: 0
   },
   // ==================== INDIAN / HINDI DUB SPECIALS ====================
   {
@@ -1610,7 +1610,7 @@ const allVoiceLines: VoiceLine[] = [
     context: "Hindi dub - Self-introduction",
     language: "hindi",
     type: "funny",
-    likes: 4200
+    likes: 0
   },
   {
     id: "doraemon-hindi-1",
@@ -1621,7 +1621,7 @@ const allVoiceLines: VoiceLine[] = [
     context: "Hindi dub - Nobita's classic cry for help",
     language: "hindi",
     type: "funny",
-    likes: 3600
+    likes: 0
   },
   {
     id: "doraemon-hindi-2",
@@ -1632,7 +1632,7 @@ const allVoiceLines: VoiceLine[] = [
     context: "Hindi dub - Doraemon's frustration",
     language: "hindi",
     type: "funny",
-    likes: 3100
+    likes: 0
   },
   {
     id: "naruto-hindi-3",
@@ -1644,7 +1644,7 @@ const allVoiceLines: VoiceLine[] = [
     context: "Hindi dub - His lifelong goal",
     language: "hindi",
     type: "inspiring",
-    likes: 2900
+    likes: 0
   },
   {
     id: "luffy-hindi-1",
@@ -1657,7 +1657,7 @@ const allVoiceLines: VoiceLine[] = [
     episode: 1,
     language: "hindi",
     type: "inspiring",
-    likes: 2700
+    likes: 0
   },
   {
     id: "pokemon-hindi-1",
@@ -1668,7 +1668,7 @@ const allVoiceLines: VoiceLine[] = [
     context: "Hindi dub - Gotta catch 'em all!",
     language: "hindi",
     type: "iconic",
-    likes: 2200
+    likes: 0
   },
   {
     id: "meta-1",
@@ -1679,7 +1679,7 @@ const allVoiceLines: VoiceLine[] = [
     context: "Meta-humor promotional",
     language: "hindi",
     type: "funny",
-    likes: 1500
+    likes: 0
   },
   {
     id: "meta-2",
@@ -1690,7 +1690,7 @@ const allVoiceLines: VoiceLine[] = [
     context: "Meta-humor promotional",
     language: "english",
     type: "funny",
-    likes: 1200
+    likes: 0
   },
 ];
 

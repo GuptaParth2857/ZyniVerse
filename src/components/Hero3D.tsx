@@ -86,7 +86,7 @@ export default function Hero3D({ items }: { items: Media[] }) {
               <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[var(--color-mute)]">
                 {hero?.genres?.slice(0, 3).map((g) => (
                   <Link key={g} href={`/search?genre=${g}`}
-                    className="rounded-full border border-[var(--color-line)] px-3 py-1 text-xs hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
+                    className="rounded-full border border-[var(--color-line)] px-5 py-2.5 text-xs hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
                   >{g}</Link>
                 ))}
                 {hero?.averageScore ? (

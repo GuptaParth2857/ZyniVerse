@@ -35,7 +35,7 @@ add(["Naruto Shippuden", "Naruto Shippuuden"], [
 add(["Attack on Titan", "Shingeki no Kyojin", "AOT"], [
   { name: "Crunchyroll", url: "https://www.crunchyroll.com/series/GR751KNZY/Attack-on-Titan", logo: "Crunchyroll", region: "India", languages: ["English", "Japanese"], type: "subscription" },
   { name: "Netflix", url: "https://www.netflix.com/in/title/70299043", logo: "Netflix", region: "India", languages: ["Hindi", "English", "Japanese"], type: "subscription" },
-  { name: "Amazon Prime Video", url: "https://www.primevideo.com/detail/0P7P0J6L0K", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Amazon Prime Video", url: "https://www.primevideo.com", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
 ]);
 
 add(["Demon Slayer", "Kimetsu no Yaiba"], [
@@ -61,12 +61,12 @@ add(["Fullmetal Alchemist Brotherhood", "FMAB", "Fullmetal Alchemist: Brotherhoo
 
 add("Your Name", [
   { name: "Netflix", url: "https://www.netflix.com/in/title/80161371", logo: "Netflix", region: "India", languages: ["Hindi", "English", "Japanese"], type: "subscription" },
-  { name: "Amazon Prime Video", url: "https://www.primevideo.com/detail/0P7P0J6L0K", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Amazon Prime Video", url: "https://www.primevideo.com", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
 ]);
 
 add("Spirited Away", [
   { name: "Netflix", url: "https://www.netflix.com/in/title/60023642", logo: "Netflix", region: "India", languages: ["Hindi", "English", "Japanese"], type: "subscription" },
-  { name: "Amazon Prime Video", url: "https://www.primevideo.com/detail/0P7P0J6L0K", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Amazon Prime Video", url: "https://www.primevideo.com", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
 ]);
 
 add(["My Hero Academia", "Boku no Hero Academia", "MHA"], [
@@ -84,13 +84,13 @@ add("Tokyo Revengers", [
 
 add("Chainsaw Man", [
   { name: "Crunchyroll", url: "https://www.crunchyroll.com/series/GVDHX8QNW/Chainsaw-Man", logo: "Crunchyroll", region: "India", languages: ["English", "Japanese"], type: "subscription" },
-  { name: "Amazon Prime Video", url: "https://www.primevideo.com/detail/0P7P0J6L0K", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Amazon Prime Video", url: "https://www.primevideo.com", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
 ]);
 
 add("Vinland Saga", [
   { name: "Crunchyroll", url: "https://www.crunchyroll.com/series/GEXH3WQ0R/Vinland-Saga", logo: "Crunchyroll", region: "India", languages: ["English", "Japanese"], type: "subscription" },
   { name: "Netflix", url: "https://www.netflix.com/in/title/81243911", logo: "Netflix", region: "India", languages: ["Hindi", "English", "Japanese"], type: "subscription" },
-  { name: "Amazon Prime Video", url: "https://www.primevideo.com/detail/0P7P0J6L0K", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Amazon Prime Video", url: "https://www.primevideo.com", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
 ]);
 
 add("Spy x Family", [
@@ -166,7 +166,7 @@ add("Black Clover", [
 ]);
 
 add("Made in Abyss", [
-  { name: "Amazon Prime Video", url: "https://www.primevideo.com/detail/0P7P0J6L0K", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Amazon Prime Video", url: "https://www.primevideo.com", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
 ]);
 
 add("Cyberpunk Edgerunners", [
@@ -205,12 +205,12 @@ add("Violet Evergarden", [
 
 add("Weathering With You", [
   { name: "Netflix", url: "https://www.netflix.com/in/title/81243911", logo: "Netflix", region: "India", languages: ["Hindi", "English", "Japanese"], type: "subscription" },
-  { name: "Amazon Prime Video", url: "https://www.primevideo.com/detail/0P7P0J6L0K", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Amazon Prime Video", url: "https://www.primevideo.com", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
 ]);
 
 add(["A Silent Voice", "Koe no Katachi"], [
   { name: "Netflix", url: "https://www.netflix.com/in/title/80204897", logo: "Netflix", region: "India", languages: ["Hindi", "English", "Japanese"], type: "subscription" },
-  { name: "Amazon Prime Video", url: "https://www.primevideo.com/detail/0P7P0J6L0K", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Amazon Prime Video", url: "https://www.primevideo.com", logo: "Prime Video", region: "India", languages: ["English", "Japanese"], type: "subscription" },
 ]);
 
 add(["Dr. Stone", "Dr. STONE"], [

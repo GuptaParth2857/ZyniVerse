@@ -77,7 +77,7 @@ export default function ReviewsSection({ mediaId }: { mediaId: number }) {
             className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm resize-none focus:outline-none focus:border-[var(--color-magenta)] transition-colors"
             rows={2} placeholder="Write a review (optional)" />
           <button type="submit" disabled={submitting}
-            className="rounded-full bg-[var(--color-magenta)] px-4 py-1.5 text-xs font-bold text-black disabled:opacity-50"
+            className="rounded-full bg-[var(--color-magenta)] px-5 py-2.5 text-xs font-bold text-black disabled:opacity-50"
           >{submitting ? "Submitting..." : "Submit Review"}</button>
         </form>
       ) : (

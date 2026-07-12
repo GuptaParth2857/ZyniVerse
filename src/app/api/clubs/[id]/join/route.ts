@@ -24,6 +24,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const request = await prisma.clubJoinRequest.create({
       data: { clubId: id, userId: session.user.id },
     });
+
+    if (club.ownerId !== session.user.id) {
+      await prisma.notification.create({
+        data: {
+          userId: club.ownerId,
+          type: "CLUB",
+          title: "Join Request",
+          body: `Someone requested to join "${club.name}"`,
+          link: `/clubs/${club.slug}`,
+        },
+      });
+    }
+
     return NextResponse.json({ request }, { status: 201 });
   }
 
@@ -31,6 +44,28 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     data: { clubId: id, userId: session.user.id, role: "member" },
   });
   await prisma.club.update({ where: { id }, data: { memberCount: { increment: 1 } } });
+
+  if (club.ownerId !== session.user.id) {
+    await prisma.notification.create({
+      data: {
+        userId: club.ownerId,
+        type: "CLUB",
+        title: "New Member",
+        body: `Someone joined "${club.name}"`,
+        link: `/clubs/${club.slug}`,
+      },
+    });
+  }
+
+  await prisma.notification.create({
+    data: {
+      userId: session.user.id,
+      type: "CLUB",
+      title: `Welcome to ${club.name}`,
+      body: `You are now a member of "${club.name}"`,
+      link: `/clubs/${club.slug}`,
+    },
+  });
 
   return NextResponse.json({ success: true });
 }

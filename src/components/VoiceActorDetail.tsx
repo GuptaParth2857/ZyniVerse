@@ -103,7 +103,7 @@ export default function VoiceActorDetail({ id }: { id: string }) {
                 <button
                   key={lang}
                   onClick={() => setLanguageFilter(lang)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                  className={`rounded-full px-5 py-2.5 text-xs font-medium border transition-colors ${
                     languageFilter === lang
                       ? "border-[var(--color-cyan)] text-[var(--color-cyan)] bg-[var(--color-cyan)]/10"
                       : "border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]"

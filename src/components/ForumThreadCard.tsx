@@ -81,10 +81,10 @@ export default function ForumThreadCard({ thread, index = 0 }: ForumThreadCardPr
             </div>
           )}
 
-          <div className="flex gap-4">
+          <div className="flex gap-3 sm:gap-4">
             {/* User Avatar */}
-            <div className="shrink-0">
-              <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-[#1a1a2e] border border-[#2a2a3e] group-hover:border-[#ff00ff]/50 group-hover:shadow-[0_0_15px_rgba(255,0,255,0.3)] transition-all">
+            <div className="shrink-0 hidden sm:block">
+              <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-xl overflow-hidden bg-[#1a1a2e] border border-[#2a2a3e] group-hover:border-[#ff00ff]/50 group-hover:shadow-[0_0_15px_rgba(255,0,255,0.3)] transition-all">
                 {thread.user.avatar ? (
                   <Image src={thread.user.avatar} alt="" fill className="object-cover" sizes="48px" />
                 ) : (
@@ -99,9 +99,9 @@ export default function ForumThreadCard({ thread, index = 0 }: ForumThreadCardPr
 
             {/* Content */}
             <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start justify-between gap-2 sm:gap-3">
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-[15px] text-white group-hover:text-[#ff00ff] transition-colors line-clamp-1" style={{ textShadow: "none" }}>
+                  <h3 className="font-semibold text-sm sm:text-[15px] text-white group-hover:text-[#ff00ff] transition-colors line-clamp-1" style={{ textShadow: "none" }}>
                     {thread.title}
                   </h3>
                   
@@ -154,14 +154,14 @@ export default function ForumThreadCard({ thread, index = 0 }: ForumThreadCardPr
 
             {/* Stats */}
             <div className="shrink-0 flex flex-col items-end gap-2">
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col items-center gap-0.5 rounded-lg bg-[#1a1a2e] border border-[#2a2a3e] px-3 py-1.5 group-hover:border-[#ff00ff]/30 transition-all">
+              <div className="flex items-center gap-1.5 sm:gap-3">
+                <div className="flex flex-col items-center gap-0.5 rounded-lg bg-[#1a1a2e] border border-[#2a2a3e] px-2 py-1 sm:px-3 sm:py-1.5 group-hover:border-[#ff00ff]/30 transition-all">
                   <span className="text-xs font-bold text-[#ff00ff]" style={{ textShadow: "0 0 5px rgba(255,0,255,0.3)" }}>{thread._count?.posts || thread.postCount}</span>
-                  <span className="text-[9px] uppercase text-gray-500">replies</span>
+                  <span className="text-[8px] sm:text-[9px] uppercase text-gray-500">replies</span>
                 </div>
-                <div className="flex flex-col items-center gap-0.5 rounded-lg bg-[#1a1a2e] border border-[#2a2a3e] px-3 py-1.5 group-hover:border-[#00ffff]/30 transition-all">
+                <div className="flex-col items-center gap-0.5 rounded-lg bg-[#1a1a2e] border border-[#2a2a3e] px-2 py-1 sm:px-3 sm:py-1.5 group-hover:border-[#00ffff]/30 transition-all hidden sm:flex">
                   <span className="text-xs font-bold text-[#00ffff]" style={{ textShadow: "0 0 5px rgba(0,255,255,0.3)" }}>{thread.viewCount}</span>
-                  <span className="text-[9px] uppercase text-gray-500">views</span>
+                  <span className="text-[8px] sm:text-[9px] uppercase text-gray-500">views</span>
                 </div>
               </div>
             </div>

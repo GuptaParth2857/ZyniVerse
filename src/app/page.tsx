@@ -44,6 +44,7 @@ export default async function Home() {
 
   return (
     <PageTransition>
+      <div className="animate-page-in">
       <Hero3D items={trendingData} />
       <HorizontalScroll items={trendingData.slice(0, 20)} />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
@@ -211,6 +212,7 @@ export default async function Home() {
             </div>
           </div>
         </FadeIn>
+      </div>
       </div>
     </PageTransition>
   );

@@ -49,5 +49,25 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     },
   });
 
+  const club = await prisma.club.findUnique({ where: { id }, select: { name: true, slug: true } });
+  if (club) {
+    const members = await prisma.clubMember.findMany({
+      where: { clubId: id, userId: { not: session.user.id } },
+      select: { userId: true },
+    });
+
+    if (members.length > 0) {
+      await prisma.notification.createMany({
+        data: members.map((m) => ({
+          userId: m.userId,
+          type: "CLUB",
+          title: `New Post in ${club.name}`,
+          body: `"${title}" was posted in "${club.name}"`,
+          link: `/clubs/${club.slug}`,
+        })),
+      });
+    }
+  }
+
   return NextResponse.json({ post }, { status: 201 });
 }

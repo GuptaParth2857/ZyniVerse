@@ -67,9 +67,9 @@ export default function CalendarPage() {
               <h1 className="font-display text-3xl font-bold mt-1">Anime Release Calendar</h1>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={prev} className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-xs hover:border-[var(--color-cyan)] transition-colors">←</button>
+              <button onClick={prev} className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs hover:border-[var(--color-cyan)] transition-colors">←</button>
               <span className="font-display text-sm font-bold min-w-[140px] text-center">{MONTHS[month]} {year}</span>
-              <button onClick={next} className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-xs hover:border-[var(--color-cyan)] transition-colors">→</button>
+              <button onClick={next} className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs hover:border-[var(--color-cyan)] transition-colors">→</button>
             </div>
           </div>
 

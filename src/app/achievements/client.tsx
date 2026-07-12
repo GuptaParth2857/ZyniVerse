@@ -228,7 +228,7 @@ export default function AchievementClient() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen animate-page-in">
       {/* ═══════════════ HERO ═══════════════ */}
       <div className="relative overflow-hidden border-b border-[var(--color-line)]">
         <div className="absolute inset-0 bg-[#0a0a0f]" />

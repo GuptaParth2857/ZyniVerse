@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </p>
           <button
             onClick={() => this.setState({ hasError: false, error: null })}
-            className="mt-4 rounded-full border border-[var(--color-cyan)] px-4 py-1.5 text-xs font-semibold text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 transition-all"
+            className="mt-4 rounded-full border border-[var(--color-cyan)] px-5 py-2.5 text-xs font-semibold text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 transition-all"
           >
             Retry
           </button>

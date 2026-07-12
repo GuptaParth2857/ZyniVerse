@@ -142,12 +142,12 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
               <div className="mt-3 flex flex-wrap gap-2">
                 {isHost && party.status === "waiting" && (
                   <button onClick={() => handleAction("start")}
-                    className="rounded-lg bg-green-500/20 border border-green-500/30 px-3 py-1 text-xs font-semibold text-green-400 hover:bg-green-500/30"
+                    className="rounded-lg bg-green-500/20 border border-green-500/30 px-5 py-2.5 text-xs font-semibold text-green-400 hover:bg-green-500/30"
                   >Start Party</button>
                 )}
                 {isHost && party.status !== "ended" && (
                   <button onClick={() => handleAction("end")}
-                    className="rounded-lg bg-red-500/20 border border-red-500/30 px-3 py-1 text-xs font-semibold text-red-400 hover:bg-red-500/30"
+                    className="rounded-lg bg-red-500/20 border border-red-500/30 px-5 py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/30"
                   >End Party</button>
                 )}
               </div>
@@ -182,12 +182,12 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
               <a
                 href={`https://www.crunchyroll.com/search?q=${encodeURIComponent(party.mediaTitle)}`}
                 target="_blank" rel="noopener noreferrer"
-                className="rounded-lg bg-orange-500/20 border border-orange-500/30 px-3 py-1.5 text-xs font-semibold text-orange-400 hover:bg-orange-500/30"
+                className="rounded-lg bg-orange-500/20 border border-orange-500/30 px-5 py-2.5 text-xs font-semibold text-orange-400 hover:bg-orange-500/30"
               >Crunchyroll</a>
               <a
                 href={`https://www.netflix.com/search?q=${encodeURIComponent(party.mediaTitle)}`}
                 target="_blank" rel="noopener noreferrer"
-                className="rounded-lg bg-red-500/20 border border-red-500/30 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/30"
+                className="rounded-lg bg-red-500/20 border border-red-500/30 px-5 py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/30"
               >Netflix</a>
               <a
                 href={`https://www.primevideo.com/search?phrase=${encodeURIComponent(party.mediaTitle)}`}

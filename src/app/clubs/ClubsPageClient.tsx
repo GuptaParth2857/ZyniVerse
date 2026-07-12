@@ -49,7 +49,7 @@ export default function ClubsPageClient() {
   }, [category, search]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
       <div className="mb-10">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Community</p>
         <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Clubs & Groups</h1>
@@ -64,7 +64,7 @@ export default function ClubsPageClient() {
             <button
               key={cat.value}
               onClick={() => setCategory(cat.value)}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+              className={`rounded-full px-5 py-2.5 text-xs font-semibold transition-colors ${
                 category === cat.value
                   ? "bg-[var(--color-magenta)] text-black"
                   : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)]"
@@ -88,7 +88,7 @@ export default function ClubsPageClient() {
           <Link href="/clubs/create" className="neon-premium rounded-xl no-underline">
             <div className="neon-premium-track rounded-xl" />
             <div className="neon-premium-overlay rounded-[10.5px]" />
-            <span className="neon-premium-content flex items-center px-4 py-1.5 text-xs font-bold text-[var(--color-cyan)] hover:text-white transition-colors rounded-xl">
+            <span className="neon-premium-content flex items-center px-5 py-2.5 text-xs font-bold text-[var(--color-cyan)] hover:text-white transition-colors rounded-xl">
               + Create Club
             </span>
           </Link>
@@ -114,12 +114,19 @@ export default function ClubsPageClient() {
           <div className="neon-premium-track rounded-xl" />
           <div className="neon-premium-overlay rounded-[10.5px]" />
           <div className="neon-premium-content py-20 px-6">
-            <p className="text-[var(--color-mute)] mb-4">No clubs found</p>
+            <div className="h-16 w-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-magenta)" strokeWidth="2">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
+              </svg>
+            </div>
+            <h3 className="font-display text-lg font-bold text-white mb-2">No clubs yet</h3>
+            <p className="text-sm text-[var(--color-mute)] mb-4">Be the first to create a community!</p>
             <Link href="/clubs/create" className="neon-premium rounded-xl inline-flex no-underline">
               <div className="neon-premium-track rounded-xl" />
               <div className="neon-premium-overlay rounded-[10.5px]" />
-              <span className="neon-premium-content flex items-center px-6 py-3 text-sm font-bold text-[var(--color-cyan)] hover:text-white transition-colors rounded-xl">
-                Create the first club
+              <span className="neon-premium-content flex items-center gap-2 px-6 py-3 text-sm font-bold text-[var(--color-cyan)] hover:text-white transition-colors rounded-xl">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+                Create Club
               </span>
             </Link>
           </div>

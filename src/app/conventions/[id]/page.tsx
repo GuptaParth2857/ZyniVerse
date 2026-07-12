@@ -62,12 +62,12 @@ export default async function ConventionDetailPage({ params }: Props) {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <a href={googleCalUrl} target="_blank" rel="noopener noreferrer"
-              className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
+              className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
               Add to Calendar
             </a>
             {c.ticketUrl && (
               <a href={c.ticketUrl} target="_blank" rel="noopener noreferrer"
-                className="rounded-lg bg-[var(--color-cyan)] px-4 py-1.5 text-xs font-semibold text-black hover:opacity-80 transition-opacity">
+                className="rounded-lg bg-[var(--color-cyan)] px-5 py-2.5 text-xs font-semibold text-black hover:opacity-80 transition-opacity">
                 Get Tickets
               </a>
             )}

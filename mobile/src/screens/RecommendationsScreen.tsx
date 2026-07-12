@@ -1,57 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { colors, spacing, fontSize, borderRadius } from '../theme';
 import AnimeCard from '../components/AnimeCard';
 import { Anime } from '../types';
+import { api } from '../services/api';
 
 const GENRES = [
   'Action', 'Adventure', 'Comedy', 'Drama', 'Fantasy', 'Horror',
-  'Mecha', 'Mystery', 'Romance', 'Sci-Fi', 'Slice of Life', 'Sports',
-];
-
-const MOCK_RECOMMENDATIONS: (Anime & { reason?: string })[] = [
-  {
-    id: 1,
-    title: { english: 'Attack on Titan' },
-    coverImage: { medium: '' },
-    averageScore: 85,
-    episodes: 89,
-    reason: 'You liked dark fantasy themes',
-  },
-  {
-    id: 2,
-    title: { english: 'Fullmetal Alchemist: Brotherhood' },
-    coverImage: { medium: '' },
-    averageScore: 90,
-    episodes: 64,
-    reason: 'High rated adventure anime',
-  },
-  {
-    id: 3,
-    title: { english: 'Steins;Gate' },
-    coverImage: { medium: '' },
-    averageScore: 88,
-    episodes: 24,
-    reason: 'Sci-fi time travel masterpiece',
-  },
-];
-
-const MOCK_TRENDING = [
-  { id: 4, title: { english: 'One Piece' }, coverImage: { medium: '' }, averageScore: 82, episodes: 1098 },
-  { id: 5, title: { english: 'Jujutsu Kaisen' }, coverImage: { medium: '' }, averageScore: 84, episodes: 47 },
-  { id: 6, title: { english: 'Demon Slayer' }, coverImage: { medium: '' }, averageScore: 86, episodes: 55 },
+  'Mystery', 'Romance', 'Sci-Fi', 'Slice of Life', 'Sports',
 ];
 
 export default function RecommendationsScreen() {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [trending, setTrending] = useState<Anime[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const data = await api.trending.get();
+      setTrending(Array.isArray(data) ? data.slice(0, 10) : []);
+    } catch {}
+    setLoading(false);
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+  const onRefresh = () => { setRefreshing(true); fetchData(); };
 
   const toggleGenre = (genre: string) => {
     setSelectedGenres((prev) =>
@@ -59,9 +45,18 @@ export default function RecommendationsScreen() {
     );
   };
 
+  const genreFiltered = selectedGenres.length > 0
+    ? trending.filter((a) =>
+        a.genres?.some((g: any) => selectedGenres.includes(g.name || g))
+      )
+    : [];
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      >
         {/* Genre Selector */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Pick Your Genres</Text>
@@ -80,39 +75,93 @@ export default function RecommendationsScreen() {
           </View>
         </View>
 
-        {/* Recommended For You */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recommended For You</Text>
-          {MOCK_RECOMMENDATIONS.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.recommendationCard}>
-              <View style={styles.recommendationInfo}>
-                <Text style={styles.recommendationTitle}>
-                  {item.title.english || item.title.romaji}
-                </Text>
-                <Text style={styles.recommendationReason}>{item.reason}</Text>
-                <View style={styles.recommendationMeta}>
-                  <Text style={styles.recommendationScore}>
-                    Score: {item.averageScore ? (item.averageScore / 10).toFixed(1) : '--'}
-                  </Text>
-                  <Text style={styles.recommendationEps}>
-                    {item.episodes} eps
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.recommendationArrow}>›</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {/* Genre-filtered results */}
+        {selectedGenres.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Your Picks</Text>
+            {loading ? (
+              <Text style={styles.emptyText}>Loading...</Text>
+            ) : genreFiltered.length > 0 ? (
+              genreFiltered.slice(0, 6).map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.recommendationCard}
+                  onPress={() => navigation.navigate('AnimeDetail', { id: item.id, title: item.title.english || item.title.romaji })}
+                >
+                  <View style={styles.recommendationInfo}>
+                    <Text style={styles.recommendationTitle} numberOfLines={1}>
+                      {item.title.english || item.title.romaji}
+                    </Text>
+                    <View style={styles.recommendationMeta}>
+                      <Text style={styles.recommendationScore}>
+                        {item.averageScore ? `Score: ${(item.averageScore / 10).toFixed(1)}` : 'No score'}
+                      </Text>
+                      {item.episodes ? (
+                        <Text style={styles.recommendationEps}>{item.episodes} eps</Text>
+                      ) : null}
+                    </View>
+                  </View>
+                  <Text style={styles.recommendationArrow}>›</Text>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text style={styles.emptyText}>No matches found for selected genres</Text>
+            )}
+          </View>
+        )}
 
         {/* Trending */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Trending</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {MOCK_TRENDING.map((item) => (
-              <AnimeCard key={item.id} anime={item} compact />
-            ))}
-          </ScrollView>
+          {loading ? (
+            <View style={styles.trendingRow}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <View key={i} style={[styles.trendingSkeleton, { opacity: 0.5 }]} />
+              ))}
+            </View>
+          ) : trending.length > 0 ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {trending.map((item) => (
+                <AnimeCard key={item.id} anime={item} compact />
+              ))}
+            </ScrollView>
+          ) : (
+            <Text style={styles.emptyText}>No trending anime available</Text>
+          )}
         </View>
+
+        {/* Top Rated */}
+        {trending.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Top Rated</Text>
+            {[...trending]
+              .filter((a) => a.averageScore)
+              .sort((a, b) => (b.averageScore || 0) - (a.averageScore || 0))
+              .slice(0, 5)
+              .map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.recommendationCard}
+                  onPress={() => navigation.navigate('AnimeDetail', { id: item.id, title: item.title.english || item.title.romaji })}
+                >
+                  <View style={styles.recommendationInfo}>
+                    <Text style={styles.recommendationTitle} numberOfLines={1}>
+                      {item.title.english || item.title.romaji}
+                    </Text>
+                    <View style={styles.recommendationMeta}>
+                      <Text style={styles.recommendationScore}>
+                        Score: {item.averageScore ? (item.averageScore / 10).toFixed(1) : '--'}
+                      </Text>
+                      {item.episodes ? (
+                        <Text style={styles.recommendationEps}>{item.episodes} eps</Text>
+                      ) : null}
+                    </View>
+                  </View>
+                  <Text style={styles.recommendationArrow}>›</Text>
+                </TouchableOpacity>
+              ))}
+          </View>
+        )}
 
         <View style={{ height: spacing.xxl }} />
       </ScrollView>
@@ -177,11 +226,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 4,
   },
-  recommendationReason: {
-    color: colors.primary,
-    fontSize: fontSize.xs,
-    marginBottom: 4,
-  },
   recommendationMeta: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -198,5 +242,20 @@ const styles = StyleSheet.create({
     color: colors.textDim,
     fontSize: fontSize.xl,
     marginLeft: spacing.sm,
+  },
+  trendingRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  trendingSkeleton: {
+    width: 120,
+    height: 180,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+  },
+  emptyText: {
+    color: colors.textDim,
+    fontSize: fontSize.sm,
+    paddingVertical: spacing.md,
   },
 });

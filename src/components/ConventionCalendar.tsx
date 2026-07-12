@@ -56,8 +56,8 @@ export default function ConventionCalendar() {
     <div>
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <div className="flex rounded-lg border border-[var(--color-line)] overflow-hidden">
-          <button onClick={() => setView("list")} className={`px-3 py-1.5 text-xs font-medium transition-colors ${view === "list" ? "bg-[var(--color-cyan)] text-black" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}>List</button>
-          <button onClick={() => setView("calendar")} className={`px-3 py-1.5 text-xs font-medium transition-colors ${view === "calendar" ? "bg-[var(--color-cyan)] text-black" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}>Calendar</button>
+          <button onClick={() => setView("list")} className={`px-5 py-2.5 text-xs font-medium transition-colors ${view === "list" ? "bg-[var(--color-cyan)] text-black" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}>List</button>
+          <button onClick={() => setView("calendar")} className={`px-5 py-2.5 text-xs font-medium transition-colors ${view === "calendar" ? "bg-[var(--color-cyan)] text-black" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}>Calendar</button>
         </div>
 
         <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)}
@@ -69,7 +69,7 @@ export default function ConventionCalendar() {
         <div className="flex rounded-lg border border-[var(--color-line)] overflow-hidden">
           {["all", "upcoming", "ongoing", "past"].map((s) => (
             <button key={s} onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 text-xs font-medium capitalize transition-colors ${statusFilter === s ? "bg-[var(--color-magenta)] text-black" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}>{s}</button>
+              className={`px-5 py-2.5 text-xs font-medium capitalize transition-colors ${statusFilter === s ? "bg-[var(--color-magenta)] text-black" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}>{s}</button>
           ))}
         </div>
 
@@ -128,12 +128,12 @@ function ConventionCard({ convention: c }: { convention: Convention }) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <a href={googleCalUrl(c)} target="_blank" rel="noopener noreferrer"
-            className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
+            className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
             + Calendar
           </a>
           {c.ticketUrl && (
             <a href={c.ticketUrl} target="_blank" rel="noopener noreferrer"
-              className="rounded-lg bg-[var(--color-cyan)] px-3 py-1.5 text-xs font-semibold text-black hover:opacity-80 transition-opacity">
+              className="rounded-lg bg-[var(--color-cyan)] px-5 py-2.5 text-xs font-semibold text-black hover:opacity-80 transition-opacity">
               Get Tickets
             </a>
           )}

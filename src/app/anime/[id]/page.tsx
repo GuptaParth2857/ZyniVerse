@@ -28,6 +28,7 @@ import MomentMaker from "@/components/MomentMaker";
 import RecRelationships from "@/components/RecRelationships";
 import DiscussionLinks from "@/components/DiscussionLinks";
 import CharacterVoteWidget from "@/components/CharacterVoteWidget";
+import EpisodeRatingsCard from "@/components/EpisodeRatingsCard";
 import type { MediaAnimeFull } from "@/lib/anilist";
 
 const DUB_LANG_STYLES: Record<string, { bg: string; text: string; border: string }> = {
@@ -419,6 +420,11 @@ export default function AnimeDetailsPage() {
             <EpisodeTracker mediaId={anime.id} totalEpisodes={anime.episodes} animeTitle={title} />
           )}
 
+          {/* Episode Ratings from MAL */}
+          {anime.idMal && (
+            <EpisodeRatingsCard malId={anime.idMal} />
+          )}
+
           {/* Filler Guide */}
           <FillerGuide anilistId={anime.id} animeTitle={title} />
 
@@ -476,7 +482,7 @@ export default function AnimeDetailsPage() {
                 {infoLinks.map((l) => (
                   <li key={l.id}>
                     <a href={l.url} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-2 rounded px-2 py-1 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)]"
+                      className="flex items-center gap-2 rounded-lg px-4 py-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)]"
                     >
                       <span>{l.site}</span>
                       {l.notes && <span className="text-[9px] opacity-60">— {l.notes}</span>}

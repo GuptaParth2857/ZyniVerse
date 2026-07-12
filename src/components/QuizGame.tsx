@@ -1019,7 +1019,7 @@ export default function QuizGame() {
               { key: "doubleXp" as const, icon: "⚡", label: "2x", count: wallet.powerUps.doubleXp },
             ].filter((p) => p.count > 0).map((p) => (
               <button key={p.key} onClick={() => usePowerUp(p.key)}
-                className="rounded-lg border px-3 py-2 text-xs font-bold transition-all hover:scale-105 active:scale-95"
+                className="rounded-lg border px-5 py-2.5 text-xs font-bold transition-all hover:scale-105 active:scale-95"
                 style={{
                   borderColor: "rgba(255,215,0,0.3)",
                   background: p.key === "doubleXp" && doubleXpActive ? "rgba(255,215,0,0.15)" : "rgba(255,215,0,0.05)",

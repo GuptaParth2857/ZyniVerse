@@ -35,16 +35,16 @@ export default function ForumHomeClient() {
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <div>
         {/* Sort Bar */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div className="neon-premium rounded-xl p-0.5">
             <div className="neon-premium-track rounded-xl" />
             <div className="neon-premium-overlay rounded-[10.5px]" />
-            <div className="neon-premium-content relative flex items-center gap-1 p-1">
+            <div className="neon-premium-content relative flex items-center gap-0.5 sm:gap-1 p-0.5 sm:p-1">
               {sortOptions.map((s) => (
                 <button 
                   key={s.id} 
                   onClick={() => { setSort(s.id); setPage(1); }}
-                  className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-medium transition-all ${
+                  className={`flex items-center gap-1 sm:gap-1.5 rounded-lg px-4 sm:px-5 py-2 sm:py-2.5 text-xs font-medium transition-all ${
                     sort === s.id
                       ? "bg-white/10 text-white"
                       : "text-gray-500 hover:text-white hover:bg-white/5"
@@ -57,7 +57,7 @@ export default function ForumHomeClient() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d={s.icon} />
                   </svg>
-                  {s.label}
+                  <span className="hidden sm:inline">{s.label}</span>
                 </button>
               ))}
             </div>

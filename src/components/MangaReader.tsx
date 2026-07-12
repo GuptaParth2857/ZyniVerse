@@ -170,7 +170,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
             </div>
             <button
               onClick={() => setShowChapters((o) => !o)}
-              className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
+              className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
             >
               {showChapters ? "Hide" : "Show"} Chapters
             </button>
@@ -214,7 +214,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
                 <button
                   onClick={prevChapter}
                   disabled={chapters.findIndex((c) => c.id === currentChapter.id) >= chapters.length - 1}
-                  className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
+                  className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
                 >
                   Prev
                 </button>
@@ -224,7 +224,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
                 <button
                   onClick={nextChapter}
                   disabled={chapters.findIndex((c) => c.id === currentChapter.id) <= 0}
-                  className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
+                  className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
                 >
                   Next
                 </button>
@@ -233,7 +233,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setScrollMode((o) => !o)}
-                  className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+                  className={`rounded-lg border px-5 py-2.5 text-xs transition-colors ${
                     scrollMode
                       ? "border-[var(--color-cyan)] text-[var(--color-cyan)]"
                       : "border-[var(--color-line)] text-[var(--color-mute)]"

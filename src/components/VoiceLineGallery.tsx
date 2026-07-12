@@ -150,7 +150,7 @@ export default function VoiceLineGallery() {
           <button
             key={o.value}
             onClick={() => { setTypeFilter(o.value); setPage(1); }}
-            className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider transition-colors ${
+            className={`rounded-full border px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
               typeFilter === o.value
                 ? "border-[var(--color-cyan)] bg-[var(--color-cyan)]/10 text-[var(--color-cyan)]"
                 : "border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]"
@@ -189,7 +189,7 @@ export default function VoiceLineGallery() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-cyan)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-cyan)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 Previous
               </button>
@@ -199,7 +199,7 @@ export default function VoiceLineGallery() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-cyan)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-cyan)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 Next
               </button>

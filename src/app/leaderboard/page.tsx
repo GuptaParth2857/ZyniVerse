@@ -274,7 +274,7 @@ export default function LeaderboardPage() {
         <div className="flex flex-wrap items-center gap-2 mb-6">
           {TABS.map((t) => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`relative rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
+              className={`relative rounded-full px-5 py-2.5 text-sm font-semibold transition-all ${
                 tab === t.key
                   ? "bg-[var(--color-cyan)] text-black"
                   : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"

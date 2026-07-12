@@ -120,7 +120,8 @@ function AnimeRow({ title, subtitle, icon, color, animeList, loading }: {
   const scroll = (dir: "left" | "right") => {
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollBy({ left: dir === "left" ? -400 : 400, behavior: "smooth" });
+    const scrollAmount = window.innerWidth < 640 ? 200 : 400;
+    el.scrollBy({ left: dir === "left" ? -scrollAmount : scrollAmount, behavior: "smooth" });
   };
 
   if (loading) {
@@ -222,7 +223,7 @@ export default function RecommendationsPageClient() {
   }, [selectedGenre]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen animate-page-in">
       {/* Hero */}
       <div className="relative overflow-hidden border-b border-[var(--color-line)]">
         <div className="absolute inset-0 bg-[#0a0a0f]" />

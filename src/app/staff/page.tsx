@@ -92,7 +92,7 @@ export default function StaffBrowsePage() {
 
         {/* Staff strip — ExpandingFlexCard style */}
         {!loading && !error && displayItems.length > 0 && (
-          <div className="flex h-[420px] gap-2 w-full overflow-x-auto pb-2">
+          <div className="flex h-[300px] sm:h-[420px] gap-2 w-full overflow-x-auto pb-2">
             {displayItems.slice(0, 18).map((staff, i) => {
               const isHovered = hovered === staff.id;
               return (

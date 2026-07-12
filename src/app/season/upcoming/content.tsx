@@ -54,8 +54,8 @@ export default function UpcomingSeasonContent() {
           <p className="text-white/50 mt-1">{anime.length} upcoming titles</p>
         </div>
         <div className="flex items-center gap-2 bg-white/5 rounded-lg p-1">
-          <button onClick={() => setViewMode("grid")} className={`px-3 py-1.5 rounded text-sm transition-colors ${viewMode === "grid" ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"}`}>Grid</button>
-          <button onClick={() => setViewMode("list")} className={`px-3 py-1.5 rounded text-sm transition-colors ${viewMode === "list" ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"}`}>List</button>
+          <button onClick={() => setViewMode("grid")} className={`px-5 py-2.5 rounded text-sm transition-colors ${viewMode === "grid" ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"}`}>Grid</button>
+          <button onClick={() => setViewMode("list")} className={`px-5 py-2.5 rounded text-sm transition-colors ${viewMode === "list" ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"}`}>List</button>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ export default function UpcomingSeasonContent() {
               </div>
               {a.trailer && (
                 <a href={a.trailer} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                  className="shrink-0 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs hover:bg-emerald-500/20 transition-colors">
+                  className="shrink-0 px-5 py-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs hover:bg-emerald-500/20 transition-colors">
                   Trailer
                 </a>
               )}

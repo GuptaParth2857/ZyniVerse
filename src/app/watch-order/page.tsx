@@ -22,7 +22,7 @@ export default function WatchOrderPage() {
 
   return (
     <PageTransition>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
         <FadeIn>
           <nav className="mb-6 flex items-center gap-2 text-xs text-[var(--color-mute)]">
             <Link href="/" className="hover:text-[var(--color-cyan)] transition-colors">Home</Link>

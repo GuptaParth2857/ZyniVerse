@@ -256,7 +256,7 @@ export default function MangaDetailsPage() {
                     {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABELS[s] || s}</option>)}
                   </select>
                   <button onClick={removeFromList}
-                    className="rounded-lg border border-red-500/30 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="rounded-lg border border-red-500/30 px-5 py-2.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
                   >Remove</button>
                   {entry && (
                     <span className="text-xs text-[var(--color-mute)]">
@@ -484,11 +484,11 @@ export default function MangaDetailsPage() {
             <div className="flex flex-wrap gap-2 justify-center">
               <a href={`https://www.amazon.com/s?k=${encodeURIComponent(bestTitle(manga.title) + " manga")}&tag=zyniverse-21`}
                 target="_blank" rel="noopener noreferrer sponsored"
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[10px] sm:text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
               >📦 Buy on Amazon</a>
               <a href="https://global.bookwalker.jp/search/?q=&ref=zyniverse"
                 target="_blank" rel="noopener noreferrer sponsored"
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[10px] sm:text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
               >📚 BookWalker</a>
             </div>
           </div>
