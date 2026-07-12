@@ -19,16 +19,10 @@ function injectAdInSandbox(container: HTMLDivElement, code: string, dimensions?:
   iframe.style.overflow = "hidden";
   iframe.style.maxWidth = "100%";
   iframe.scrolling = "no";
-  iframe.setAttribute("sandbox", "allow-scripts allow-popups");
   iframe.title = "Advertisement";
+  iframe.setAttribute("sandbox", "allow-scripts allow-popups");
+  iframe.srcdoc = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;display:flex;justify-content:center;align-items:center;overflow:hidden;width:${w}px;height:${h}px;">${code}</body></html>`;
   container.appendChild(iframe);
-
-  const doc = iframe.contentWindow?.document || iframe.contentDocument;
-  if (doc) {
-    doc.open();
-    doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;display:flex;justify-content:center;align-items:center;overflow:hidden;width:${w}px;height:${h}px;">${code}</body></html>`);
-    doc.close();
-  }
 }
 
 export default function AdBanner({ placement, type = "banner" }: AdBannerProps) {
