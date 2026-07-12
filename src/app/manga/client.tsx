@@ -8,6 +8,7 @@ import { PageTransition } from "@/components/PageTransition";
 import MangaCard from "@/components/MangaCard";
 import MangaSearch from "@/components/MangaSearch";
 import AffiliateLink from "@/components/AffiliateLink";
+import AdBanner from "@/components/AdBanner";
 import type { Media } from "@/lib/anilist";
 import { STATUS_LABELS } from "@/lib/manga";
 
@@ -140,6 +141,11 @@ export default function MangaBrowseClient() {
         <AffiliateLink partner="amazon" path="https://www.amazon.com/s?k=manga&tag=zyniverse-21"
           className="inline-flex items-center gap-2 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
         >📦 Buy Manga on Amazon</AffiliateLink>
+      </div>
+
+      {/* Ad — mid-content, between affiliates and grid */}
+      <div className="mt-6 max-w-[728px] mx-auto">
+        <AdBanner placement="manga" type="sidebar" />
       </div>
 
       {/* Grid */}

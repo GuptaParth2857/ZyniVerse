@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import AdBanner from "@/components/AdBanner";
 
 const CATEGORIES = [
   { value: "", label: "All", icon: "📚" },
@@ -143,6 +144,10 @@ export default function WikiPageClient() {
             </span>
           </Link>
         )}
+      </div>
+
+      <div className="mb-6 max-w-[728px] mx-auto">
+        <AdBanner placement="wiki" type="sidebar" />
       </div>
 
       {/* Pages list */}
