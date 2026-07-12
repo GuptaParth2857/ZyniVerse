@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import ClubDetail from "@/components/ClubDetail";
 
 interface ClubData {
@@ -24,6 +25,7 @@ interface ClubData {
 export default function ClubDetailPageClient({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = useParams();
   const slug = resolvedParams?.slug as string;
+  const { data: session } = useSession();
 
   const [club, setClub] = useState<ClubData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,8 +45,8 @@ export default function ClubDetailPageClient({ params }: { params: Promise<{ slu
 
   useEffect(() => { if (typeof slug === "string") fetchClub(); }, [slug]);
 
-  const isMember = club?.members?.some((m: any) => m.user.id === "current") ?? false;
-  const memberRole = null;
+  const isMember = club?.members?.some((m: any) => m.user.id === (session as any)?.user?.id) ?? false;
+  const memberRole = club?.members?.find((m: any) => m.user.id === (session as any)?.user?.id)?.role ?? null;
 
   const handleJoin = async () => {
     const res = await fetch(`/api/clubs/${club?.id}/join`, { method: "POST" });
@@ -85,5 +87,5 @@ export default function ClubDetailPageClient({ params }: { params: Promise<{ slu
     );
   }
 
-  return <ClubDetail club={club} isMember={false} memberRole={null} onJoin={handleJoin} onLeave={handleLeave} onCreatePost={handleCreatePost} />;
+  return <ClubDetail club={club} isMember={isMember} memberRole={memberRole} onJoin={handleJoin} onLeave={handleLeave} onCreatePost={handleCreatePost} />;
 }
