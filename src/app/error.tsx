@@ -10,6 +10,9 @@ export default function ErrorPage({ error, reset }: { error: Error; reset: () =>
       <p className="mt-3 text-sm text-[var(--color-mute)]">
         {error.message || "Something went wrong."}
       </p>
+      <p className="mt-1 text-xs text-[var(--color-magenta)]/60 font-mono">
+        {error.name === "Error" ? "" : `${error.name}: `}{error.message}
+      </p>
       <button onClick={reset}
         className="mt-8 rounded-full border border-[var(--color-cyan)] px-6 py-3 text-sm font-bold text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 transition-all"
       >Try again</button>

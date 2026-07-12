@@ -82,7 +82,7 @@ export default function ScheduleEmbedPage() {
             schedule.slice(0, 15).map((item: any) => (
               <a
                 key={item.id}
-                href={`https://zyniverse.app/anime/${item.media.id}`}
+                href={`https://zyverse.in/anime/${item.media.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="embed-link"

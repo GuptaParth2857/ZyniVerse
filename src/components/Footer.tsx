@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import FeedbackForm from "./FeedbackForm";
 
 const FADE_UP = { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5 } };
 
@@ -197,6 +198,13 @@ export default function Footer() {
           <Link href="/community"
             className="px-5 py-3 sm:py-2.5 bg-[var(--color-cyan)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-cyan)]/30 shrink-0"
           >Explore Community</Link>
+        </motion.div>
+
+        {/* Feedback Form */}
+        <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.45 }}
+          className="mt-6"
+        >
+          <FeedbackForm />
         </motion.div>
 
         {/* Bottom links */}

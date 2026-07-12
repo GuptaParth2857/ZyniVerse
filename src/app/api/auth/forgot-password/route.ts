@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
     if (process.env.RESEND_API_KEY) {
       await resend.emails.send({
-        from: "ZyniVerse <noreply@zyniverse.vercel.app>",
+        from: "ZyniVerse <noreply@zyverse.in>",
         to: email,
         subject: "ZyniVerse - Password Reset Request",
         html: `

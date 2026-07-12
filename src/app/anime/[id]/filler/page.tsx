@@ -65,14 +65,20 @@ export default async function FillerPage({ params }: Props) {
 
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-        <div className="relative h-48 w-32 shrink-0 rounded-xl overflow-hidden border border-[var(--color-line)] shadow-lg">
-          <Image
-            src={anime.coverImage?.extraLarge || anime.coverImage?.large || ""}
-            alt={title}
-            fill
-            className="object-cover"
-            sizes="128px"
-          />
+        <div className="neon-premium rounded-xl shrink-0">
+          <div className="neon-premium-track rounded-xl" />
+          <div className="neon-premium-overlay rounded-[10.5px]" />
+          <div className="neon-premium-content">
+            <div className="relative h-48 w-32 rounded-xl overflow-hidden">
+              <Image
+                src={anime.coverImage?.extraLarge || anime.coverImage?.large || ""}
+                alt={title}
+                fill
+                className="object-cover"
+                sizes="128px"
+              />
+            </div>
+          </div>
         </div>
         <div className="min-w-0">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Filler Guide</p>
@@ -102,10 +108,14 @@ export default async function FillerPage({ params }: Props) {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {POPULAR_FILLER_ANIME.filter((a) => a.id !== anilistId).slice(0, 8).map((a) => (
             <Link key={a.id} href={`/anime/${a.id}/filler`}
-              className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all text-center"
+              className="neon-premium rounded-xl no-underline group"
             >
-              <p className="text-sm font-semibold truncate">{a.title}</p>
-              <p className="text-[10px] text-[var(--color-mute)] mt-0.5">Filler Guide</p>
+              <div className="neon-premium-track rounded-xl" />
+              <div className="neon-premium-overlay rounded-[10.5px]" />
+              <div className="neon-premium-content p-3 text-center">
+                <p className="text-sm font-semibold truncate group-hover:text-[var(--color-cyan)] transition-colors">{a.title}</p>
+                <p className="text-[10px] text-[var(--color-mute)] mt-0.5">Filler Guide</p>
+              </div>
             </Link>
           ))}
         </div>

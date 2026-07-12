@@ -383,7 +383,13 @@ export function getDailyQuiz(): QuizQuestion[] {
 }
 
 export function checkAnswer(questionId: string, answer: string): { correct: boolean; correctAnswer: string; explanation?: string } {
-  const question = QUESTIONS.find((q) => q.id === questionId);
+  let question = QUESTIONS.find((q) => q.id === questionId);
+  if (!question) {
+    try {
+      const { findQuestion } = require("./quiz-store");
+      question = findQuestion?.(questionId);
+    } catch {}
+  }
   if (!question) return { correct: false, correctAnswer: "Unknown", explanation: "Question not found." };
   return {
     correct: answer.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase(),

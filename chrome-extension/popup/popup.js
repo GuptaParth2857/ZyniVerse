@@ -1,4 +1,4 @@
-const ZYNI_API = 'https://zyniverse.app/api/v1';
+const ZYNI_API = 'https://zyverse.in/api/v1';
 const ANILIST_API = 'https://graphql.anilist.co';
 
 const $ = (id) => document.getElementById(id);
@@ -171,7 +171,7 @@ function renderResults(animeList) {
           ${dubBadge}
           ${episodes ? `<span class="badge" style="background:rgba(148,163,184,0.15);color:#94a3b8">${episodes}</span>` : ''}
         </div>
-        <a class="link" href="https://zyniverse.app/anime/${anime.id}/filler" target="_blank">View Details →</a>
+        <a class="link" href="https://zyverse.in/anime/${anime.id}/filler" target="_blank">View Details →</a>
       </div>
     `;
 

@@ -59,21 +59,25 @@ export default async function FillerListingPage() {
           <Link
             key={anime.id}
             href={`/anime/${anime.id}/filler`}
-            className="group rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 hover:border-[var(--color-magenta)]/40 hover:bg-[var(--color-panel)]/80 transition-all"
+            className="neon-premium rounded-xl no-underline group"
           >
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--color-magenta)]/10 text-sm font-bold font-mono text-[var(--color-magenta)] group-hover:bg-[var(--color-magenta)]/20 transition-colors">
-                {anime.fillerPct}%
+            <div className="neon-premium-track rounded-xl" />
+            <div className="neon-premium-overlay rounded-[10.5px]" />
+            <div className="neon-premium-content p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--color-magenta)]/10 text-sm font-bold font-mono text-[var(--color-magenta)] group-hover:bg-[var(--color-magenta)]/20 transition-colors">
+                  {anime.fillerPct}%
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-sm truncate group-hover:text-[var(--color-cyan)] transition-colors">{anime.title}</p>
+                  <p className="text-[10px] text-[var(--color-mute)] mt-0.5">{anime.episodes} episodes · {anime.fillerPct}% filler</p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-sm truncate">{anime.title}</p>
-                <p className="text-[10px] text-[var(--color-mute)] mt-0.5">{anime.episodes} episodes · {anime.fillerPct}% filler</p>
+              <div className="mt-3 flex h-1.5 rounded-full overflow-hidden bg-[var(--color-line)]">
+                <div className="h-full rounded-full bg-green-500" style={{ width: `${anime.canonPct}%` }} title={`${anime.canonPct}% canon`} />
+                {anime.mixedPct > 0 && <div className="h-full rounded-full bg-amber-500" style={{ width: `${anime.mixedPct}%` }} />}
+                <div className="h-full rounded-full bg-red-500" style={{ width: `${anime.fillerPct}%` }} />
               </div>
-            </div>
-            <div className="mt-3 flex h-1.5 rounded-full overflow-hidden bg-[var(--color-line)]">
-              <div className="h-full rounded-full bg-green-500" style={{ width: `${anime.canonPct}%` }} title={`${anime.canonPct}% canon`} />
-              {anime.mixedPct > 0 && <div className="h-full rounded-full bg-amber-500" style={{ width: `${anime.mixedPct}%` }} />}
-              <div className="h-full rounded-full bg-red-500" style={{ width: `${anime.fillerPct}%` }} />
             </div>
           </Link>
         ))}

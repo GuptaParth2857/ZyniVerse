@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://zyniverse.vercel.app/sitemap.xml
+Sitemap: https://zyverse.in/sitemap.xml

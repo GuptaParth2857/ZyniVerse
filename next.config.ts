@@ -6,6 +6,24 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.zyverse.in" }],
+        destination: "https://zyverse.in/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.zyniverse.vercel.app" }],
+        destination: "https://zyverse.in/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "zyniverse.vercel.app" }],
+        destination: "https://zyverse.in/:path*",
+        permanent: true,
+      },
+      {
         source: "/critiques",
         destination: "/community?tab=critiques",
         permanent: true,

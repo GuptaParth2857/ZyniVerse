@@ -19,6 +19,7 @@ model User {
   themeColor String?  @default("emerald")
   signature  String?
   provider  String?
+  lastSeen  DateTime?
   createdAt DateTime @default(now())
 
   entries               ListEntry[]
@@ -1128,4 +1129,33 @@ model PasswordResetToken {
   token     String   @unique
   expires   DateTime
   createdAt DateTime @default(now())
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  type      String
+  message   String
+  page      String?
+  email     String?
+  userId    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([type])
+}
+
+model UserActivity {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  mediaId    Int?
+  query      String?
+  genres     String[]
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@index([mediaId])
 }

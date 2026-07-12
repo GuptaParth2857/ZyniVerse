@@ -9,7 +9,7 @@ export default function ShareButton({ mediaId, title, episode }: { mediaId: numb
     ? `I just watched episode ${episode} of ${title} on ZyniVerse! 📺`
     : `I'm watching ${title} on ZyniVerse! 📺`;
 
-  const shareUrl = `https://zyniverse.app/anime/${mediaId}`;
+  const shareUrl = `https://zyverse.in/anime/${mediaId}`;
 
   const copy = async () => {
     await navigator.clipboard.writeText(`${text}\n${shareUrl}`);

@@ -75,14 +75,22 @@ export default function ClubsPageClient() {
           ))}
         </div>
         <div className="flex gap-3">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search clubs..."
-            className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-1.5 text-sm outline-none focus:border-[var(--color-cyan)] w-full sm:w-48"
-          />
-          <Link href="/clubs/create" className="rounded-xl bg-[var(--color-magenta)] px-4 py-1.5 text-xs font-bold text-black hover:opacity-90 transition-opacity">
-            + Create Club
+          <div className="neon-premium rounded-lg">
+            <div className="neon-premium-track rounded-lg" />
+            <div className="neon-premium-overlay rounded-[6.5px]" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search clubs..."
+              className="neon-premium-content rounded-lg border-0 bg-transparent px-3 py-1.5 text-sm outline-none w-full sm:w-48 text-[var(--color-ink)] placeholder-[var(--color-mute)]"
+            />
+          </div>
+          <Link href="/clubs/create" className="neon-premium rounded-xl no-underline">
+            <div className="neon-premium-track rounded-xl" />
+            <div className="neon-premium-overlay rounded-[10.5px]" />
+            <span className="neon-premium-content flex items-center px-4 py-1.5 text-xs font-bold text-[var(--color-cyan)] hover:text-white transition-colors rounded-xl">
+              + Create Club
+            </span>
           </Link>
         </div>
       </div>
@@ -90,19 +98,31 @@ export default function ClubsPageClient() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 animate-pulse">
-              <div className="h-4 w-3/4 bg-[var(--color-line)] rounded mb-3" />
-              <div className="h-3 w-full bg-[var(--color-line)] rounded mb-2" />
-              <div className="h-3 w-1/2 bg-[var(--color-line)] rounded" />
+            <div key={i} className="neon-premium rounded-xl" style={{ minHeight: 160 }}>
+              <div className="neon-premium-track rounded-xl" />
+              <div className="neon-premium-overlay rounded-[10.5px]" />
+              <div className="neon-premium-content p-4 animate-pulse">
+                <div className="h-4 w-3/4 bg-[var(--color-line)] rounded mb-3" />
+                <div className="h-3 w-full bg-[var(--color-line)] rounded mb-2" />
+                <div className="h-3 w-1/2 bg-[var(--color-line)] rounded" />
+              </div>
             </div>
           ))}
         </div>
       ) : clubs.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-[var(--color-mute)] mb-4">No clubs found</p>
-          <Link href="/clubs/create" className="rounded-xl bg-[var(--color-magenta)] px-6 py-3 text-sm font-bold text-black hover:opacity-90 transition-opacity">
-            Create the first club
-          </Link>
+        <div className="neon-premium rounded-xl text-center">
+          <div className="neon-premium-track rounded-xl" />
+          <div className="neon-premium-overlay rounded-[10.5px]" />
+          <div className="neon-premium-content py-20 px-6">
+            <p className="text-[var(--color-mute)] mb-4">No clubs found</p>
+            <Link href="/clubs/create" className="neon-premium rounded-xl inline-flex no-underline">
+              <div className="neon-premium-track rounded-xl" />
+              <div className="neon-premium-overlay rounded-[10.5px]" />
+              <span className="neon-premium-content flex items-center px-6 py-3 text-sm font-bold text-[var(--color-cyan)] hover:text-white transition-colors rounded-xl">
+                Create the first club
+              </span>
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

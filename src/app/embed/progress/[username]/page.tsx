@@ -155,7 +155,7 @@ export default async function ProgressEmbedPage({
             })}
 
             <a
-              href={`https://zyniverse.app/profile/${encodeURIComponent(username)}`}
+              href={`https://zyverse.in/profile/${encodeURIComponent(username)}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{

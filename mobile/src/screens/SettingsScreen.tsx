@@ -108,7 +108,7 @@ export default function SettingsScreen() {
           <Text style={styles.groupTitle}>About</Text>
           <View style={styles.groupContent}>
             <SettingRow label="Version" value="1.0.0" type="info" />
-            <SettingRow label="Website" value="zyniverse.app" />
+            <SettingRow label="Website" value="zyverse.in" />
             <SettingRow label="Terms of Service" />
             <SettingRow label="Privacy Policy" />
           </View>

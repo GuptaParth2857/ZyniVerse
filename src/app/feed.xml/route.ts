@@ -2,7 +2,7 @@ import { getTrending } from "@/lib/anilist";
 import { bestTitle } from "@/lib/anilist";
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyniverse.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
   let items = "";
 
   try {

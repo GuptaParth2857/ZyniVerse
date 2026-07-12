@@ -48,8 +48,8 @@ chrome-extension/
 
 ## Resources
 
-- **Website:** [https://zyniverse.app](https://zyniverse.app)
-- **API:** `https://zyniverse.app/api/v1`
+- **Website:** [https://zyverse.in](https://zyverse.in)
+- **API:** `https://zyverse.in/api/v1`
 - **Support:** Report issues on the ZyniVerse repository
 
 ## Permissions
@@ -57,5 +57,5 @@ chrome-extension/
 - `storage` — Save search history and preferences
 - `contextMenus` — Right-click search on any page
 - `activeTab` — Detect current page for site integration
-- `https://zyniverse.app/*` — Fetch anime data from ZyniVerse API
+- `https://zyverse.in/*` — Fetch anime data from ZyniVerse API
 - `https://graphql.anilist.co/*` — Fallback search via AniList

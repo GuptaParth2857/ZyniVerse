@@ -1,4 +1,4 @@
-const BASE_URL = 'https://zyniverse.app/api/v1';
+const BASE_URL = 'https://zyverse.in/api/v1';
 
 export const api = {
   async get<T>(endpoint: string, options?: {

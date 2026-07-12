@@ -2,11 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import type { NewsItem } from "@/lib/news";
-import EmptyState from "@/components/EmptyState";
-
 const FILTERS = [
   { key: "all", label: "All" },
   { key: "trending", label: "Trending" },
@@ -56,19 +53,19 @@ function TimeAgo({ date }: { date: string }) {
 
 function NewsCardSkeleton() {
   return (
-    <div className="animate-pulse rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden flex">
-      <div className="w-24 sm:w-32 shrink-0 bg-white/5" />
-      <div className="flex-1 p-4 space-y-2">
-        <div className="flex gap-2">
-          <div className="h-4 w-16 rounded-full bg-white/10" />
-          <div className="h-4 w-12 rounded-full bg-white/10" />
-        </div>
-        <div className="h-4 w-3/4 rounded bg-white/10" />
-        <div className="h-3 w-full rounded bg-white/5" />
-        <div className="h-3 w-1/2 rounded bg-white/5" />
-        <div className="flex gap-2 pt-1">
-          <div className="h-3 w-14 rounded bg-white/5" />
-          <div className="h-3 w-10 rounded bg-white/5" />
+    <div className="neon-premium rounded-xl">
+      <div className="neon-premium-track rounded-xl" />
+      <div className="neon-premium-overlay rounded-[10.5px]" />
+      <div className="neon-premium-content animate-pulse">
+        <div className="h-28 w-full rounded-t-xl bg-white/5" />
+        <div className="p-3 space-y-2">
+          <div className="h-4 w-3/4 rounded bg-white/10" />
+          <div className="h-3 w-full rounded bg-white/5" />
+          <div className="h-3 w-1/2 rounded bg-white/5" />
+          <div className="flex gap-2 pt-1">
+            <div className="h-3 w-14 rounded bg-white/5" />
+            <div className="h-3 w-10 rounded bg-white/5" />
+          </div>
         </div>
       </div>
     </div>
@@ -83,56 +80,50 @@ function NewsCard({ item }: { item: NewsItem }) {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden hover:border-[var(--color-cyan)]/20 transition-all flex"
     >
-      {item.image && (
-        <Link href={item.url} className="w-24 sm:w-32 shrink-0 relative overflow-hidden">
-          <Image
-            src={item.image}
-            alt=""
-            fill
-            className="object-cover"
-            sizes="128px"
-          />
-        </Link>
-      )}
-      {!item.image && (
-        <div className="w-24 sm:w-32 shrink-0 bg-[var(--color-void)] flex items-center justify-center">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--color-mute)]">
-            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-            <line x1="7" y1="2" x2="7" y2="22" /><line x1="17" y1="2" x2="17" y2="22" />
-            <line x1="2" y1="12" x2="22" y2="12" /><line x1="2" y1="7" x2="7" y2="7" />
-            <line x1="2" y1="17" x2="7" y2="17" /><line x1="17" y1="7" x2="22" y2="7" />
-            <line x1="17" y1="17" x2="22" y2="17" />
-          </svg>
-        </div>
-      )}
-      <div className="flex-1 p-4 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap mb-2">
-          <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${sourceStyle.bg} ${sourceStyle.text} ${sourceStyle.border}`}>
-            {item.source}
-          </span>
-          <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${typeStyle}`}>
-            {item.type}
-          </span>
-          <TimeAgo date={item.publishedAt} />
-        </div>
-        <Link href={item.url}>
-          <h3 className="font-display text-sm font-bold leading-snug hover:text-[var(--color-cyan)] transition-colors line-clamp-2">
-            {item.title}
-          </h3>
-        </Link>
-        <p className="mt-1 text-xs text-[var(--color-mute)] leading-relaxed line-clamp-2">{item.summary}</p>
-        {item.tags.length > 0 && (
-          <div className="flex gap-1.5 mt-2 flex-wrap">
-            {item.tags.map((tag) => (
-              <span key={tag} className="text-[9px] font-mono text-[var(--color-mute)] bg-[var(--color-void)] px-1.5 py-0.5 rounded border border-[var(--color-line)]">
-                {tag}
+      <Link href={item.url} className="neon-premium rounded-xl no-underline group block">
+        <div className="neon-premium-track rounded-xl" />
+        <div className="neon-premium-overlay rounded-[10.5px]" />
+        <div className="neon-premium-content">
+          {item.image ? (
+            <div className="relative h-28 w-full overflow-hidden rounded-t-xl">
+              <div
+                className="h-full w-full transition-transform duration-300 group-hover:scale-105"
+                style={{ background: `url(${item.image}) center/cover` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-transparent to-transparent" />
+            </div>
+          ) : (
+            <div className="h-28 w-full rounded-t-xl bg-gradient-to-br from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10 flex items-center justify-center">
+              <span className="text-[10px] font-semibold text-[var(--color-mute)] uppercase tracking-wider">{item.source}</span>
+            </div>
+          )}
+          <div className="p-3">
+            <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+              <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${sourceStyle.bg} ${sourceStyle.text} ${sourceStyle.border}`}>
+                {item.source}
               </span>
-            ))}
+              <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${typeStyle}`}>
+                {item.type}
+              </span>
+            </div>
+            <h3 className="font-display font-bold text-xs group-hover:text-[var(--color-cyan)] transition-colors line-clamp-2">
+              {item.title}
+            </h3>
+            <p className="text-[10px] text-[var(--color-mute)] mt-1 line-clamp-2 leading-relaxed">
+              {item.summary}
+            </p>
+            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              <TimeAgo date={item.publishedAt} />
+              {item.tags.length > 0 && (
+                <span className="text-[8px] font-mono text-[var(--color-mute)] bg-[var(--color-void)] px-1.5 py-0.5 rounded border border-[var(--color-line)]">
+                  {item.tags[0]}
+                </span>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      </Link>
     </motion.div>
   );
 }
@@ -141,15 +132,18 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
   const [type, setType] = useState(defaultType);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const fetchNews = useCallback(async (t: string) => {
     setLoading(true);
+    setError("");
     try {
       const res = await fetch(`/api/news?type=${t}`);
+      if (!res.ok) throw new Error("Failed to fetch");
       const d = await res.json();
       setNews(d.news || []);
     } catch (e) {
-      console.error("[NewsFeed] fetch failed:", e);
+      setError("Failed to load news");
       setNews([]);
     } finally {
       setLoading(false);
@@ -162,7 +156,6 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
 
   return (
     <div>
-      {/* Filters */}
       <div className="flex gap-2 mb-6 flex-wrap">
         {FILTERS.map((f) => (
           <button
@@ -180,36 +173,46 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
         ))}
       </div>
 
-      {/* Loading */}
       {loading && (
-        <div className="space-y-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 5 }).map((_, i) => (
             <NewsCardSkeleton key={i} />
           ))}
         </div>
       )}
 
-      {/* Content */}
       {!loading && (
         <AnimatePresence mode="wait">
-          {news.length > 0 ? (
+          {error ? (
+            <div className="neon-premium rounded-xl text-center">
+              <div className="neon-premium-track rounded-xl" />
+              <div className="neon-premium-overlay rounded-[10.5px]" />
+              <div className="neon-premium-content py-20 px-6">
+                <p className="text-[var(--color-mute)]">{error}</p>
+              </div>
+            </div>
+          ) : news.length > 0 ? (
             <motion.div
               key={type}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="space-y-3"
+              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             >
-              {news.map((item) => (
+              {news.map((item, i) => (
                 <NewsCard key={item.id} item={item} />
               ))}
             </motion.div>
           ) : (
-            <EmptyState
-              icon="chat"
-              title="No news yet."
-              description="Check back later for the latest updates."
-            />
+            <div className="neon-premium rounded-xl text-center">
+              <div className="neon-premium-track rounded-xl" />
+              <div className="neon-premium-overlay rounded-[10.5px]" />
+              <div className="neon-premium-content py-20 px-6">
+                <div className="text-4xl mb-3">📰</div>
+                <p className="text-[var(--color-mute)] mb-1 font-display font-bold">No news yet</p>
+                <p className="text-xs text-[var(--color-mute)]">Check back later for the latest updates.</p>
+              </div>
+            </div>
           )}
         </AnimatePresence>
       )}

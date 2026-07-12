@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
+import { checkAndAwardAchievement } from "@/lib/achievements";
 
 export async function POST(
   req: NextRequest,
@@ -31,6 +32,15 @@ export async function POST(
       prisma.userList.update({ where: { id }, data: { likes: { increment: 1 } } }),
     ]);
     const updated = await prisma.userList.findUnique({ where: { id }, select: { likes: true } });
+
+    const totalLikes = await prisma.userList.aggregate({
+      where: { userId: list.userId },
+      _sum: { likes: true },
+    });
+    if ((totalLikes._sum.likes || 0) >= 100) {
+      checkAndAwardAchievement(list.userId, "POPULAR").catch(() => {});
+    }
+
     return NextResponse.json({ liked: true, likes: updated?.likes ?? 0 });
   }
 }

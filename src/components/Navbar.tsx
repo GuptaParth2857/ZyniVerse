@@ -59,7 +59,6 @@ const SECONDARY_LINKS = [
   { to: "/compare", label: "Compare" },
   { to: "/premium", label: "Premium" },
   { to: "/status", label: "Status" },
-  { to: "/browse", label: "Browse" },
   { to: "/indian-dubs", label: "Indian Dubs" },
   { to: "/developer", label: "Developer" },
 ];

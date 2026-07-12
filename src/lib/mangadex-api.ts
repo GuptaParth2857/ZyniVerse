@@ -66,11 +66,26 @@ export async function getDoujinshi(params?: {
   search?: string;
   limit?: number;
   offset?: number;
+  sort?: "popular" | "latest" | "rating" | "title";
 }): Promise<{ entries: DoujinshiEntry[]; total: number }> {
   const sp = new URLSearchParams();
   sp.set("limit", String(Math.min(params?.limit ?? 50, 50)));
   sp.set("offset", String(params?.offset ?? 0));
-  sp.set("order[followedCount]", "desc");
+
+  switch (params?.sort) {
+    case "latest":
+      sp.set("order[latestUploadedChapter]", "desc");
+      break;
+    case "rating":
+      sp.set("order[rating]", "desc");
+      break;
+    case "title":
+      sp.set("order[title]", "asc");
+      break;
+    default:
+      sp.set("order[followedCount]", "desc");
+  }
+
   sp.set("contentRating[]", "safe");
   sp.set("contentRating[]", "suggestive");
   sp.set("includes[]", "cover_art");

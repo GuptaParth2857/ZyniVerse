@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { createActivity } from "@/lib/activity";
+import { checkAndAwardAchievement } from "@/lib/achievements";
 
 export async function GET(req: NextRequest) {
   const rateCheck = apiLimiter.middleware(req);
@@ -44,6 +45,10 @@ export async function POST(req: NextRequest) {
     mediaImage,
     message: comment || `Rated ${rating}/10`,
   });
+
+  const reviewCount = await prisma.review.count({ where: { userId: session.user.id } });
+  if (reviewCount >= 1) checkAndAwardAchievement(session.user.id, "FIRST_REVIEW").catch(() => {});
+  if (reviewCount >= 10) checkAndAwardAchievement(session.user.id, "TEN_REVIEWS").catch(() => {});
 
   return NextResponse.json({ review });
 }

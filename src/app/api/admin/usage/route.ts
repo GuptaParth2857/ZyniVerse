@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     select: { email: true },
   });
 
-  if (user?.email !== "admin@zyniverse.com") {
+  if (user?.email !== "admin@zyverse.in") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

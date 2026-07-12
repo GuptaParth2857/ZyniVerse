@@ -9,6 +9,17 @@ import Loader, { ErrorState } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import type { StaffFull } from "@/lib/anilist";
 
+function formatYearsActive(val: unknown): string | null {
+  if (Array.isArray(val) && val.length >= 2) {
+    const [start, end] = val;
+    if (start && end) return `${start} – ${end}`;
+    if (start) return `${start} – present`;
+    return null;
+  }
+  if (typeof val === "string" && val) return val;
+  return null;
+}
+
 function stripHtml(str = "") { return str.replace(/<[^>]*>/g, ""); }
 
 function formatBirthday(dob: { year?: number; month?: number; day?: number } | undefined) {
@@ -112,7 +123,7 @@ export default function StaffPage() {
                 {staff.homeTown && <StatCard accent={accent} label="Hometown" value={staff.homeTown} />}
               </div>
               <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {staff.yearsActive && <StatCard accent={accent} label="Active" value={staff.yearsActive} />}
+                {formatYearsActive(staff.yearsActive) && <StatCard accent={accent} label="Active" value={formatYearsActive(staff.yearsActive)!} />}
                 {edges.length > 0 && (
                   <StatCard accent={accent} label="Productions" value={String(edges.length)} />
                 )}

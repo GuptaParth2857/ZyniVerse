@@ -81,7 +81,7 @@ const JS = `(function(){
       html += '<div style="font-size:9px;color:' + mute + ';margin-top:2px;font-family:JetBrains Mono,monospace;">' + progress + ' / ' + (total || '?') + ' ep</div>';
       html += '</div></div>';
     }
-    html += '<a href="https://zyniverse.app/profile/' + encodeURIComponent(username) + '" target="_blank" rel="noopener noreferrer" style="display:block;text-align:center;padding:7px;background:' + accent + '10;color:' + accent + ';font-size:11px;font-weight:600;text-decoration:none;">View full profile →</a>';
+    html += '<a href="https://zyverse.in/profile/' + encodeURIComponent(username) + '" target="_blank" rel="noopener noreferrer" style="display:block;text-align:center;padding:7px;background:' + accent + '10;color:' + accent + ';font-size:11px;font-weight:600;text-decoration:none;">View full profile →</a>';
     root.innerHTML = html;
   }
 

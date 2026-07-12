@@ -63,7 +63,7 @@ const JS = `(function(){
       }
     }
     html += '</div>';
-    html += '<a href="https://zyniverse.app/anime/' + id + '" target="_blank" rel="noopener noreferrer" style="display:block;text-align:center;padding:8px;background:' + accent + '15;color:' + accent + ';font-size:12px;font-weight:600;text-decoration:none;">View on ZyniVerse →</a>';
+    html += '<a href="https://zyverse.in/anime/' + id + '" target="_blank" rel="noopener noreferrer" style="display:block;text-align:center;padding:8px;background:' + accent + '15;color:' + accent + ';font-size:12px;font-weight:600;text-decoration:none;">View on ZyniVerse →</a>';
     root.innerHTML = html;
   }
 

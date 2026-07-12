@@ -5,7 +5,7 @@
   "description": "__MSG_appDesc__",
   "default_locale": "en",
   "permissions": ["storage", "contextMenus", "activeTab"],
-  "host_permissions": ["https://zyniverse.app/*", "https://graphql.anilist.co/*"],
+  "host_permissions": ["https://zyverse.in/*", "https://graphql.anilist.co/*"],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
