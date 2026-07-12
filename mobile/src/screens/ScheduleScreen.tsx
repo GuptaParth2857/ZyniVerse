@@ -1,61 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, fontSize, borderRadius } from '../theme';
-import { ScheduleItem } from '../types';
 import { formatTimeUntilAiring } from '../utils/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorView from '../components/ErrorView';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const FULL_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const API_BASE = 'https://zyverse.in';
 
-const MOCK_SCHEDULE: ScheduleItem[] = [
-  {
-    mediaId: 1,
-    title: 'One Piece',
-    episode: 1098,
-    airingAt: new Date(Date.now() + 3600000).toISOString(),
-    timeUntilAiring: 3600,
-    media: {} as any,
-  },
-  {
-    mediaId: 2,
-    title: 'Jujutsu Kaisen',
-    episode: 25,
-    airingAt: new Date(Date.now() + 7200000).toISOString(),
-    timeUntilAiring: 7200,
-    media: {} as any,
-  },
-  {
-    mediaId: 3,
-    title: 'Attack on Titan',
-    episode: 89,
-    airingAt: new Date(Date.now() + 10800000).toISOString(),
-    timeUntilAiring: 10800,
-    media: {} as any,
-  },
-];
+interface ScheduleItem {
+  mediaId: number;
+  title: string;
+  episode: number;
+  airingAt: string;
+  timeUntilAiring: number;
+}
 
 export default function ScheduleScreen() {
   const insets = useSafeAreaInsets();
   const [selectedDay, setSelectedDay] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const schedule = MOCK_SCHEDULE;
+  const fetchSchedule = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/schedule`);
+      if (!res.ok) throw new Error('Failed to load');
+      const data = await res.json();
+      setSchedule(Array.isArray(data) ? data : data.schedule || []);
+    } catch {
+      setError('Could not load schedule');
+      setSchedule([]);
+    }
+    setLoading(false);
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => { fetchSchedule(); }, [fetchSchedule]);
+
+  const onRefresh = () => { setRefreshing(true); fetchSchedule(); };
+
+  const filteredSchedule = schedule.filter((item) => {
+    if (!item.airingAt) return false;
+    const airDate = new Date(item.airingAt);
+    const dayIndex = (airDate.getDay() + 6) % 7;
+    return dayIndex === selectedDay;
+  });
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Text style={styles.headerTitle}>Schedule</Text>
 
-      {/* Day Selector */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -80,17 +88,22 @@ export default function ScheduleScreen() {
       {loading ? (
         <LoadingSpinner fullScreen />
       ) : error ? (
-        <ErrorView message={error} onRetry={() => {}} />
-      ) : schedule.length === 0 ? (
+        <ErrorView message={error} onRetry={fetchSchedule} />
+      ) : filteredSchedule.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No episodes airing on this day</Text>
+          <Text style={styles.emptyTitle}>No episodes airing</Text>
+          <Text style={styles.emptySubtitle}>Check other days or come back later</Text>
         </View>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false} style={styles.list}>
-          {schedule.map((item) => (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        >
+          {filteredSchedule.map((item) => (
             <View key={item.mediaId} style={styles.scheduleItem}>
               <View style={styles.scheduleInfo}>
-                <Text style={styles.scheduleTitle}>{item.title}</Text>
+                <Text style={styles.scheduleTitle} numberOfLines={1}>{item.title}</Text>
                 <Text style={styles.scheduleEpisode}>
                   Episode {item.episode}
                 </Text>
@@ -98,9 +111,6 @@ export default function ScheduleScreen() {
                   {formatTimeUntilAiring(item.timeUntilAiring)}
                 </Text>
               </View>
-              <TouchableOpacity style={styles.notifyButton}>
-                <Text style={styles.notifyText}>Notify</Text>
-              </TouchableOpacity>
             </View>
           ))}
           <View style={{ height: spacing.xxl }} />
@@ -183,24 +193,21 @@ const styles = StyleSheet.create({
     color: colors.secondary,
     fontSize: fontSize.xs,
   },
-  notifyButton: {
-    backgroundColor: colors.primary + '33',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.sm,
-  },
-  notifyText: {
-    color: colors.primary,
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-  },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: spacing.xl,
   },
-  emptyText: {
-    color: colors.textMuted,
+  emptyTitle: {
+    color: colors.text,
     fontSize: fontSize.md,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  emptySubtitle: {
+    color: colors.textDim,
+    fontSize: fontSize.sm,
+    textAlign: 'center',
   },
 });

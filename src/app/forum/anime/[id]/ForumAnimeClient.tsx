@@ -45,11 +45,11 @@ export default function ForumAnimeClient({ animeId }: { animeId: number }) {
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-6">
             <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-              className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-xs disabled:opacity-30"
+              className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs disabled:opacity-30"
             >Prev</button>
             <span className="text-xs text-[var(--color-mute)]">Page {page} of {totalPages}</span>
             <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-              className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-xs disabled:opacity-30"
+              className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs disabled:opacity-30"
             >Next</button>
           </div>
         )}

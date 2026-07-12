@@ -327,7 +327,7 @@ function CommunityContent() {
         <div className="flex gap-2 mb-6">
           {(["feed", "critiques"] as const).map((t) => (
             <button key={t} onClick={() => switchTab(t)}
-              className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
                 tab === t
                   ? "text-black shadow-lg"
                   : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"
@@ -362,10 +362,10 @@ function CommunityContent() {
                   </select>
                   <div className="flex gap-2">
                     <button onClick={() => { setShowCreate(false); setTitle(""); setContent(""); setPostType("POST"); }}
-                      className="px-3 py-1.5 text-xs font-semibold border border-[var(--color-line)] rounded-lg hover:border-[var(--color-cyan)]/50"
+                      className="px-5 py-2.5 text-xs font-semibold border border-[var(--color-line)] rounded-lg hover:border-[var(--color-cyan)]/50"
                     >Cancel</button>
                     <button onClick={createPost} disabled={submitting || !title.trim() || !content.trim()}
-                      className="px-4 py-1.5 text-xs font-bold bg-[var(--color-cyan)] text-black rounded-lg disabled:opacity-30"
+                      className="px-5 py-2.5 text-xs font-bold bg-[var(--color-cyan)] text-black rounded-lg disabled:opacity-30"
                     >{submitting ? "Posting..." : "Post"}</button>
                   </div>
                 </div>

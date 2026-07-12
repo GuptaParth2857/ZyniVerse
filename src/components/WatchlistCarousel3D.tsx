@@ -23,7 +23,7 @@ export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
   return (
     <div className="relative flex items-center justify-center py-10 perspective-[1200px]">
       {/* Carousel stage */}
-      <div className="relative flex items-center justify-center h-[420px] w-full" style={{ transformStyle: "preserve-3d" }}>
+      <div className="relative flex items-center justify-center h-[300px] sm:h-[420px] w-full" style={{ transformStyle: "preserve-3d" }}>
         {/* Left cards */}
         {[-3, -2, -1].map((offset) => {
           const idx = getIndex(offset);

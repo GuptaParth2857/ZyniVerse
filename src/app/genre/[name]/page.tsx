@@ -59,7 +59,7 @@ export default function GenrePage() {
         <div className="mt-4 flex flex-wrap gap-1.5">
           {allGenres.slice(0, 20).map((g) => (
             <Link key={g} href={`/genre/${g}`}
-              className={`rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+              className={`rounded-full px-5 py-2.5 text-xs font-semibold transition-all ${
                 g.toLowerCase() === decodedName.toLowerCase()
                   ? "bg-[var(--color-magenta)] text-black"
                   : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)]"
@@ -67,7 +67,7 @@ export default function GenrePage() {
             >{g}</Link>
           ))}
           {allGenres.length > 20 && (
-            <Link href="/search" className="rounded-full border border-dashed border-[var(--color-line)] px-3 py-1 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]">
+            <Link href="/search" className="rounded-full border border-dashed border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]">
               More →
             </Link>
           )}

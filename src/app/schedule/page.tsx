@@ -117,17 +117,17 @@ export default function SchedulePage() {
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setWeekOffset((w) => w - 1)}
-              className="rounded-full border border-[var(--color-line)] px-3 py-1.5 text-sm hover:border-[var(--color-cyan)] transition-colors"
+              className="rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm hover:border-[var(--color-cyan)] transition-colors"
             >← Prev</button>
             <button onClick={() => { setWeekOffset(0); scrollToDay(todayIdx); }}
               disabled={isCurrentWeek}
-              className="rounded-full border border-[var(--color-line)] px-3 py-1.5 text-sm disabled:opacity-40 hover:border-[var(--color-cyan)] transition-colors"
+              className="rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm disabled:opacity-40 hover:border-[var(--color-cyan)] transition-colors"
             >Today</button>
             <button onClick={() => setWeekOffset((w) => w + 1)}
-              className="rounded-full border border-[var(--color-line)] px-3 py-1.5 text-sm hover:border-[var(--color-cyan)] transition-colors"
+              className="rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm hover:border-[var(--color-cyan)] transition-colors"
             >Next →</button>
             <button onClick={() => setAutoScroll((a) => !a)}
-              className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+              className={`rounded-full border px-5 py-2.5 text-sm transition-colors ${
                 autoScroll ? "border-[var(--color-magenta)] text-[var(--color-magenta)]" : "border-[var(--color-line)] text-[var(--color-mute)]"
               }`}
             >{autoScroll ? "◎ Auto" : "◉ Manual"}</button>

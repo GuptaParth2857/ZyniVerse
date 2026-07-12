@@ -37,7 +37,7 @@ export default function VoiceActorsClient() {
 
   return (
     <PageTransition>
-      <div className="mx-auto min-h-[80vh] max-w-7xl px-4 py-10 sm:px-6">
+      <div className="mx-auto min-h-[80vh] max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
         <div className="text-center mb-8">
           <h1 className="font-display text-4xl font-bold">Voice Actors</h1>
           <p className="mt-2 text-[var(--color-mute)] text-sm">Anime seiyuu, Japanese &amp; Indian dubbing artists</p>

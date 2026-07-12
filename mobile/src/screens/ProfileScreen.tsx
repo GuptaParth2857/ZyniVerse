@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,52 +6,76 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { colors, spacing, fontSize, borderRadius } from '../theme';
 import { getStatusColor } from '../utils/helpers';
 
+const API_BASE = 'https://zyverse.in';
+
 type ProfileTab = 'lists' | 'stats' | 'achievements' | 'settings';
 type StatusTab = 'watching' | 'completed' | 'planning' | 'dropped';
 
-const MOCK_STATS = {
-  animeCompleted: 142,
-  episodesWatched: 8456,
-  daysWatched: 352,
-};
-
-const MOCK_BADGES = [
-  { id: '1', name: 'OG Fan', icon: '🔥' },
-  { id: '2', name: 'Completionist', icon: '✅' },
-  { id: '3', name: 'Marathoner', icon: '⚡' },
-  { id: '4', name: 'Reviewer', icon: '✍' },
-  { id: '5', name: 'Early Adopter', icon: '🌟' },
-  { id: '6', name: 'Dub watcher', icon: '🎤' },
-];
+interface UserProfile {
+  id: string;
+  username: string;
+  avatar?: string | null;
+  bio?: string | null;
+  stats: { completed: number; episodesWatched: number; daysWatched: number };
+  achievements: { id: string; name: string; icon: string; description: string }[];
+  lists: { status: string; mediaId: number; title: string }[];
+  genreDistribution: { genre: string; count: number; percentage: number }[];
+}
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState<ProfileTab>('lists');
   const [activeStatus, setActiveStatus] = useState<StatusTab>('watching');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const statusTabs: StatusTab[] = ['watching', 'completed', 'planning', 'dropped'];
 
-  if (!isLoggedIn) {
+  const fetchProfile = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/user/profile`);
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data);
+      }
+    } catch {}
+    setLoading(false);
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => { fetchProfile(); }, [fetchProfile]);
+  const onRefresh = () => { setRefreshing(true); fetchProfile(); };
+
+  if (!profile && !loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.loginPrompt}>
-          <Text style={styles.loginIcon}>👤</Text>
+          <View style={styles.loginIconContainer}>
+            <Text style={styles.loginIcon}>👤</Text>
+          </View>
           <Text style={styles.loginTitle}>Sign in to ZyniVerse</Text>
           <Text style={styles.loginSubtitle}>
-            Track your anime, get personalized recommendations, and more
+            Track your anime, earn achievements, and get personalized recommendations
           </Text>
-          <TouchableOpacity style={styles.loginButton}>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => navigation.navigate('Login')}
+          >
             <Text style={styles.loginButtonText}>Sign In</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.signupButton}>
+          <TouchableOpacity
+            style={styles.signupButton}
+            onPress={() => navigation.navigate('Login', { mode: 'signup' })}
+          >
             <Text style={styles.signupButtonText}>Create Account</Text>
           </TouchableOpacity>
         </View>
@@ -59,31 +83,42 @@ export default function ProfileScreen() {
     );
   }
 
+  const initial = profile?.username?.[0]?.toUpperCase() || 'U';
+  const filteredLists = profile?.lists?.filter((l) => l.status === activeStatus) || [];
+  const topGenres = profile?.genreDistribution?.slice(0, 5) || [];
+  const totalAchievements = profile?.achievements?.length || 0;
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      >
         {/* User Header */}
         <View style={styles.userHeader}>
           <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>U</Text>
-            </View>
+            {profile?.avatar ? (
+              <Image source={{ uri: profile.avatar }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{initial}</Text>
+              </View>
+            )}
           </View>
-          <Text style={styles.username}>User</Text>
-          <Text style={styles.bio}>Anime enthusiast</Text>
+          <Text style={styles.username}>{profile?.username || 'User'}</Text>
+          {profile?.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
 
-          {/* Stats */}
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{MOCK_STATS.animeCompleted}</Text>
+              <Text style={styles.statValue}>{profile?.stats?.completed || 0}</Text>
               <Text style={styles.statLabel}>Completed</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{MOCK_STATS.episodesWatched}</Text>
+              <Text style={styles.statValue}>{profile?.stats?.episodesWatched || 0}</Text>
               <Text style={styles.statLabel}>Episodes</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{MOCK_STATS.daysWatched}</Text>
+              <Text style={styles.statValue}>{profile?.stats?.daysWatched || 0}</Text>
               <Text style={styles.statLabel}>Days</Text>
             </View>
           </View>
@@ -104,7 +139,7 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        {/* Tab Content */}
+        {/* Lists Tab */}
         {activeTab === 'lists' && (
           <View style={styles.tabContent}>
             <View style={styles.statusRow}>
@@ -114,64 +149,93 @@ export default function ProfileScreen() {
                   style={[styles.statusTab, activeStatus === s && { borderBottomColor: getStatusColor(s), borderBottomWidth: 2 }]}
                   onPress={() => setActiveStatus(s)}
                 >
-                  <Text style={styles.statusTabText}>
+                  <Text style={[styles.statusTabText, activeStatus === s && { color: getStatusColor(s) }]}>
                     {s.charAt(0).toUpperCase() + s.slice(1)}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
-            <View style={styles.emptyList}>
-              <Text style={styles.emptyListText}>No anime in this list yet</Text>
-            </View>
+            {loading ? (
+              <View style={styles.emptyList}>
+                <Text style={styles.emptyListText}>Loading...</Text>
+              </View>
+            ) : filteredLists.length > 0 ? (
+              filteredLists.map((item, i) => (
+                <TouchableOpacity
+                  key={`${item.mediaId}-${i}`}
+                  style={styles.listItem}
+                  onPress={() => navigation.navigate('AnimeDetail', { id: item.mediaId, title: item.title })}
+                >
+                  <Text style={styles.listItemTitle} numberOfLines={1}>{item.title}</Text>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View style={styles.emptyList}>
+                <Text style={styles.emptyListText}>No anime in this list yet</Text>
+              </View>
+            )}
           </View>
         )}
 
+        {/* Stats Tab */}
         {activeTab === 'stats' && (
           <View style={styles.tabContent}>
             <View style={styles.statCard}>
               <Text style={styles.statCardTitle}>Genre Distribution</Text>
-              <Text style={styles.statCardValue}>Action: 45%</Text>
-              <Text style={styles.statCardValue}>Adventure: 25%</Text>
-              <Text style={styles.statCardValue}>Drama: 15%</Text>
-              <Text style={styles.statCardValue}>Comedy: 10%</Text>
-              <Text style={styles.statCardValue}>Other: 5%</Text>
+              {loading ? (
+                <Text style={styles.emptyTabText}>Loading...</Text>
+              ) : topGenres.length > 0 ? (
+                topGenres.map((g) => (
+                  <View key={g.genre} style={styles.genreBar}>
+                    <View style={styles.genreBarHeader}>
+                      <Text style={styles.genreBarLabel}>{g.genre}</Text>
+                      <Text style={styles.genreBarValue}>{g.percentage}%</Text>
+                    </View>
+                    <View style={styles.genreBarTrack}>
+                      <View style={[styles.genreBarFill, { width: `${g.percentage}%` }]} />
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.emptyTabText}>Start watching anime to see stats</Text>
+              )}
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statCardTitle}>Achievements Earned</Text>
+              <Text style={styles.statCardValue}>{totalAchievements} / 26</Text>
             </View>
           </View>
         )}
 
+        {/* Achievements Tab */}
         {activeTab === 'achievements' && (
           <View style={styles.tabContent}>
-            <View style={styles.badgesGrid}>
-              {MOCK_BADGES.map((badge) => (
-                <View key={badge.id} style={styles.badgeItem}>
-                  <Text style={styles.badgeIcon}>{badge.icon}</Text>
-                  <Text style={styles.badgeName}>{badge.name}</Text>
-                </View>
-              ))}
-            </View>
+            {loading ? (
+              <Text style={styles.emptyTabText}>Loading...</Text>
+            ) : totalAchievements > 0 ? (
+              <View style={styles.badgesGrid}>
+                {profile?.achievements?.map((badge) => (
+                  <View key={badge.id} style={styles.badgeItem}>
+                    <Text style={styles.badgeIcon}>{badge.icon}</Text>
+                    <Text style={styles.badgeName}>{badge.name}</Text>
+                    <Text style={styles.badgeDescription} numberOfLines={2}>{badge.description}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.emptyList}>
+                <Text style={styles.emptyListText}>No achievements yet. Keep exploring!</Text>
+              </View>
+            )}
           </View>
         )}
 
+        {/* Settings Tab */}
         {activeTab === 'settings' && (
           <View style={styles.tabContent}>
-            <TouchableOpacity style={styles.settingItem}>
-              <Text style={styles.settingLabel}>Theme</Text>
-              <Text style={styles.settingValue}>Dark</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.settingItem}>
-              <Text style={styles.settingLabel}>Language</Text>
-              <Text style={styles.settingValue}>English</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.settingItem}>
-              <Text style={styles.settingLabel}>API Keys</Text>
-              <Text style={styles.settingValue}>Manage</Text>
-            </TouchableOpacity>
             <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('Settings')}>
               <Text style={styles.settingLabel}>All Settings</Text>
               <Text style={styles.settingValue}>›</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.settingItem, styles.signOutButton]}>
-              <Text style={styles.signOutText}>Sign Out</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -193,9 +257,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
   },
-  loginIcon: {
-    fontSize: 64,
+  loginIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: spacing.md,
+  },
+  loginIcon: {
+    fontSize: 40,
   },
   loginTitle: {
     color: colors.text,
@@ -255,6 +327,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  avatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
   avatarText: {
     color: '#fff',
     fontSize: fontSize.xxl,
@@ -270,10 +347,11 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: fontSize.sm,
     marginBottom: spacing.md,
+    textAlign: 'center',
   },
   statsRow: {
     flexDirection: 'row',
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   statItem: {
     alignItems: 'center',
@@ -337,10 +415,22 @@ const styles = StyleSheet.create({
     color: colors.textDim,
     fontSize: fontSize.md,
   },
+  listItem: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  listItemTitle: {
+    color: colors.text,
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+  },
   statCard: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
     padding: spacing.md,
+    marginBottom: spacing.sm,
   },
   statCardTitle: {
     color: colors.text,
@@ -352,6 +442,39 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: fontSize.sm,
     marginBottom: spacing.xs,
+  },
+  emptyTabText: {
+    color: colors.textDim,
+    fontSize: fontSize.sm,
+    paddingVertical: spacing.md,
+  },
+  genreBar: {
+    marginBottom: spacing.sm,
+  },
+  genreBarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  genreBarLabel: {
+    color: colors.textMuted,
+    fontSize: fontSize.xs,
+  },
+  genreBarValue: {
+    color: colors.text,
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+  },
+  genreBarTrack: {
+    height: 6,
+    backgroundColor: colors.surfaceLight,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  genreBarFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 3,
   },
   badgesGrid: {
     flexDirection: 'row',
@@ -372,7 +495,13 @@ const styles = StyleSheet.create({
   badgeName: {
     color: colors.text,
     fontSize: fontSize.xs,
-    fontWeight: '500',
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  badgeDescription: {
+    color: colors.textDim,
+    fontSize: 9,
     textAlign: 'center',
   },
   settingItem: {
@@ -390,16 +519,5 @@ const styles = StyleSheet.create({
   settingValue: {
     color: colors.textMuted,
     fontSize: fontSize.md,
-  },
-  signOutButton: {
-    justifyContent: 'center',
-    marginTop: spacing.lg,
-    borderBottomWidth: 0,
-  },
-  signOutText: {
-    color: colors.error,
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    textAlign: 'center',
   },
 });

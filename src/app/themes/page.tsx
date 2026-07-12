@@ -24,7 +24,7 @@ export default function ThemesBrowsePage() {
 
   return (
     <PageTransition>
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 animate-page-in">
         <div className="mb-8">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Music</p>
           <h1 className="font-display text-3xl font-bold mt-1">Theme Songs Database</h1>

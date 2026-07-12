@@ -26,7 +26,7 @@ const RANKS = [
 
 export default function QuizPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen animate-page-in">
       {/* Hero Banner */}
       <div className="relative overflow-hidden border-b border-[var(--color-line)]">
         <div className="absolute inset-0 bg-[#0a0a0f]" />

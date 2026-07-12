@@ -288,7 +288,7 @@ export default function CharactersBrowsePage() {
   ) : null;
 
   return (
-    <ErrorBoundary label="Characters"><main className="min-h-dvh bg-[#05080f]">
+    <ErrorBoundary label="Characters"><main className="min-h-dvh bg-[#05080f] animate-page-in">
       {/* ═══════════════ HERO: Most Popular Characters ═══════════════ */}
       <div className="relative h-[70vh] min-h-[460px] border-b border-white/[0.06] overflow-hidden">
         {/* bg */}

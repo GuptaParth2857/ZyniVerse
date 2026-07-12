@@ -159,8 +159,8 @@ export default function Navbar() {
               </svg>
             </button>
             {moreOpen && (
-              <div className="absolute top-full right-0 mt-1 w-[28rem] rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl z-50 overflow-hidden">
-                <div className="grid grid-cols-3 gap-0">
+              <div className="absolute top-full right-0 mt-1 w-[90vw] sm:w-[28rem] max-w-[28rem] rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl z-50 overflow-hidden">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-0">
                   <div>
                     {SECONDARY_LINKS.slice(0, 14).map((l) => (
                       <Link key={l.to} href={l.to}

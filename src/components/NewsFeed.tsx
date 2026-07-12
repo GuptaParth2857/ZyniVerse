@@ -161,7 +161,7 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
           <button
             key={f.key}
             onClick={() => setType(f.key)}
-            className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
               type === f.key
                 ? "text-black shadow-lg"
                 : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"

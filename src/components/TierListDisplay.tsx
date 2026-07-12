@@ -95,7 +95,7 @@ export default function TierListDisplay({ tierList: initial }: { tierList: TierL
             <button
               onClick={() => handleVote(1)}
               disabled={voting}
-              className="flex items-center gap-1 rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-sm hover:bg-white/5 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm hover:bg-white/5 transition-colors disabled:opacity-50"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
@@ -105,7 +105,7 @@ export default function TierListDisplay({ tierList: initial }: { tierList: TierL
             <button
               onClick={() => handleVote(-1)}
               disabled={voting}
-              className="rounded-lg border border-[var(--color-line)] px-2 py-1.5 text-sm hover:bg-white/5 transition-colors disabled:opacity-50"
+              className="rounded-lg border border-[var(--color-line)] px-4 py-2.5 text-sm hover:bg-white/5 transition-colors disabled:opacity-50"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z" />

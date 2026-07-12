@@ -85,7 +85,7 @@ export default function DoujinshiMyClient() {
               <button
                 key={s}
                 onClick={() => setFilter(s)}
-                className={`rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${
+                className={`rounded-full px-5 py-2.5 text-xs font-medium transition-colors ${
                   filter === s
                     ? "bg-[var(--color-magenta)] text-black"
                     : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-magenta)]"

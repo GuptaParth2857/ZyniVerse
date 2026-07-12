@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,46 +6,84 @@ import {
   TouchableOpacity,
   TextInput,
   StyleSheet,
+  RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { colors, spacing, fontSize, borderRadius } from '../theme';
 
-const CATEGORIES = [
-  { name: 'General Discussion', icon: '💬', threads: 1243 },
-  { name: 'Anime Discussion', icon: '🎬', threads: 2891 },
-  { name: 'Manga Discussion', icon: '📖', threads: 1567 },
-  { name: 'Recommendations', icon: '⭐', threads: 892 },
-  { name: 'Filler Guide Help', icon: '📊', threads: 456 },
-  { name: 'Dub Discussion', icon: '🎤', threads: 678 },
-  { name: 'Site Feedback', icon: '🔧', threads: 234 },
-  { name: 'Off-Topic', icon: '🎮', threads: 1023 },
-];
+const API_BASE = 'https://zyverse.in';
 
-const RECENT_THREADS = [
-  { id: '1', title: 'Best anime of 2026 so far?', author: 'AnimeFan', replies: 45, category: 'Anime Discussion' },
-  { id: '2', title: 'One Piece filler guide update', author: 'FillerKing', replies: 23, category: 'Filler Guide Help' },
-  { id: '3', title: 'Looking for dark fantasy recommendations', author: 'DarkMode', replies: 18, category: 'Recommendations' },
-  { id: '4', title: 'Hindi dub quality comparison', author: 'DubWatcher', replies: 31, category: 'Dub Discussion' },
-];
+interface ForumCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  icon: string;
+  _count: { threads: number };
+}
+
+interface ForumThread {
+  id: string;
+  title: string;
+  category: string;
+  createdAt: string;
+  _count: { posts: number };
+  user: { id: string; username: string; avatar: string | null };
+  lastPost?: { createdAt: string; user: { username: string } } | null;
+}
 
 export default function ForumScreen() {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
+  const [categories, setCategories] = useState<ForumCategory[]>([]);
+  const [threads, setThreads] = useState<ForumThread[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState('');
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [catRes, threadRes] = await Promise.all([
+        fetch(`${API_BASE}/api/forum/categories`),
+        fetch(`${API_BASE}/api/forum/threads?limit=10&sort=recent`),
+      ]);
+      if (catRes.ok) {
+        const catData = await catRes.json();
+        setCategories(catData.categories || []);
+      }
+      if (threadRes.ok) {
+        const threadData = await threadRes.json();
+        setThreads(threadData.threads || []);
+      }
+    } catch {}
+    setLoading(false);
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const onRefresh = () => { setRefreshing(true); fetchData(); };
+
+  const formatTime = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Forum</Text>
-        <TouchableOpacity
-          style={styles.createButton}
-          onPress={() => setShowCreate(!showCreate)}
-        >
+        <TouchableOpacity style={styles.createButton} onPress={() => setShowCreate(!showCreate)}>
           <Text style={styles.createButtonText}>+ New Thread</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Create Thread */}
       {showCreate && (
         <View style={styles.createForm}>
           <TextInput
@@ -59,46 +97,99 @@ export default function ForumScreen() {
             <TouchableOpacity style={styles.cancelButton} onPress={() => setShowCreate(false)}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.submitButton}>
+            <TouchableOpacity
+              style={[styles.submitButton, !newTitle.trim() && { opacity: 0.5 }]}
+              disabled={!newTitle.trim()}
+              onPress={() => {
+                if (newTitle.trim()) {
+                  navigation.navigate('ForumCreate', { title: newTitle.trim() });
+                  setShowCreate(false);
+                  setNewTitle('');
+                }
+              }}
+            >
               <Text style={styles.submitText}>Create</Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Categories Grid */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      >
+        {/* Categories */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Categories</Text>
-          <View style={styles.categoriesGrid}>
-            {CATEGORIES.map((cat) => (
-              <TouchableOpacity key={cat.name} style={styles.categoryCard}>
-                <Text style={styles.categoryIcon}>{cat.icon}</Text>
-                <Text style={styles.categoryName}>{cat.name}</Text>
-                <Text style={styles.categoryThreads}>{cat.threads} threads</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {loading ? (
+            <View style={styles.categoriesGrid}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <View key={i} style={[styles.categoryCard, { opacity: 0.5 }]}>
+                  <View style={{ height: 24, width: 24, backgroundColor: colors.surfaceLight, borderRadius: 12, marginBottom: spacing.xs }} />
+                  <View style={{ height: 12, width: '70%', backgroundColor: colors.surfaceLight, borderRadius: 4, marginBottom: 4 }} />
+                  <View style={{ height: 10, width: '50%', backgroundColor: colors.surfaceLight, borderRadius: 4 }} />
+                </View>
+              ))}
+            </View>
+          ) : categories.length > 0 ? (
+            <View style={styles.categoriesGrid}>
+              {categories.map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={styles.categoryCard}
+                  onPress={() => navigation.navigate('ForumCategory', { id: cat.id, name: cat.name })}
+                >
+                  <Text style={styles.categoryIcon}>{cat.icon || '💬'}</Text>
+                  <Text style={styles.categoryName}>{cat.name}</Text>
+                  <Text style={styles.categoryThreads}>{cat._count.threads} threads</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.emptyText}>No categories yet</Text>
+          )}
         </View>
 
         {/* Recent Threads */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Threads</Text>
-          {RECENT_THREADS.map((thread) => (
-            <TouchableOpacity key={thread.id} style={styles.threadItem}>
-              <View style={styles.threadInfo}>
-                <Text style={styles.threadTitle}>{thread.title}</Text>
-                <View style={styles.threadMeta}>
-                  <Text style={styles.threadAuthor}>{thread.author}</Text>
-                  <Text style={styles.threadDot}>·</Text>
-                  <Text style={styles.threadCategory}>{thread.category}</Text>
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <View key={i} style={[styles.threadItem, { opacity: 0.5 }]}>
+                <View style={{ flex: 1 }}>
+                  <View style={{ height: 14, width: '80%', backgroundColor: colors.surfaceLight, borderRadius: 4, marginBottom: 6 }} />
+                  <View style={{ height: 10, width: '50%', backgroundColor: colors.surfaceLight, borderRadius: 4 }} />
                 </View>
               </View>
-              <View style={styles.replyBadge}>
-                <Text style={styles.replyCount}>{thread.replies}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+            ))
+          ) : threads.length > 0 ? (
+            threads.map((thread) => (
+              <TouchableOpacity
+                key={thread.id}
+                style={styles.threadItem}
+                onPress={() => navigation.navigate('ForumThread', { id: thread.id, title: thread.title })}
+              >
+                <View style={styles.threadInfo}>
+                  <Text style={styles.threadTitle} numberOfLines={1}>{thread.title}</Text>
+                  <View style={styles.threadMeta}>
+                    <Text style={styles.threadAuthor}>{thread.user?.username || 'Anonymous'}</Text>
+                    <Text style={styles.threadDot}>·</Text>
+                    <Text style={styles.threadCategory}>{thread.category}</Text>
+                    <Text style={styles.threadDot}>·</Text>
+                    <Text style={styles.threadCategory}>{formatTime(thread.createdAt)}</Text>
+                  </View>
+                </View>
+                <View style={styles.replyBadge}>
+                  <Text style={styles.replyCount}>{thread._count?.posts || 0}</Text>
+                </View>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyTitle}>No threads yet</Text>
+              <Text style={styles.emptyText}>Start a conversation!</Text>
+            </View>
+          )}
         </View>
 
         <View style={{ height: spacing.xxl }} />
@@ -256,5 +347,19 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: fontSize.xs,
     fontWeight: '600',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  emptyTitle: {
+    color: colors.text,
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  emptyText: {
+    color: colors.textDim,
+    fontSize: fontSize.sm,
   },
 });

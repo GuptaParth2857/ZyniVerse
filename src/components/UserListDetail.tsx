@@ -244,7 +244,7 @@ export default function UserListDetail({
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={toggleLike}
-                  className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-lg border px-5 py-2.5 text-sm transition-colors ${
                     isLiked
                       ? "border-red-500/50 text-red-400 bg-red-500/10"
                       : "border-[var(--color-line)] text-[var(--color-mute)] hover:text-red-400"
@@ -258,13 +258,13 @@ export default function UserListDetail({
                 {isOwner && (
                   <button
                     onClick={() => setEditMode(true)}
-                    className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
-                  >
-                    Edit
+className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
+                    >
+                      Edit
                   </button>
                 )}
                 <div className="relative group">
-                  <button className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors">
+                  <button className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors">
                     Share ▾
                   </button>
                   <div className="absolute right-0 top-full mt-1 w-40 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all overflow-hidden z-10">

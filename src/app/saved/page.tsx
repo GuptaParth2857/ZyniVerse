@@ -71,7 +71,7 @@ function SavedPage() {
           <div className="flex items-center gap-2 mb-5">
             {(["newest", "oldest"] as const).map((s) => (
               <button key={s} onClick={() => setSortBy(s)}
-                className={`text-[10px] font-semibold px-3 py-1 rounded-full border transition-all ${
+                className={`text-xs font-semibold px-4 py-2 rounded-full border transition-all ${
                   sortBy === s
                     ? "bg-[var(--color-cyan)] text-black border-[var(--color-cyan)]"
                     : "border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"

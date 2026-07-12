@@ -92,7 +92,7 @@ export default function WikiPageClient() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
       <div className="mb-10">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Knowledge Base</p>
         <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Wiki</h1>

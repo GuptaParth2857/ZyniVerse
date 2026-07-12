@@ -62,26 +62,26 @@ export default function CosplayGallery() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 animate-page-in">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="font-display text-4xl font-bold">Cosplay Gallery</h1>
+        <h1 className="font-display text-3xl sm:text-4xl font-bold">Cosplay Gallery</h1>
         <p className="mt-2 text-[var(--color-mute)] text-sm">Browse and share anime cosplays</p>
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-3 mb-8">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-8">
         <input
           value={animeFilter}
           onChange={(e) => setAnimeFilter(e.target.value)}
           placeholder="Filter by anime..."
-          className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] w-44"
+          className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] w-full sm:w-44"
         />
         <input
           value={charFilter}
           onChange={(e) => setCharFilter(e.target.value)}
           placeholder="Filter by character..."
-          className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] w-44"
+          className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] w-full sm:w-44"
         />
         <select
           value={sort}
@@ -93,7 +93,7 @@ export default function CosplayGallery() {
         </select>
         {session?.user?.id && (
           <Link href="/cosplay/upload"
-            className="ml-auto rounded-lg bg-[var(--color-magenta)]/20 border border-[var(--color-magenta)]/30 px-4 py-2 text-sm font-semibold text-[var(--color-magenta)] hover:bg-[var(--color-magenta)]/30 transition-colors"
+            className="sm:ml-auto rounded-lg bg-[var(--color-magenta)]/20 border border-[var(--color-magenta)]/30 px-4 py-2 text-sm font-semibold text-[var(--color-magenta)] hover:bg-[var(--color-magenta)]/30 transition-colors"
           >Upload Cosplay</Link>
         )}
       </div>

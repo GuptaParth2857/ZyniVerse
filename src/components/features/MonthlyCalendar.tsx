@@ -67,7 +67,7 @@ export default function MonthlyCalendar() {
           <button onClick={prevMonth} className="flex items-center justify-center w-8 h-8 rounded-lg border border-[var(--color-line)] hover:bg-white/5 hover:text-white text-[var(--color-mute)] transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
-          <button onClick={() => setDate(new Date())} className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[var(--color-magenta)]/10 to-[var(--color-cyan)]/10 border border-[var(--color-magenta)]/20 text-xs font-semibold text-[var(--color-magenta)] hover:from-[var(--color-magenta)]/20 hover:to-[var(--color-cyan)]/20 transition-all">
+          <button onClick={() => setDate(new Date())} className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[var(--color-magenta)]/10 to-[var(--color-cyan)]/10 border border-[var(--color-magenta)]/20 text-xs font-semibold text-[var(--color-magenta)] hover:from-[var(--color-magenta)]/20 hover:to-[var(--color-cyan)]/20 transition-all">
             Today
           </button>
           <button onClick={nextMonth} className="flex items-center justify-center w-8 h-8 rounded-lg border border-[var(--color-line)] hover:bg-white/5 hover:text-white text-[var(--color-mute)] transition-colors">

@@ -44,10 +44,10 @@ export default function ForumDiscussionWidget({ animeId, animeTitle, animeImage 
 
       <div className="mt-3 flex gap-2">
         <Link href={`/forum/anime/${animeId}`}
-          className="flex-1 rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-[10px] font-semibold text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] text-center transition-colors"
+          className="flex-1 rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] text-center transition-colors"
         >View All Threads</Link>
         <Link href={`/forum/create?animeId=${animeId}&animeTitle=${encodeURIComponent(animeTitle)}&animeImage=${encodeURIComponent(animeImage || "")}`}
-          className="flex-1 rounded-lg bg-[var(--color-cyan)] px-3 py-1.5 text-[10px] font-bold text-black text-center hover:opacity-90 transition"
+          className="flex-1 rounded-lg bg-[var(--color-cyan)] px-5 py-2.5 text-xs font-bold text-black text-center hover:opacity-90 transition"
         >+ New Thread</Link>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import FillerProgress from '../components/FillerProgress';
 import DubBadge from '../components/DubBadge';
 import AdPlaceholder from '../components/AdPlaceholder';
 import { formatScore, getScoreColor, getStatusColor } from '../utils/helpers';
+import { api } from '../services/api';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -28,6 +29,24 @@ export default function AnimeDetailScreen() {
   const { id } = route.params;
   const { data: anime, loading, error, refetch } = useAnime(id);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [dubStatus, setDubStatus] = useState<{ hindi?: boolean; tamil?: boolean; telugu?: boolean } | null>(null);
+  const [fillerData, setFillerData] = useState<{ fillerPercentage: number; totalFillers: number } | null>(null);
+
+  useEffect(() => {
+    if (anime?.malId) {
+      api.dubStatus.get(anime.malId).then((data) => {
+        if (data) setDubStatus(data as any);
+      }).catch(() => {});
+      fetch(`https://zyverse.in/api/v1/filler/${anime.id || anime.malId}`)
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => {
+          if (data?.fillerPercentage != null) {
+            setFillerData({ fillerPercentage: data.fillerPercentage, totalFillers: data.totalFillers || 0 });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [anime?.id, anime?.malId]);
   const [showStatusPicker, setShowStatusPicker] = useState(false);
   const [userStatus, setUserStatus] = useState<string | null>(null);
 
@@ -129,25 +148,30 @@ export default function AnimeDetailScreen() {
         {/* Filler Section */}
         <View style={styles.section}>
           <TouchableOpacity
-            onPress={() => navigation.navigate('FillerGuide', { id: anime.id, title })}
+            onPress={() => navigation.navigate('FillerGuide', { id: anime.id || anime.malId, title })}
           >
             <FillerProgress
               totalEpisodes={anime.episodes || 0}
-              totalFillers={Math.round((anime.episodes || 0) * 0.15)}
-              fillerPercentage={15}
+              totalFillers={fillerData?.totalFillers || 0}
+              fillerPercentage={fillerData?.fillerPercentage || 0}
             />
           </TouchableOpacity>
         </View>
 
         {/* Dub Status */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Dub Availability</Text>
-          <View style={styles.dubRow}>
-            <DubBadge language="hindi" available />
-            <DubBadge language="tamil" available={false} />
-            <DubBadge language="telugu" available />
+        {(dubStatus?.hindi || dubStatus?.tamil || dubStatus?.telugu) ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Dub Availability</Text>
+            <View style={styles.dubRow}>
+              {dubStatus?.hindi && <DubBadge language="hindi" available />}
+              {dubStatus?.tamil && <DubBadge language="tamil" available />}
+              {dubStatus?.telugu && <DubBadge language="telugu" available />}
+              {dubStatus?.hindi === false && <DubBadge language="hindi" available={false} />}
+              {dubStatus?.tamil === false && <DubBadge language="tamil" available={false} />}
+              {dubStatus?.telugu === false && <DubBadge language="telugu" available={false} />}
+            </View>
           </View>
-        </View>
+        ) : null}
 
         {/* Description */}
         {anime.description && (

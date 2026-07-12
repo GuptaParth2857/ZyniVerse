@@ -14,7 +14,7 @@ export const metadata = {
 
 export default function TierListsPage() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 animate-page-in">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Tier Lists</h1>

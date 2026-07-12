@@ -167,7 +167,7 @@ export default function TierListBuilder() {
           <h2 className="text-sm font-semibold text-[var(--color-mute)] uppercase tracking-wider">Anime Pool</h2>
           <button
             onClick={() => setSearchOpen(true)}
-            className="rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
+            className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
           >
             + Add from Search
           </button>

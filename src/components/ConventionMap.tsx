@@ -30,12 +30,12 @@ export default function ConventionMap() {
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <button onClick={() => setSelectedState(null)}
-          className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${!selectedState ? "border-[var(--color-cyan)] text-[var(--color-cyan)]" : "border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]"}`}>
+          className={`rounded-lg border px-5 py-2.5 text-xs font-medium transition-colors ${!selectedState ? "border-[var(--color-cyan)] text-[var(--color-cyan)]" : "border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]"}`}>
           All States
         </button>
         {states.map((s) => (
           <button key={s} onClick={() => setSelectedState(s)}
-            className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${selectedState === s ? "border-[var(--color-cyan)] text-[var(--color-cyan)]" : "border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]"}`}>
+            className={`rounded-lg border px-5 py-2.5 text-xs font-medium transition-colors ${selectedState === s ? "border-[var(--color-cyan)] text-[var(--color-cyan)]" : "border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]"}`}>
             {s}
           </button>
         ))}

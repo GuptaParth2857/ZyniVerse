@@ -46,7 +46,7 @@ export default function PollCard({ poll, onVote, userId }: Props) {
               key={opt.id}
               onClick={() => handleVote(opt.id)}
               disabled={!!votedOption || !userId}
-              className="relative w-full rounded-lg border border-[var(--color-line)] px-3 py-2 text-left text-xs transition-all disabled:cursor-default"
+              className="relative w-full rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-left text-xs transition-all disabled:cursor-default"
             >
               <motion.div
                 initial={{ width: 0 }}

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ForumPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen animate-page-in">
       {/* Hero Banner */}
       <div className="relative overflow-hidden border-b border-[var(--color-line)]">
         {/* Neon Background Effects */}

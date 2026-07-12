@@ -145,7 +145,7 @@ export default function BlogPostDetail({ post, author, isLiked: initialLiked }: 
           >🔗 Copy Link</button>
           <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(shareUrl)}`}
             target="_blank" rel="noopener noreferrer"
-            className="rounded-full bg-[var(--color-panel)] px-3 py-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all"
+            className="rounded-full bg-[var(--color-panel)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all"
           >𝕏 Share</a>
         </div>
 

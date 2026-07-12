@@ -77,7 +77,7 @@ export default async function WatchOrderDetailPage({ params }: Props) {
                     </div>
                     {entry.anilistId && (
                       <Link href={`/anime/${entry.anilistId}`}
-                        className="shrink-0 rounded-full border border-[var(--color-line)] px-3 py-1 text-[10px] text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors"
+                        className="shrink-0 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors"
                       >Details</Link>
                     )}
                   </div>

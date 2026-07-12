@@ -597,13 +597,13 @@ function SearchInner() {
                   <div className="mt-8 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
                     <span className="text-xs text-[var(--color-mute)]">Watch legally on:</span>
                     <a href="https://www.crunchyroll.com/search?ref=zyniverse" target="_blank" rel="noopener noreferrer sponsored"
-                      className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F47521] to-[#f59e0b] px-3 py-1.5 text-[10px] font-bold text-black hover:opacity-90 transition-opacity"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F47521] to-[#f59e0b] px-5 py-2.5 text-xs font-bold text-black hover:opacity-90 transition-opacity"
                     >▶ Crunchyroll</a>
                     <a href="https://www.netflix.com/in/browse/genus/7424?ref=zyniverse" target="_blank" rel="noopener noreferrer sponsored"
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#E50914] px-3 py-1.5 text-[10px] font-bold text-white hover:opacity-90 transition-opacity"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#E50914] px-5 py-2.5 text-xs font-bold text-white hover:opacity-90 transition-opacity"
                     >▶ Netflix</a>
                     <a href="https://www.amazon.com/s?k=anime&tag=zyniverse-21" target="_blank" rel="noopener noreferrer sponsored"
-                      className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[10px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
                     >📦 Amazon</a>
                   </div>
                 )}

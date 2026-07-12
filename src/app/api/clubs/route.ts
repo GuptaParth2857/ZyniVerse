@@ -69,5 +69,15 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  await prisma.notification.create({
+    data: {
+      userId: session.user.id,
+      type: "CLUB",
+      title: `Club Created: ${club.name}`,
+      body: `You created "${club.name}". Share it with friends to get members!`,
+      link: `/clubs/${club.slug}`,
+    },
+  });
+
   return NextResponse.json({ club }, { status: 201 });
 }

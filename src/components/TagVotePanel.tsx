@@ -39,7 +39,7 @@ export default function TagVotePanel({ mediaId }: { mediaId: number }) {
           const tagData = tags.find((t) => t.tag === tag);
           return (
             <button key={tag} onClick={() => vote(tag)}
-              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+              className={`px-5 py-2.5 text-xs rounded-full border transition-colors ${
                 active ? "bg-emerald-500/20 border-emerald-500 text-emerald-400" : "border-white/10 text-white/60 hover:border-white/30"
               }`}>
               {tag} {tagData ? `(${tagData.votes})` : ""}

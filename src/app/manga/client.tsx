@@ -70,7 +70,7 @@ export default function MangaBrowseClient() {
   }, [tab, showMyList, listTab]);
 
   return (
-    <PageTransition><div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+    <PageTransition><div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-violet)]">// Manga</p>
       <h1 className="font-display text-3xl font-bold sm:text-4xl">Manga Tracker</h1>
 
@@ -101,7 +101,7 @@ export default function MangaBrowseClient() {
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {TABS.map((t) => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
+              className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
                 tab === t.key ? "bg-[var(--color-violet)]/10 text-[var(--color-violet)]" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"
               }`}
             >{t.label}</button>
@@ -114,7 +114,7 @@ export default function MangaBrowseClient() {
         <div className="mt-4 flex flex-wrap items-center gap-1">
           {LIST_TABS.map((t) => (
             <button key={t} onClick={() => setListTab(t)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              className={`px-5 py-2.5 text-xs font-semibold rounded-lg transition-colors ${
                 listTab === t ? "bg-[var(--color-violet)]/10 text-[var(--color-violet)]" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"
               }`}
             >{t === "ALL" ? "All" : STATUS_LABELS[t] || t}</button>

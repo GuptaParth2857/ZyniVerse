@@ -176,6 +176,24 @@ export async function getMangaTopRated(perPage = 12) {
   return d.Page.media as Media[];
 }
 
+export async function getLightNovelTrending(perPage = 24) {
+  const q = `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: TRENDING_DESC, type: MANGA, format: NOVEL, isAdult: false) { ${MEDIA_FIELDS} } } }`;
+  const d = await gql(q, { p: perPage });
+  return d.Page.media as Media[];
+}
+
+export async function getLightNovelPopular(perPage = 24) {
+  const q = `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: POPULARITY_DESC, type: MANGA, format: NOVEL, isAdult: false) { ${MEDIA_FIELDS} } } }`;
+  const d = await gql(q, { p: perPage });
+  return d.Page.media as Media[];
+}
+
+export async function getLightNovelTopRated(perPage = 24) {
+  const q = `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: SCORE_DESC, type: MANGA, format: NOVEL, isAdult: false) { ${MEDIA_FIELDS} } } }`;
+  const d = await gql(q, { p: perPage });
+  return d.Page.media as Media[];
+}
+
 export async function searchMedia({ search = "", genre = null, tag = null, sort = "POPULARITY_DESC", type = "ANIME", page = 1, perPage = 24, format = null, season = null, seasonYear = null, status = null }: {
   search?: string; genre?: string | null; tag?: string | null; sort?: string; type?: string; page?: number; perPage?: number;
   format?: string | null; season?: string | null; seasonYear?: number | null; status?: string | null;
@@ -187,10 +205,15 @@ export async function searchMedia({ search = "", genre = null, tag = null, sort 
         media(search: $s, genre: $g, tag: $tag, sort: $sort, type: $t, isAdult: false, format: $f, season: $sn, seasonYear: $sy, status: $st) { ${MEDIA_FIELDS} }
       }
     }`;
-  const d = await gql(q, {
+  const rawVars: Record<string, unknown> = {
     s: search || null, g: genre || null, tag: tag || null, sort: [sort], t: type, p: page, pp: perPage,
     f: format || null, sn: season || null, sy: seasonYear || null, st: status || null,
-  });
+  };
+  const variables: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(rawVars)) {
+    if (v !== null && v !== undefined && v !== "") variables[k] = v;
+  }
+  const d = await gql(q, variables);
   return d.Page as { pageInfo: { hasNextPage: boolean; total: number }; media: Media[] };
 }
 

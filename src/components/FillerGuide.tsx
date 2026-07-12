@@ -317,12 +317,12 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
         <a
           href={`https://www.crunchyroll.com/search?q=${encodeURIComponent(animeTitle || "")}&ref=zyniverse`}
           target="_blank" rel="noopener noreferrer sponsored"
-          className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F47521] to-[#f59e0b] px-3 py-1 text-[9px] font-bold text-black hover:opacity-90 transition-opacity"
+          className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F47521] to-[#f59e0b] px-5 py-2.5 text-[10px] font-bold text-black hover:opacity-90 transition-opacity"
         >▶ Watch on Crunchyroll</a>
         <a
           href={`https://www.amazon.com/s?k=${encodeURIComponent((animeTitle || "") + " anime")}&tag=zyniverse-21`}
           target="_blank" rel="noopener noreferrer sponsored"
-          className="ml-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1 text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+          className="ml-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-[10px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
         >📦 Buy on Amazon</a>
       </div>
 
@@ -330,7 +330,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
       <div className="mx-5 mb-3 flex items-center gap-2">
         {baseFilters.map((bf) => (
           <button key={bf.label} onClick={() => setFilter(filter === bf.value ? null : bf.value)}
-            className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all ${
+            className={`rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all ${
               filter === bf.value
                 ? "bg-[var(--color-magenta)] text-black"
                 : "border border-[var(--color-line)] text-[var(--color-mute)] hover:text-[var(--color-ink)]"
@@ -339,7 +339,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
         ))}
         {overriddenCount > 0 && (
           <button onClick={() => setFilter(filter === "overridden" ? null : "overridden")}
-            className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all ${
+            className={`rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all ${
               filter === "overridden"
                 ? "bg-[var(--color-cyan)] text-black"
                 : "border border-[var(--color-line)] text-[var(--color-mute)] hover:text-[var(--color-ink)]"
@@ -586,7 +586,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
                         ].map((r) => (
                           <button key={r.value}
                             onClick={() => submitReport(ep.episode, r.value)}
-                            className="block w-full text-left px-3 py-1.5 text-[10px] text-[var(--color-mute)] hover:text-red-400 hover:bg-red-400/5 transition-colors"
+                            className="block w-full text-left px-5 py-2.5 text-xs text-[var(--color-mute)] hover:text-red-400 hover:bg-red-400/5 transition-colors"
                           >{r.label}</button>
                         ))}
                       </motion.div>

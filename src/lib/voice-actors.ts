@@ -153,23 +153,23 @@ async function enrichWithRealIds(): Promise<Map<number, { realId: number; image:
   }
 
   const knownNames = [
-    { fakeId: 300023, realName: "Rajesh Khattar" },
-    { fakeId: 300019, realName: "Shakti Singh" },
-    { fakeId: 300021, realName: "Sharad Kelkar" },
-    { fakeId: 300022, realName: "Mayur Vyas" },
-    { fakeId: 300018, realName: "Prasad Barve" },
-    { fakeId: 300010, realName: "Rajeev Raj" },
-    { fakeId: 300004, realName: "Mohan Singh" },
+    { tempId: 300023, realName: "Rajesh Khattar" },
+    { tempId: 300019, realName: "Shakti Singh" },
+    { tempId: 300021, realName: "Sharad Kelkar" },
+    { tempId: 300022, realName: "Mayur Vyas" },
+    { tempId: 300018, realName: "Prasad Barve" },
+    { tempId: 300010, realName: "Rajeev Raj" },
+    { tempId: 300004, realName: "Mohan Singh" },
   ];
 
   const map = new Map<number, { realId: number; image: string; name: string }>();
 
-  for (const { fakeId, realName } of knownNames) {
+  for (const { tempId, realName } of knownNames) {
     try {
       const results = await searchStaffOnAnilist(realName);
       if (results.length > 0) {
         const staff = results[0];
-        map.set(fakeId, {
+        map.set(tempId, {
           realId: staff.id,
           image: staff.image?.large || staff.image?.medium || "",
           name: staff.name?.full || realName,

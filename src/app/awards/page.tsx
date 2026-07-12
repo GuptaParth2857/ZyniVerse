@@ -109,7 +109,7 @@ export default function AwardsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="flex h-[420px] gap-2 w-full overflow-x-auto pb-2"
+            className="flex h-[300px] sm:h-[420px] gap-2 w-full overflow-x-auto pb-2"
           >
             {awards.map((award, i) => {
               const color = CATEGORY_COLORS[award.category] || "var(--color-violet)";

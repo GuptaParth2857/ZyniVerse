@@ -109,19 +109,21 @@ export default function ProfilePage() {
       </div>
 
       {/* Tabs */}
-      <div className="mt-8 flex items-center gap-2 border-b border-[var(--color-line)] pb-3 overflow-x-auto flex-nowrap">
-        {(["entries", "reviews", "lists", "stats", "history", "import", "api"] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors ${
-              tab === t ? "text-[var(--color-magenta)] border-b-2 border-[var(--color-magenta)]" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"
-            }`}
-          >{t === "entries" ? "My List" : t === "reviews" ? "Reviews" : t === "lists" ? "Lists" : t === "stats" ? "Stats" : t === "history" ? "Watch History" : t === "import" ? "Import" : "API Keys"}</button>
-        ))}
+      <div className="mt-8 border-b border-[var(--color-line)] pb-3">
+        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto flex-nowrap">
+          {(["entries", "reviews", "lists", "stats", "history", "import", "api"] as const).map((t) => (
+            <button key={t} onClick={() => setTab(t)}
+              className={`px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg transition-colors whitespace-nowrap ${
+                tab === t ? "text-[var(--color-magenta)] border-b-2 border-[var(--color-magenta)]" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"
+              }`}
+            >{t === "entries" ? "My List" : t === "reviews" ? "Reviews" : t === "lists" ? "Lists" : t === "stats" ? "Stats" : t === "history" ? "History" : t === "import" ? "Import" : "API"}</button>
+          ))}
+        </div>
         {tab === "entries" && (
-          <div className="ml-auto flex gap-1">
+          <div className="flex flex-wrap gap-1.5 mt-2">
             {["ALL", "CURRENT", "PLANNING", "COMPLETED", "DROPPED", "PAUSED"].map((s) => (
               <button key={s} onClick={() => setStatusFilter(s)}
-                className={`px-2.5 py-1 text-[10px] font-semibold rounded-full transition-colors ${
+                className={`px-4 py-2 text-xs font-semibold rounded-full transition-colors ${
                   statusFilter === s
                     ? "bg-[var(--color-magenta)] text-black"
                     : "text-[var(--color-mute)] border border-[var(--color-line)] hover:border-[var(--color-magenta)]"
@@ -143,10 +145,10 @@ export default function ProfilePage() {
             <div className="space-y-2">
               {filteredEntries.map((e) => (
                 <Link key={`${e.mediaId}-${e.status}`} href={`/${e.type.toLowerCase()}/${e.mediaId}`}
-                  className="flex items-center justify-between rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 hover:border-[var(--color-cyan)]/40 transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 hover:border-[var(--color-cyan)]/40 transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <span className={`h-2 w-2 rounded-full ${
+                    <span className={`h-2 w-2 rounded-full shrink-0 ${
                       e.status === "CURRENT" ? "bg-[var(--color-cyan)]" :
                       e.status === "PLANNING" ? "bg-[var(--color-violet)]" :
                       e.status === "COMPLETED" ? "bg-green-500" :
@@ -156,7 +158,7 @@ export default function ProfilePage() {
                     <span className="text-sm font-medium">#{e.mediaId}</span>
                     <span className="text-[10px] font-mono uppercase text-[var(--color-mute)]">{e.type}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-[var(--color-mute)]">
+                  <div className="flex items-center gap-3 text-xs text-[var(--color-mute)] pl-5 sm:pl-0">
                     {e.progress > 0 && <span>{e.progress}/{e.total || "?"} eps</span>}
                     {e.score && <span className="text-[var(--color-cyan)]">{e.score}/10</span>}
                     <span className={`font-semibold ${
@@ -292,7 +294,7 @@ function ProfileLists({ userId }: { userId: string }) {
     <div>
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-[var(--color-mute)]">{lists.length} list{lists.length !== 1 ? "s" : ""}</p>
-        <Link href="/lists/create" className="rounded-lg bg-[var(--color-cyan)] px-3 py-1.5 text-sm font-semibold text-black">Create List</Link>
+        <Link href="/lists/create" className="rounded-lg bg-[var(--color-cyan)] px-5 py-2.5 text-sm font-semibold text-black">Create List</Link>
       </div>
       {lists.length === 0 ? (
         <p className="py-8 text-center text-sm text-[var(--color-mute)]">No custom lists yet.</p>

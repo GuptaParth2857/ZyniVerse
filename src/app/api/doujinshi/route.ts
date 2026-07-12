@@ -8,9 +8,10 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
   const perPage = Math.min(50, Math.max(1, Number(searchParams.get("perPage")) || 20));
   const offset = (page - 1) * perPage;
+  const genres = searchParams.get("genres")?.split(",").filter(Boolean) || undefined;
 
   try {
-    const { entries, total } = await getDoujinshi({ search, limit: perPage, offset, sort });
+    const { entries, total } = await getDoujinshi({ search, limit: perPage, offset, sort, genres });
     return NextResponse.json({
       entries,
       total,
@@ -18,9 +19,10 @@ export async function GET(req: NextRequest) {
       perPage,
       hasMore: offset + perPage < total,
     });
-  } catch {
+  } catch (err) {
+    console.error("[doujinshi] API error:", err);
     return NextResponse.json(
-      { error: "Failed to fetch doujinshi from MangaDex" },
+      { error: "Failed to fetch doujinshi from MangaDex", entries: [], total: 0 },
       { status: 502 },
     );
   }

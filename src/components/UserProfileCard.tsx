@@ -105,7 +105,7 @@ export default function UserProfileCard({
           <button
             onClick={toggleFollow}
             disabled={loading}
-            className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+            className={`shrink-0 rounded-full px-5 py-2.5 text-xs font-bold transition-all ${
               following
                 ? "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-red-400 hover:text-red-400"
                 : "bg-[var(--color-cyan)] text-black hover:opacity-90"
