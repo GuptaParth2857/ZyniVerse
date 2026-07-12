@@ -9,20 +9,15 @@ interface AdBannerProps {
   type?: "banner" | "sidebar" | "in-content" | "native";
 }
 
-function injectAdInSandbox(container: HTMLDivElement, code: string, dimensions?: { width: number; height: number }) {
-  const w = dimensions?.width || 300;
-  const h = dimensions?.height || 250;
-  const iframe = document.createElement("iframe");
-  iframe.width = String(w);
-  iframe.height = String(h);
-  iframe.style.border = "none";
-  iframe.style.overflow = "hidden";
-  iframe.style.maxWidth = "100%";
-  iframe.scrolling = "no";
-  iframe.title = "Advertisement";
-  iframe.setAttribute("sandbox", "allow-scripts allow-popups");
-  iframe.srcdoc = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;display:flex;justify-content:center;align-items:center;overflow:hidden;width:${w}px;height:${h}px;">${code}</body></html>`;
-  container.appendChild(iframe);
+function injectAdScript(container: HTMLDivElement, code: string) {
+  const wrapper = document.createElement("div");
+  wrapper.style.display = "flex";
+  wrapper.style.justifyContent = "center";
+  wrapper.style.alignItems = "center";
+  wrapper.style.width = "100%";
+  wrapper.style.height = "100%";
+  wrapper.innerHTML = code;
+  container.appendChild(wrapper);
 }
 
 export default function AdBanner({ placement, type = "banner" }: AdBannerProps) {
@@ -48,7 +43,7 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
     const ads = getAdsForLocation(placement);
     const ad = ads[0];
     if (ad && ad.network === "adsterra") {
-      injectAdInSandbox(adSlotRef.current, ad.code, ad.dimensions);
+      injectAdScript(adSlotRef.current, ad.code);
       setInjected(true);
     }
   }, [showAds, adBlocked, placement, injected]);
