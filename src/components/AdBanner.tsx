@@ -2,37 +2,31 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { getAdsForLocation, shouldShowAds, AD_TRACKING_PIXEL } from "@/lib/ads";
+import { getAdsForLocation, shouldShowAds } from "@/lib/ads";
 
 interface AdBannerProps {
   placement: string;
   type?: "banner" | "sidebar" | "in-content" | "native";
 }
 
-function injectAdSense(container: HTMLDivElement, code: string) {
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = code;
-  container.appendChild(wrapper);
-
-  try {
-    (window as any).adsbygoogle = (window as any).adsbygoogle || [];
-    (window as any).adsbygoogle.push({});
-  } catch {}
-}
-
-function injectAdScript(container: HTMLElement, code: string, dimensions?: { width: number; height: number }) {
+function injectAdInSandbox(container: HTMLDivElement, code: string, dimensions?: { width: number; height: number }) {
+  const w = dimensions?.width || 300;
+  const h = dimensions?.height || 250;
   const iframe = document.createElement("iframe");
-  iframe.width = dimensions?.width?.toString() || "100%";
-  iframe.height = dimensions?.height?.toString() || "100%";
+  iframe.width = String(w);
+  iframe.height = String(h);
   iframe.style.border = "none";
   iframe.style.overflow = "hidden";
+  iframe.style.maxWidth = "100%";
   iframe.scrolling = "no";
+  iframe.setAttribute("sandbox", "allow-scripts allow-popups");
+  iframe.title = "Advertisement";
   container.appendChild(iframe);
-  
+
   const doc = iframe.contentWindow?.document || iframe.contentDocument;
   if (doc) {
     doc.open();
-    doc.write(`<!DOCTYPE html><html><head></head><body style="margin:0;padding:0;display:flex;justify-content:center;align-items:center;">${code}</body></html>`);
+    doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;display:flex;justify-content:center;align-items:center;overflow:hidden;width:${w}px;height:${h}px;">${code}</body></html>`);
     doc.close();
   }
 }
@@ -59,12 +53,8 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
     if (!showAds || adBlocked || !adSlotRef.current || injected) return;
     const ads = getAdsForLocation(placement);
     const ad = ads[0];
-    if (ad) {
-      if (ad.network === "adsense") {
-        injectAdSense(adSlotRef.current, ad.code);
-      } else if (ad.network === "adsterra") {
-        injectAdScript(adSlotRef.current, ad.code, ad.dimensions);
-      }
+    if (ad && ad.network === "adsterra") {
+      injectAdInSandbox(adSlotRef.current, ad.code, ad.dimensions);
       setInjected(true);
     }
   }, [showAds, adBlocked, placement, injected]);
@@ -134,8 +124,8 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
   const sizeClasses: Record<string, string> = {
     banner: "min-h-[90px]",
     sidebar: "min-h-[250px]",
-    "in-content": "min-h-[250px]",
-    native: "min-h-[120px]",
+    "in-content": "min-h-[90px]",
+    native: "min-h-[250px]",
   };
 
   return (
