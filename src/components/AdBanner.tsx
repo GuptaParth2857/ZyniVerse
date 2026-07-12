@@ -9,48 +9,21 @@ interface AdBannerProps {
   type?: "banner" | "sidebar" | "in-content" | "native";
 }
 
-function injectAdScript(container: HTMLDivElement, code: string, dimensions?: { width: number; height: number }) {
+function injectAdInSandbox(container: HTMLDivElement, code: string, dimensions?: { width: number; height: number }) {
   const w = dimensions?.width || 300;
   const h = dimensions?.height || 250;
 
-  const wrapper = document.createElement("div");
-  wrapper.style.display = "flex";
-  wrapper.style.justifyContent = "center";
-  wrapper.style.alignItems = "center";
-  wrapper.style.width = "100%";
-  wrapper.style.minHeight = h + "px";
-
-  if (code.includes("atOptions")) {
-    const configScript = document.createElement("script");
-    configScript.textContent = code.split("<script>")[1]?.split("</script>")[0] || "";
-    wrapper.appendChild(configScript);
-
-    const invokeSrc = code.match(/src="([^"]+)"/)?.[1];
-    if (invokeSrc) {
-      const invokeScript = document.createElement("script");
-      invokeScript.src = invokeSrc;
-      invokeScript.async = true;
-      wrapper.appendChild(invokeScript);
-    }
-  } else if (code.includes("effectivecpmnetwork")) {
-    const scriptSrc = code.match(/src="([^"]+)"/)?.[1];
-    const containerId = code.match(/id="([^"]+)"/)?.[1];
-
-    if (containerId) {
-      const adDiv = document.createElement("div");
-      adDiv.id = containerId;
-      wrapper.appendChild(adDiv);
-    }
-
-    if (scriptSrc) {
-      const script = document.createElement("script");
-      script.src = scriptSrc;
-      script.async = true;
-      wrapper.appendChild(script);
-    }
-  }
-
-  container.appendChild(wrapper);
+  const iframe = document.createElement("iframe");
+  iframe.width = String(w);
+  iframe.height = String(h);
+  iframe.style.border = "none";
+  iframe.style.overflow = "hidden";
+  iframe.style.maxWidth = "100%";
+  iframe.scrolling = "no";
+  iframe.title = "Advertisement";
+  iframe.setAttribute("sandbox", "allow-forms allow-scripts");
+  iframe.srcdoc = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;display:flex;justify-content:center;align-items:center;overflow:hidden;width:${w}px;height:${h}px;">${code}</body></html>`;
+  container.appendChild(iframe);
 }
 
 export default function AdBanner({ placement, type = "banner" }: AdBannerProps) {
@@ -76,7 +49,7 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
     const ads = getAdsForLocation(placement);
     const ad = ads[0];
     if (ad && ad.network === "adsterra") {
-      injectAdScript(adSlotRef.current, ad.code, ad.dimensions);
+      injectAdInSandbox(adSlotRef.current, ad.code, ad.dimensions);
       setInjected(true);
     }
   }, [showAds, adBlocked, placement, injected]);
