@@ -5,8 +5,8 @@ import { auth } from "@/lib/auth";
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const club = await prisma.club.findUnique({
-    where: { id },
+  const club = await prisma.club.findFirst({
+    where: { OR: [{ id }, { slug: id }] },
     include: {
       owner: { select: { id: true, username: true, avatar: true } },
       members: {
