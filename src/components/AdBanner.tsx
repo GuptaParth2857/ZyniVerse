@@ -9,6 +9,17 @@ interface AdBannerProps {
   type?: "banner" | "sidebar" | "in-content" | "native";
 }
 
+function injectAdSense(container: HTMLDivElement, code: string) {
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = code;
+  container.appendChild(wrapper);
+
+  try {
+    (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+    (window as any).adsbygoogle.push({});
+  } catch {}
+}
+
 function injectAdScript(container: HTMLElement, code: string, dimensions?: { width: number; height: number }) {
   const iframe = document.createElement("iframe");
   iframe.width = dimensions?.width?.toString() || "100%";
@@ -41,7 +52,6 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
   const showAds = shouldShowAds(user);
 
   useEffect(() => {
-    // Disable ad-block check for now as it causes false positives
     setAdBlocked(false);
   }, [showAds]);
 
@@ -49,8 +59,12 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
     if (!showAds || adBlocked || !adSlotRef.current || injected) return;
     const ads = getAdsForLocation(placement);
     const ad = ads[0];
-    if (ad && ad.network === "adsterra") {
-      injectAdScript(adSlotRef.current, ad.code, ad.dimensions);
+    if (ad) {
+      if (ad.network === "adsense") {
+        injectAdSense(adSlotRef.current, ad.code);
+      } else if (ad.network === "adsterra") {
+        injectAdScript(adSlotRef.current, ad.code, ad.dimensions);
+      }
       setInjected(true);
     }
   }, [showAds, adBlocked, placement, injected]);
