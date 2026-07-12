@@ -1,1 +1,3 @@
 google.com, ca-pub-5241033119281791, DIRECT, f08c47fec0942fa0
+highperformanceformat.com, DIRECT
+effectivecpmnetwork.com, DIRECT

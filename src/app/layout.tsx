@@ -11,6 +11,7 @@ import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import RouteTransition from "@/components/RouteTransition";
 import MobileNav from "@/components/MobileNav";
 import AdBanner from "@/components/AdBanner";
+import AdsterraSocialBar from "@/components/AdsterraSocialBar";
 import ChatWidget from "@/components/ChatWidget";
 import SplashScreen from "@/components/SplashScreen";
 import HeartbeatProvider from "@/components/HeartbeatProvider";
@@ -113,6 +114,7 @@ export default function RootLayout({
             <ServiceWorkerRegistration />
             <ChatWidget />
             <SplashScreen />
+            <AdsterraSocialBar />
           </Providers>
         </AuthProvider>
       </body>
