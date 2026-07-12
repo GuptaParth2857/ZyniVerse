@@ -3,7 +3,7 @@ import { prisma } from "./prisma";
 export interface AdPlacement {
   id: string;
   type: "native" | "banner" | "sidebar" | "in-content" | "footer";
-  network: "adsterra" | "direct";
+  network: "adsterra" | "adsense" | "direct";
   code: string;
   location: string;
   isActive: boolean;
@@ -14,8 +14,8 @@ const PLACEMENTS: AdPlacement[] = [
   {
     id: "homepage-banner",
     type: "banner",
-    network: "adsterra",
-    code: `<script>atOptions={'key':'e80028b0207a45ef76bfc3d9d4a0fe9e','format':'iframe','height':90,'width':728,'params':{}};</script><script src="https://www.highperformanceformat.com/e80028b0207a45ef76bfc3d9d4a0fe9e/invoke.js"></script>`,
+    network: "adsense",
+    code: `<ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-5241033119281791" data-ad-slot="HOMESLOT"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`,
     location: "homepage",
     isActive: true,
     dimensions: { width: 728, height: 90 },
@@ -23,8 +23,8 @@ const PLACEMENTS: AdPlacement[] = [
   {
     id: "anime-sidebar",
     type: "sidebar",
-    network: "adsterra",
-    code: `<script>atOptions={'key':'72dd20ad744b4f992e4e2121cfa47172','format':'iframe','height':250,'width':300,'params':{}};</script><script src="https://www.highperformanceformat.com/72dd20ad744b4f992e4e2121cfa47172/invoke.js"></script>`,
+    network: "adsense",
+    code: `<ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-5241033119281791" data-ad-slot="ANIMESLOT"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`,
     location: "anime-detail",
     isActive: true,
     dimensions: { width: 300, height: 250 },
@@ -32,8 +32,8 @@ const PLACEMENTS: AdPlacement[] = [
   {
     id: "search-sidebar",
     type: "sidebar",
-    network: "adsterra",
-    code: `<script>atOptions={'key':'72dd20ad744b4f992e4e2121cfa47172','format':'iframe','height':250,'width':300,'params':{}};</script><script src="https://www.highperformanceformat.com/72dd20ad744b4f992e4e2121cfa47172/invoke.js"></script>`,
+    network: "adsense",
+    code: `<ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-5241033119281791" data-ad-slot="SEARCHSLOT"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`,
     location: "search",
     isActive: true,
     dimensions: { width: 300, height: 250 },
@@ -41,8 +41,8 @@ const PLACEMENTS: AdPlacement[] = [
   {
     id: "browse-sidebar",
     type: "sidebar",
-    network: "adsterra",
-    code: `<script>atOptions={'key':'72dd20ad744b4f992e4e2121cfa47172','format':'iframe','height':250,'width':300,'params':{}};</script><script src="https://www.highperformanceformat.com/72dd20ad744b4f992e4e2121cfa47172/invoke.js"></script>`,
+    network: "adsense",
+    code: `<ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-5241033119281791" data-ad-slot="BROWSESLOT"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`,
     location: "browse",
     isActive: true,
     dimensions: { width: 300, height: 250 },
@@ -50,8 +50,8 @@ const PLACEMENTS: AdPlacement[] = [
   {
     id: "footer-banner",
     type: "footer",
-    network: "adsterra",
-    code: `<script>atOptions={'key':'e80028b0207a45ef76bfc3d9d4a0fe9e','format':'iframe','height':90,'width':728,'params':{}};</script><script src="https://www.highperformanceformat.com/e80028b0207a45ef76bfc3d9d4a0fe9e/invoke.js"></script>`,
+    network: "adsense",
+    code: `<ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-5241033119281791" data-ad-slot="FOOTERSLOT"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`,
     location: "global-footer",
     isActive: true,
     dimensions: { width: 728, height: 90 },
@@ -59,8 +59,8 @@ const PLACEMENTS: AdPlacement[] = [
   {
     id: "filler-banner",
     type: "in-content",
-    network: "adsterra",
-    code: `<script>atOptions={'key':'e80028b0207a45ef76bfc3d9d4a0fe9e','format':'iframe','height':90,'width':728,'params':{}};</script><script src="https://www.highperformanceformat.com/e80028b0207a45ef76bfc3d9d4a0fe9e/invoke.js"></script>`,
+    network: "adsense",
+    code: `<ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-5241033119281791" data-ad-slot="FILLERSLOT"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`,
     location: "filler",
     isActive: true,
     dimensions: { width: 728, height: 90 },
@@ -68,8 +68,8 @@ const PLACEMENTS: AdPlacement[] = [
   {
     id: "manga-sidebar",
     type: "sidebar",
-    network: "adsterra",
-    code: `<script>atOptions={'key':'72dd20ad744b4f992e4e2121cfa47172','format':'iframe','height':250,'width':300,'params':{}};</script><script src="https://www.highperformanceformat.com/72dd20ad744b4f992e4e2121cfa47172/invoke.js"></script>`,
+    network: "adsense",
+    code: `<ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-5241033119281791" data-ad-slot="MANGASLOT"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`,
     location: "manga",
     isActive: true,
     dimensions: { width: 300, height: 250 },
@@ -77,8 +77,8 @@ const PLACEMENTS: AdPlacement[] = [
   {
     id: "recommendations-banner",
     type: "in-content",
-    network: "adsterra",
-    code: `<script>atOptions={'key':'e80028b0207a45ef76bfc3d9d4a0fe9e','format':'iframe','height':90,'width':728,'params':{}};</script><script src="https://www.highperformanceformat.com/e80028b0207a45ef76bfc3d9d4a0fe9e/invoke.js"></script>`,
+    network: "adsense",
+    code: `<ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-5241033119281791" data-ad-slot="RECSLOT"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`,
     location: "recommendations",
     isActive: true,
     dimensions: { width: 728, height: 90 },
@@ -86,8 +86,8 @@ const PLACEMENTS: AdPlacement[] = [
   {
     id: "wiki-sidebar",
     type: "sidebar",
-    network: "adsterra",
-    code: `<script>atOptions={'key':'72dd20ad744b4f992e4e2121cfa47172','format':'iframe','height':250,'width':300,'params':{}};</script><script src="https://www.highperformanceformat.com/72dd20ad744b4f992e4e2121cfa47172/invoke.js"></script>`,
+    network: "adsense",
+    code: `<ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-5241033119281791" data-ad-slot="WIKISLOT"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`,
     location: "wiki",
     isActive: true,
     dimensions: { width: 300, height: 250 },
@@ -95,8 +95,8 @@ const PLACEMENTS: AdPlacement[] = [
   {
     id: "forum-banner",
     type: "banner",
-    network: "adsterra",
-    code: `<script>atOptions={'key':'e80028b0207a45ef76bfc3d9d4a0fe9e','format':'iframe','height':90,'width':728,'params':{}};</script><script src="https://www.highperformanceformat.com/e80028b0207a45ef76bfc3d9d4a0fe9e/invoke.js"></script>`,
+    network: "adsense",
+    code: `<ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-5241033119281791" data-ad-slot="FORUMSLOT"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`,
     location: "forum",
     isActive: true,
     dimensions: { width: 728, height: 90 },
