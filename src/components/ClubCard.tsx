@@ -52,8 +52,12 @@ export default function ClubCard({ club }: ClubCardProps) {
           <div className="neon-premium-content p-3">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                {club.icon ? (
+                {club.icon && club.icon.startsWith("http") ? (
                   <div className="h-10 w-10 shrink-0 rounded-lg overflow-hidden ring-1 ring-[var(--color-cyan)]/30" style={{ background: `url(${club.icon}) center/cover` }} />
+                ) : club.icon ? (
+                  <div className="h-10 w-10 shrink-0 rounded-lg bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] flex items-center justify-center text-lg ring-1 ring-white/10">
+                    {club.icon}
+                  </div>
                 ) : (
                   <div className="h-10 w-10 shrink-0 rounded-lg bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] flex items-center justify-center text-lg font-bold text-black ring-1 ring-white/10">
                     {club.name.charAt(0).toUpperCase()}

@@ -58,8 +58,12 @@ export default function ClubDetail({ club, isMember, memberRole, onJoin, onLeave
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       {/* Header */}
       <div className="flex items-start gap-6 mb-8">
-        {club.icon ? (
+        {club.icon && club.icon.startsWith("http") ? (
           <div className="h-20 w-20 shrink-0 rounded-xl overflow-hidden" style={{ background: `url(${club.icon}) center/cover` }} />
+        ) : club.icon ? (
+          <div className="h-20 w-20 shrink-0 rounded-xl bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] flex items-center justify-center text-4xl">
+            {club.icon}
+          </div>
         ) : (
           <div className="h-20 w-20 shrink-0 rounded-xl bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] flex items-center justify-center text-3xl font-bold text-black">
             {club.name.charAt(0).toUpperCase()}
@@ -139,17 +143,21 @@ export default function ClubDetail({ club, isMember, memberRole, onJoin, onLeave
           ) : (
             <div className="space-y-3">
               {club.posts.map((post) => (
-                <div key={post.id} className={`rounded-xl border ${post.isPinned ? "border-[var(--color-cyan)]/30 bg-[var(--color-cyan)]/5" : "border-[var(--color-line)] bg-[var(--color-panel)]"} p-4`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] flex items-center justify-center text-[8px] font-bold text-black">
-                      {post.user.username.charAt(0).toUpperCase()}
+                <div key={post.id} className="neon-premium rounded-xl">
+                  <div className="neon-premium-track rounded-xl" />
+                  <div className="neon-premium-overlay rounded-[10.5px]" />
+                  <div className={`neon-premium-content p-4 ${post.isPinned ? "ring-1 ring-[var(--color-cyan)]/30" : ""}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] flex items-center justify-center text-[8px] font-bold text-black">
+                        {post.user.username.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-xs text-[var(--color-mute)]">{post.user.username}</span>
+                      {post.isPinned && <span className="text-[10px] text-[var(--color-cyan)]">📌 Pinned</span>}
+                      <span className="text-[10px] text-[var(--color-mute)] ml-auto">{new Date(post.createdAt).toLocaleDateString()}</span>
                     </div>
-                    <span className="text-xs text-[var(--color-mute)]">{post.user.username}</span>
-                    {post.isPinned && <span className="text-[10px] text-[var(--color-cyan)]">📌 Pinned</span>}
-                    <span className="text-[10px] text-[var(--color-mute)] ml-auto">{new Date(post.createdAt).toLocaleDateString()}</span>
+                    <h3 className="font-display font-bold text-sm mb-1">{post.title}</h3>
+                    <p className="text-sm text-[var(--color-mute)] whitespace-pre-wrap">{post.content}</p>
                   </div>
-                  <h3 className="font-display font-bold text-sm mb-1">{post.title}</h3>
-                  <p className="text-sm text-[var(--color-mute)] whitespace-pre-wrap">{post.content}</p>
                 </div>
               ))}
             </div>
@@ -161,19 +169,23 @@ export default function ClubDetail({ club, isMember, memberRole, onJoin, onLeave
       {activeTab === "members" && (
         <div className="space-y-2">
           {club.members.map((member) => (
-            <div key={member.id} className="flex items-center justify-between rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] flex items-center justify-center text-[10px] font-bold text-black">
-                  {member.user.username.charAt(0).toUpperCase()}
+            <div key={member.id} className="neon-premium rounded-xl">
+              <div className="neon-premium-track rounded-xl" />
+              <div className="neon-premium-overlay rounded-[10.5px]" />
+              <div className="neon-premium-content flex items-center justify-between p-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] flex items-center justify-center text-[10px] font-bold text-black">
+                    {member.user.username.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{member.user.username}</p>
+                    <p className="text-[10px] text-[var(--color-mute)] capitalize">{member.role}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">{member.user.username}</p>
-                  <p className="text-[10px] text-[var(--color-mute)] capitalize">{member.role}</p>
-                </div>
+                {canManage && member.role !== "owner" && (
+                  <span className="text-[10px] text-[var(--color-mute)]">{member.role}</span>
+                )}
               </div>
-              {canManage && member.role !== "owner" && (
-                <span className="text-[10px] text-[var(--color-mute)]">{member.role}</span>
-              )}
             </div>
           ))}
         </div>
