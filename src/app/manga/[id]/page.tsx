@@ -10,6 +10,15 @@ import { DynamicCarousel3D as Carousel3D } from "@/components/lazy";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import MangaProgress from "@/components/MangaProgress";
+import MangaRatingInput from "@/components/MangaRatingInput";
+import MangaStatsCard from "@/components/MangaStatsCard";
+import ScoreDistributionChart from "@/components/features/ScoreDistributionChart";
+import RecRelationships from "@/components/RecRelationships";
+import DiscussionLinks from "@/components/DiscussionLinks";
+import UsersAlsoLiked from "@/components/features/UsersAlsoLiked";
+import ShareButton from "@/components/ShareButton";
+import AdBanner from "@/components/AdBanner";
+import AffiliateLink from "@/components/AffiliateLink";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/manga";
 import type { MediaMangaFull } from "@/lib/anilist";
 
@@ -49,6 +58,7 @@ export default function MangaDetailsPage() {
   const [chapters, setChapters] = useState<MangaChapterDB[]>([]);
   const [showChapters, setShowChapters] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("PLANNING");
+  const [showAllChapters, setShowAllChapters] = useState(false);
 
   async function fetchEntry() {
     try {
@@ -170,6 +180,10 @@ export default function MangaDetailsPage() {
     setEntry((prev) => prev ? { ...prev, chapters, volumes } : prev);
   }
 
+  function handleScoreUpdate(score: number | null) {
+    setEntry((prev) => prev ? { ...prev, score } : prev);
+  }
+
   if (loading) return <Loader label="Loading manga details..." />;
   if (error) return <div className="mx-auto max-w-3xl px-4 py-16"><ErrorState message={error} /></div>;
   if (!manga) return null;
@@ -184,6 +198,11 @@ export default function MangaDetailsPage() {
   const recs = manga.recommendations?.edges || [];
   const rankings = manga.rankings || [];
   const scoreDist = manga.stats?.scoreDistribution || [];
+
+  const readChapters = chapters.filter((c) => c.read);
+  const readCount = readChapters.length;
+  const totalChapterCount = manga.chapters || 0;
+  const readProgress = totalChapterCount > 0 ? Math.round((readCount / totalChapterCount) * 100) : 0;
 
   return (
     <PageTransition><ErrorBoundary label="MangaDetails"><div>
@@ -207,6 +226,11 @@ export default function MangaDetailsPage() {
               className="object-cover"
               sizes="(max-width: 768px) 50vw, 25vw"
             />
+            {manga.averageScore ? (
+              <div className="absolute -top-2 -right-2 flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-violet)] text-sm font-bold text-black shadow-lg">
+                {formatScore(manga.averageScore)}
+              </div>
+            ) : null}
           </div>
 
           <div className="min-w-0 flex-1">
@@ -218,21 +242,8 @@ export default function MangaDetailsPage() {
             <h1 className="font-display text-3xl font-bold leading-tight sm:text-5xl">{title}</h1>
             {manga.title.native && <p className="mt-1 text-[var(--color-mute)]">{manga.title.native}</p>}
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              {manga.genres?.map((g) => (
-                <Link key={g} href={`/search?genre=${g}&type=MANGA`}
-                  className="rounded-full border border-[var(--color-line)] px-3 py-1 text-xs text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-colors"
-                >{g}</Link>
-              ))}
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-[var(--color-mute)]">
-              {manga.averageScore ? (
-                <span className="font-mono text-[var(--color-violet)]">★ {formatScore(manga.averageScore)}</span>
-              ) : null}
-              {manga.chapters ? <span>{manga.chapters} ch</span> : null}
-              {manga.volumes ? <span>{manga.volumes} vol</span> : null}
-              {manga.format ? <span className="text-[10px] uppercase">{manga.format}</span> : null}
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-[var(--color-mute)]">
+              {manga.format ? <span className="text-[10px] uppercase tracking-wider border border-[var(--color-line)] px-2 py-0.5 rounded">{manga.format}</span> : null}
               {manga.source ? <span className="text-[10px] uppercase">{manga.source.replace(/_/g, " ")}</span> : null}
               {manga.countryOfOrigin ? <span>{manga.countryOfOrigin}</span> : null}
               {manga.startDate?.year ? (
@@ -241,10 +252,45 @@ export default function MangaDetailsPage() {
                   {manga.endDate?.year ? ` — ${manga.endDate.year}` : manga.status === "RELEASING" ? " — Present" : ""}
                 </span>
               ) : null}
+              {manga.chapters ? <span>{manga.chapters} Chapters</span> : null}
+              {manga.volumes ? <span>{manga.volumes} Volumes</span> : null}
             </div>
 
-            {/* Add to List / Status selector */}
-            <div className="mt-6 flex flex-wrap items-center gap-3">
+            {/* Genres */}
+            <div className="mt-3 flex flex-wrap gap-2">
+              {manga.genres?.map((g) => (
+                <Link key={g} href={`/search?genre=${g}&type=MANGA`}
+                  className="rounded-full border border-[var(--color-line)] px-3 py-1 text-xs text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-colors"
+                >{g}</Link>
+              ))}
+            </div>
+
+            {/* Quick Stats */}
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+              {rankings.slice(0, 2).map((r) => (
+                <span key={r.id} className="font-mono text-xs text-[var(--color-mute)]">
+                  <span className="text-[var(--color-magenta)]">#{r.rank}</span> {r.context}{r.year ? ` (${r.year})` : ""}
+                </span>
+              ))}
+              {manga.favourites ? (
+                <span className="font-mono text-xs text-[var(--color-mute)]">
+                  ♥ {manga.favourites.toLocaleString()} favorites
+                </span>
+              ) : null}
+              {manga.popularity ? (
+                <span className="font-mono text-xs text-[var(--color-mute)]">
+                  ◎ {manga.popularity.toLocaleString()} popularity
+                </span>
+              ) : null}
+              {manga.meanScore ? (
+                <span className="font-mono text-xs text-[var(--color-cyan)]">
+                  ◎ Mean: {formatScore(manga.meanScore)}
+                </span>
+              ) : null}
+            </div>
+
+            {/* CTA */}
+            <div className="mt-5 flex flex-wrap items-center gap-3">
               {entry ? (
                 <>
                   <span className="rounded-full px-3 py-1 text-xs font-semibold text-black"
@@ -258,12 +304,6 @@ export default function MangaDetailsPage() {
                   <button onClick={removeFromList}
                     className="rounded-lg border border-red-500/30 px-5 py-2.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
                   >Remove</button>
-                  {entry && (
-                    <span className="text-xs text-[var(--color-mute)]">
-                      Ch: {entry.chapters}{entry.totalChapters ? `/${entry.totalChapters}` : ""}
-                      {entry.volumes > 0 && ` | Vol: ${entry.volumes}${entry.totalVolumes ? `/${entry.totalVolumes}` : ""}`}
-                    </span>
-                  )}
                 </>
               ) : (
                 <>
@@ -277,6 +317,7 @@ export default function MangaDetailsPage() {
                   >Add to My List</button>
                 </>
               )}
+              <ShareButton mediaId={manga.id} title={title} />
             </div>
           </div>
         </div>
@@ -291,14 +332,40 @@ export default function MangaDetailsPage() {
             <p className="leading-relaxed text-[var(--color-mute)] whitespace-pre-line">
               {stripHtml(manga.description) || "No description available."}
             </p>
+            {manga.tags && manga.tags.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {manga.tags.filter((t) => t.rank >= 60 && !t.isMediaSpoiler).slice(0, 10).map((t) => (
+                  <span key={t.id} className="rounded-full bg-[var(--color-void)] px-2.5 py-1 text-[10px] text-[var(--color-mute)] border border-[var(--color-line)]">
+                    {t.name}
+                    {t.isAdult && <span className="ml-1 text-[var(--color-magenta)]">●</span>}
+                  </span>
+                ))}
+              </div>
+            )}
           </section>
 
           {/* Chapter list */}
           {entry && showChapters && chapters.length > 0 && (
             <section>
-              <SectionTitle>Chapter List</SectionTitle>
-              <div className="rounded-xl border border-[var(--color-line)] divide-y divide-[var(--color-line)] max-h-80 overflow-y-auto">
-                {chapters.map((ch) => (
+              <SectionTitle>
+                Chapter List
+                <span className="ml-2 text-xs font-mono text-[var(--color-mute)]">
+                  {readCount}/{chapters.length} read
+                </span>
+              </SectionTitle>
+              {readProgress > 0 && (
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-[10px] text-[var(--color-mute)] mb-1">
+                    <span>Reading Progress</span>
+                    <span>{readProgress}%</span>
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-[var(--color-line)] overflow-hidden">
+                    <div className="h-full rounded-full bg-[var(--color-violet)] transition-all duration-300" style={{ width: `${readProgress}%` }} />
+                  </div>
+                </div>
+              )}
+              <div className="rounded-xl border border-[var(--color-line)] divide-y divide-[var(--color-line)] max-h-96 overflow-y-auto">
+                {(showAllChapters ? chapters : chapters.slice(0, 30)).map((ch) => (
                   <button key={ch.id} onClick={() => markChapter(ch.chapter, !ch.read)}
                     className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:bg-white/5 ${
                       ch.read ? "opacity-50" : ""
@@ -319,6 +386,13 @@ export default function MangaDetailsPage() {
                   </button>
                 ))}
               </div>
+              {chapters.length > 30 && (
+                <button onClick={() => setShowAllChapters(!showAllChapters)}
+                  className="mt-2 text-xs text-[var(--color-violet)] hover:text-[var(--color-magenta)] transition-colors"
+                >
+                  {showAllChapters ? "Show less" : `Show all ${chapters.length} chapters`}
+                </button>
+              )}
             </section>
           )}
 
@@ -418,6 +492,15 @@ export default function MangaDetailsPage() {
               />
             </section>
           )}
+
+          {/* Recommendation Relationships */}
+          <RecRelationships mediaId={manga.id} />
+
+          {/* Users Also Liked */}
+          <UsersAlsoLiked mediaId={manga.id} />
+
+          {/* Reddit Discussions */}
+          <DiscussionLinks mediaId={manga.id} />
         </div>
 
         {/* Sidebar */}
@@ -433,6 +516,24 @@ export default function MangaDetailsPage() {
               onUpdate={handleProgressUpdate}
             />
           )}
+
+          {/* Rating Input (when added to list) */}
+          {entry && (
+            <MangaRatingInput
+              mediaId={Number(id)}
+              currentScore={entry.score}
+              onScoreUpdate={handleScoreUpdate}
+            />
+          )}
+
+          {/* Manga Stats (MangaDex + MAL) */}
+          <MangaStatsCard mediaId={manga.id} />
+
+          {/* Ad */}
+          <AdBanner placement="manga-detail" type="sidebar" />
+
+          {/* Score Distribution */}
+          <ScoreDistributionChart scoreDistribution={scoreDist} />
 
           {/* External Links */}
           {links.length > 0 && (
@@ -454,24 +555,6 @@ export default function MangaDetailsPage() {
             </div>
           )}
 
-          {/* Score Distribution */}
-          {scoreDist.length > 0 && (
-            <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
-              <h3 className="font-display text-sm font-bold mb-3">Score Distribution</h3>
-              <div className="space-y-1">
-                {scoreDist.filter((s) => s.amount > 0).slice(0, 10).map((s) => (
-                  <div key={s.score} className="flex items-center gap-2 text-[11px]">
-                    <span className="w-4 text-right font-mono text-[var(--color-mute)]">{s.score * 10}%</span>
-                    <div className="flex-1 h-2 rounded-full bg-[var(--color-line)] overflow-hidden">
-                      <div className="h-full rounded-full bg-[var(--color-violet)]" style={{ width: `${Math.min(100, (s.amount / Math.max(...scoreDist.map((d) => d.amount))) * 100)}%` }} />
-                    </div>
-                    <span className="w-8 text-right font-mono text-[var(--color-mute)]">{s.amount}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {manga.favourites ? (
             <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 text-center">
               <div className="text-2xl font-bold font-mono text-[var(--color-magenta)]">{manga.favourites.toLocaleString()}</div>
@@ -481,15 +564,20 @@ export default function MangaDetailsPage() {
 
           {/* Affiliate CTA */}
           <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
-            <div className="flex flex-wrap gap-2 justify-center">
-              <a href={`https://www.amazon.com/s?k=${encodeURIComponent(bestTitle(manga.title) + " manga")}&tag=zyniverse-21`}
-                target="_blank" rel="noopener noreferrer sponsored"
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
-              >📦 Buy on Amazon</a>
-              <a href="https://global.bookwalker.jp/search/?q=&ref=zyniverse"
-                target="_blank" rel="noopener noreferrer sponsored"
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-all"
-              >📚 BookWalker</a>
+            <h3 className="font-display text-xs font-bold mb-2">Support Us</h3>
+            <div className="space-y-2">
+              <AffiliateLink partner="amazon" path={`https://www.amazon.com/s?k=${encodeURIComponent(bestTitle(manga.title) + " manga")}&tag=zyniverse-21`}
+                className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all"
+              >
+                <span className="text-[10px] font-bold">📦</span>
+                Buy on Amazon
+              </AffiliateLink>
+              <AffiliateLink partner="bookwalker" path="https://global.bookwalker.jp"
+                className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all"
+              >
+                <span className="text-[10px] font-bold">📚</span>
+                BookWalker
+              </AffiliateLink>
             </div>
           </div>
 
