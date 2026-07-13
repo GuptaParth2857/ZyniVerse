@@ -115,7 +115,6 @@ export default function RootLayout({
             <SplashScreen />
           </Providers>
         </AuthProvider>
-        <script src="https://pl30333407.effectivecpmnetwork.com/79/88/46/798846c18dea1cf9f50c54e73acf1380.js" async />
       </body>
     </html>
   );
