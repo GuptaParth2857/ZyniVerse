@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { getAdsForLocation, shouldShowAds } from "@/lib/ads";
 
@@ -13,6 +13,7 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
   const { data: session } = useSession();
   const containerRef = useRef<HTMLDivElement>(null);
   const [impressionTracked, setImpressionTracked] = useState(false);
+  const [iframeSrc, setIframeSrc] = useState<string | null>(null);
 
   const user = session?.user
     ? { premium: (session.user as any).premium || false }
@@ -22,10 +23,16 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
   const ads = getAdsForLocation(placement);
   const ad = ads[0];
 
-  if (!showAds || !ad) return null;
+  useEffect(() => {
+    if (!ad) return;
+    const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;overflow:hidden;display:flex;justify-content:center;align-items:center;">${ad.code}</body></html>`], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    setIframeSrc(url);
+    return () => URL.revokeObjectURL(url);
+  }, [ad]);
 
   useEffect(() => {
-    if (impressionTracked) return;
+    if (impressionTracked || !containerRef.current) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
@@ -43,7 +50,7 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
       },
       { threshold: 0.5 }
     );
-    if (containerRef.current) observer.observe(containerRef.current);
+    observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, [impressionTracked, placement]);
 
@@ -59,6 +66,11 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
     }).catch(() => {});
   };
 
+  if (!showAds || !ad) return null;
+
+  const w = ad.dimensions?.width || 300;
+  const h = ad.dimensions?.height || 250;
+
   return (
     <div
       ref={containerRef}
@@ -70,6 +82,16 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
           Advertisement
         </span>
       </div>
+      {iframeSrc && (
+        <div className="flex justify-center items-center py-2">
+          <iframe
+            src={iframeSrc}
+            sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+            style={{ width: w, height: h, border: "none", maxWidth: "100%" }}
+            title="advertisement"
+          />
+        </div>
+      )}
     </div>
   );
 }
