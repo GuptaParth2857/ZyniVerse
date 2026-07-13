@@ -1,1 +1,4 @@
 google.com, ca-pub-5241033119281791, DIRECT, f08c47fec0942fa0
+adsterra.com, ParthGupta2857, DIRECT
+highperformanceformat.com, ParthGupta2857, DIRECT
+effectivecpmnetwork.com, ParthGupta2857, DIRECT
