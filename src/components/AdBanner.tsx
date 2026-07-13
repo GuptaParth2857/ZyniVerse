@@ -12,8 +12,9 @@ interface AdBannerProps {
 export default function AdBanner({ placement, type = "banner" }: AdBannerProps) {
   const { data: session } = useSession();
   const containerRef = useRef<HTMLDivElement>(null);
+  const adContentRef = useRef<HTMLDivElement>(null);
   const [impressionTracked, setImpressionTracked] = useState(false);
-  const [iframeSrc, setIframeSrc] = useState<string | null>(null);
+  const injectedScripts = useRef<HTMLScriptElement[]>([]);
 
   const user = session?.user
     ? { premium: (session.user as any).premium || false }
@@ -23,13 +24,32 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
   const ads = getAdsForLocation(placement);
   const ad = ads[0];
 
+  const cleanupScripts = useCallback(() => {
+    injectedScripts.current.forEach((s) => {
+      if (s.parentNode) s.parentNode.removeChild(s);
+    });
+    injectedScripts.current = [];
+  }, []);
+
   useEffect(() => {
-    if (!ad) return;
-    const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;overflow:hidden;display:flex;justify-content:center;align-items:center;">${ad.code}</body></html>`], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    setIframeSrc(url);
-    return () => URL.revokeObjectURL(url);
-  }, [ad]);
+    if (!ad || !adContentRef.current) return;
+    cleanupScripts();
+
+    const container = adContentRef.current;
+    const scripts = container.querySelectorAll("script");
+
+    scripts.forEach((old) => {
+      const clone = document.createElement("script");
+      Array.from(old.attributes).forEach((attr) =>
+        clone.setAttribute(attr.name, attr.value)
+      );
+      if (old.textContent) clone.textContent = old.textContent;
+      old.parentNode?.replaceChild(clone, old);
+      injectedScripts.current.push(clone);
+    });
+
+    return cleanupScripts;
+  }, [ad, cleanupScripts]);
 
   useEffect(() => {
     if (impressionTracked || !containerRef.current) return;
@@ -68,9 +88,6 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
 
   if (!showAds || !ad) return null;
 
-  const w = ad.dimensions?.width || 300;
-  const h = ad.dimensions?.height || 250;
-
   return (
     <div
       ref={containerRef}
@@ -82,16 +99,11 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
           Advertisement
         </span>
       </div>
-      {iframeSrc && (
-        <div className="flex justify-center items-center py-2">
-          <iframe
-            src={iframeSrc}
-            sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
-            style={{ width: w, height: h, border: "none", maxWidth: "100%" }}
-            title="advertisement"
-          />
-        </div>
-      )}
+      <div
+        ref={adContentRef}
+        className="flex justify-center items-center py-2"
+        dangerouslySetInnerHTML={{ __html: ad.code }}
+      />
     </div>
   );
 }
