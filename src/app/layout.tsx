@@ -115,12 +115,7 @@ export default function RootLayout({
             <SplashScreen />
           </Providers>
         </AuthProvider>
-        <iframe
-          srcDoc='<html><body style="margin:0;padding:0;overflow:hidden;"><script src="https://pl30333407.effectivecpmnetwork.com/79/88/46/798846c18dea1cf9f50c54e73acf1380.js"></script></body></html>'
-          sandbox="allow-scripts"
-          style={{ width: 0, height: 0, border: 'none', position: 'absolute' }}
-          title="advertisement"
-        />
+        <script src="https://pl30333407.effectivecpmnetwork.com/79/88/46/798846c18dea1cf9f50c54e73acf1380.js" async />
       </body>
     </html>
   );
