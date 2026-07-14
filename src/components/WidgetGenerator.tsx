@@ -111,7 +111,7 @@ function WidgetCard({
   } else if (widget.type === "dub") {
     configFields.push({ key: "ID", label: "MAL ID", placeholder: "e.g. 21 for One Piece" });
   } else if (widget.type === "progress") {
-    configFields.push({ key: "USERNAME", label: "Username", placeholder: "AniList username" });
+    configFields.push({ key: "USERNAME", label: "Username", placeholder: "Your username" });
   }
 
   return (

@@ -585,6 +585,7 @@ export async function getAiringSchedule(fromSec: number, toSec: number) {
           id episode airingAt
           media {
             id title { romaji english } coverImage { large color } format genres episodes
+            externalLinks { url site }
           }
         }
       }
@@ -985,6 +986,7 @@ export interface AiringScheduleEntry {
   media: {
     id: number; title: { romaji?: string; english?: string };
     coverImage: { large?: string; color?: string }; format?: string; genres?: string[]; episodes?: number;
+    externalLinks?: { url: string; site?: string }[];
   };
 }
 

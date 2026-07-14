@@ -13,7 +13,7 @@ const FILTERS = [
 ] as const;
 
 const SOURCE_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  AniList: { bg: "bg-blue-500/15", text: "text-blue-400", border: "border-blue-500/30" },
+  Trending: { bg: "bg-blue-500/15", text: "text-blue-400", border: "border-blue-500/30" },
   Community: { bg: "bg-green-500/15", text: "text-green-400", border: "border-green-500/30" },
   Seasonal: { bg: "bg-purple-500/15", text: "text-purple-400", border: "border-purple-500/30" },
 };
@@ -73,7 +73,7 @@ function NewsCardSkeleton() {
 }
 
 function NewsCard({ item }: { item: NewsItem }) {
-  const sourceStyle = SOURCE_STYLES[item.source] || SOURCE_STYLES.AniList;
+  const sourceStyle = SOURCE_STYLES[item.source] || SOURCE_STYLES.Trending;
   const typeStyle = TYPE_STYLES[item.type] || TYPE_STYLES.community;
 
   return (

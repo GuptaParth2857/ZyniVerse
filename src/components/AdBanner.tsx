@@ -1,38 +1,106 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { useSession } from "next-auth/react";
 import { getAdsForLocation, shouldShowAds } from "@/lib/ads";
 
 interface AdBannerProps {
   placement: string;
-  type?: "banner" | "sidebar" | "in-content" | "native";
+  type?: "banner" | "sidebar" | "in-content" | "native" | "socialbar";
+  className?: string;
 }
 
-function injectAdInSandbox(container: HTMLDivElement, code: string, dimensions?: { width: number; height: number }) {
-  const w = dimensions?.width || 300;
-  const h = dimensions?.height || 250;
+/**
+ * Renders an Adsterra iframe-sync ad inside a sandboxed iframe.
+ * The ad scripts are injected into srcdoc so they execute in isolation.
+ */
+function IframeSyncAd({
+  code,
+  width,
+  height,
+}: {
+  code: string;
+  width: number;
+  height: number;
+}) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const iframe = document.createElement("iframe");
-  iframe.width = String(w);
-  iframe.height = String(h);
-  iframe.style.border = "none";
-  iframe.style.overflow = "hidden";
-  iframe.style.maxWidth = "100%";
-  iframe.scrolling = "no";
-  iframe.title = "Advertisement";
-  iframe.setAttribute("sandbox", "allow-forms allow-scripts");
-  iframe.srcdoc = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;display:flex;justify-content:center;align-items:center;overflow:hidden;width:${w}px;height:${h}px;">${code}</body></html>`;
-  container.appendChild(iframe);
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    const doc = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: ${width}px;
+      height: ${height}px;
+      overflow: hidden;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>${code}</body>
+</html>`;
+    iframe.srcdoc = doc;
+  }, [code, width, height]);
+
+  return (
+    <iframe
+      ref={iframeRef}
+      width={width}
+      height={height}
+      style={{ border: "none", overflow: "hidden", maxWidth: "100%" }}
+      scrolling="no"
+      title="Advertisement"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+    />
+  );
 }
 
-export default function AdBanner({ placement, type = "banner" }: AdBannerProps) {
+/**
+ * Renders an Adsterra native-async ad by injecting the script tag into the DOM.
+ */
+function NativeAsyncAd({ containerId }: { containerId: string }) {
+  const divRef = useRef<HTMLDivElement>(null);
+  const injectedRef = useRef(false);
+
+  useEffect(() => {
+    if (injectedRef.current || !divRef.current) return;
+    injectedRef.current = true;
+
+    // Create the container div that Adsterra targets
+    const container = document.createElement("div");
+    container.id = containerId;
+    divRef.current.appendChild(container);
+
+    // Inject the async script
+    const script = document.createElement("script");
+    script.async = true;
+    script.setAttribute("data-cfasync", "false");
+    script.src = `https://formssternlystately.com/188115be46209eff2403f0d29b32d940/invoke.js`;
+    divRef.current.appendChild(script);
+  }, [containerId]);
+
+  return <div ref={divRef} className="w-full" />;
+}
+
+export default function AdBanner({
+  placement,
+  type = "banner",
+  className = "",
+}: AdBannerProps) {
   const { data: session } = useSession();
-  const [adBlocked, setAdBlocked] = useState(false);
   const [impressionTracked, setImpressionTracked] = useState(false);
-  const [injected, setInjected] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const adSlotRef = useRef<HTMLDivElement>(null);
+  const uniqueId = useId();
+  // Make a DOM-safe container id (no colons)
+  const containerId = `container-188115be46209eff2403f0d29b32d940-${uniqueId.replace(/:/g, "")}`;
 
   const user = session?.user
     ? { premium: (session.user as any).premium || false }
@@ -40,22 +108,9 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
 
   const showAds = shouldShowAds(user);
 
+  // Track impressions
   useEffect(() => {
-    setAdBlocked(false);
-  }, [showAds]);
-
-  useEffect(() => {
-    if (!showAds || adBlocked || !adSlotRef.current || injected) return;
-    const ads = getAdsForLocation(placement);
-    const ad = ads[0];
-    if (ad && ad.network === "adsterra") {
-      injectAdInSandbox(adSlotRef.current, ad.code, ad.dimensions);
-      setInjected(true);
-    }
-  }, [showAds, adBlocked, placement, injected]);
-
-  useEffect(() => {
-    if (!showAds || adBlocked || impressionTracked) return;
+    if (!showAds || impressionTracked) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
@@ -75,7 +130,7 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
     );
     if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, [showAds, adBlocked, impressionTracked, placement]);
+  }, [showAds, impressionTracked, placement]);
 
   const handleClick = () => {
     fetch("/api/admin/ads/stats", {
@@ -89,9 +144,10 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
     }).catch(() => {});
   };
 
+  // ── Premium users: show ad-free badge ─────────────────────────────────
   if (!showAds) {
     return (
-      <div className="flex items-center justify-center rounded-xl border border-[var(--color-line)] bg-gradient-to-r from-[var(--color-magenta)]/5 to-[var(--color-violet)]/5 py-3 px-4">
+      <div className={`flex items-center justify-center rounded-xl border border-[var(--color-line)] bg-gradient-to-r from-[var(--color-magenta)]/5 to-[var(--color-violet)]/5 py-3 px-4 ${className}`}>
         <span className="text-xs font-semibold text-[var(--color-magenta)] tracking-wide">
           ⭐ Ad-Free (Premium)
         </span>
@@ -99,53 +155,52 @@ export default function AdBanner({ placement, type = "banner" }: AdBannerProps) 
     );
   }
 
-  if (adBlocked) {
+  const ads = getAdsForLocation(placement);
+  const ad = ads[0];
+
+  // ── No ad configured for this placement ───────────────────────────────
+  if (!ad) {
+    return null;
+  }
+
+  // ── Native async ad ───────────────────────────────────────────────────
+  if (ad.renderMode === "native-async") {
     return (
-      <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-center">
-        <p className="text-xs font-mono uppercase tracking-wider text-[var(--color-mute)]">Advertisement</p>
-        <p className="mt-2 text-sm text-[var(--color-cyan)] font-semibold">
-          Support ZyniVerse —{" "}
-          <a href="/premium" className="underline hover:text-[var(--color-magenta)] transition-colors">
-            Go Premium
-          </a>
-        </p>
+      <div
+        ref={containerRef}
+        onClick={handleClick}
+        className={`relative w-full overflow-hidden rounded-xl ${className}`}
+      >
+        <AdLabel />
+        <NativeAsyncAd containerId={containerId} />
       </div>
     );
   }
 
-  const ads = getAdsForLocation(placement);
-  const ad = ads[0];
+  // ── iframe-sync ad (728×90 leaderboard or 300×250 rectangle) ──────────
+  const w = ad.dimensions?.width ?? 728;
+  const h = ad.dimensions?.height ?? 90;
 
-  const sizeClasses: Record<string, string> = {
-    banner: "min-h-[90px]",
-    sidebar: "min-h-[250px]",
-    "in-content": "min-h-[90px]",
-    native: "min-h-[250px]",
-  };
-
+  // Responsive: on mobile always show the 300×250 if available
   return (
     <div
       ref={containerRef}
-      className={`relative rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden ${sizeClasses[type] || "min-h-[90px]"}`}
       onClick={handleClick}
+      className={`relative flex flex-col items-center overflow-hidden rounded-xl border border-[var(--color-line)]/40 bg-[var(--color-panel)]/60 backdrop-blur-sm py-2 ${className}`}
+      style={{ minHeight: h + 16 }}
     >
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-center py-1 z-10 pointer-events-none">
-        <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-[var(--color-mute)]">
-          Advertisement
-        </span>
-      </div>
-      <div className="flex h-full min-h-[inherit] items-center justify-center pt-5 pb-3 px-4">
-        {ad ? (
-          <div ref={adSlotRef} className="w-full h-full flex items-center justify-center" />
-        ) : (
-          <div className="text-center">
-            <p className="text-xs text-[var(--color-mute)]">Your ad here — Support ZyniVerse</p>
-            <p className="text-[10px] text-[var(--color-mute)]/50 mt-1">
-              Ad network integration coming soon
-            </p>
-          </div>
-        )}
+      <AdLabel />
+      <div className="pt-1">
+        <IframeSyncAd code={ad.code} width={w} height={h} />
       </div>
     </div>
+  );
+}
+
+function AdLabel() {
+  return (
+    <span className="block text-center text-[9px] font-mono uppercase tracking-[0.2em] text-[var(--color-mute)] pb-1 select-none pointer-events-none">
+      Advertisement
+    </span>
   );
 }

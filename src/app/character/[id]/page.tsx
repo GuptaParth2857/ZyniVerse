@@ -233,9 +233,6 @@ export default function CharacterPage() {
             className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
           >📦 Buy Anime on Amazon</a>
         </div>
-        <div className="mt-4 text-center text-xs text-[var(--color-mute)]">
-          Data from <a href={char.siteUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-cyan)]">AniList</a>.
-        </div>
       </div>
     </div>
   );

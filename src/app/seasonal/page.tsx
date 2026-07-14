@@ -8,6 +8,7 @@ import AnimeCard from "@/components/AnimeCard";
 import { CardSkeleton, ErrorState } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
+import NativeBannerAd from "@/components/NativeBannerAd";
 import type { Media } from "@/lib/anilist";
 
 const SEASONS = ["WINTER", "SPRING", "SUMMER", "FALL"] as const;
@@ -202,6 +203,9 @@ export default function SeasonalPage() {
             <EmptyState icon="calendar" title={`Nothing found for ${SEASON_NAMES[season]} ${year}`} description="Try a different season or year." actionLabel="Current Season" actionHref="/seasonal" />
           )}
         </div>
+      </div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-6">
+        <NativeBannerAd />
       </div>
     </PageTransition>
   );

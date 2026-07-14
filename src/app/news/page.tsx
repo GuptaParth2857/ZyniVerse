@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import NewsFeed from "@/components/NewsFeed";
 import { PageTransition } from "@/components/PageTransition";
+import NativeBannerAd from "@/components/NativeBannerAd";
 
 export const metadata: Metadata = {
   title: "Anime News & Updates — Stay Informed | ZyniVerse",
@@ -34,6 +35,9 @@ export default function NewsPage() {
           </p>
         </div>
         <NewsFeed />
+      </div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-6 mt-8">
+        <NativeBannerAd />
       </div>
     </PageTransition>
   );

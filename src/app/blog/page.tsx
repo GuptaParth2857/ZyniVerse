@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import NativeBannerAd from "@/components/NativeBannerAd";
 
 export const metadata: Metadata = {
   title: "Anime Blog — Reviews, Thoughts & Stories | ZyniVerse",
@@ -209,6 +210,9 @@ export default async function BlogPage() {
             </div>
           </div>
         </aside>
+      </div>
+      <div className="mx-auto max-w-7xl pb-6 mt-8">
+        <NativeBannerAd />
       </div>
     </div>
   );

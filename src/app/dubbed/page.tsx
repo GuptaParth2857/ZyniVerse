@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { CardSkeleton, ErrorState } from "@/components/Loader";
 import DubExpandingCard from "@/components/DubExpandingCard";
+import NativeBannerAd from "@/components/NativeBannerAd";
 
 type LangKey = "english" | "hindi" | "tamil" | "telugu";
 
@@ -234,6 +235,9 @@ export default function DubbedPage() {
             )}
           </div>
         )}
+      </div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-6">
+        <NativeBannerAd />
       </div>
     </PageTransition>
   );

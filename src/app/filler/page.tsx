@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import AffiliateLink from "@/components/AffiliateLink";
 import FillerSearch from "@/components/FillerSearch";
 import AdBanner from "@/components/AdBanner";
+import NativeBannerAd from "@/components/NativeBannerAd";
 import { getPopularFillerAnime } from "@/lib/filler";
 
 export const metadata: Metadata = {
@@ -87,6 +88,9 @@ export default async function FillerListingPage() {
           </Link>
         ))}
       </div>
+
+      {/* Native banner after filler list */}
+      <NativeBannerAd className="mt-8" />
     </div>
   );
 }

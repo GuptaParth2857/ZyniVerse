@@ -1,5 +1,6 @@
 import Link from "next/link";
 import TierListGrid from "./TierListGrid";
+import NativeBannerAd from "@/components/NativeBannerAd";
 
 export const metadata = {
   title: "Anime Tier Lists — Rank Your Favorites | ZyniVerse",
@@ -29,6 +30,9 @@ export default function TierListsPage() {
       </div>
 
       <TierListGrid />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-6 mt-8">
+        <NativeBannerAd />
+      </div>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import ExpandingFlexCard from "@/components/ExpandingFlexCard";
 import ContinueWatching from "@/components/ContinueWatching";
 import Recommendations from "@/components/Recommendations";
 import AdBanner from "@/components/AdBanner";
+import NativeBannerAd from "@/components/NativeBannerAd";
 import QuoteOfTheDay from "@/components/QuoteOfTheDay";
 import HomeMomentButton from "@/components/HomeMomentButton";
 import FriendActivityFeed from "@/components/features/FriendActivityFeed";
@@ -84,6 +85,11 @@ export default async function Home() {
           <MediaCarousel eyebrow="All-time" title="Most Popular" viewAllTo="/search?sort=POPULARITY_DESC" items={popularData} rows={3} />
         </AnimatedSection>
       </FadeIn>
+
+      {/* Native banner between Popular and Upcoming sections */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <NativeBannerAd />
+      </div>
 
       <FadeIn delay={0.2}>
         <AnimatedSection>

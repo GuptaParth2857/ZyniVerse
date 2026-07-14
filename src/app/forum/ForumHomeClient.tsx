@@ -5,6 +5,7 @@ import Link from "next/link";
 import ForumThreadCard from "@/components/ForumThreadCard";
 import ForumSidebar from "@/components/ForumSidebar";
 import AdBanner from "@/components/AdBanner";
+import NativeBannerAd from "@/components/NativeBannerAd";
 
 export default function ForumHomeClient() {
   const [threads, setThreads] = useState<any[]>([]);
@@ -184,6 +185,9 @@ export default function ForumHomeClient() {
           </div>
         )}
       </div>
+
+      {/* Native banner below thread list */}
+      <NativeBannerAd className="mt-4" />
 
       <aside className="hidden lg:block">
         <ForumSidebar />

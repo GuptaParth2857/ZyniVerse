@@ -11,6 +11,8 @@ import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import RouteTransition from "@/components/RouteTransition";
 import MobileNav from "@/components/MobileNav";
 import AdBanner from "@/components/AdBanner";
+import SocialBarAd from "@/components/SocialBarAd";
+import NativeBannerAd from "@/components/NativeBannerAd";
 import ChatWidget from "@/components/ChatWidget";
 import SplashScreen from "@/components/SplashScreen";
 import HeartbeatProvider from "@/components/HeartbeatProvider";
@@ -103,9 +105,13 @@ export default function RootLayout({
           <Providers>
             <Navbar />
             <main className="flex-1"><RouteTransition>{children}</RouteTransition></main>
+            {/* Native banner between content and footer */}
+            <NativeBannerAd className="mx-auto max-w-7xl px-4 sm:px-6 py-2" />
             <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
               <AdBanner placement="global-footer" type="banner" />
             </div>
+            {/* Sitewide Social Bar – floating sticky widget */}
+            <SocialBarAd />
             <MobileNav />
             <BackToTop />
             <Footer />

@@ -8,6 +8,7 @@ import { searchVoiceActors, getIndianVoiceActors } from "@/lib/voice-actors";
 import type { VoiceActor } from "@/lib/voice-actors";
 import VoiceActorCard from "@/components/VoiceActorCard";
 import { PageTransition } from "@/components/PageTransition";
+import NativeBannerAd from "@/components/NativeBannerAd";
 
 export default function VoiceActorsClient() {
   const [query, setQuery] = useState("");
@@ -104,6 +105,9 @@ export default function VoiceActorsClient() {
             </div>
           </section>
         )}
+        <div className="mx-auto max-w-7xl pb-6 mt-8">
+          <NativeBannerAd />
+        </div>
       </div>
     </PageTransition>
   );
