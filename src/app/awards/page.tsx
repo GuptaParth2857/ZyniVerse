@@ -81,7 +81,7 @@ export default function AwardsPage() {
 
         {source === "live" && (
           <div className="mb-4">
-            <span className="rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold px-2.5 py-0.5 uppercase tracking-wider">Live — Powered by AniList Rankings</span>
+            <span className="rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold px-2.5 py-0.5 uppercase tracking-wider">Live Rankings</span>
           </div>
         )}
         {/* Year selector */}

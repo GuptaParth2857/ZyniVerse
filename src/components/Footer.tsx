@@ -32,6 +32,8 @@ const LINK_COLUMNS = [
       { href: "/manga", label: "Manga", icon: "book" },
       { href: "/seasonal", label: "Seasonal", icon: "calendar" },
       { href: "/schedule", label: "Schedule", icon: "clock" },
+      { href: "/tv-schedule", label: "TV Channels", icon: "globe" },
+      { href: "/live-action", label: "Live Action Anime", icon: "film" },
       { href: "/dubbed", label: "Regional Dubs", icon: "globe" },
       { href: "/indian-dubs", label: "Indian Dubs", icon: "globe" },
     ],
@@ -89,6 +91,7 @@ const ICON_PATHS: Record<string, string> = {
   "log-in": "M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1",
   "user-plus": "M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2m8-10a4 4 0 100-8 4 4 0 000 8zm13 0v6m-3-3h6",
   "code": "M16 18l6-6-6-6M8 6l-6 6 6 6",
+  "film": "M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z",
 };
 
 export default function Footer() {
@@ -107,7 +110,7 @@ export default function Footer() {
               <span className="font-display text-xl font-bold logo-text">ZyniVerse</span>
             </Link>
             <p className="text-xs leading-relaxed text-[var(--color-mute)] mb-4 max-w-xs">
-              Discover, track, and discuss anime & manga. Data powered by AniList&apos;s 10M+ user community.
+              Discover, track, and discuss anime & manga. Your ultimate anime companion.
             </p>
             <div className="space-y-1.5 mb-4">
               <a href="mailto:contact.zenvyx@gmail.com" className="flex items-center gap-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors">
@@ -227,7 +230,6 @@ export default function Footer() {
             <Link href="/terms" className="hover:text-[var(--color-cyan)] transition">Terms</Link>
             <Link href="/community" className="hover:text-[var(--color-cyan)] transition">Contact</Link>
             <Link href="/developer" className="hover:text-[var(--color-cyan)] transition">Developer</Link>
-            <a href="https://anilist.co" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-cyan)] transition">AniList</a>
           </div>
         </motion.div>
       </div>
@@ -236,8 +238,7 @@ export default function Footer() {
       <div className="border-t border-[var(--color-line)] bg-black/10">
         <div className="mx-auto max-w-7xl px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-2">
           <p className="text-xs text-[var(--color-mute)]">
-            &copy; {year} ZyniVerse. All data from{" "}
-            <a href="https://anilist.co" target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-cyan)]">AniList</a>.
+            &copy; {year} ZyniVerse. All rights reserved.
           </p>
           <p className="text-[10px] text-[var(--color-mute)]/50">
             Made with ❤️ for anime fans. No content is hosted here.

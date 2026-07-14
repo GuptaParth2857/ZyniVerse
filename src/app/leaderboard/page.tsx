@@ -9,6 +9,7 @@ import { PageTransition } from "@/components/PageTransition";
 import Loader, { ErrorState } from "@/components/Loader";
 import { getTrending, getPopular, getTopRated, getSeasonal, bestTitle } from "@/lib/anilist";
 import { getUserLeaderboard } from "@/lib/leaderboard";
+import NativeBannerAd from "@/components/NativeBannerAd";
 import type { Media } from "@/lib/anilist";
 import type { UserLeaderboardEntry } from "@/lib/leaderboard";
 
@@ -365,6 +366,9 @@ export default function LeaderboardPage() {
           </div>
         )}
       </div></ErrorBoundary>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-6">
+        <NativeBannerAd />
+      </div>
     </PageTransition>
   );
 }

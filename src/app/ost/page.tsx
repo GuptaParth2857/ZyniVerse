@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import OSTList from "@/components/OSTList";
 import AffiliateLink from "@/components/AffiliateLink";
+import NativeBannerAd from "@/components/NativeBannerAd";
 
 export const metadata: Metadata = {
   title: "Anime OST Database — Soundtracks & Music | ZyniVerse",
@@ -34,6 +35,9 @@ export default function OSTPage() {
       </div>
 
       <OSTList />
+      <div className="mx-auto max-w-7xl pb-6 mt-8">
+        <NativeBannerAd />
+      </div>
     </div>
   );
 }

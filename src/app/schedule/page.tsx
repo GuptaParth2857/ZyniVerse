@@ -8,6 +8,7 @@ import { getAiringSchedule, bestTitle } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
+import NativeBannerAd from "@/components/NativeBannerAd";
 import type { AiringScheduleEntry } from "@/lib/anilist";
 
 const DAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -268,6 +269,9 @@ export default function SchedulePage() {
           </>
         )}
       </div></ErrorBoundary>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-6">
+        <NativeBannerAd />
+      </div>
     </PageTransition>
   );
 }

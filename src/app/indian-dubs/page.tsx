@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import NativeBannerAd from "@/components/NativeBannerAd";
 import { getIndianVoiceActors } from "@/lib/voice-actors";
 
 export const metadata: Metadata = {
@@ -169,6 +170,9 @@ export default async function IndianDubsPage() {
           </Link>
         )}
       </section>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-6 mt-8">
+        <NativeBannerAd />
+      </div>
     </div>
   );
 }

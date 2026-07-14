@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import AdBanner from "@/components/AdBanner";
+import NativeBannerAd from "@/components/NativeBannerAd";
 
 const FADE_UP = { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5 } };
 
@@ -277,8 +278,9 @@ export default function RecommendationsPageClient() {
       {/* Trending Now */}
       <AnimeRow title="Trending Now" subtitle="Most popular this season" icon="🔥" color="#ff3366" animeList={trending} loading={loadingTrending} />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 space-y-3">
         <AdBanner placement="recommendations" type="banner" />
+        <NativeBannerAd />
       </div>
 
       {/* AI-Powered For You */}

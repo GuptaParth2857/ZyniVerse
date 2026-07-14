@@ -24,6 +24,8 @@ const PRIMARY_LINKS = [
 
 const SECONDARY_LINKS = [
   { to: "/news", label: "News" },
+  { to: "/tv-schedule", label: "TV Channels" },
+  { to: "/live-action", label: "Live Action" },
   { to: "/filler", label: "Filler Guides" },
   { to: "/watch-order", label: "Watch Orders" },
   { to: "/docs", label: "API Docs" },

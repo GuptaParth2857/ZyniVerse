@@ -78,8 +78,8 @@ body {
   transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
 }
 .card-glow:hover {
-  border-color: var(--color-magenta);
-  box-shadow: 0 0 0 1px rgba(255, 45, 120, 0.25), 0 8px 30px -6px rgba(255, 45, 120, 0.35);
+  border-color: var(--glow-color, var(--color-magenta));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--glow-color, var(--color-magenta)) 25%, transparent), 0 8px 30px -6px color-mix(in srgb, var(--glow-color, var(--color-magenta)) 35%, transparent);
   transform: translateY(-3px);
 }
 

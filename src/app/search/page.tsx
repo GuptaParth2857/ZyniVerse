@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import AnimeCard from "@/components/AnimeCard";
 import AdBanner from "@/components/AdBanner";
+import NativeBannerAd from "@/components/NativeBannerAd";
 import ExpandingFlexCard from "@/components/ExpandingFlexCard";
 import { CardSkeleton, ErrorState } from "@/components/Loader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -552,6 +553,7 @@ function SearchInner() {
                     {displayAnime.length > 0 && displayAll && (
                       <div className="mb-6">
                         <AdBanner placement="search" type="sidebar" />
+                        <NativeBannerAd className="mt-3" />
                       </div>
                     )}
                     {displayAnime.length > 0 && (

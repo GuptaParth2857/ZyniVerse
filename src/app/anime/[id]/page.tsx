@@ -14,9 +14,11 @@ import { PageTransition } from "@/components/PageTransition";
 import FillerGuide from "@/components/FillerGuide";
 import ReviewsSection from "@/components/ReviewsSection";
 import WhereToWatch from "@/components/WhereToWatch";
+import TvScheduleCard from "@/components/TvScheduleCard";
 import EpisodeTracker from "@/components/EpisodeTracker";
 import AffiliateLink from "@/components/AffiliateLink";
 import AdBanner from "@/components/AdBanner";
+import NativeBannerAd from "@/components/NativeBannerAd";
 import ForumDiscussionWidget from "@/components/ForumDiscussionWidget";
 import ThemeSongsSection from "@/components/features/ThemeSongsSection";
 import ScoreDistributionChart from "@/components/features/ScoreDistributionChart";
@@ -425,6 +427,9 @@ export default function AnimeDetailsPage() {
             <EpisodeRatingsCard malId={anime.idMal} />
           )}
 
+          {/* Native banner in-content */}
+          <NativeBannerAd className="my-2" />
+
           {/* Filler Guide */}
           <FillerGuide anilistId={anime.id} animeTitle={title} />
 
@@ -454,6 +459,9 @@ export default function AnimeDetailsPage() {
 
           {/* Where to Watch */}
           <WhereToWatch streamingLinks={streamingLinks.map((l) => ({ site: l.site, url: l.url }))} title={title} />
+
+          {/* TV Channel Availability */}
+          <TvScheduleCard title={title} />
 
           {/* Affiliate Links */}
           <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
@@ -525,8 +533,7 @@ export default function AnimeDetailsPage() {
           ) : null}
 
           <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 text-xs text-[var(--color-mute)]">
-            Data from <a href={anime.siteUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-cyan)]">AniList</a>.
-            {anime.idMal && <> Also on <a href={`https://myanimelist.net/anime/${anime.idMal}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-cyan)]">MyAnimeList</a>.</>}
+            {anime.idMal && <>Also on <a href={`https://myanimelist.net/anime/${anime.idMal}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-cyan)]">MyAnimeList</a>.</>}
           </div>
         </aside>
       </div>

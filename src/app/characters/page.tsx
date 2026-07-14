@@ -282,7 +282,7 @@ export default function CharactersBrowsePage() {
       </section>
 
       <div className="text-center text-[10px] text-white/15 font-mono pb-4">
-        Data from AniList • Sorted by favorites
+        Sorted by favorites
       </div>
     </>
   ) : null;

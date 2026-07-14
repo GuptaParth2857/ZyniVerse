@@ -8,7 +8,7 @@ export interface NewsItem {
   summary: string;
   url: string;
   image: string;
-  source: "AniList" | "Community" | "Seasonal";
+  source: "Trending" | "Community" | "Seasonal";
   type: "announcement" | "airing" | "trending" | "seasonal" | "community";
   publishedAt: string;
   tags: string[];
@@ -54,7 +54,7 @@ export async function getAnimeNews(): Promise<NewsItem[]> {
       summary: `Trending with ${m.trending ?? 0} points • ${m.popularity?.toLocaleString() ?? 0} fans`,
       url: `/anime/${m.id}`,
       image: mediaToImage(m),
-      source: "AniList",
+      source: "Trending",
       type: "trending",
       publishedAt: new Date(now + (i + 1) * 60_000).toISOString(),
       tags: m.genres?.slice(0, 3) || [],
@@ -71,7 +71,7 @@ export async function getAnimeNews(): Promise<NewsItem[]> {
       summary: `${mediaToTitle(m)} • ${m.episodes ? `${m.episodes} eps` : "Airing"} • Popularity: ${m.popularity?.toLocaleString() ?? "N/A"}`,
       url: `/anime/${m.id}`,
       image: mediaToImage(m),
-      source: "AniList",
+      source: "Trending",
       type: "airing",
       publishedAt: ep
         ? new Date(ep.airingAt * 1000).toISOString()

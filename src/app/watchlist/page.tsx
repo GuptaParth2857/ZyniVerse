@@ -5,6 +5,7 @@ import { useWatchlist } from "@/components/WatchlistProvider";
 import { DynamicWatchlistCarousel3D as WatchlistCarousel3D } from "@/components/lazy";
 import { PageTransition } from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
+import NativeBannerAd from "@/components/NativeBannerAd";
 
 export default function WatchlistPage() {
   const { items, toggle } = useWatchlist();
@@ -31,6 +32,9 @@ export default function WatchlistPage() {
           <WatchlistCarousel3D items={items} />
         </div>
       )}
+      <div className="mx-auto max-w-7xl pb-6 mt-8">
+        <NativeBannerAd />
+      </div>
     </div></PageTransition>
   );
 }
