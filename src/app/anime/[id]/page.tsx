@@ -31,6 +31,7 @@ import RecRelationships from "@/components/RecRelationships";
 import DiscussionLinks from "@/components/DiscussionLinks";
 import CharacterVoteWidget from "@/components/CharacterVoteWidget";
 import EpisodeRatingsCard from "@/components/EpisodeRatingsCard";
+import DubNotifyButton from "@/components/DubNotifyButton";
 import type { MediaAnimeFull } from "@/lib/anilist";
 
 const DUB_LANG_STYLES: Record<string, { bg: string; text: string; border: string }> = {
@@ -204,6 +205,9 @@ export default function AnimeDetailsPage() {
                   {dubLangs.length === 0 && (
                     <span className="text-[10px] text-[var(--color-mute)]">No dub data found</span>
                   )}
+                  {dubLangs.filter(l => l !== "English").map((lang) => (
+                    <DubNotifyButton key={lang} malId={anime.id} language={lang.toLowerCase()} animeTitle={bestTitle(anime.title)} />
+                  ))}
                 </div>
               )}
 

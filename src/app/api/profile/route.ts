@@ -1,34 +1,80 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveUserId } from "@/lib/resolve-user";
 
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userId = await resolveUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: {
-        entries: { orderBy: { updatedAt: "desc" } },
-        reviews: { include: { user: { select: { username: true } } }, orderBy: { createdAt: "desc" }, take: 20 },
-        _count: { select: { followers: true, following: true } },
-        userAchievements: {
-          include: { achievement: true },
-          orderBy: { earnedAt: "desc" },
-          take: 8,
+    console.log("[/api/profile] userId:", userId);
+
+    const [user, userPoints] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          avatar: true,
+          banner: true,
+          themeColor: true,
+          signature: true,
+          bio: true,
+          createdAt: true,
+          entries: {
+            select: {
+              mediaId: true,
+              type: true,
+              status: true,
+              progress: true,
+              total: true,
+              score: true,
+              updatedAt: true,
+            },
+            orderBy: { updatedAt: "desc" as const },
+            take: 100,
+          },
+          _count: { select: { followers: true, following: true } },
         },
-        activities: {
-          orderBy: { createdAt: "desc" },
-          take: 12,
-        },
-      },
-    });
+      }),
+      prisma.userPoints.findUnique({ where: { userId } }),
+    ]);
+
     if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    const userPoints = await prisma.userPoints.findUnique({
-      where: { userId: user.id },
-    });
+    console.log("[/api/profile] user:", user.username, "entries:", user.entries.length, "points:", userPoints?.points);
+
+    const [reviews, rawAchievements, activities] = await Promise.all([
+      prisma.review.findMany({
+        where: { userId },
+        include: { user: { select: { username: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      }),
+      prisma.userAchievement.findMany({
+        where: { userId },
+        include: { achievement: true },
+        orderBy: { earnedAt: "desc" },
+        take: 8,
+      }),
+      prisma.activity.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        take: 12,
+      }),
+    ]);
+
+    const achievements = rawAchievements
+      .filter((ua) => ua.achievement != null)
+      .map((ua) => ({
+        code: ua.achievement.code,
+        name: ua.achievement.name,
+        icon: ua.achievement.icon,
+        category: ua.achievement.category,
+        points: ua.achievement.points,
+        earnedAt: ua.earnedAt,
+      }));
 
     const stats = {
       total: user.entries.length,
@@ -63,20 +109,13 @@ export async function GET() {
         bio: user.bio,
         createdAt: user.createdAt,
         entries: user.entries,
-        reviews: user.reviews,
+        reviews,
         followersCount: user._count.followers,
         followingCount: user._count.following,
         level: userPoints?.level ?? 1,
         points: userPoints?.points ?? 0,
-        achievements: user.userAchievements.map((ua) => ({
-          code: ua.achievement.code,
-          name: ua.achievement.name,
-          icon: ua.achievement.icon,
-          category: ua.achievement.category,
-          points: ua.achievement.points,
-          earnedAt: ua.earnedAt,
-        })),
-        recentActivity: user.activities.map((a) => ({
+        achievements,
+        recentActivity: activities.map((a) => ({
           id: a.id,
           type: a.type,
           mediaId: a.mediaId,
@@ -90,23 +129,30 @@ export async function GET() {
       topAnime,
     });
   } catch (error) {
+    console.error("[/api/profile] GET error:", error);
     const message = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const userId = await resolveUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { banner, themeColor, signature, bio, avatar, username } = await req.json();
+    const data: Record<string, string> = {};
+    if (banner !== undefined) data.banner = banner;
+    if (themeColor !== undefined) data.themeColor = themeColor;
+    if (signature !== undefined) data.signature = signature;
+    if (bio !== undefined) data.bio = bio;
+    if (avatar !== undefined) data.avatar = avatar;
+    if (username !== undefined) data.username = username;
 
-  const { banner, themeColor, signature, bio, avatar } = await req.json();
-  const data: Record<string, string> = {};
-  if (banner !== undefined) data.banner = banner;
-  if (themeColor !== undefined) data.themeColor = themeColor;
-  if (signature !== undefined) data.signature = signature;
-  if (bio !== undefined) data.bio = bio;
-  if (avatar !== undefined) data.avatar = avatar;
-
-  const user = await prisma.user.update({ where: { id: session.user.id }, data });
-  return NextResponse.json({ user });
+    const user = await prisma.user.update({ where: { id: userId }, data });
+    return NextResponse.json({ user });
+  } catch (error) {
+    console.error("[/api/profile] PATCH error:", error);
+    const message = error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

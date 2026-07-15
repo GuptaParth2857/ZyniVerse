@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
       const user = await prisma.user.create({
         data: { email, username, password: hashed },
       });
+      await prisma.userPoints.create({ data: { userId: user.id, points: 0, level: 1 } });
       return NextResponse.json({ id: user.id, email: user.email, username: user.username });
     }
 

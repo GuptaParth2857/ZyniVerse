@@ -12,8 +12,16 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get("page") || "1");
   const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
 
-  const where: Record<string, unknown> = { isPublic: true };
-  if (userId) where.userId = userId;
+  const session = await auth().catch(() => null);
+  const ownerId = session?.user?.id;
+
+  const where: Record<string, unknown> = {};
+  if (userId) {
+    where.userId = userId;
+    if (ownerId !== userId) where.isPublic = true;
+  } else {
+    where.isPublic = true;
+  }
   if (search) where.title = { contains: search };
 
   const orderBy =

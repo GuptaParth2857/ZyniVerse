@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchLiveStreamingSchedules } from "@/lib/streaming-live";
-import {
-  CHANNEL_SCHEDULES,
-  TV_CHANNELS,
-  getDayName,
-  type TimeSlot,
-} from "@/lib/tv-channels";
+import { TV_CHANNELS, getDayName, CHANNEL_SCHEDULES } from "@/lib/tv-channels";
+import { fetchAllEpgSchedules, getEpgChannelIds } from "@/lib/epg";
 
 export const revalidate = 1800;
 
@@ -31,46 +27,78 @@ interface ChannelLiveSchedule {
 
 export async function GET() {
   try {
-    // 1. Get hardcoded schedules for TV channels
-    const tvSchedules: ChannelLiveSchedule[] = CHANNEL_SCHEDULES.map((cs) => {
-      const channel = TV_CHANNELS[cs.channelId];
-      if (!channel) return null;
+    const epgChannelIds = new Set(getEpgChannelIds());
 
+    // 1. Fetch live EPG data for TV channels from JioTV API (7-day schedule)
+    const epgResults = await fetchAllEpgSchedules();
+    const epgDaysMap = new Map(epgResults.map((r) => [r.channelId, r.days]));
+
+    // 2. Build channel schedules — EPG data for TV channels, hardcoded for streaming
+    const tvSchedules: ChannelLiveSchedule[] = [];
+    const allDayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+    // TV channels from JioTV EPG (full week data)
+    for (const channelId of epgChannelIds) {
+      const channel = TV_CHANNELS[channelId];
+      if (!channel) continue;
+
+      const epgDays = epgDaysMap.get(channelId) || {};
       const days: Record<string, LiveScheduleEntry[]> = {};
-      for (const ds of cs.schedules) {
-        days[ds.day] = ds.slots.map((s: TimeSlot) => ({
-          show: s.show,
-          start: s.start,
-          end: s.end,
-          duration: s.duration,
-          description: s.description,
+
+      for (const dayName of allDayNames) {
+        days[dayName] = (epgDays[dayName] || []).map((s) => ({
+          show: s.show, start: s.start, end: s.end,
+          duration: s.duration, description: s.description,
         }));
       }
 
-      return {
+      tvSchedules.push({
+        channelId,
+        channelName: channel.name,
+        channelColor: channel.color,
+        channelLogo: channel.logoUrl,
+        channelType: channel.type,
+        days,
+      });
+    }
+
+    // Streaming channels from hardcoded schedules
+    for (const cs of CHANNEL_SCHEDULES) {
+      const channel = TV_CHANNELS[cs.channelId];
+      if (!channel) continue;
+
+      const days: Record<string, LiveScheduleEntry[]> = {};
+      for (const ds of cs.schedules) {
+        days[ds.day] = ds.slots.map((s) => ({
+          show: s.show, start: s.start, end: s.end,
+          duration: s.duration, description: s.description,
+        }));
+      }
+
+      tvSchedules.push({
         channelId: cs.channelId,
         channelName: channel.name,
         channelColor: channel.color,
         channelLogo: channel.logoUrl,
         channelType: channel.type,
         days,
-      };
-    }).filter(Boolean) as ChannelLiveSchedule[];
+      });
+    }
 
-    // 2. Get live streaming schedules from AniList
+    // 3. Get live streaming schedules from AniList
     const liveStreaming = await fetchLiveStreamingSchedules();
 
-    // 3. Merge live data into streaming channel schedules
+    // 4. Merge live AniList data into streaming channel schedules
     for (const ls of liveStreaming) {
       const existing = tvSchedules.find((s) => s.channelId === ls.platformId);
       if (existing) {
-        // Merge: for each day, add live shows that aren't already in hardcoded schedule
         for (const [day, shows] of Object.entries(ls.shows)) {
           if (!existing.days[day]) existing.days[day] = [];
           for (const show of shows) {
             const alreadyExists = existing.days[day].some(
-              (s) => s.show.toLowerCase().includes(show.title.toLowerCase()) ||
-                     show.title.toLowerCase().includes(s.show.toLowerCase())
+              (s) =>
+                s.show.toLowerCase().includes(show.title.toLowerCase()) ||
+                show.title.toLowerCase().includes(s.show.toLowerCase())
             );
             if (!alreadyExists) {
               existing.days[day].push({
@@ -85,7 +113,6 @@ export async function GET() {
               });
             }
           }
-          // Sort by air time
           existing.days[day].sort((a, b) => a.start.localeCompare(b.start));
         }
       }

@@ -1,0 +1,72 @@
+[
+  {
+    "dataTitle": "Attack on Titan",
+    "url": "https://en.wikipedia.org/wiki/Attack_on_Titan_(film)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/7/73/Attack_on_Titan_%28film%29_poster.jpeg/Attack_on_Titan_%28film%29_poster.jpeg",
+    "score": 15
+  },
+  {
+    "dataTitle": "Yu Yu Hakusho",
+    "url": "https://en.wikipedia.org/wiki/Yu_Yu_Hakusho_(live-action)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "From Me to You: Kimi ni Todoke",
+    "url": "https://en.wikipedia.org/wiki/Kimi_ni_Todoke_(live-action)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "The Way of the Househusband",
+    "url": "https://en.wikipedia.org/wiki/The_Way_of_the_Househusband_(live-action)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Ajin: Demi-Human",
+    "url": "https://en.wikipedia.org/wiki/Ajin_(live-action_film)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Space Brothers",
+    "url": "https://en.wikipedia.org/wiki/Space_Brothers_(2012_film)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Kakegurui",
+    "url": "https://en.wikipedia.org/wiki/Kakegurui_(live-action)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Sweet Home",
+    "url": "https://en.wikipedia.org/wiki/Sweet_Home_(TV_series)",
+    "status": 200,
+    "posterUrl": null,
+    "error": "No image found"
+  },
+  {
+    "dataTitle": "One Piece",
+    "url": "https://en.wikipedia.org/wiki/One_Piece_(2023_TV_series)",
+    "status": 200,
+    "posterUrl": null,
+    "error": "No image found"
+  },
+  {
+    "dataTitle": "Death Note",
+    "url": "https://en.wikipedia.org/wiki/Death_Note_(2017_film)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/6/6c/DeathNotePoster.jpg/DeathNotePoster.jpg",
+    "score": 15
+  },
+  {
+    "dataTitle": "Zom 100: Bucket List of the Dead",
+    "url": "https://en.wikipedia.org/wiki/Zom_100:_Bucket_List_of_the_Dead_(film)",
+    "status": 404,
+    "error": "HTTP 404"
+  }
+]

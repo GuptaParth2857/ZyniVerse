@@ -8,10 +8,19 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import Loader, { ErrorState } from "@/components/Loader";
 import { getTrending, getPopular, getTopRated, getSeasonal, bestTitle } from "@/lib/anilist";
-import { getUserLeaderboard } from "@/lib/leaderboard";
 import NativeBannerAd from "@/components/NativeBannerAd";
+import RankBadge from "@/components/RankBadge";
+import { getRank } from "@/lib/achievements";
 import type { Media } from "@/lib/anilist";
-import type { UserLeaderboardEntry } from "@/lib/leaderboard";
+
+interface UserLeaderboardEntry {
+  userId: string;
+  username: string;
+  avatar: string | null;
+  points: number;
+  level: number;
+  achievements: number;
+}
 
 type Tab = "trending" | "popular" | "toprated" | "seasonal" | "users";
 
@@ -40,7 +49,7 @@ function formatNumber(n: number): string {
   return String(n);
 }
 
-function RankBadge({ rank }: { rank: number }) {
+function RankNumber({ rank }: { rank: number }) {
   if (rank <= 3) {
     return <span className="text-2xl drop-shadow-lg">{MEDALS[rank - 1]}</span>;
   }
@@ -52,6 +61,7 @@ function RankBadge({ rank }: { rank: number }) {
 }
 
 function UserRow({ item, rank, index }: { item: UserLeaderboardEntry; rank: number; index: number }) {
+  const userRank = getRank(item.points);
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -60,7 +70,7 @@ function UserRow({ item, rank, index }: { item: UserLeaderboardEntry; rank: numb
       className="group relative flex items-center gap-3 sm:gap-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 sm:p-4 transition-all hover:border-[var(--color-violet)]/40 hover:shadow-lg"
     >
       <div className="flex items-center justify-center w-10 shrink-0">
-        <RankBadge rank={rank} />
+        <RankNumber rank={rank} />
       </div>
 
       <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden border border-[var(--color-line)] bg-[var(--color-void)]">
@@ -71,10 +81,16 @@ function UserRow({ item, rank, index }: { item: UserLeaderboardEntry; rank: numb
             {item.username[0]?.toUpperCase()}
           </div>
         )}
+        <div className="absolute -bottom-0.5 -right-0.5">
+          <RankBadge rank={userRank} size="sm" animate={false} />
+        </div>
       </div>
 
       <div className="min-w-0 flex-1">
-        <span className="font-display text-sm font-bold">{item.username}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="font-display text-sm font-bold">{item.username}</span>
+          <span className="text-[9px] font-mono font-bold px-1 py-0.5 rounded" style={{ color: userRank.color, background: `${userRank.color}15` }}>{userRank.label}</span>
+        </div>
         <div className="flex flex-wrap gap-2 mt-0.5">
           <span className="text-[10px] font-mono text-[var(--color-cyan)]">Lv.{item.level}</span>
           <span className="text-[10px] text-[var(--color-mute)]">{item.achievements} achievements</span>
@@ -123,7 +139,7 @@ function LeaderboardRow({ item, rank, index }: { item: Media; rank: number; inde
     >
       {/* Rank */}
       <div className="flex items-center justify-center w-10 shrink-0">
-        <RankBadge rank={rank} />
+        <RankNumber rank={rank} />
       </div>
 
       {/* Cover */}
@@ -214,10 +230,11 @@ export default function LeaderboardPage() {
     dataRef.current = t;
     try {
       if (t === "users") {
-        const result = await getUserLeaderboard(50);
+        const res = await fetch("/api/leaderboard?limit=50");
+        const result = await res.json();
         if (dataRef.current === t) {
-          setUserData(result.entries);
-          setUserTotal(result.total);
+          setUserData(result.entries || []);
+          setUserTotal(result.total || 0);
         }
       } else {
         let items: Media[];

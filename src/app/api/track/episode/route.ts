@@ -1,24 +1,23 @@
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { markEpisodeWatched, markEpisodeUnwatched, autoUpdateListEntry } from "@/lib/episode-tracking";
 import { createActivity } from "@/lib/activity";
+import { resolveUserId } from "@/lib/resolve-user";
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = await resolveUserId();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { mediaId, episode, title, totalEpisodes } = await req.json();
   if (!mediaId || !episode) return NextResponse.json({ error: "Missing mediaId or episode" }, { status: 400 });
 
-  await markEpisodeWatched(session.user.id, mediaId, episode, title);
+  await markEpisodeWatched(userId, mediaId, episode, title);
 
   if (totalEpisodes) {
-    await autoUpdateListEntry(session.user.id, mediaId, totalEpisodes);
+    await autoUpdateListEntry(userId, mediaId, totalEpisodes);
   }
 
   await createActivity({
-    userId: session.user.id,
+    userId,
     type: "WATCHED_EPISODE",
     mediaId,
     mediaTitle: title || `Episode ${episode}`,
@@ -29,12 +28,12 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = await resolveUserId();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { mediaId, episode } = await req.json();
   if (!mediaId || !episode) return NextResponse.json({ error: "Missing mediaId or episode" }, { status: 400 });
 
-  await markEpisodeUnwatched(session.user.id, mediaId, episode);
+  await markEpisodeUnwatched(userId, mediaId, episode);
   return NextResponse.json({ ok: true });
 }

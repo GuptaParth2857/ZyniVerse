@@ -562,7 +562,22 @@ export default function QuizGame() {
   }
 
   useEffect(() => {
-    if (phase === "result") finishQuiz();
+    if (phase === "result") {
+      finishQuiz();
+      fetch("/api/quiz/scores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: questions[0]?.category || "General",
+          difficulty: questions[0]?.difficulty || "medium",
+          score,
+          totalQuestions: questions.length,
+          timeTaken: Math.floor((Date.now() - (startTime?.getTime() || Date.now())) / 1000),
+          xpEarned,
+          isDaily: false,
+        }),
+      }).catch(() => {});
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 

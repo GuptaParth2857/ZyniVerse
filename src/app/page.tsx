@@ -2,11 +2,13 @@ import Link from "next/link";
 import {
   getTrending, getPopular, getUpcoming, getTopRated, getAiringSchedule, bestTitle,
 } from "@/lib/anilist";
+import { auth } from "@/lib/auth";
 import Section from "@/components/Section";
 import MediaCarousel from "@/components/MediaCarousel";
 import OnAirTicker from "@/components/OnAirTicker";
 import { FadeIn, PageTransition } from "@/components/PageTransition";
 import { DynamicHero3D as Hero3D, DynamicHorizontalScroll as HorizontalScroll } from "@/components/lazy";
+import PersonalizedHero from "@/components/PersonalizedHero";
 import ExpandingFlexCard from "@/components/ExpandingFlexCard";
 import ContinueWatching from "@/components/ContinueWatching";
 import Recommendations from "@/components/Recommendations";
@@ -29,6 +31,8 @@ function AnimatedSection({ children, className = "" }: { children: React.ReactNo
 export const revalidate = 300;
 
 export default async function Home() {
+  const session = await auth();
+
   const [trending, popular, upcoming, topRated] = await Promise.allSettled([
     getTrending(24), getPopular(18), getUpcoming(12), getTopRated(12),
   ]);
@@ -46,7 +50,7 @@ export default async function Home() {
   return (
     <PageTransition>
       <div className="animate-page-in">
-      <Hero3D items={trendingData} />
+      {session?.user?.id ? <PersonalizedHero userId={session.user.id} /> : <Hero3D items={trendingData} />}
       <HorizontalScroll items={trendingData.slice(0, 20)} />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
         <AdBanner placement="homepage" type="banner" />

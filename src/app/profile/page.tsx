@@ -9,6 +9,9 @@ import Loader, { ErrorState } from "@/components/Loader";
 import ApiKeyManager from "@/components/ApiKeyManager";
 import StatsDashboard from "@/components/StatsDashboard";
 import WatchHistory from "@/components/WatchHistory";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import RankBadge, { RankPill } from "@/components/RankBadge";
+import { getRank, getNextRank } from "@/lib/achievements";
 
 type Tab = "overview" | "entries" | "reviews" | "stats" | "history" | "import" | "api" | "lists";
 
@@ -139,7 +142,16 @@ export default function ProfilePage() {
   const xpNeeded = ((user.level) * (user.level) * 100);
   const xpPercent = xpNeeded > 0 ? Math.min((xpProgress / xpNeeded) * 100, 100) : 0;
 
+  const rank = getRank(user.points);
+  const nextRank = getNextRank(user.points);
+
+  const RANK_THRESHOLDS = [0, 100, 500, 1000, 2500, 5000, 10000];
+  const rankFloor = RANK_THRESHOLDS[rank.tier - 1] || 0;
+  const rankCeil = nextRank ? RANK_THRESHOLDS[rank.tier] || rankFloor + 1000 : rankFloor + 1000;
+  const rankPercent = nextRank ? Math.min(((user.points - rankFloor) / (rankCeil - rankFloor)) * 100, 100) : 100;
+
   return (
+    <ErrorBoundary label="Profile">
     <div className="min-h-screen">
       {/* Banner */}
       <motion.div
@@ -170,73 +182,97 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)]/90 backdrop-blur-xl p-6 sm:p-8 mb-6"
+          className="neon-premium rounded-2xl mb-6"
           style={{ boxShadow: `0 0 40px ${tc}08, 0 4px 30px rgba(0,0,0,0.3)` }}
         >
-          <div className="flex flex-col sm:flex-row sm:items-end gap-5 sm:gap-8">
-            {/* Avatar */}
-            <div className="relative shrink-0 self-center sm:self-auto">
-              <div className="absolute -inset-1 rounded-2xl animate-pulse" style={{ background: `linear-gradient(135deg, ${tc}40, var(--color-violet)40)`, filter: "blur(8px)" }} />
-              <div className="relative flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-2xl overflow-hidden border-2" style={{ borderColor: tc, background: "var(--color-void)" }}>
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-4xl font-display font-bold" style={{ color: tc }}>{user.username.charAt(0).toUpperCase()}</span>
-                )}
-              </div>
-              {/* Level badge */}
-              <div className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold text-black" style={{ background: tc }}>
-                LV.{user.level}
-              </div>
-            </div>
-
-            {/* User Info */}
-            <div className="min-w-0 flex-1 text-center sm:text-left">
-              <div className="flex items-center gap-3 justify-center sm:justify-start">
-                <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{user.username}</h1>
-                {user.signature && (
-                  <span className="hidden sm:inline-block text-xs px-2 py-0.5 rounded-full border font-mono" style={{ borderColor: `${tc}40`, color: tc }}>{user.signature}</span>
-                )}
-              </div>
-              {user.bio && <p className="text-sm text-white/50 mt-1.5 max-w-lg leading-relaxed">{user.bio}</p>}
-
-              {/* Follower/Following + XP */}
-              <div className="flex items-center gap-4 mt-3 justify-center sm:justify-start flex-wrap">
-                <span className="text-xs text-[var(--color-mute)]">
-                  Joined {new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-                </span>
-                <span className="text-[var(--color-line)]">·</span>
-                <span className="text-xs"><span className="font-mono font-bold" style={{ color: tc }}>{user.followersCount}</span> <span className="text-[var(--color-mute)]">followers</span></span>
-                <span className="text-xs"><span className="font-mono font-bold" style={{ color: tc }}>{user.followingCount}</span> <span className="text-[var(--color-mute)]">following</span></span>
-                <span className="text-[var(--color-line)]">·</span>
-                <span className="text-xs"><span className="font-mono font-bold text-[var(--color-amber)]">{user.points.toLocaleString()}</span> <span className="text-[var(--color-mute)]">XP</span></span>
-              </div>
-
-              {/* XP Bar */}
-              <div className="mt-3 max-w-xs mx-auto sm:mx-0">
-                <div className="h-1.5 rounded-full bg-[var(--color-line)] overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${xpPercent}%` }}
-                    transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-                    className="h-full rounded-full"
-                    style={{ background: `linear-gradient(90deg, ${tc}, var(--color-violet))` }}
-                  />
+          <div className="neon-premium-track rounded-2xl" />
+          <div className="neon-premium-overlay rounded-[15.5px]" />
+          <div className="neon-premium-content p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-5 sm:gap-8">
+              {/* Avatar */}
+              <div className="relative shrink-0 self-center sm:self-auto">
+                <div className="absolute -inset-1 rounded-2xl animate-pulse" style={{ background: `linear-gradient(135deg, ${tc}40, var(--color-violet)40)`, filter: "blur(8px)" }} />
+                <div className="relative flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-2xl overflow-hidden border-2" style={{ borderColor: tc, background: "var(--color-void)" }}>
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-4xl font-display font-bold" style={{ color: tc }}>{user.username.charAt(0).toUpperCase()}</span>
+                  )}
                 </div>
-                <p className="text-[10px] text-[var(--color-mute)] mt-1 font-mono">{user.points.toLocaleString()} / {xpNeeded.toLocaleString()} XP to LV.{user.level + 1}</p>
+                {/* Level badge */}
+                <div className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold text-black" style={{ background: tc }}>
+                  LV.{user.level}
+                </div>
               </div>
-            </div>
 
-            {/* Edit Button */}
-            <Link
-              href="/profile/edit"
-              className="shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95"
-              style={{ border: `1px solid ${tc}40`, color: tc, background: `${tc}08` }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = `${tc}18`; e.currentTarget.style.borderColor = `${tc}80`; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = `${tc}08`; e.currentTarget.style.borderColor = `${tc}40`; }}
-            >
-              Edit Profile
-            </Link>
+              {/* User Info */}
+              <div className="min-w-0 flex-1 text-center sm:text-left">
+                <div className="flex items-center gap-3 justify-center sm:justify-start">
+                  <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{user.username}</h1>
+                  <RankBadge rank={rank} size="md" />
+                  {user.signature && (
+                    <span className="hidden sm:inline-block text-xs px-2 py-0.5 rounded-full border font-mono" style={{ borderColor: `${tc}40`, color: tc }}>{user.signature}</span>
+                  )}
+                </div>
+                {user.bio && <p className="text-sm text-white/50 mt-1.5 max-w-lg leading-relaxed">{user.bio}</p>}
+
+                {/* Follower/Following + XP */}
+                <div className="flex items-center gap-4 mt-3 justify-center sm:justify-start flex-wrap">
+                  <span className="text-xs text-[var(--color-mute)]">
+                    Joined {new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                  </span>
+                  <span className="text-[var(--color-line)]">·</span>
+                  <span className="text-xs"><span className="font-mono font-bold" style={{ color: tc }}>{user.followersCount}</span> <span className="text-[var(--color-mute)]">followers</span></span>
+                  <span className="text-xs"><span className="font-mono font-bold" style={{ color: tc }}>{user.followingCount}</span> <span className="text-[var(--color-mute)]">following</span></span>
+                  <span className="text-[var(--color-line)]">·</span>
+                  <span className="text-xs"><span className="font-mono font-bold text-[var(--color-amber)]">{user.points.toLocaleString()}</span> <span className="text-[var(--color-mute)]">XP</span></span>
+                </div>
+
+                {/* XP Bar */}
+                <div className="mt-3 max-w-xs mx-auto sm:mx-0">
+                  <div className="h-1.5 rounded-full bg-[var(--color-line)] overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${xpPercent}%` }}
+                      transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+                      className="h-full rounded-full"
+                      style={{ background: `linear-gradient(90deg, ${tc}, var(--color-violet))` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-[var(--color-mute)] mt-1 font-mono">{user.points.toLocaleString()} / {xpNeeded.toLocaleString()} XP to LV.{user.level + 1}</p>
+                </div>
+
+                {/* Rank Progress Bar */}
+                <div className="mt-2 max-w-xs mx-auto sm:mx-0">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <RankPill rank={rank} />
+                    {nextRank && (
+                      <span className="text-[9px] font-mono text-[var(--color-mute)]">{nextRank.needed.toLocaleString()} XP to {nextRank.rank.icon} {nextRank.rank.label}</span>
+                    )}
+                  </div>
+                  <div className="h-1 rounded-full bg-[var(--color-line)] overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${rankPercent}%` }}
+                      transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                      className="h-full rounded-full"
+                      style={{ background: `linear-gradient(90deg, ${rank.color}, ${rank.color}90)` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Edit Button */}
+              <Link
+                href="/profile/edit"
+                className="shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95"
+                style={{ border: `1px solid ${tc}40`, color: tc, background: `${tc}08` }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = `${tc}18`; e.currentTarget.style.borderColor = `${tc}80`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = `${tc}08`; e.currentTarget.style.borderColor = `${tc}40`; }}
+              >
+                Edit Profile
+              </Link>
+            </div>
           </div>
         </motion.div>
 
@@ -260,11 +296,14 @@ export default function ProfilePage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: 0.1 * i + 0.3 }}
-              className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 sm:p-4 text-center card-glow cursor-default"
-              style={{ ["--glow-color" as string]: s.color }}
+              className="neon-premium rounded-xl cursor-default"
             >
-              <div className="text-xl sm:text-2xl font-bold font-mono" style={{ color: s.color }}>{s.value.toLocaleString()}</div>
-              <div className="text-[10px] sm:text-xs text-[var(--color-mute)] mt-0.5">{s.label}</div>
+              <div className="neon-premium-track rounded-xl" />
+              <div className="neon-premium-overlay rounded-[10.5px]" />
+              <div className="neon-premium-content p-3 sm:p-4 text-center">
+                <div className="text-xl sm:text-2xl font-bold font-mono" style={{ color: s.color }}>{s.value.toLocaleString()}</div>
+                <div className="text-[10px] sm:text-xs text-[var(--color-mute)] mt-0.5">{s.label}</div>
+              </div>
             </motion.div>
           ))}
         </motion.div>
@@ -276,51 +315,67 @@ export default function ProfilePage() {
           transition={{ duration: 0.4, delay: 0.4 }}
           className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-6"
         >
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 flex items-center gap-3">
-            <div className="relative w-12 h-12 shrink-0">
-              <svg viewBox="0 0 36 36" className="w-12 h-12 -rotate-90">
-                <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--color-line)" strokeWidth="3" />
-                <motion.circle
-                  cx="18" cy="18" r="15.5" fill="none" stroke="#22c55e" strokeWidth="3"
-                  strokeDasharray={`${completionPercent * 0.974} 100`}
-                  initial={{ strokeDasharray: "0 100" }}
-                  animate={{ strokeDasharray: `${completionPercent * 0.974} 100` }}
-                  transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
-                  strokeLinecap="round"
-                />
-              </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-xs font-mono font-bold text-[#22c55e]">{completionPercent}%</span>
-            </div>
-            <div>
-              <div className="text-xs font-bold text-[var(--color-ink)]">Completion</div>
-              <div className="text-[10px] text-[var(--color-mute)]">{stats.completed}/{stats.total} anime</div>
-            </div>
-          </div>
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ background: "#facc1515" }}>
-              <span className="text-xl">⭐</span>
-            </div>
-            <div>
-              <div className="text-xl font-mono font-bold" style={{ color: "#facc15" }}>{stats.meanScore || "—"}</div>
-              <div className="text-[10px] text-[var(--color-mute)]">Mean Score</div>
+          <div className="neon-premium rounded-xl">
+            <div className="neon-premium-track rounded-xl" />
+            <div className="neon-premium-overlay rounded-[10.5px]" />
+            <div className="neon-premium-content p-4 flex items-center gap-3">
+              <div className="relative w-12 h-12 shrink-0">
+                <svg viewBox="0 0 36 36" className="w-12 h-12 -rotate-90">
+                  <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--color-line)" strokeWidth="3" />
+                  <motion.circle
+                    cx="18" cy="18" r="15.5" fill="none" stroke="#22c55e" strokeWidth="3"
+                    strokeDasharray={`${completionPercent * 0.974} 100`}
+                    initial={{ strokeDasharray: "0 100" }}
+                    animate={{ strokeDasharray: `${completionPercent * 0.974} 100` }}
+                    transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-xs font-mono font-bold text-[#22c55e]">{completionPercent}%</span>
+              </div>
+              <div>
+                <div className="text-xs font-bold text-[var(--color-ink)]">Completion</div>
+                <div className="text-[10px] text-[var(--color-mute)]">{stats.completed}/{stats.total} anime</div>
+              </div>
             </div>
           </div>
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--color-cyan)]/10">
-              <span className="text-xl">🔥</span>
-            </div>
-            <div>
-              <div className="text-xl font-mono font-bold text-[var(--color-cyan)]">{user.level}</div>
-              <div className="text-[10px] text-[var(--color-mute)]">Level</div>
+          <div className="neon-premium rounded-xl">
+            <div className="neon-premium-track rounded-xl" />
+            <div className="neon-premium-overlay rounded-[10.5px]" />
+            <div className="neon-premium-content p-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ background: "#facc1515" }}>
+                <span className="text-xl">⭐</span>
+              </div>
+              <div>
+                <div className="text-xl font-mono font-bold" style={{ color: "#facc15" }}>{stats.meanScore || "—"}</div>
+                <div className="text-[10px] text-[var(--color-mute)]">Mean Score</div>
+              </div>
             </div>
           </div>
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--color-magenta)]/10">
-              <span className="text-xl">🏆</span>
+          <div className="neon-premium rounded-xl">
+            <div className="neon-premium-track rounded-xl" />
+            <div className="neon-premium-overlay rounded-[10.5px]" />
+            <div className="neon-premium-content p-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--color-cyan)]/10">
+                <span className="text-xl">🔥</span>
+              </div>
+              <div>
+                <div className="text-xl font-mono font-bold text-[var(--color-cyan)]">{user.level}</div>
+                <div className="text-[10px] text-[var(--color-mute)]">Level</div>
+              </div>
             </div>
-            <div>
-              <div className="text-xl font-mono font-bold text-[var(--color-magenta)]">{user.achievements.length}</div>
-              <div className="text-[10px] text-[var(--color-mute)]">Achievements</div>
+          </div>
+          <div className="neon-premium rounded-xl">
+            <div className="neon-premium-track rounded-xl" />
+            <div className="neon-premium-overlay rounded-[10.5px]" />
+            <div className="neon-premium-content p-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--color-magenta)]/10">
+                <span className="text-xl">🏆</span>
+              </div>
+              <div>
+                <div className="text-xl font-mono font-bold text-[var(--color-magenta)]">{user.achievements.length}</div>
+                <div className="text-[10px] text-[var(--color-mute)]">Achievements</div>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -474,12 +529,16 @@ export default function ProfilePage() {
                         <motion.div
                           key={a.code}
                           whileHover={{ scale: 1.03, y: -2 }}
-                          className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 text-center cursor-default"
+                          className="neon-premium rounded-xl cursor-default"
                           style={{ boxShadow: `0 0 15px ${tc}08` }}
                         >
-                          <div className="text-2xl mb-1">{a.icon}</div>
-                          <div className="text-[10px] font-bold text-[var(--color-ink)] leading-tight">{a.name}</div>
-                          <div className="text-[9px] font-mono mt-1" style={{ color: tc }}>+{a.points} XP</div>
+                          <div className="neon-premium-track rounded-xl" />
+                          <div className="neon-premium-overlay rounded-[10.5px]" />
+                          <div className="neon-premium-content p-3 text-center">
+                            <div className="text-2xl mb-1">{a.icon}</div>
+                            <div className="text-[10px] font-bold text-[var(--color-ink)] leading-tight">{a.name}</div>
+                            <div className="text-[9px] font-mono mt-1" style={{ color: tc }}>+{a.points} XP</div>
+                          </div>
                         </motion.div>
                       ))}
                     </div>
@@ -644,54 +703,58 @@ export default function ProfilePage() {
             {/* IMPORT TAB */}
             {tab === "import" && (
               <div className="mt-2">
-                <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6">
-                  <h3 className="font-display text-sm font-bold mb-1 flex items-center gap-2">
-                    <span className="h-1 w-4 rounded-full" style={{ background: tc }} />
-                    Import from AniList
-                  </h3>
-                  <p className="text-xs text-[var(--color-mute)] mb-4">
-                    Enter your AniList username to import your entire anime watchlist.
-                  </p>
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      placeholder="AniList username"
-                      value={anilistUsername}
-                      onChange={(e) => { setAnilistUsername(e.target.value); setImportResult(null); setImportError(null); }}
-                      className="flex-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm outline-none transition-colors"
-                      style={{ ["--tw-ring-color" as string]: tc }}
-                      onFocus={(e) => { e.currentTarget.style.borderColor = `${tc}60`; }}
-                      onBlur={(e) => { e.currentTarget.style.borderColor = ""; }}
-                    />
-                    <button
-                      onClick={async () => {
-                        if (!anilistUsername.trim()) return;
-                        setImporting(true); setImportResult(null); setImportError(null);
-                        try {
-                          const res = await fetch("/api/import/anilist", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ username: anilistUsername.trim() }),
-                          });
-                          const data = await res.json();
-                          if (!res.ok) throw new Error(data.error || "Import failed");
-                          setImportResult(data);
-                        } catch (err: any) { setImportError(err.message); }
-                        finally { setImporting(false); }
-                      }}
-                      disabled={importing || !anilistUsername.trim()}
-                      className="rounded-lg px-5 py-2 text-sm font-semibold text-black transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                      style={{ background: tc }}
-                    >
-                      {importing ? "Importing..." : "Import"}
-                    </button>
-                  </div>
-                  {importResult && (
-                    <p className="mt-3 text-sm text-green-400">
-                      Imported {importResult.imported} of {importResult.total} entries.
+                <div className="neon-premium rounded-xl">
+                  <div className="neon-premium-track rounded-xl" />
+                  <div className="neon-premium-overlay rounded-[10.5px]" />
+                  <div className="neon-premium-content p-6">
+                    <h3 className="font-display text-sm font-bold mb-1 flex items-center gap-2">
+                      <span className="h-1 w-4 rounded-full" style={{ background: tc }} />
+                      Import from AniList
+                    </h3>
+                    <p className="text-xs text-[var(--color-mute)] mb-4">
+                      Enter your AniList username to import your entire anime watchlist.
                     </p>
-                  )}
-                  {importError && <p className="mt-3 text-sm text-[var(--color-magenta)]">{importError}</p>}
+                    <div className="flex gap-3">
+                      <input
+                        type="text"
+                        placeholder="AniList username"
+                        value={anilistUsername}
+                        onChange={(e) => { setAnilistUsername(e.target.value); setImportResult(null); setImportError(null); }}
+                        className="flex-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm outline-none transition-colors"
+                        style={{ ["--tw-ring-color" as string]: tc }}
+                        onFocus={(e) => { e.currentTarget.style.borderColor = `${tc}60`; }}
+                        onBlur={(e) => { e.currentTarget.style.borderColor = ""; }}
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!anilistUsername.trim()) return;
+                          setImporting(true); setImportResult(null); setImportError(null);
+                          try {
+                            const res = await fetch("/api/import/anilist", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ username: anilistUsername.trim() }),
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || "Import failed");
+                            setImportResult(data);
+                          } catch (err: any) { setImportError(err.message); }
+                          finally { setImporting(false); }
+                        }}
+                        disabled={importing || !anilistUsername.trim()}
+                        className="rounded-lg px-5 py-2 text-sm font-semibold text-black transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+                        style={{ background: tc }}
+                      >
+                        {importing ? "Importing..." : "Import"}
+                      </button>
+                    </div>
+                    {importResult && (
+                      <p className="mt-3 text-sm text-green-400">
+                        Imported {importResult.imported} of {importResult.total} entries.
+                      </p>
+                    )}
+                    {importError && <p className="mt-3 text-sm text-[var(--color-magenta)]">{importError}</p>}
+                  </div>
                 </div>
               </div>
             )}
@@ -702,6 +765,7 @@ export default function ProfilePage() {
         </AnimatePresence>
       </div>
     </div>
+    </ErrorBoundary>
   );
 }
 
@@ -742,8 +806,10 @@ function ProfileLists({ userId, themeColor }: { userId: string; themeColor: stri
     <div>
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs text-[var(--color-mute)] font-mono">{lists.length} list{lists.length !== 1 ? "s" : ""}</p>
-        <Link href="/lists/create" className="rounded-lg px-5 py-2.5 text-sm font-semibold text-black transition-all hover:scale-105" style={{ background: themeColor }}>
-          Create List
+        <Link href="/lists/create" className="neon-premium rounded-lg">
+          <div className="neon-premium-track rounded-lg" />
+          <div className="neon-premium-overlay rounded-[6.5px]" />
+          <div className="neon-premium-content px-5 py-2.5 text-sm font-semibold text-black text-center" style={{ background: themeColor }}>Create List</div>
         </Link>
       </div>
       {lists.length === 0 ? (

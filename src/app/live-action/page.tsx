@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LIVE_ACTION_ANIME,
+  LIVE_ACTION_PLATFORMS,
   getAvailableAnime,
   getUpcomingAnime,
+  getMostPopular,
+  getByPlatform,
   type LiveActionAnime,
 } from "@/lib/live-action-anime";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -18,89 +22,41 @@ const FADE_UP = {
   transition: { duration: 0.5 },
 };
 
-type StatusFilter = "all" | "available" | "upcoming" | "series" | "movie";
-
-const STATUS_TABS: { id: StatusFilter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "available", label: "Available Now" },
-  { id: "upcoming", label: "Upcoming" },
-  { id: "series", label: "Series" },
-  { id: "movie", label: "Movies" },
-];
-
-const ALL_PLATFORMS = [
-  { name: "Netflix", color: "#E50914" },
-  { name: "Prime Video", color: "#00A8E1" },
-  { name: "Crunchyroll", color: "#F47521" },
-  { name: "JioCinema", color: "#E53E3E" },
-  { name: "Hotstar", color: "#113CCF" },
-];
-
-const ALL_LANGUAGES = ["Hindi", "English", "Japanese", "Korean"];
-
-const POSTER_GRADIENTS: Record<string, string> = {
-  "one-piece-la-s1": "linear-gradient(135deg, #E53E3E 0%, #2B6CB0 50%, #F6E05E 100%)",
-  "alice-in-borderland-la": "linear-gradient(135deg, #1A202C 0%, #E53E3E 50%, #2D3748 100%)",
-  "yu-yu-hakusho-la": "linear-gradient(135deg, #553C9A 0%, #E53E3E 50%, #DD6B20 100%)",
-  "rurouni-kenshin-films": "linear-gradient(135deg, #C53030 0%, #F7FAFC 50%, #2D3748 100%)",
-  "death-note-la-film": "linear-gradient(135deg, #1A202C 0%, #718096 50%, #E53E3E 100%)",
-  "cowboy-bebop-la": "linear-gradient(135deg, #DD6B20 0%, #2B6CB0 50%, #1A202C 100%)",
-  "parasyte-the-grey": "linear-gradient(135deg, #276749 0%, #1A202C 50%, #E53E3E 100%)",
-  "kakegurui-la-s1s2": "linear-gradient(135deg, #D53F8C 0%, #2D3748 50%, #F6E05E 100%)",
-  "kimi-ni-todoke-la": "linear-gradient(135deg, #ED8936 0%, #F6E05E 50%, #48BB78 100%)",
-  "golden-kamuy-film-series": "linear-gradient(135deg, #C6F6D5 0%, #2D3748 50%, #DD6B20 100%)",
-  "bloodhounds-la-s1s2": "linear-gradient(135deg, #1A202C 0%, #E53E3E 50%, #F7FAFC 100%)",
-  "viral-hit-la": "linear-gradient(135deg, #2B6CB0 0%, #1A202C 50%, #E53E3E 100%)",
-  "avatar-last-airbender-la": "linear-gradient(135deg, #48BB78 0%, #4299E1 50%, #E53E3E 100%)",
-  "naruto-live-action": "linear-gradient(135deg, #DD6B20 0%, #2B6CB0 50%, #F6E05E 100%)",
-  "my-hero-academia-film": "linear-gradient(135deg, #48BB78 0%, #2B6CB0 50%, #E53E3E 100%)",
-  "sakamoto-days-film": "linear-gradient(135deg, #1A202C 0%, #E53E3E 50%, #F6E05E 100%)",
-  "kingdom-5th-film": "linear-gradient(135deg, #C53030 0%, #F7FAFC 50%, #1A202C 100%)",
-  "bet-kakegurui-hollywood": "linear-gradient(135deg, #D53F8C 0%, #1A202C 50%, #F7FAFC 100%)",
-  "dragon-ball-live-action": "linear-gradient(135deg, #F6E05E 0%, #48BB78 50%, #E53E3E 100%)",
-  "one-piece-la-s3": "linear-gradient(135deg, #2B6CB0 0%, #E53E3E 50%, #F6E05E 100%)",
-};
+function NeonBorder({ children, glowColor }: { children: React.ReactNode; glowColor?: string }) {
+  return (
+    <div className="relative rounded-[24px]">
+      <div className="absolute inset-0 rounded-[24px] overflow-hidden pointer-events-none">
+        <div className="absolute inset-0"
+          style={{ background: `conic-gradient(from 0deg, transparent, ${glowColor || "#00ffe0"}, transparent, #ff00e6, transparent, #7000ff, transparent, ${glowColor || "#00ffe0"})`, animation: "spin 6s linear infinite", willChange: "transform" }}
+        />
+        <div className="absolute inset-[1.5px] rounded-[22.5px]" style={{ background: "rgba(10,10,15,0.92)" }} />
+      </div>
+      <div className="relative z-10">{children}</div>
+    </div>
+  );
+}
 
 function StatusBadge({ status }: { status: LiveActionAnime["status"] }) {
   const config = {
-    available: { label: "Available", bg: "rgba(72,187,120,0.15)", color: "#48BB78", border: "rgba(72,187,120,0.3)" },
-    upcoming: { label: "Coming Soon", bg: "rgba(237,137,54,0.15)", color: "#ED8936", border: "rgba(237,137,54,0.3)" },
-    cancelled: { label: "Cancelled", bg: "rgba(229,62,62,0.15)", color: "#E53E3E", border: "rgba(229,62,62,0.3)" },
+    available: { label: "Available", color: "#48BB78" },
+    upcoming: { label: "Coming Soon", color: "#ED8936" },
+    cancelled: { label: "Cancelled", color: "#E53E3E" },
   };
   const c = config[status];
   return (
-    <span
-      className="absolute top-3 right-3 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider z-10"
-      style={{ background: c.bg, color: c.color, border: `1px solid ${c.border}` }}
+    <span className="absolute top-3 left-3 z-10 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm"
+      style={{ background: `${c.color}22`, color: c.color, border: `1px solid ${c.color}44` }}
     >
       {c.label}
     </span>
   );
 }
 
-function TypeBadge({ type }: { type: LiveActionAnime["type"] }) {
-  const isMovie = type === "movie";
-  return (
-    <span
-      className="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
-      style={{
-        background: isMovie ? "rgba(237,137,54,0.12)" : "rgba(0,188,212,0.12)",
-        color: isMovie ? "#ED8936" : "#00BCD4",
-        border: `1px solid ${isMovie ? "rgba(237,137,54,0.25)" : "rgba(0,188,212,0.25)"}`,
-      }}
-    >
-      {type === "series" ? "Series" : "Movie"}
-    </span>
-  );
-}
-
-function StarRating({ rating }: { rating: number }) {
-  if (rating === 0) {
-    return <span className="text-[11px] text-[var(--color-mute)] font-semibold">TBA</span>;
-  }
+function RatingBadge({ rating }: { rating: number }) {
+  if (rating === 0) return <span className="text-[10px] text-[var(--color-mute)] font-semibold">TBA</span>;
   return (
     <div className="flex items-center gap-1">
-      <svg className="h-3.5 w-3.5 text-[var(--color-amber)]" fill="currentColor" viewBox="0 0 20 20">
+      <svg className="h-3 w-3 text-[var(--color-amber)]" fill="currentColor" viewBox="0 0 20 20">
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
       <span className="text-[11px] font-bold text-[var(--color-amber)]">{rating.toFixed(1)}</span>
@@ -108,408 +64,456 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-function AnimeCard({ anime }: { anime: LiveActionAnime }) {
-  const [expanded, setExpanded] = useState(false);
-  const gradient = POSTER_GRADIENTS[anime.id] || "linear-gradient(135deg, #2D3748, #1A202C)";
-
+function PosterCard({ anime, rank, compact }: { anime: LiveActionAnime; rank?: number; compact?: boolean }) {
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -16, scale: 0.95 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4 }}
-      className="group relative rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)]/80 backdrop-blur-xl overflow-hidden hover:border-[var(--color-cyan)]/30 transition-all duration-300"
+    <Link
+      href={`/live-action/${anime.id}`}
+      className="snap-start shrink-0 group/card w-[150px] sm:w-[170px] md:w-[190px]"
     >
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[var(--color-cyan)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-      <div className="relative">
-        <div className="relative w-full aspect-video overflow-hidden">
-          <div className="absolute inset-0" style={{ background: gradient }} />
-          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-transparent to-transparent" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="font-display text-xl sm:text-2xl font-black text-white/90 text-center px-4 drop-shadow-lg">
-              {anime.title}
-            </p>
+      <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-400 group-hover/card:border-[var(--color-magenta)] group-hover/card:shadow-[0_0_40px_-8px_var(--color-magenta)]">
+        {/* Animated neon border glow on hover */}
+        <div className="absolute -inset-[1px] rounded-xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 pointer-events-none"
+          style={{ background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent)", animation: "spin 4s linear infinite", filter: "blur(2px)" }} />
+        <div className="absolute inset-0 rounded-xl bg-[var(--color-panel)] m-[1px]" />
+        {anime.posterUrl ? (
+          <img
+            src={anime.posterUrl}
+            alt={anime.title}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
+            loading="lazy"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-cyan)]/20 to-[var(--color-magenta)]/20 flex items-center justify-center">
+            <span className="text-4xl opacity-30">🎬</span>
           </div>
-          <StatusBadge status={anime.status} />
-        </div>
-
-        <div className="p-4 space-y-3">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <h3 className="text-sm font-bold text-[var(--color-ink)] truncate">
-                {anime.title}
-              </h3>
-              {anime.japaneseTitle && (
-                <p className="text-[10px] text-[var(--color-mute)] mt-0.5">
-                  {anime.japaneseTitle}
-                </p>
-              )}
-            </div>
-            <TypeBadge type={anime.type} />
+        )}
+        <StatusBadge status={anime.status} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-x-0 bottom-0 p-2.5 sm:p-3 translate-y-2 group-hover/card:translate-y-0 opacity-0 group-hover/card:opacity-100 transition-all duration-300">
+          <p className="font-display text-xs sm:text-sm font-bold leading-tight line-clamp-2 drop-shadow-lg">
+            {anime.title}
+          </p>
+          <div className="mt-1 flex items-center gap-2 text-[10px] text-[var(--color-mute)]">
+            <RatingBadge rating={anime.rating} />
+            {anime.episodes ? <span>{anime.episodes} ep</span> : null}
           </div>
-
-          <div className="flex items-center gap-3">
-            <StarRating rating={anime.rating} />
-            {anime.releaseYear > 0 && (
-              <span className="text-[10px] text-[var(--color-mute)]">
-                {anime.releaseYear}{anime.endYear ? ` — ${anime.endYear}` : ""}
-              </span>
-            )}
-            {anime.episodes && (
-              <span className="text-[10px] text-[var(--color-mute)]">
-                {anime.episodes} ep{anime.episodes !== 1 ? "s" : ""}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-1.5">
-            {anime.platforms.map((p) => (
-              <span
-                key={p.name}
-                className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold"
-                style={{
-                  background: `${p.logoColor}18`,
-                  color: p.available ? p.logoColor : "var(--color-mute)",
-                  border: `1px solid ${p.logoColor}33`,
-                  opacity: p.available ? 1 : 0.5,
-                }}
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {anime.platforms.slice(0, 2).map((p) => (
+              <span key={p.name} className="text-[8px] font-bold px-1.5 py-0.5 rounded"
+                style={{ background: `${p.logoColor}22`, color: p.available ? p.logoColor : "var(--color-mute)" }}
               >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: p.available ? p.logoColor : "var(--color-mute)" }} />
                 {p.name}
               </span>
             ))}
           </div>
-
-          <div className="flex flex-wrap gap-1">
-            {anime.languages.map((lang) => (
-              <span key={lang} className="rounded bg-[var(--color-cyan)]/8 px-1.5 py-0.5 text-[9px] font-medium text-[var(--color-cyan)]">
-                {lang}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap gap-1">
-            {anime.genres.map((g) => (
-              <span key={g} className="rounded bg-[var(--color-amber)]/8 px-1.5 py-0.5 text-[9px] font-medium text-[var(--color-amber)]">
-                {g}
-              </span>
-            ))}
-          </div>
-
-          <div className="text-[10px] text-[var(--color-mute)]">
-            Based on: <span className="text-[var(--color-ink)]">{anime.basedOn}</span>
-          </div>
-
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1 text-[10px] font-semibold text-[var(--color-cyan)] hover:text-[var(--color-cyan)]/80 transition-colors"
-          >
-            {expanded ? "Show less" : "Read more"}
-            <svg
-              className={`h-3 w-3 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          <AnimatePresence>
-            {expanded && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="overflow-hidden"
-              >
-                <p className="text-xs text-[var(--color-ink)]/80 leading-relaxed pb-1">
-                  {anime.description}
-                </p>
-                {anime.platforms.some((p) => p.subtitle) && (
-                  <div className="mt-2 space-y-1">
-                    {anime.platforms
-                      .filter((p) => p.subtitle)
-                      .map((p) => (
-                        <p key={p.name} className="text-[10px] text-[var(--color-mute)]">
-                          <span className="font-semibold" style={{ color: p.logoColor }}>{p.name}</span>: {p.subtitle}
-                        </p>
-                      ))}
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
+        {anime.rating > 0 && (
+          <span className="absolute right-1.5 top-12 z-10 rounded-full bg-black/70 px-1.5 py-0.5 text-[9px] font-mono font-semibold text-[var(--color-cyan)] backdrop-blur">
+            ★ {(anime.rating).toFixed(1)}
+          </span>
+        )}
+        {rank !== undefined && (
+          <div className="absolute left-2 top-2 z-10">
+            <span className="font-mono text-[10px] font-bold text-white/40 drop-shadow-lg">
+              {rank.toString().padStart(2, "0")}
+            </span>
+          </div>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+function HorizontalCarousel({ items, title }: { items: LiveActionAnime[]; title: string }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (dir: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const amount = Math.min(el.clientWidth * 0.8, 600);
+    el.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
+  };
+
+  return (
+    <div className="relative group/row">
+      <div
+        ref={scrollRef}
+        className="flex gap-2 sm:gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-1"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
+        {items.map((anime) => (
+          <PosterCard key={anime.id} anime={anime} />
+        ))}
+      </div>
+      <button onClick={() => scroll("left")}
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-black/80 text-white border border-[var(--color-line)] hover:border-[var(--color-magenta)] transition-all opacity-0 group-hover/row:opacity-100"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button onClick={() => scroll("right")}
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-black/80 text-white border border-[var(--color-line)] hover:border-[var(--color-magenta)] transition-all opacity-0 group-hover/row:opacity-100"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+  );
+}
+
+function MostPopularSection({ items }: { items?: LiveActionAnime[] }) {
+  const [hovered, setHovered] = useState<string | null>(null);
+  const popular = items || getMostPopular();
+
+  return (
+    <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.08 }} className="mb-8">
+      <div className="mb-5 flex items-end justify-between">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">
+            // Explore
+          </p>
+          <h2 className="font-display text-2xl font-bold sm:text-3xl">Most Popular</h2>
+          <p className="text-sm text-[var(--color-mute)] mt-1">Discover what everyone is watching</p>
+        </div>
+      </div>
+      {/* Desktop: expanding flex */}
+      <div className="hidden md:flex h-[400px] gap-2 w-full">
+        {popular.map((anime) => {
+          const isHovered = hovered === anime.id;
+          return (
+            <motion.div
+              key={anime.id}
+              layout
+              animate={{ flex: isHovered ? 3 : 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              onMouseEnter={() => setHovered(anime.id)}
+              onMouseLeave={() => setHovered(null)}
+              className="relative overflow-hidden rounded-2xl border border-[var(--color-line)] cursor-pointer group"
+              style={{ minWidth: 0 }}
+            >
+              <Link href={`/live-action/${anime.id}`} className="block h-full w-full">
+                {anime.posterUrl ? (
+                  <img src={anime.posterUrl} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-cyan)]/20 to-[var(--color-magenta)]/20" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                {!isHovered && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
+                )}
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <motion.p animate={{ opacity: isHovered ? 0 : 1 }}
+                    className="font-display text-xs font-bold leading-tight [writing-mode:vertical-lr] rotate-180 truncate"
+                  >
+                    {anime.title}
+                  </motion.p>
+                </div>
+                <motion.div initial={false} animate={{ opacity: isHovered ? 1 : 0 }} transition={{ duration: 0.2 }}
+                  className="absolute inset-x-0 bottom-0 p-5"
+                >
+                  <p className="font-display text-lg font-bold leading-tight drop-shadow-lg">{anime.title}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[var(--color-mute)]">
+                    <RatingBadge rating={anime.rating} />
+                    {anime.episodes ? <span>{anime.episodes} ep</span> : null}
+                    <span className="text-[10px] uppercase">{anime.type}</span>
+                    <span>{anime.releaseYear}</span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {anime.genres.slice(0, 3).map((g) => (
+                      <span key={g} className="rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[9px] backdrop-blur">{g}</span>
+                    ))}
+                  </div>
+                  <p className="mt-2 line-clamp-2 text-xs text-[var(--color-mute)] leading-relaxed">{anime.description.slice(0, 150)}...</p>
+                  <motion.span initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
+                    className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-magenta)]"
+                  >
+                    View Details →
+                  </motion.span>
+                </motion.div>
+                <div className="absolute left-3 top-3">
+                  <span className="font-mono text-[10px] font-bold text-white/40">
+                    {(popular.indexOf(anime) + 1).toString().padStart(2, "0")}
+                  </span>
+                </div>
+              </Link>
+            </motion.div>
+          );
+        })}
+      </div>
+      {/* Mobile: horizontal scroll */}
+      <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory md:hidden -mx-4 px-4">
+        {popular.map((anime, idx) => (
+          <PosterCard key={anime.id} anime={anime} rank={idx + 1} />
+        ))}
       </div>
     </motion.div>
   );
 }
 
-function EmptyState() {
+function PlatformSection({ platform, color }: { platform: string; color: string }) {
+  const items = getByPlatform(platform);
+  if (items.length === 0) return null;
+
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center justify-center py-20"
-    >
-      <div className="relative mb-6">
-        <motion.div
-          animate={{ rotate: [0, 5, -5, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          className="text-6xl opacity-20"
-        >
-          <svg className="h-20 w-20 text-[var(--color-mute)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-          </svg>
-        </motion.div>
-        <motion.div
-          animate={{ opacity: [0.2, 0.5, 0.2] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute -inset-8 rounded-full bg-[var(--color-cyan)]/5 blur-2xl"
-        />
+    <motion.div {...FADE_UP} className="mb-8">
+      <div className="mb-5 flex items-end justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-5 w-1 rounded-full" style={{ background: color }} />
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-mute)]">
+              // Platform
+            </p>
+            <h2 className="font-display text-xl font-bold sm:text-2xl">{platform}</h2>
+            <p className="text-xs text-[var(--color-mute)] mt-0.5">{items.length} title{items.length !== 1 ? "s" : ""}</p>
+          </div>
+        </div>
       </div>
-      <p className="text-sm font-semibold text-[var(--color-mute)]">No titles match your filters</p>
-      <p className="text-xs text-[var(--color-mute)]/60 mt-1">Try adjusting your filters to find something</p>
+      <HorizontalCarousel items={items} title={platform} />
+    </motion.div>
+  );
+}
+
+function FilterableGrid() {
+  const [statusFilter, setStatusFilter] = useState<"all" | "available" | "upcoming">("all");
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<"all" | "series" | "movie">("all");
+
+  const filtered = useMemo(() => {
+    let result = [...LIVE_ACTION_ANIME];
+    if (statusFilter !== "all") result = result.filter((a) => a.status === statusFilter);
+    if (selectedType !== "all") result = result.filter((a) => a.type === selectedType);
+    if (selectedPlatform) result = result.filter((a) => a.platforms.some((p) => p.name === selectedPlatform));
+    return result.sort((a, b) => b.popularity - a.popularity);
+  }, [statusFilter, selectedPlatform, selectedType]);
+
+  return (
+    <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.3 }} className="mb-8">
+      <div className="mb-5 flex items-end justify-between">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">// All Titles</p>
+          <h2 className="font-display text-2xl font-bold sm:text-3xl">Full Catalog</h2>
+          <p className="text-sm text-[var(--color-mute)] mt-1">{filtered.length} titles</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {(["all", "available", "upcoming"] as const).map((s) => (
+          <button key={s} onClick={() => setStatusFilter(s)}
+            className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all"
+            style={{
+              borderColor: statusFilter === s ? "var(--color-cyan)" : "var(--color-line)",
+              background: statusFilter === s ? "rgba(0,188,212,0.13)" : "transparent",
+              color: statusFilter === s ? "var(--color-cyan)" : "var(--color-mute)",
+            }}
+          >
+            {s === "all" ? "All" : s === "available" ? "Available Now" : "Upcoming"}
+          </button>
+        ))}
+        <span className="w-px h-6 bg-[var(--color-line)] self-center mx-1" />
+        {(["all", "series", "movie"] as const).map((t) => (
+          <button key={t} onClick={() => setSelectedType(t)}
+            className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all"
+            style={{
+              borderColor: selectedType === t ? "var(--color-amber)" : "var(--color-line)",
+              background: selectedType === t ? "rgba(245,158,11,0.1)" : "transparent",
+              color: selectedType === t ? "#f59e0b" : "var(--color-mute)",
+            }}
+          >
+            {t === "all" ? "All Types" : t === "series" ? "Series" : "Movies"}
+          </button>
+        ))}
+        <span className="w-px h-6 bg-[var(--color-line)] self-center mx-1" />
+        {LIVE_ACTION_PLATFORMS.filter((p) => getByPlatform(p.name).length > 0).map((p) => (
+          <button key={p.name} onClick={() => setSelectedPlatform(selectedPlatform === p.name ? null : p.name)}
+            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all"
+            style={{
+              borderColor: selectedPlatform === p.name ? p.logoColor : "var(--color-line)",
+              background: selectedPlatform === p.name ? `${p.logoColor}22` : "transparent",
+              color: selectedPlatform === p.name ? p.logoColor : "var(--color-mute)",
+            }}
+          >
+            <span className="h-2 w-2 rounded-full" style={{ background: p.logoColor }} />
+            {p.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {filtered.map((anime) => (
+          <PosterCard key={anime.id} anime={anime} />
+        ))}
+      </div>
+
+      {filtered.length === 0 && (
+        <div className="text-center py-16">
+          <p className="text-sm font-semibold text-[var(--color-mute)]">No titles match your filters</p>
+          <p className="text-xs text-[var(--color-mute)]/60 mt-1">Try adjusting your search</p>
+        </div>
+      )}
     </motion.div>
   );
 }
 
 function LiveActionPage() {
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const available = getAvailableAnime();
+  const upcoming = getUpcomingAnime();
+  const availableCount = available.length;
+  const upcomingCount = upcoming.length;
+  const platformCount = new Set(LIVE_ACTION_ANIME.flatMap((a) => a.platforms.map((p) => p.name))).size;
 
-  const toggleLanguage = (lang: string) => {
-    setSelectedLanguages((prev) =>
-      prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang]
+  const filterTitles = (titles: LiveActionAnime[]) => {
+    if (!searchQuery) return titles;
+    const q = searchQuery.toLowerCase();
+    return titles.filter((a) =>
+      a.title.toLowerCase().includes(q) ||
+      (a.japaneseTitle && a.japaneseTitle.toLowerCase().includes(q)) ||
+      a.genres.some((g) => g.toLowerCase().includes(q)) ||
+      a.languages.some((l) => l.toLowerCase().includes(q)) ||
+      a.platforms.some((p) => p.name.toLowerCase().includes(q)) ||
+      a.description.toLowerCase().includes(q) ||
+      (a.basedOn && a.basedOn.toLowerCase().includes(q))
     );
   };
 
-  const availableCount = useMemo(() => getAvailableAnime().length, []);
-  const upcomingCount = useMemo(() => getUpcomingAnime().length, []);
-  const platformCount = useMemo(() => {
-    const names = new Set(LIVE_ACTION_ANIME.flatMap((a) => a.platforms.map((p) => p.name)));
-    return names.size;
-  }, []);
-
-  const filtered = useMemo(() => {
-    let result = [...LIVE_ACTION_ANIME];
-
-    switch (statusFilter) {
-      case "available":
-        result = result.filter((a) => a.status === "available");
-        break;
-      case "upcoming":
-        result = result.filter((a) => a.status === "upcoming");
-        break;
-      case "series":
-        result = result.filter((a) => a.type === "series");
-        break;
-      case "movie":
-        result = result.filter((a) => a.type === "movie");
-        break;
-    }
-
-    if (selectedPlatform) {
-      result = result.filter((a) =>
-        a.platforms.some((p) => p.name === selectedPlatform)
-      );
-    }
-
-    if (selectedLanguages.length > 0) {
-      result = result.filter((a) =>
-        selectedLanguages.some((lang) => a.languages.includes(lang))
-      );
-    }
-
-    return result;
-  }, [statusFilter, selectedPlatform, selectedLanguages]);
+  const filteredAvailable = useMemo(() => filterTitles(available), [searchQuery, available]);
+  const filteredUpcoming = useMemo(() => filterTitles(upcoming), [searchQuery, upcoming]);
+  const filteredPopular = useMemo(() => filterTitles(getMostPopular()), [searchQuery]);
 
   return (
     <PageTransition>
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        {/* Hero Section */}
-        <motion.div
-          {...FADE_UP}
-          className="mb-10 relative"
-        >
-          <div className="absolute -inset-4 bg-gradient-to-r from-[var(--color-cyan)]/10 via-[var(--color-amber)]/5 to-[var(--color-cyan)]/10 blur-3xl opacity-40 pointer-events-none" />
-          <div className="relative">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="h-10 w-1.5 rounded-full bg-gradient-to-b from-[var(--color-cyan)] to-[var(--color-amber)]" />
-              <h1 className="font-display text-4xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-[var(--color-cyan)] via-white to-[var(--color-amber)] bg-clip-text text-transparent">
-                Live-Action Anime
-              </h1>
+      <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
+        <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
+          backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }} />
+        <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.6)" }} />
+        <motion.div className="absolute top-[10%] left-[5%] w-[350px] h-[350px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(229,9,20,0.06) 0%, transparent 70%)", filter: "blur(60px)" }}
+          animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div className="absolute top-[40%] right-[10%] w-[280px] h-[280px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(245,158,11,0.05) 0%, transparent 70%)", filter: "blur(60px)" }}
+          animate={{ x: [0, -30, 0], y: [0, 40, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6">
+          {/* Hero */}
+          <motion.div {...FADE_UP} className="mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-8 w-1 rounded-full bg-[var(--color-amber)]" />
+                  <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-[var(--color-amber)] via-white to-[var(--color-magenta)] bg-clip-text text-transparent">
+                    Live-Action Anime
+                  </h1>
+                </div>
+                <p className="text-sm text-[var(--color-mute)] ml-4">
+                  Every live-action adaptation — available now, coming soon, and where to watch
+                </p>
+              </div>
             </div>
-            <p className="text-sm sm:text-base text-[var(--color-mute)] ml-5 max-w-2xl">
-              Every live-action adaptation — available now, coming soon, and where to watch
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Stats Bar */}
-        <motion.div
-          {...FADE_UP}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8"
-        >
-          {[
-            { label: "Total Titles", value: LIVE_ACTION_ANIME.length, color: "var(--color-cyan)" },
-            { label: "Available Now", value: availableCount, color: "#48BB78" },
-            { label: "Coming Soon", value: upcomingCount, color: "#ED8936" },
-            { label: "Platforms", value: platformCount, color: "var(--color-amber)" },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]/60 backdrop-blur-sm p-4 text-center"
-            >
-              <p className="text-2xl font-black" style={{ color: stat.color }}>
-                {stat.value}
-              </p>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-mute)] mt-1">
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* Status Tabs */}
-        <motion.div
-          {...FADE_UP}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="mb-5"
-        >
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-[var(--color-line)]">
-            {STATUS_TABS.map((tab) => {
-              const active = statusFilter === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setStatusFilter(tab.id)}
-                  className="rounded-lg border px-4 py-2 text-xs font-bold transition-all shrink-0"
-                  style={{
-                    borderColor: active ? "var(--color-cyan)" : "var(--color-line)",
-                    background: active ? "rgba(0,188,212,0.13)" : "transparent",
-                    color: active ? "var(--color-cyan)" : "var(--color-mute)",
-                  }}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* Platform Filter */}
-        <motion.div
-          {...FADE_UP}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mb-4"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <div className="h-4 w-1 rounded-full bg-[var(--color-amber)]" />
-            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-mute)]">
-              Platforms
-            </p>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-[var(--color-line)]">
-            <button
-              onClick={() => setSelectedPlatform(null)}
-              className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all shrink-0"
-              style={{
-                borderColor: !selectedPlatform ? "var(--color-amber)" : "var(--color-line)",
-                background: !selectedPlatform ? "rgba(245,158,11,0.1)" : "transparent",
-                color: !selectedPlatform ? "#f59e0b" : "var(--color-mute)",
-              }}
-            >
-              All Platforms
-            </button>
-            {ALL_PLATFORMS.map((p) => {
-              const active = selectedPlatform === p.name;
-              return (
-                <button
-                  key={p.name}
-                  onClick={() => setSelectedPlatform(active ? null : p.name)}
-                  className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all shrink-0"
-                  style={{
-                    borderColor: active ? p.color : "var(--color-line)",
-                    background: active ? `${p.color}22` : "transparent",
-                    color: active ? p.color : "var(--color-mute)",
-                  }}
-                >
-                  <span className="h-2 w-2 rounded-full" style={{ background: p.color }} />
-                  {p.name}
-                </button>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* Language Filter */}
-        <motion.div
-          {...FADE_UP}
-          transition={{ duration: 0.5, delay: 0.25 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <div className="h-4 w-1 rounded-full bg-[var(--color-cyan)]" />
-            <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-mute)]">
-              Languages
-            </p>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {ALL_LANGUAGES.map((lang) => {
-              const active = selectedLanguages.includes(lang);
-              return (
-                <button
-                  key={lang}
-                  onClick={() => toggleLanguage(lang)}
-                  className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all"
-                  style={{
-                    borderColor: active ? "var(--color-cyan)" : "var(--color-line)",
-                    background: active ? "rgba(0,188,212,0.13)" : "transparent",
-                    color: active ? "var(--color-cyan)" : "var(--color-mute)",
-                  }}
-                >
-                  {lang}
-                </button>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* Results count */}
-        <motion.div
-          {...FADE_UP}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mb-4"
-        >
-          <p className="text-xs text-[var(--color-mute)]">
-            Showing <span className="font-bold text-[var(--color-ink)]">{filtered.length}</span> title{filtered.length !== 1 ? "s" : ""}
-          </p>
-        </motion.div>
-
-        {/* Cards Grid */}
-        {filtered.length > 0 ? (
-          <motion.div
-            layout
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
-            <AnimatePresence mode="popLayout">
-              {filtered.map((anime) => (
-                <AnimeCard key={anime.id} anime={anime} />
-              ))}
-            </AnimatePresence>
           </motion.div>
-        ) : (
-          <EmptyState />
-        )}
+
+          {/* Neon RGB Search Bar */}
+          <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.05 }} className="mb-8">
+            <div className="relative group">
+              <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[var(--color-magenta)] via-[var(--color-cyan)] to-[var(--color-violet)] opacity-30 group-focus-within:opacity-100 blur-sm transition-all duration-700 animate-neon-rgb" />
+              <div className="relative flex items-center gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 transition-colors group-focus-within:border-transparent">
+                <svg className="shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-mute)" }}>
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search by title, genre, language, platform..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent text-sm text-[var(--color-ink)] outline-none placeholder:text-[var(--color-mute)]"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="shrink-0 rounded-full p-1 hover:bg-white/10 transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-[var(--color-mute)]">
+                      <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+            {searchQuery && (
+              <p className="text-xs text-[var(--color-mute)] mt-2 ml-1">
+                {filteredAvailable.length + filteredUpcoming.length} results for &ldquo;<span className="text-[var(--color-cyan)]">{searchQuery}</span>&rdquo;
+              </p>
+            )}
+          </motion.div>
+
+          {/* Stats */}
+          <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.05 }} className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+            {[
+              { label: "Total Titles", value: LIVE_ACTION_ANIME.length, color: "var(--color-cyan)" },
+              { label: "Available Now", value: availableCount, color: "#48BB78" },
+              { label: "Coming Soon", value: upcomingCount, color: "#ED8936" },
+              { label: "Platforms", value: platformCount, color: "var(--color-amber)" },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]/60 backdrop-blur-sm p-4 text-center">
+                <p className="text-2xl font-black" style={{ color: stat.color }}>{stat.value}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-mute)] mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Most Popular */}
+          <MostPopularSection items={searchQuery ? filteredPopular : undefined} />
+
+          {/* Available Now */}
+          {filteredAvailable.length > 0 && (
+            <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.12 }} className="mb-8">
+              <div className="mb-5 flex items-end justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-5 w-1 rounded-full bg-[#48BB78]" />
+                  <div>
+                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-mute)]">// Available Now</p>
+                    <h2 className="font-display text-2xl font-bold sm:text-3xl">Watch Today</h2>
+                    <p className="text-xs text-[var(--color-mute)] mt-0.5">Stream these live-action adaptations right now</p>
+                  </div>
+                </div>
+              </div>
+              <HorizontalCarousel items={filteredAvailable} title="Available Now" />
+            </motion.div>
+          )}
+
+          {/* Upcoming */}
+          {filteredUpcoming.length > 0 && (
+            <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.15 }} className="mb-8">
+              <div className="mb-5 flex items-end justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-5 w-1 rounded-full bg-[#ED8936]" />
+                  <div>
+                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-mute)]">// Upcoming</p>
+                    <h2 className="font-display text-2xl font-bold sm:text-3xl">Coming Soon</h2>
+                    <p className="text-xs text-[var(--color-mute)] mt-0.5">Live-action adaptations in production</p>
+                  </div>
+                </div>
+              </div>
+              <HorizontalCarousel items={filteredUpcoming} title="Upcoming" />
+            </motion.div>
+          )}
+
+          {/* By Platform */}
+          {!searchQuery && LIVE_ACTION_PLATFORMS.filter((p) => getByPlatform(p.name).length > 0).map((platform) => (
+            <PlatformSection key={platform.name} platform={platform.name} color={platform.logoColor} />
+          ))}
+
+          {/* Full Catalog */}
+          <FilterableGrid />
+        </div>
       </div>
     </PageTransition>
   );

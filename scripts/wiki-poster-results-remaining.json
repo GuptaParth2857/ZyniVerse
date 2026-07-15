@@ -1,0 +1,92 @@
+[
+  {
+    "dataTitle": "Fullmetal Alchemist",
+    "url": "https://en.wikipedia.org/wiki/Fullmetal_Alchemist_(film)",
+    "status": 200,
+    "posterUrl": "//upload.wikimedia.org/wikipedia/en/d/dc/Fullmetal_Alchemist.png",
+    "method": "pattern"
+  },
+  {
+    "dataTitle": "Tokyo Ghoul",
+    "url": "https://en.wikipedia.org/wiki/Tokyo_Ghoul_(2017_film)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Attack on Titan",
+    "url": "https://en.wikipedia.org/wiki/Attack_on_Titan_(film_series)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Assassination Classroom",
+    "url": "https://en.wikipedia.org/wiki/Assassination_Classroom_(film)",
+    "status": 200,
+    "posterUrl": "//upload.wikimedia.org/wikipedia/en/a/ae/Assassination_Classroom_%28film%29_poster.jpeg",
+    "method": "pattern"
+  },
+  {
+    "dataTitle": "Blade of the Immortal",
+    "url": "https://en.wikipedia.org/wiki/Blade_of_the_Immortal_(film)",
+    "status": 200,
+    "posterUrl": "//upload.wikimedia.org/wikipedia/en/6/61/Blade_of_the_Immortal_%28film%29.jpg",
+    "method": "pattern"
+  },
+  {
+    "dataTitle": "Yu Yu Hakusho",
+    "url": "https://en.wikipedia.org/wiki/Yu_Yu_Hakusho_(TV_series)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Rurouni Kenshin Films",
+    "url": "https://en.wikipedia.org/wiki/Rurouni_Kenshin_(2012_film)",
+    "status": 200,
+    "posterUrl": "//upload.wikimedia.org/wikipedia/en/thumb/f/f6/Rurouni_Kenshin_%282012_film%29_poster.jpg/Rurouni_Kenshin_%282012_film%29_poster.jpg",
+    "method": "pattern"
+  },
+  {
+    "dataTitle": "From Me to You: Kimi ni Todoke",
+    "url": "https://en.wikipedia.org/wiki/Kimi_ni_Todoke_(TV_series)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "The Way of the Househusband",
+    "url": "https://en.wikipedia.org/wiki/The_Way_of_the_Househusband_(TV_series)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Ajin: Demi-Human",
+    "url": "https://en.wikipedia.org/wiki/Ajin_(film)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Space Brothers",
+    "url": "https://en.wikipedia.org/wiki/Space_Brothers_(film)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "One Piece",
+    "url": "https://en.wikipedia.org/wiki/One_Piece_(2023_TV_series)",
+    "status": 200,
+    "posterUrl": "//upload.wikimedia.org/wikipedia/en/thumb/e/e3/One_Piece_Live_Action_logo.png/One_Piece_Live_Action_logo.png",
+    "method": "pattern"
+  },
+  {
+    "dataTitle": "Kakegurui",
+    "url": "https://en.wikipedia.org/wiki/Kakegurui_(TV_series)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Zom 100: Bucket List of the Dead",
+    "url": "https://en.wikipedia.org/wiki/Zom_100:_Bucket_List_of_the_Dead",
+    "status": 200,
+    "posterUrl": "//upload.wikimedia.org/wikipedia/en/5/5c/Zom_100_manga_vol._1.png",
+    "method": "pattern"
+  }
+]

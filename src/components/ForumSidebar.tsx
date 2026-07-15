@@ -158,7 +158,7 @@ export default function ForumSidebar() {
           <div className="space-y-2">
             {[
               { href: "/forum/create", label: "New Discussion", icon: "M12 5v14M5 12h14", color: "#ff00ff" },
-              { href: "/community", label: "Community", icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75", color: "#00ffff" },
+              { href: "/community", label: "Social Feed", icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75", color: "#00ffff" },
               { href: "/challenges", label: "Challenges", icon: "M12 15l-2 5 2-1 2 1-2-5zM6 3v18M18 3v18M6 9h12M6 15h12", color: "#ff3366" },
             ].map((link) => (
               <Link key={link.href} href={link.href}

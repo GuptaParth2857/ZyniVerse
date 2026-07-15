@@ -8,7 +8,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
     const res = await fetch(`${baseUrl}/api/wiki/${slug}`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();

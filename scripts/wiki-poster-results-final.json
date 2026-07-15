@@ -1,0 +1,93 @@
+[
+  {
+    "dataTitle": "Attack on Titan",
+    "url": "https://en.wikipedia.org/wiki/Attack_on_Titan_(film)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/7/73/Attack_on_Titan_%28film%29_poster.jpeg/Attack_on_Titan_%28film%29_poster.jpeg",
+    "score": 23
+  },
+  {
+    "dataTitle": "Death Note",
+    "url": "https://en.wikipedia.org/wiki/Death_Note_(2017_film)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/6/6c/DeathNotePoster.jpg/DeathNotePoster.jpg",
+    "score": 23
+  },
+  {
+    "dataTitle": "Yu Yu Hakusho",
+    "url": "https://en.wikipedia.org/w/index.php?search=Yu+Yu+Hakusho+2023+Netflix&title=Special%3ASearch&ns0=1",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/9/98/Stuttgart_2024_-_ComicCon_-_Khoi_Dao_-_by-RaBoe_006.jpg/Stuttgart_2024_-_ComicCon_-_Khoi_Dao_-_by-RaBoe_006.jpg",
+    "score": 8
+  },
+  {
+    "dataTitle": "From Me to You: Kimi ni Todoke",
+    "url": "https://en.wikipedia.org/w/index.php?search=Kimi+ni+Todoke+2023+live-action&title=Special%3ASearch&ns0=1",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/9/94/Ray_Chase%2C_Aug_8%2C_2025_Animate%21_Orlando_%28cropped%29.jpg/Ray_Chase%2C_Aug_8%2C_2025_Animate%21_Orlando_%28cropped%29.jpg",
+    "score": 8
+  },
+  {
+    "dataTitle": "The Way of the Househusband",
+    "url": "https://en.wikipedia.org/w/index.php?search=The+Way+of+the+Househusband+live+action&title=Special%3ASearch&ns0=1",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7c/27th_Tokyo_International_Film_Festival-_Adachi_Yumi_from_A_Courtesan_with_Flowered_Skin.jpg/27th_Tokyo_International_Film_Festival-_Adachi_Yumi_from_A_Courtesan_with_Flowered_Skin.jpg",
+    "score": 13
+  },
+  {
+    "dataTitle": "Ajin: Demi-Human",
+    "url": "https://en.wikipedia.org/w/index.php?search=Ajin+film+2017&title=Special%3ASearch&ns0=1",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg",
+    "score": 13
+  },
+  {
+    "dataTitle": "Space Brothers",
+    "url": "https://en.wikipedia.org/w/index.php?search=Space+Brothers+2012+film&title=Special%3ASearch&ns0=1",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/5/53/Lehman_Brothers_Times_Square_by_David_Shankbone.jpg/Lehman_Brothers_Times_Square_by_David_Shankbone.jpg",
+    "score": 8
+  },
+  {
+    "dataTitle": "Kakegurui",
+    "url": "https://en.wikipedia.org/w/index.php?search=Kakegurui+live+action+TV+series&title=Special%3ASearch&ns0=1",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/9/93/YURIKA_NAKAMURA_P1.png/YURIKA_NAKAMURA_P1.png",
+    "score": 8
+  },
+  {
+    "dataTitle": "Sweet Home",
+    "url": "https://en.wikipedia.org/wiki/Sweet_Home_(TV_series)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/4/42/Diliegro_bts_sweet_home.jpg/Diliegro_bts_sweet_home.jpg",
+    "score": 8
+  },
+  {
+    "dataTitle": "One Piece",
+    "url": "https://en.wikipedia.org/wiki/One_Piece_(TV_series)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/9/99/Wiktionary-logo-en-v2.svg/Wiktionary-logo-en-v2.svg.png",
+    "score": -12
+  },
+  {
+    "dataTitle": "Zom 100: Bucket List of the Dead",
+    "url": "https://en.wikipedia.org/w/index.php?search=Zom+100+live+action+film&title=Special%3ASearch&ns0=1",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Zeno_Robinson_2024.jpg/Zeno_Robinson_2024.jpg",
+    "score": 8
+  },
+  {
+    "dataTitle": "Alice in Borderland",
+    "url": "https://en.wikipedia.org/wiki/Alice_in_Borderland_(TV_series)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/9/94/Symbol_support_vote.svg/Symbol_support_vote.svg.png",
+    "score": 3
+  },
+  {
+    "dataTitle": "Hellbound",
+    "url": "https://en.wikipedia.org/wiki/Hellbound_(TV_series)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/4/48/Hellbound_2_poster.png/Hellbound_2_poster.png",
+    "score": 23
+  }
+]

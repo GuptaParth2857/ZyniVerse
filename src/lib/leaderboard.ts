@@ -19,29 +19,36 @@ export async function getUserLeaderboard(
       orderBy: [{ points: "desc" }, { level: "desc" }],
       skip: offset,
       take: limit,
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            avatar: true,
-            _count: { select: { userAchievements: true } },
-          },
-        },
-      },
     }),
     prisma.userPoints.count({ where: { points: { gt: 0 } } }),
   ]);
 
+  const userIds = rows.map((r) => r.userId);
+  const users = await prisma.user.findMany({
+    where: { id: { in: userIds } },
+    select: {
+      id: true,
+      username: true,
+      avatar: true,
+      _count: { select: { userAchievements: true } },
+    },
+  });
+  const userMap = new Map(users.map((u) => [u.id, u]));
+
   return {
-    entries: rows.map((r) => ({
-      userId: r.userId,
-      username: r.user.username,
-      avatar: r.user.avatar,
-      points: r.points,
-      level: r.level,
-      achievements: r.user._count.userAchievements,
-    })),
+    entries: rows
+      .filter((r) => userMap.has(r.userId))
+      .map((r) => {
+        const u = userMap.get(r.userId)!;
+        return {
+          userId: r.userId,
+          username: u.username,
+          avatar: u.avatar,
+          points: r.points,
+          level: r.level,
+          achievements: u._count.userAchievements,
+        };
+      }),
     total,
   };
 }

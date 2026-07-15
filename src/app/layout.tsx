@@ -17,8 +17,12 @@ import ChatWidget from "@/components/ChatWidget";
 import SplashScreen from "@/components/SplashScreen";
 import HeartbeatProvider from "@/components/HeartbeatProvider";
 import ActivityTracker from "@/components/ActivityTracker";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: { default: "ZyniVerse — Anime Filler Guides, Indian Dubs & Manga Tracker", template: "%s | ZyniVerse" },
   description:
     "ZyniVerse — India's ultimate anime platform. Filler guides for 200+ anime, Indian dub tracking (Hindi/Tamil/Telugu), AI recommendations, watchlist, manga reader, and anime community.",
@@ -31,6 +35,7 @@ export const metadata: Metadata = {
     siteName: "ZyniVerse",
     locale: "en_IN",
     countryName: "India",
+    url: BASE_URL,
   },
   twitter: {
     card: "summary_large_image",
@@ -39,6 +44,7 @@ export const metadata: Metadata = {
   },
   robots: "index, follow",
   alternates: {
+    canonical: BASE_URL,
     languages: {
       "en": "/",
       "hi": "/hi",
@@ -75,22 +81,107 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              name: "ZyniVerse",
-              url: process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in",
-              potentialAction: {
-                "@type": "SearchAction",
-                target: {
-                  "@type": "EntryPoint",
-                  urlTemplate: `${process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in"}/search?q={search_term_string}`,
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "ZyniVerse",
+                alternateName: ["Zyni Verse", "Zyniverse", "Zyverse"],
+                url: BASE_URL,
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: {
+                    "@type": "EntryPoint",
+                    urlTemplate: `${BASE_URL}/search?q={search_term_string}`,
+                  },
+                  "query-input": "required name=search_term_string",
                 },
-                "query-input": "required name=search_term_string",
+                description: "India's ultimate anime platform — filler guides for 200+ anime, Indian dub tracking (Hindi/Tamil/Telugu), AI recommendations, watchlist, manga reader, cosplay gallery, and anime community.",
+                inLanguage: ["en", "hi", "ta", "te"],
+                publisher: {
+                  "@type": "Organization",
+                  name: "ZyniVerse",
+                  url: BASE_URL,
+                },
               },
-              description: "India's ultimate anime platform — filler guides, Indian dub tracking, AI recommendations, and anime community.",
-              inLanguage: ["en", "hi", "ta", "te"],
-            }),
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "ZyniVerse",
+                alternateName: ["Zyni Verse", "Zyniverse", "Zyverse"],
+                url: BASE_URL,
+                logo: `${BASE_URL}/logo.png`,
+                description: "India's ultimate anime platform. Filler guides, Indian dub tracking, AI recommendations, manga reader, cosplay gallery, and anime community for Indian anime fans.",
+                foundingDate: "2025",
+                areaServed: {
+                  "@type": "Country",
+                  name: "India",
+                },
+                sameAs: [
+                  "https://www.youtube.com/@Itz_parth_2007",
+                  "https://www.facebook.com/profile.php?id=61584572784224",
+                  "https://www.instagram.com/gupta.parth1015/",
+                  "https://x.com/GuptaParth2857",
+                ],
+                contactPoint: {
+                  "@type": "ContactPoint",
+                  contactType: "customer service",
+                  availableLanguage: ["English", "Hindi", "Tamil", "Telugu"],
+                },
+                hasOfferCatalog: {
+                  "@type": "OfferCatalog",
+                  name: "Anime Platform Services",
+                  itemListElement: [
+                    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Anime Filler Guides" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Indian Dub Tracking" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Anime Recommendations" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Manga Reader" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Anime Community" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Watch Parties" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Cosplay Gallery" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Indian TV Schedule" } },
+                  ],
+                },
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: [
+                  {
+                    "@type": "Question",
+                    name: "What is ZyniVerse?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "ZyniVerse is India's ultimate anime platform. It provides filler guides for 200+ anime, Indian dub tracking (Hindi, Tamil, Telugu), AI-powered anime recommendations, a manga reader, cosplay gallery, watch parties, and a community for Indian anime fans. The website is zyverse.in.",
+                    },
+                  },
+                  {
+                    "@type": "Question",
+                    name: "Is ZyniVerse free to use?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "Yes, ZyniVerse is free to use. Users can track their anime watchlist, access filler guides, join the community, and use most features without paying. Premium features may be available for advanced tools.",
+                    },
+                  },
+                  {
+                    "@type": "Question",
+                    name: "Does ZyniVerse have Hindi dubbed anime?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "Yes, ZyniVerse tracks Hindi, Tamil, and Telugu dubbed anime. Users can see which anime are available in Indian languages and get alerts when new dubbed episodes air on Indian TV channels.",
+                    },
+                  },
+                  {
+                    "@type": "Question",
+                    name: "What anime filler guides does ZyniVerse offer?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "ZyniVerse provides filler guides for over 200 anime including Naruto, One Piece, Bleach, Dragon Ball Z, Fairy Tail, and more. Each guide tells you exactly which episodes are filler and which are canon, so you can skip the boring parts.",
+                    },
+                  },
+                ],
+              },
+            ]),
           }}
         />
       </head>
@@ -101,6 +192,9 @@ export default function RootLayout({
           <HeartbeatProvider />
           <Suspense fallback={null}>
             <ActivityTracker />
+          </Suspense>
+          <Suspense fallback={null}>
+            <AnalyticsTracker />
           </Suspense>
           <Providers>
             <Navbar />

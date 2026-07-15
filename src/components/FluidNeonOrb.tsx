@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const COLORS = {
@@ -8,27 +9,43 @@ const COLORS = {
   violet: "#8B5CF6",
 };
 
+function seededRandom(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
 const RINGS = [
   { r: 130, dash: 100, gap: 716.81, color: COLORS.cyan, duration: 8, dir: 1, tilt: 20 },
   { r: 100, dash: 80, gap: 548.32, color: COLORS.blue, duration: 5.5, dir: -1, tilt: -30 },
   { r: 70, dash: 60, gap: 379.82, color: COLORS.violet, duration: 3.5, dir: 1, tilt: 45 },
 ];
 
-const PARTICLES = Array.from({ length: 20 }, (_, i) => {
-  const angle = (i / 20) * Math.PI * 2;
-  const radius = 60 + Math.random() * 50;
-  return {
-    id: i,
-    x: Math.cos(angle) * radius,
-    y: Math.sin(angle) * radius,
-    size: 2 + Math.random() * 2.5,
-    delay: Math.random() * 4,
-    duration: 2.5 + Math.random() * 3,
-    color: [COLORS.cyan, COLORS.blue, COLORS.violet][i % 3],
-  };
-});
+function generateParticles() {
+  const rand = seededRandom(42);
+  return Array.from({ length: 20 }, (_, i) => {
+    const angle = (i / 20) * Math.PI * 2;
+    const radius = 60 + rand() * 50;
+    return {
+      id: i,
+      x: Math.cos(angle) * radius,
+      y: Math.sin(angle) * radius,
+      size: 2 + rand() * 2.5,
+      delay: rand() * 4,
+      duration: 2.5 + rand() * 3,
+      animY: -20 - rand() * 25,
+      animX: (rand() - 0.5) * 20,
+      color: [COLORS.cyan, COLORS.blue, COLORS.violet][i % 3],
+    };
+  });
+}
 
 export default function FluidNeonOrb() {
+  const particles = useMemo(() => generateParticles(), []);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   return (
     <div className="relative flex items-center justify-center w-full min-h-[60vh] overflow-hidden select-none">
       {/* Ambient page glow */}
@@ -213,7 +230,7 @@ export default function FluidNeonOrb() {
             </div>
 
             {/* Floating particles */}
-            {PARTICLES.map((p) => (
+            {mounted && particles.map((p) => (
               <motion.div
                 key={p.id}
                 className="absolute rounded-full pointer-events-none"
@@ -227,8 +244,8 @@ export default function FluidNeonOrb() {
                 }}
                 animate={{
                   opacity: [0, 1, 0],
-                  y: [0, -20 - Math.random() * 25],
-                  x: [0, (Math.random() - 0.5) * 20],
+                  y: [0, p.animY],
+                  x: [0, p.animX],
                   scale: [0, 1.6, 0],
                 }}
                 transition={{

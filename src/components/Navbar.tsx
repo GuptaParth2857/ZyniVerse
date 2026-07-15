@@ -11,12 +11,14 @@ import type { Suggestion } from "@/lib/anilist";
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
 import LanguageSwitcher from "./LanguageSwitcher";
+import SubscriptionBadge from "./SubscriptionBadge";
 
 const PRIMARY_LINKS = [
   { to: "/", label: "Home" },
   { to: "/schedule", label: "Schedule" },
   { to: "/seasonal", label: "Seasonal" },
   { to: "/search", label: "Explore" },
+  { to: "/activity", label: "Feed" },
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/dubbed", label: "Dubs" },
   { to: "/watchlist", label: "My List" },
@@ -30,6 +32,8 @@ const SECONDARY_LINKS = [
   { to: "/watch-order", label: "Watch Orders" },
   { to: "/docs", label: "API Docs" },
   { to: "/awards", label: "Awards" },
+  { to: "/tags", label: "Tags" },
+  { to: "/figures", label: "Figures" },
   { to: "/manga", label: "Manga" },
   { to: "/light-novels", label: "Light Novels" },
   { to: "/doujinshi", label: "Doujinshi" },
@@ -39,9 +43,8 @@ const SECONDARY_LINKS = [
   { to: "/recommendations", label: "Recommend" },
   { to: "/quiz", label: "Quiz" },
   { to: "/forum", label: "Forum" },
-  { to: "/community", label: "Community" },
+  { to: "/community", label: "Social Feed" },
   { to: "/random", label: "Random" },
-  { to: "/activity", label: "Activity" },
   { to: "/tierlist", label: "Tier Lists" },
   { to: "/lists", label: "Lists" },
   { to: "/ost", label: "OST" },
@@ -215,6 +218,7 @@ export default function Navbar() {
 
           {session ? (
             <div className="flex items-center gap-2 ml-2 pl-2 border-l border-[var(--color-line)]">
+              <SubscriptionBadge />
               <NotificationBell />
               <span className="text-xs text-[var(--color-magenta)] font-semibold">{session.user?.name}</span>
               <button onClick={() => signOut({ callbackUrl: "/" })}

@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { getAnimeListFromAniList } from "@/lib/anilist";
+import { resolveUserId } from "@/lib/resolve-user";
 const STATUS_MAP: Record<string, string> = {
   CURRENT: "CURRENT",
   COMPLETED: "COMPLETED",
@@ -21,8 +21,8 @@ export async function POST(req: NextRequest) {
   const rateCheck = apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = await resolveUserId();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { username } = await req.json();
   if (!username || typeof username !== "string") {
@@ -39,8 +39,6 @@ export async function POST(req: NextRequest) {
   if (entries.length === 0) {
     return NextResponse.json({ imported: 0, message: "No anime entries found for this user." });
   }
-
-  const userId = session.user.id;
   let imported = 0;
 
   for (const entry of entries) {

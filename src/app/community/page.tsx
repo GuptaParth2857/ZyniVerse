@@ -313,14 +313,20 @@ function CommunityContent() {
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <p className="font-mono text-xs uppercase tracking-[0.2em]" style={{ color: tab === "critiques" ? "var(--color-magenta)" : "var(--color-cyan)" }}>
-            {tab === "critiques" ? "Critiques" : "Community"}
+            {tab === "critiques" ? "Critiques" : "Social Feed"}
           </p>
           <h1 className="font-display text-3xl font-black sm:text-4xl tracking-tight mt-1">
-            {tab === "critiques" ? "Anime Critiques" : "Community Feed"}
+            {tab === "critiques" ? "Anime Critiques" : "Social Feed"}
           </h1>
           <p className="mt-2 text-sm text-[var(--color-mute)]">
-            {tab === "critiques" ? "In-depth reviews and critiques from the community." : "Discuss anime, share thoughts, and connect with fans."}
+            {tab === "critiques" ? "In-depth reviews and critiques from the community." : "Quick posts, thoughts, and reactions. For structured discussions, visit the Forum."}
           </p>
+          {tab === "feed" && (
+            <a href="/forum" className="mt-2 inline-flex items-center gap-1.5 text-xs text-[var(--color-cyan)] hover:underline">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+              Looking for structured discussions? Go to Forum →
+            </a>
+          )}
         </motion.div>
 
         {/* Tabs */}

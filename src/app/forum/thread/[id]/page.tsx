@@ -4,7 +4,7 @@ import ForumThreadDetail from "@/components/ForumThreadDetail";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
     const res = await fetch(`${baseUrl}/api/forum/threads/${id}`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();

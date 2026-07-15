@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { href: "/search", label: "Explore", icon: "◎" },
   { href: "/schedule", label: "Schedule", icon: "◈" },
   { href: "/seasonal", label: "Seasonal", icon: "✦" },
+  { href: "/activity", label: "Feed", icon: "⚡" },
   { href: "/watchlist", label: "List", icon: "☰" },
 ];
 
