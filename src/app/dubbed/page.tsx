@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { PageTransition } from "@/components/PageTransition";
 import { CardSkeleton, ErrorState } from "@/components/Loader";
 import DubExpandingCard from "@/components/DubExpandingCard";
@@ -233,6 +234,21 @@ export default function DubbedPage() {
                 <p className="mt-1 text-sm text-[var(--color-mute)]">Try selecting a different language.</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Indian Voice Actors (shown when Indian language is selected) */}
+        {(language === "hindi" || language === "tamil" || language === "telugu") && (
+          <div className="mt-10 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-display text-lg font-bold">Indian Voice Actors</h3>
+                <p className="text-xs text-[var(--color-mute)] mt-1">Meet the talented artists behind Indian anime dubs.</p>
+              </div>
+              <Link href="/voice-actors/indian"
+                className="text-xs font-semibold text-[var(--color-cyan)] hover:underline shrink-0"
+              >View all →</Link>
+            </div>
           </div>
         )}
       </div>

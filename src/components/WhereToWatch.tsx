@@ -1,6 +1,6 @@
 import { getStreamingSources, type StreamingSource } from "@/lib/streaming";
 import { getAnimeStreamingPlatforms, type Platform } from "@/lib/platforms";
-import { getAffiliateLink } from "@/lib/affiliate";
+import { getAffiliateLink, trackClick } from "@/lib/affiliate";
 
 interface WhereToWatchProps {
   streamingLinks: { site: string; url: string }[];
@@ -53,12 +53,14 @@ function StreamingCard({ source }: { source: StreamingSource }) {
   const color = PLATFORM_COLORS[source.name] || "#888";
   const typeStyle = TYPE_STYLES[source.type] || TYPE_STYLES.subscription;
   const href = getAffiliateUrl(source);
+  const isAffiliate = source.name.toLowerCase().includes("crunchyroll") || source.name.toLowerCase().includes("prime") || source.name.toLowerCase().includes("amazon");
 
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer sponsored"
+      onClick={() => { if (isAffiliate) trackClick(source.name.toLowerCase().includes("crunchyroll") ? "crunchyroll" : "amazon", source.name); }}
       className="group flex shrink-0 flex-col gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 hover:border-[var(--color-cyan)]/40 transition-all w-[200px]"
     >
       <div className="flex items-center gap-3">

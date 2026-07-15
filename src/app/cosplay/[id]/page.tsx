@@ -4,7 +4,7 @@ import CosplayDetailPage from "./client";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/cosplay/${id}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in"}/api/cosplay/${id}`);
     if (!res.ok) throw new Error("Not found");
     const data = await res.json();
     const c = data.cosplay;

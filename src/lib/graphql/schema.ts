@@ -260,6 +260,8 @@ export const schema = buildSchema(`
     recommendations: [RecommendationEdge]
     stats: Stats
     filler: FillerInfo
+    zyniScore: ZyniScoreResult
+    communityTags: [CommunityTagItem]
   }
 
   type Manga {
@@ -290,6 +292,8 @@ export const schema = buildSchema(`
     recommendations: [RecommendationEdge]
     stats: Stats
     siteUrl: String
+    zyniScore: ZyniScoreResult
+    communityTags: [CommunityTagItem]
   }
 
   type Character {
@@ -365,6 +369,150 @@ export const schema = buildSchema(`
     media: [Anime]!
   }
 
+  type DubStatusResult {
+    malId: Int!
+    available: [String]!
+    totalDubRequests: Int!
+    lastUpdated: String
+  }
+
+  type ZyniScoreResult {
+    mediaId: String!
+    averageScore: Float
+    bayesianScore: Float
+    totalRatings: Int
+    distribution: [ZyniScoreBucket]
+    verifiedWeight: Float
+  }
+
+  type ZyniScoreBucket {
+    score: Int!
+    count: Int!
+    percentage: Float!
+  }
+
+  type CommunityTagItem {
+    id: String!
+    tag: String!
+    category: String
+    upvotes: Int!
+    downvotes: Int!
+    score: Int!
+    userId: String!
+    username: String
+    createdAt: String!
+  }
+
+  type CommunityTagConnection {
+    tags: [CommunityTagItem]!
+    total: Int!
+  }
+
+  type TrendingTag {
+    tag: String!
+    count: Int!
+    avgScore: Float!
+    mediaCount: Int!
+  }
+
+  type ActivityReactionItem {
+    id: String!
+    type: String!
+    userId: String!
+    username: String
+    createdAt: String!
+  }
+
+  type ClubEventItem {
+    id: String!
+    title: String!
+    description: String
+    startTime: String!
+    endTime: String
+    location: String
+    clubId: String!
+    createdAt: String!
+    rsvpCount: Int!
+  }
+
+  type ZyniAwardCategory {
+    id: String!
+    name: String!
+    emoji: String
+  }
+
+  type ZyniAwardNomineeItem {
+    id: String!
+    mediaId: Int!
+    title: String!
+    coverImage: String
+    votes: Int!
+    totalVotes: Int!
+  }
+
+  type ZyniAwardRound {
+    round: Int!
+    nominees: [ZyniAwardNomineeItem]!
+  }
+
+  type ZyniAwardData {
+    year: Int!
+    status: String!
+    categories: [ZyniAwardCategory]
+    votingOpen: Boolean
+    bracket: ZyniAwardRound
+  }
+
+  type FigureCollectionItem {
+    id: String!
+    name: String!
+    anime: String
+    manufacturer: String
+    scale: String
+    price: Float
+    currency: String
+    purchaseDate: String
+    image: String
+    condition: String
+    isForSale: Boolean!
+    createdAt: String!
+  }
+
+  type FigureStats {
+    totalFigures: Int!
+    totalValue: Float!
+    currency: String!
+    recentAdditions: Int!
+    byAnime: [FigureAnimeStat]!
+    byCondition: [FigureConditionStat]!
+    byManufacturer: [FigureManufacturerStat]!
+  }
+
+  type FigureAnimeStat {
+    anime: String!
+    count: Int!
+  }
+
+  type FigureConditionStat {
+    condition: String!
+    count: Int!
+  }
+
+  type FigureManufacturerStat {
+    manufacturer: String!
+    count: Int!
+  }
+
+  type UserProfile {
+    id: String!
+    username: String!
+    avatar: String
+    bio: String
+    createdAt: String!
+    figureCollection: [FigureCollectionItem]
+    figureStats: FigureStats
+  }
+
   type Query {
     anime(id: Int!): Anime
     animeTrending(page: Int, perPage: Int): AnimePage!
@@ -396,12 +544,23 @@ export const schema = buildSchema(`
     genres: [String]!
     trendingNow: [Anime]!
     spotlights: [Anime]!
-  }
 
-  type DubStatusResult {
-    malId: Int!
-    available: [String]!
-    totalDubRequests: Int!
-    lastUpdated: String
+    zyniScore(mediaId: String!): ZyniScoreResult
+    zyniScoreBatch(mediaIds: [String!]!): [ZyniScoreResult]!
+
+    communityTags(mediaId: String!, sort: String): CommunityTagConnection!
+    trendingTags(limit: Int): [TrendingTag]!
+
+    activityReactions(activityId: String!): [ActivityReactionItem]!
+
+    clubEvents(clubId: String!, upcoming: Boolean): [ClubEventItem]!
+
+    zyniAwards(year: Int!): ZyniAwardData
+    zyniAwardsList: [ZyniAwardData]!
+
+    figureCollection(userId: String!): [FigureCollectionItem]
+    figureStats(userId: String!): FigureStats
+
+    userProfile(username: String!): UserProfile
   }
 `);

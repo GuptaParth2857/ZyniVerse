@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSeasonal, getMangaPopular, bestTitle } from "@/lib/anilist";
@@ -9,6 +9,7 @@ import { CardSkeleton, ErrorState } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
 import NativeBannerAd from "@/components/NativeBannerAd";
+import SeasonalFilters, { type SeasonalFiltersState } from "@/components/SeasonalFilters";
 import type { Media } from "@/lib/anilist";
 
 const SEASONS = ["WINTER", "SPRING", "SUMMER", "FALL"] as const;
@@ -29,7 +30,36 @@ export default function SeasonalPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
+  const [filters, setFilters] = useState<SeasonalFiltersState>({
+    format: [],
+    genres: [],
+    sort: "POPULARITY_DESC",
+    minScore: 0,
+  });
   const gridRef = useRef<HTMLDivElement>(null);
+
+  const filteredList = useMemo(() => {
+    let result = [...list];
+    if (filters.format.length > 0) {
+      result = result.filter((m) => m.format && filters.format.includes(m.format));
+    }
+    if (filters.genres.length > 0) {
+      result = result.filter((m) => m.genres?.some((g) => filters.genres.includes(g)));
+    }
+    if (filters.minScore > 0) {
+      result = result.filter((m) => (m.averageScore || 0) >= filters.minScore);
+    }
+    if (filters.sort === "SCORE_DESC") {
+      result.sort((a, b) => (b.averageScore || 0) - (a.averageScore || 0));
+    } else if (filters.sort === "TITLE_ROMAJI_ASC") {
+      result.sort((a, b) => (a.title?.userPreferred || "").localeCompare(b.title?.userPreferred || ""));
+    } else if (filters.sort === "START_DATE_DESC") {
+      const toDate = (d?: { year?: number; month?: number; day?: number }) =>
+        d?.year ? d.year * 10000 + (d.month || 0) * 100 + (d.day || 0) : 0;
+      result.sort((a, b) => toDate(b.startDate) - toDate(a.startDate));
+    }
+    return result;
+  }, [list, filters]);
 
   useEffect(() => {
     let cancelled = false;
@@ -151,7 +181,7 @@ export default function SeasonalPage() {
 
         {/* Quick Stats */}
         {!loading && list.length > 0 && (
-          <div className="mb-8 flex flex-wrap gap-4 text-xs text-[var(--color-mute)]">
+          <div className="mb-4 flex flex-wrap gap-4 text-xs text-[var(--color-mute)]">
             {isManga ? (
               <>
                 <span>Manga: {list.filter((m) => m.format === "MANGA").length}</span>
@@ -171,6 +201,11 @@ export default function SeasonalPage() {
           </div>
         )}
 
+        {/* Filters */}
+        {!isManga && !loading && list.length > 0 && (
+          <SeasonalFilters filters={filters} onChange={setFilters} />
+        )}
+
         {/* Grid */}
         <div ref={gridRef}>
           {error ? (
@@ -185,7 +220,7 @@ export default function SeasonalPage() {
                 transition={{ duration: 0.25 }}
                 className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
               >
-                {list.map((m, i) => (
+                {filteredList.map((m, i) => (
                   <motion.div
                     key={m.id}
                     initial={{ opacity: 0, y: 12 }}
@@ -198,6 +233,9 @@ export default function SeasonalPage() {
                 {loading && Array.from({ length: 12 }).map((_, i) => <CardSkeleton key={`s${i}`} />)}
               </motion.div>
             </AnimatePresence>
+          )}
+          {!loading && filteredList.length === 0 && list.length > 0 && (
+            <EmptyState icon="calendar" title="No anime match your filters" description="Try adjusting the format, genre, or score filters." />
           )}
           {!loading && list.length === 0 && (
             <EmptyState icon="calendar" title={`Nothing found for ${SEASON_NAMES[season]} ${year}`} description="Try a different season or year." actionLabel="Current Season" actionHref="/seasonal" />

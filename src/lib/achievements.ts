@@ -66,6 +66,48 @@ export function getNextLevelProgress(points: number): { current: number; needed:
   };
 }
 
+export interface RankInfo {
+  name: string;
+  tier: number;
+  color: string;
+  glow: string;
+  icon: string;
+  label: string;
+}
+
+const RANKS: RankInfo[] = [
+  { name: "Bronze", tier: 1, color: "#CD7F32", glow: "#CD7F3240", icon: "🥉", label: "BRONZE" },
+  { name: "Silver", tier: 2, color: "#C0C0C0", glow: "#C0C0C040", icon: "🪙", label: "SILVER" },
+  { name: "Gold", tier: 3, color: "#FFD700", glow: "#FFD70040", icon: "🥇", label: "GOLD" },
+  { name: "Platinum", tier: 4, color: "#00D4FF", glow: "#00D4FF40", icon: "💠", label: "PLATINUM" },
+  { name: "Diamond", tier: 5, color: "#B9F2FF", glow: "#B9F2FF40", icon: "💎", label: "DIAMOND" },
+  { name: "Heroic", tier: 6, color: "#FF4444", glow: "#FF444440", icon: "🔥", label: "HEROIC" },
+  { name: "Grandmaster", tier: 7, color: "#FF6B00", glow: "#FF6B0040", icon: "👑", label: "GRANDMASTER" },
+];
+
+export function getRank(points: number): RankInfo {
+  if (points >= 10000) return RANKS[6];
+  if (points >= 5000) return RANKS[5];
+  if (points >= 2500) return RANKS[4];
+  if (points >= 1000) return RANKS[3];
+  if (points >= 500) return RANKS[2];
+  if (points >= 100) return RANKS[1];
+  return RANKS[0];
+}
+
+export function getNextRank(points: number): { rank: RankInfo; needed: number } | null {
+  const current = getRank(points);
+  const nextIndex = RANKS.findIndex((r) => r.tier === current.tier + 1);
+  if (nextIndex === -1) return null;
+  const next = RANKS[nextIndex];
+  const thresholds = [0, 100, 500, 1000, 2500, 5000, 10000];
+  return { rank: next, needed: thresholds[nextIndex] - points };
+}
+
+export function getAllRanks(): RankInfo[] {
+  return RANKS;
+}
+
 export async function awardAchievement(userId: string, code: string, metadata?: string): Promise<void> {
   const achievement = getAchievement(code);
   if (!achievement) return;

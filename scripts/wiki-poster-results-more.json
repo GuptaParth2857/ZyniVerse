@@ -1,0 +1,86 @@
+[
+  {
+    "dataTitle": "Tokyo Ghoul",
+    "url": "https://en.wikipedia.org/wiki/Tokyo_Ghoul_(film)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/e/e0/Tokyoghoul2017poster2.jpg",
+    "score": 11
+  },
+  {
+    "dataTitle": "Attack on Titan",
+    "url": "https://en.wikipedia.org/wiki/Attack_on_Titan_(film)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/7/73/Attack_on_Titan_%28film%29_poster.jpeg/Attack_on_Titan_%28film%29_poster.jpeg",
+    "score": 11
+  },
+  {
+    "dataTitle": "Attack on Titan",
+    "url": "https://en.wikipedia.org/wiki/Shingeki_no_Kyojin_(film)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Yu Yu Hakusho",
+    "url": "https://en.wikipedia.org/wiki/Yu_Yu_Hakusho_(live-action_TV_series)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "From Me to You: Kimi ni Todoke",
+    "url": "https://en.wikipedia.org/wiki/Kimi_ni_Todoke_(live-action_TV_series)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "The Way of the Househusband",
+    "url": "https://en.wikipedia.org/wiki/The_Way_of_the_Househusband_(live-action_TV_series)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Ajin: Demi-Human",
+    "url": "https://en.wikipedia.org/wiki/Ajin_(film_series)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Space Brothers",
+    "url": "https://en.wikipedia.org/wiki/Space_Brothers_(live-action_film)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Kakegurui",
+    "url": "https://en.wikipedia.org/wiki/Kakegurui_(live-action_TV_series)",
+    "status": 404,
+    "error": "HTTP 404"
+  },
+  {
+    "dataTitle": "Alice in Borderland",
+    "url": "https://en.wikipedia.org/wiki/Alice_in_Borderland_(TV_series)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/a/ab/Alice_in_Borderland_title_card.jpg",
+    "score": 5
+  },
+  {
+    "dataTitle": "Sweet Home",
+    "url": "https://en.wikipedia.org/wiki/Sweet_Home_(TV_series)",
+    "status": 200,
+    "posterUrl": null,
+    "error": "No suitable image found"
+  },
+  {
+    "dataTitle": "Hellbound",
+    "url": "https://en.wikipedia.org/wiki/Hellbound_(TV_series)",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/4/48/Hellbound_2_poster.png/Hellbound_2_poster.png",
+    "score": 6
+  },
+  {
+    "dataTitle": "The Uncanny Counter",
+    "url": "https://en.wikipedia.org/wiki/The_Uncanny_Counter",
+    "status": 200,
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/timeline/t8bn0rgojsnpixi6zxx1ozj2vd5rj1c.png",
+    "score": 3
+  }
+]

@@ -945,3 +945,5 @@ body {
 .animate-card-float {
   animation: cardFloat 3s ease-in-out infinite;
 }
+
+img[src=""] { display: none; }

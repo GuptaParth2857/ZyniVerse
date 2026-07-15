@@ -36,14 +36,17 @@ const LINK_COLUMNS = [
       { href: "/live-action", label: "Live Action Anime", icon: "film" },
       { href: "/dubbed", label: "Regional Dubs", icon: "globe" },
       { href: "/indian-dubs", label: "Indian Dubs", icon: "globe" },
+      { href: "/figures", label: "Figure Collection", icon: "box" },
     ],
   },
   {
     title: "Community",
     links: [
       { href: "/forum", label: "Forum", icon: "message-circle" },
-      { href: "/community", label: "Discussions", icon: "message-circle" },
+      { href: "/community", label: "Social Feed", icon: "message-circle" },
       { href: "/clubs", label: "Clubs", icon: "users" },
+      { href: "/activity", label: "Activity Feed", icon: "zap" },
+      { href: "/tags", label: "Community Tags", icon: "tag" },
       { href: "/characters", label: "Characters", icon: "users" },
       { href: "/leaderboard", label: "Leaderboard", icon: "bar-chart" },
     ],

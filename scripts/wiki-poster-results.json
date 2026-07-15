@@ -1,0 +1,157 @@
+[
+  {
+    "dataTitle": "One Piece",
+    "wikiSearch": "One Piece (2023 TV series)",
+    "status": 200,
+    "title": "One Piece (2023 TV series)",
+    "posterUrl": null,
+    "error": "No thumbnail field"
+  },
+  {
+    "dataTitle": "Alice in Borderland",
+    "wikiSearch": "Alice in Borderland (TV series)",
+    "status": 200,
+    "title": "Alice in Borderland (TV series)",
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/a/ab/Alice_in_Borderland_title_card.jpg"
+  },
+  {
+    "dataTitle": "Yu Yu Hakusho",
+    "wikiSearch": "Yu Yu Hakusho (2023 TV series)",
+    "status": 404,
+    "title": "Yu Yu Hakusho (2023 TV series)",
+    "error": "Page not found"
+  },
+  {
+    "dataTitle": "Rurouni Kenshin Films",
+    "wikiSearch": "Rurouni Kenshin (film series)",
+    "status": 404,
+    "title": "Rurouni Kenshin (film series)",
+    "error": "Page not found"
+  },
+  {
+    "dataTitle": "Death Note",
+    "wikiSearch": "Death Note (2017 film)",
+    "status": 200,
+    "title": "Death Note (2017 film)",
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/6/6c/DeathNotePoster.jpg"
+  },
+  {
+    "dataTitle": "Parasyte: The Grey",
+    "wikiSearch": "Parasyte: The Grey",
+    "status": 200,
+    "title": "Parasyte: The Grey",
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/5/5b/Parasyte_The_Grey_poster.png"
+  },
+  {
+    "dataTitle": "Kakegurui",
+    "wikiSearch": "Kakegurui",
+    "status": 200,
+    "title": "Kakegurui",
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/c/c4/Kakegurui_-_Compulsive_Gambler%2C_Volume_1.jpg"
+  },
+  {
+    "dataTitle": "From Me to You: Kimi ni Todoke",
+    "wikiSearch": "From Me to You: Kimi ni Todoke",
+    "status": 404,
+    "title": "From Me to You: Kimi ni Todoke",
+    "error": "Page not found"
+  },
+  {
+    "dataTitle": "Golden Kamuy",
+    "wikiSearch": "Golden Kamuy (film)",
+    "status": 200,
+    "title": "Golden Kamuy (film)",
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/8/88/Golden_Kamuy_Poster.jpg"
+  },
+  {
+    "dataTitle": "Tokyo Revengers",
+    "wikiSearch": "Tokyo Revengers (film)",
+    "status": 200,
+    "title": "Tokyo Revengers (film)",
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/4/41/Tokyo_Revengers_film_Theatrical_release_poster_%282021%29.jpg"
+  },
+  {
+    "dataTitle": "Fullmetal Alchemist",
+    "wikiSearch": "Fullmetal Alchemist (film)",
+    "status": 429,
+    "title": "Fullmetal Alchemist (film)",
+    "error": "Rate limited"
+  },
+  {
+    "dataTitle": "Tokyo Ghoul",
+    "wikiSearch": "Tokyo Ghoul (2017 film)",
+    "status": 429,
+    "title": "Tokyo Ghoul (2017 film)",
+    "error": "Rate limited"
+  },
+  {
+    "dataTitle": "Attack on Titan",
+    "wikiSearch": "Attack on Titan (film series)",
+    "status": 429,
+    "title": "Attack on Titan (film series)",
+    "error": "Rate limited"
+  },
+  {
+    "dataTitle": "Assassination Classroom",
+    "wikiSearch": "Assassination Classroom (film)",
+    "status": 429,
+    "title": "Assassination Classroom (film)",
+    "error": "Rate limited"
+  },
+  {
+    "dataTitle": "Blade of the Immortal",
+    "wikiSearch": "Blade of the Immortal (film)",
+    "status": 429,
+    "title": "Blade of the Immortal (film)",
+    "error": "Rate limited"
+  },
+  {
+    "dataTitle": "Inuyashiki",
+    "wikiSearch": "Inuyashiki (film)",
+    "status": 200,
+    "title": "Inuyashiki (film)",
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/e/ea/Inuyashiki_film_poster.jpg"
+  },
+  {
+    "dataTitle": "Gantz",
+    "wikiSearch": "Gantz (film series)",
+    "status": 200,
+    "title": "Gantz (film series)",
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/9/9e/Gantz_movie_poster.jpg"
+  },
+  {
+    "dataTitle": "Zom 100: Bucket List of the Dead",
+    "wikiSearch": "Zom 100: Bucket List of the Dead",
+    "status": 200,
+    "title": "Zom 100: Bucket List of the Dead",
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/5/5c/Zom_100_manga_vol._1.png"
+  },
+  {
+    "dataTitle": "The Way of the Househusband",
+    "wikiSearch": "The Way of the Househusband (TV series)",
+    "status": 404,
+    "title": "The Way of the Househusband (TV series)",
+    "error": "Page not found"
+  },
+  {
+    "dataTitle": "Ajin: Demi-Human",
+    "wikiSearch": "Ajin (film)",
+    "status": 404,
+    "title": "Ajin (film)",
+    "error": "Page not found"
+  },
+  {
+    "dataTitle": "Drops of God",
+    "wikiSearch": "Drops of God (TV series)",
+    "status": 200,
+    "title": "Drops of God (TV series)",
+    "posterUrl": "https://upload.wikimedia.org/wikipedia/en/7/78/Drops_of_God_TV_poster.png"
+  },
+  {
+    "dataTitle": "Space Brothers",
+    "wikiSearch": "Space Brothers (film)",
+    "status": 404,
+    "title": "Space Brothers (film)",
+    "error": "Page not found"
+  }
+]

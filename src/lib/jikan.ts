@@ -59,6 +59,8 @@ export interface JikanAnime {
   };
   type: string | null;
   year: number | null;
+  episodes: number | null;
+  status: string | null;
 }
 
 export interface JikanCharacter {

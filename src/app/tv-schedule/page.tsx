@@ -121,17 +121,19 @@ function ChannelLogo({
 }
 
 const TV_CHANNEL_IDS = [
-  "animax",
   "cn",
   "sony_yay",
   "hungama",
   "super_hungama",
   "pogo",
   "nick",
+  "nick_jr",
+  "sonic",
   "discovery_kids",
-  "disney_xd",
-  "boomerang",
-  "toonami",
+  "disney_channel",
+  "disney_junior",
+  "epic_kids",
+  "animax",
 ];
 const YT_CHANNEL_IDS = ["muse_asia", "muse_india", "anime_log", "crunchyroll", "netflix_anime", "prime_video", "sony_liv", "jio_hotstar"];
 
@@ -458,6 +460,7 @@ function TimeSlotRow({
 
   return (
     <div
+      id={`slot-${slot.start.replace(":", "-")}`}
       className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-all ${
         airing
           ? "border-[var(--color-cyan)]/50 bg-[var(--color-cyan)]/5"
@@ -562,6 +565,7 @@ function ChannelScheduleCard({
   searchQuery: string;
   liveSchedule?: ChannelLiveSchedule;
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const schedule = getScheduleForChannel(channel.id, day);
   const liveDaySlots = liveSchedule?.days[day];
 
@@ -579,34 +583,40 @@ function ChannelScheduleCard({
     return schedule?.slots || [];
   }, [liveDaySlots, schedule]);
 
-  if (effectiveSlots.length === 0) {
-    return (
-      <NeonBorder glowColor={channel.color}>
-        <div className="rounded-[24px] overflow-hidden">
-          <div className="h-[2px] bg-gradient-to-r from-transparent via-[var(--color-line)] to-transparent" />
-          <div className="p-4 flex items-center gap-3">
-            <ChannelLogo channel={channel} size={48} />
-            <div>
-              <p className="text-sm font-bold text-[var(--color-ink)]">
-                {channel.name}
-              </p>
-              <p className="text-[10px] text-[var(--color-mute)]">
-                No new episodes scheduled for {day}
-              </p>
-            </div>
-          </div>
-        </div>
-      </NeonBorder>
-    );
-  }
-
-  const filteredSlots = searchQuery
+  const filteredSlots = useMemo(() => searchQuery
     ? effectiveSlots.filter((s) =>
         s.show.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : effectiveSlots;
+    : effectiveSlots, [effectiveSlots, searchQuery]);
 
-  if (searchQuery && filteredSlots.length === 0) return null;
+  // Auto-scroll to currently airing slot within card (no page scroll)
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || filteredSlots.length === 0) return;
+    const timer = setTimeout(() => {
+      const now = new Date();
+      const curMin = now.getHours() * 60 + now.getMinutes();
+      let targetIdx = filteredSlots.findIndex((s) => {
+        const [sh, sm] = s.start.split(":").map(Number);
+        const [eh, em] = s.end.split(":").map(Number);
+        return curMin >= sh * 60 + sm && curMin < eh * 60 + em;
+      });
+      if (targetIdx === -1) {
+        targetIdx = filteredSlots.findIndex((s) => {
+          const [sh, sm] = s.start.split(":").map(Number);
+          return sh * 60 + sm > curMin;
+        });
+        if (targetIdx === -1) targetIdx = filteredSlots.length - 1;
+      }
+      const el = container.querySelector(`#slot-${filteredSlots[targetIdx].start.replace(":", "-")}`) as HTMLElement;
+      if (el && el.offsetTop !== undefined) {
+        container.scrollTo({ top: el.offsetTop - container.offsetTop - 40, behavior: "smooth" });
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [filteredSlots, day]);
+
+  if (filteredSlots.length === 0) return null;
 
   const uniqueShows = [...new Set(filteredSlots.map((s) => s.show))];
   const showDesc = channel.type === "tv";
@@ -647,6 +657,17 @@ function ChannelScheduleCard({
                 )}
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  onClick={() => {
+                    const container = scrollRef.current;
+                    if (!container) return;
+                    const airing = container.querySelector('[class*="border-cyan"]') as HTMLElement;
+                    if (airing) container.scrollTo({ top: airing.offsetTop - container.offsetTop - 40, behavior: "smooth" });
+                  }}
+                  className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2 py-0.5 text-[9px] font-bold text-cyan-400 hover:bg-cyan-400/20 transition-colors cursor-pointer"
+                >
+                  Now
+                </button>
                 <span
                   className="rounded-full px-2 py-0.5 text-[9px] font-bold"
                   style={{ background: `${channel.color}18`, color: channel.color }}
@@ -659,7 +680,7 @@ function ChannelScheduleCard({
               </div>
             </div>
 
-            <div className="space-y-1 mt-3 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-line)]">
+            <div ref={scrollRef} className="space-y-1 mt-3 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-line)]">
               {filteredSlots.map((slot, i) => (
                 <TimeSlotRow
                   key={`${slot.start}-${slot.show}-${i}`}

@@ -72,6 +72,20 @@ const MANUAL_PLATFORM_MAP: Record<string, string[]> = {
   "welcome to demon school! iruma-kun": ["jio_hotstar"],
   "bofuri": ["jio_hotstar"],
   "bleach: thousand-year blood war": ["jio_hotstar"],
+  "spy x family": ["jio_hotstar"],
+  "assassination classroom": ["jio_hotstar"],
+  "mushoku tensei": ["jio_hotstar"],
+  "sword art online": ["jio_hotstar"],
+  "tokyo revengers": ["jio_hotstar"],
+  "goblin slayer": ["jio_hotstar"],
+  "the god of high school": ["jio_hotstar"],
+  "jojo's bizarre adventure": ["jio_hotstar"],
+  "campfire cooking in another world": ["jio_hotstar"],
+  "junji ito collection": ["jio_hotstar"],
+  "idaten jump": ["jio_hotstar"],
+  "reborn to master the blade": ["jio_hotstar"],
+  "cells at work! code black": ["jio_hotstar"],
+  "my hero academia: vigilantes": ["jio_hotstar"],
 };
 
 // Platform IDs that are streaming (not linear TV)

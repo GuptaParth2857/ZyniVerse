@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 
@@ -177,7 +177,48 @@ function RippleButton({ children, className = "", ...props }: { children: React.
   );
 }
 
+function CheckoutButton() {
+  const [loading, setLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCheckout}
+      disabled={loading}
+      className="block w-full rounded-[16px] bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] px-5 py-3 text-center text-sm font-bold text-white shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_50px_-6px_rgba(0,255,224,0.5),0_0_80px_-20px_rgba(255,0,230,0.2)] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+    >
+      {loading ? (
+        <span className="inline-flex items-center gap-2">
+          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Processing...
+        </span>
+      ) : (
+        "Subscribe →"
+      )}
+    </button>
+  );
+}
+
 export default function PremiumPage() {
+  const searchParams = useSearchParams();
+  const success = searchParams.get("success");
+  const canceled = searchParams.get("canceled");
+
   return (
     <PageTransition>
       <MouseGlow />
@@ -206,6 +247,29 @@ export default function PremiumPage() {
               From API access for developers to ad-free browsing for fans. Choose what fits you.
             </motion.p>
           </div>
+
+          <AnimatePresence>
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mx-auto max-w-md mb-8 rounded-[16px] border border-emerald-500/30 bg-emerald-500/10 px-6 py-4 text-center text-sm text-emerald-300"
+              >
+                Subscription activated! Welcome to ZyniVerse Pro.
+              </motion.div>
+            )}
+            {canceled && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mx-auto max-w-md mb-8 rounded-[16px] border border-red-500/30 bg-red-500/10 px-6 py-4 text-center text-sm text-red-300"
+              >
+                Checkout was canceled. You can try again anytime.
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="grid gap-6 md:grid-cols-3">
             {PLANS.map((plan, idx) => (
@@ -251,9 +315,7 @@ export default function PremiumPage() {
                         className="block w-full rounded-[16px] border border-[rgba(0,255,224,0.2)] px-5 py-3 text-center text-sm font-bold text-white hover:border-[#00ffe0]/40 hover:bg-[rgba(0,255,224,0.03)] transition-all"
                       >{plan.cta}</a>
                     ) : (
-                      <Link href="/profile"
-                        className="block w-full rounded-[16px] bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] px-5 py-3 text-center text-sm font-bold text-white shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_50px_-6px_rgba(0,255,224,0.5),0_0_80px_-20px_rgba(255,0,230,0.2)] active:scale-[0.98]"
-                      >{plan.cta} →</Link>
+                      <CheckoutButton />
                     )}
                   </div>
                 </NeonBorder>

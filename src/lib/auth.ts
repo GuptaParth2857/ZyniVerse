@@ -43,20 +43,56 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!email) return false;
         const existing = await prisma.user.findUnique({ where: { email } });
         if (!existing) {
-          const name = profile?.name || (profile as any)?.login || email.split("@")[0];
+          // Generate a unique username
+          let baseName = profile?.name || (profile as any)?.login || email.split("@")[0];
+          // Sanitize: keep only alphanumeric and underscores, max 20 chars
+          baseName = baseName.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 20) || "user";
+          let username = baseName;
+          let suffix = 1;
+          while (await prisma.user.findUnique({ where: { username } })) {
+            username = `${baseName}${suffix++}`;
+          }
           await prisma.user.create({
-            data: { email, username: name, password: "", provider: account.provider },
+            data: { email, username, password: "", provider: account.provider },
           });
+          const newUser = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+          if (newUser) {
+            await prisma.userPoints.upsert({ where: { userId: newUser.id }, update: {}, create: { userId: newUser.id, points: 0, level: 1 } });
+          }
         }
       }
       return true;
     },
     session({ session, token }) {
-      if (token.sub && session.user) session.user.id = token.sub;
+      if (session.user) {
+        session.user.id = (token.dbId as string) || "";
+      }
       return session;
     },
-    jwt({ token, user, account }) {
-      if (user) token.sub = user.id;
+    async jwt({ token, user, account }) {
+      if (user) {
+        if (account?.provider === "credentials") {
+          token.dbId = user.id;
+        } else if (account?.provider && user.email) {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email },
+            select: { id: true },
+          });
+          token.dbId = dbUser?.id || user.id;
+        } else {
+          token.dbId = user.id;
+        }
+      }
+
+      // Always ensure dbId is set for existing sessions (handles stale tokens)
+      if (!token.dbId && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email as string },
+          select: { id: true },
+        });
+        if (dbUser) token.dbId = dbUser.id;
+      }
+
       if (account) token.provider = account.provider;
       return token;
     },

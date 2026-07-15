@@ -11,9 +11,14 @@ export const metadata: Metadata = {
 
 export default async function EditProfilePage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user) redirect("/login");
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  // Resolve the real DB user - handles OAuth users where session.user.id might be provider ID
+  let userId = session.user.id || "";
+  let user = userId ? await prisma.user.findUnique({ where: { id: userId } }) : null;
+  if (!user && session.user.email) {
+    user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  }
   if (!user) redirect("/login");
 
   return (

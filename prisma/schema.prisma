@@ -3,77 +3,95 @@ generator client {
 }
 
 datasource db {
-  provider      = "postgresql"
-  url           = env("DATABASE_URL")
-  relationMode  = "prisma"
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  username  String   @unique
-  password  String?
-  avatar    String?
-  bio       String?
-  banner    String?
-  themeColor String?  @default("emerald")
+  id         String    @id @default(cuid())
+  email      String    @unique
+  username   String    @unique
+  password   String?
+  avatar     String?
+  bio        String?
+  banner     String?
+  themeColor String?   @default("emerald")
   signature  String?
-  provider  String?
-  lastSeen  DateTime?
-  createdAt DateTime @default(now())
+  provider   String?
+  lastSeen   DateTime?
+  createdAt  DateTime  @default(now())
 
-  entries               ListEntry[]
-  progress              EpisodeProgress[]
-  reviews               Review[]
-  dubRequests           DubRequest[]
-  posts                 Post[]
-  comments              Comment[]
-  savedPosts            SavedPost[]
-  notifications         Notification[]
-  activities            Activity[]
-  followers             Follow[]               @relation("Following")
-  following             Follow[]               @relation("Follower")
-  apiKeys               ApiKey[]
-  fillerVotes           FillerVote[]
-  fillerReports         FillerReport[]
-  subscription          Subscription?
-  tierLists             TierList[]
-  tierListVotes         TierListVote[]
-  airingAlerts          AiringAlert[]
-  mangaEntries          MangaEntry[]
-  watchParties          WatchParty[]           @relation("Host")
-  partyMembers          WatchPartyMember[]
-  cosplays              Cosplay[]
-  cosplayLikes          CosplayLike[]
-  challenges            Challenge[]            @relation("Creator")
-  challengeParticipants ChallengeParticipant[]
-  challengeEntries      ChallengeEntry[]
-  lists                 UserList[]
-  listLikes             UserListLike[]
-  forumThreads          ForumThread[]
-  forumPosts            ForumPost[]
-  forumVotes            ForumVote[]
-  blogPosts             BlogPost[]
-  blogLikes             BlogPostLike[]
-  blogComments          BlogComment[]
-  userAchievements      UserAchievement[]
-  userPoints            UserPoints?
-  clubs                 Club[]           @relation("ClubOwner")
-  clubMembers           ClubMember[]       @relation("ClubMembers")
-  clubPosts             ClubPost[]         @relation("ClubPosts")
-  clubJoinRequests      ClubJoinRequest[]  @relation("ClubJoinRequests")
-  wikiEdits             WikiPage[]         @relation("WikiEditor")
-  wikiHistory           WikiPageHistory[]  @relation("WikiHistoryEditor")
-  conversations         ConversationParticipant[]
-  messages              Message[]
-  doujinshiEntries      DoujinshiEntry[]
-  tagVotes              TagVote[]
-  characterVotes        CharacterVote[]
-  mangaChapterData      MangaChapterData[]
-  polls                 Poll[]
-  pollVotes             PollVote[]
-  sentFriendRequests    FriendRequest[]         @relation("SentRequests")
-  receivedFriendRequests FriendRequest[]        @relation("ReceivedRequests")
+  entries                ListEntry[]
+  progress               EpisodeProgress[]
+  reviews                Review[]
+  dubRequests            DubRequest[]
+  posts                  Post[]
+  comments               Comment[]
+  savedPosts             SavedPost[]
+  notifications          Notification[]
+  activities             Activity[]
+  followers              Follow[]                  @relation("Following")
+  following              Follow[]                  @relation("Follower")
+  apiKeys                ApiKey[]
+  fillerVotes            FillerVote[]
+  fillerReports          FillerReport[]
+  subscription           Subscription?
+  tierLists              TierList[]
+  tierListVotes          TierListVote[]
+  airingAlerts           AiringAlert[]
+  mangaEntries           MangaEntry[]
+  watchParties           WatchParty[]              @relation("Host")
+  partyMembers           WatchPartyMember[]
+  cosplays               Cosplay[]
+  cosplayLikes           CosplayLike[]
+  challenges             Challenge[]               @relation("Creator")
+  challengeParticipants  ChallengeParticipant[]
+  challengeEntries       ChallengeEntry[]
+  lists                  UserList[]
+  listLikes              UserListLike[]
+  forumThreads           ForumThread[]
+  forumPosts             ForumPost[]
+  forumVotes             ForumVote[]
+  blogPosts              BlogPost[]
+  blogLikes              BlogPostLike[]
+  blogComments           BlogComment[]
+  userAchievements       UserAchievement[]
+  userPoints             UserPoints?
+  clubs                  Club[]                    @relation("ClubOwner")
+  clubMembers            ClubMember[]              @relation("ClubMembers")
+  clubPosts              ClubPost[]                @relation("ClubPosts")
+  clubJoinRequests       ClubJoinRequest[]         @relation("ClubJoinRequests")
+  wikiEdits              WikiPage[]                @relation("WikiEditor")
+  wikiHistory            WikiPageHistory[]         @relation("WikiHistoryEditor")
+  conversations          ConversationParticipant[]
+  messages               Message[]
+  doujinshiEntries       DoujinshiEntry[]
+  tagVotes               TagVote[]
+  characterVotes         CharacterVote[]
+  mangaChapterData       MangaChapterData[]
+  polls                  Poll[]
+  pollVotes              PollVote[]
+  sentFriendRequests     FriendRequest[]           @relation("SentRequests")
+  receivedFriendRequests FriendRequest[]           @relation("ReceivedRequests")
+  ratings                Rating[]
+  communityTags          CommunityTag[]
+  tagVotes2              TagVote2[]
+  activityReactions      ActivityReaction[]
+  clubPostComments       ClubPostComment[]
+  clubEventRsvps         ClubEventRSVP[]
+  clubBans               ClubBan[]                 @relation("ClubBanned")
+  clubBannedBy           ClubBan[]                 @relation("ClubBanner")
+  zyniAwardVotes         ZyniAwardVote[]
+  figureCollection       FigureCollection[]
+  discordAccount         DiscordAccount?
+  pageViews              PageView[]
+  sessions               UserSession[]
+  searchLogs             SearchLog[]
+  quizScores             QuizScore[]
+  quizChallenger         QuizChallenge[]         @relation("QuizChallenger")
+  quizChallengee         QuizChallenge[]         @relation("QuizChallengee")
+  dubNotifications       DubNotification[]
 }
 
 model Follow {
@@ -205,7 +223,8 @@ model Activity {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reactions ActivityReaction[]
 
   @@index([userId, createdAt])
   @@index([createdAt])
@@ -359,14 +378,14 @@ model WatchPartyMember {
 }
 
 model Poll {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String?
   createdById String
-  isActive    Boolean  @default(true)
+  isActive    Boolean   @default(true)
   endsAt      DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   createdBy User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
   options   PollOption[]
@@ -376,10 +395,10 @@ model Poll {
 }
 
 model PollOption {
-  id      String @id @default(cuid())
-  pollId  String
-  label   String
-  image   String?
+  id     String  @id @default(cuid())
+  pollId String
+  label  String
+  image  String?
 
   poll  Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
   votes PollVote[]
@@ -403,12 +422,12 @@ model PollVote {
 }
 
 model FriendRequest {
-  id          String   @id @default(cuid())
-  senderId    String
-  receiverId  String
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
   receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
@@ -583,17 +602,17 @@ model Notification {
 }
 
 model ThemeSong {
-  id        String @id @default(cuid())
-  mediaId   Int
-  type      String   // "OP" or "ED"
-  sequence  Int      // 1, 2, 3...
-  title     String
-  artist    String
-  composer  String?
+  id           String   @id @default(cuid())
+  mediaId      Int
+  type         String // "OP" or "ED"
+  sequence     Int // 1, 2, 3...
+  title        String
+  artist       String
+  composer     String?
   episodeStart Int?
   episodeEnd   Int?
-  youtubeId String?
-  createdAt DateTime @default(now())
+  youtubeId    String?
+  createdAt    DateTime @default(now())
 
   @@unique([mediaId, type, sequence])
   @@index([mediaId])
@@ -743,21 +762,23 @@ model Club {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner    User          @relation("ClubOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members  ClubMember[]
-  posts    ClubPost[]
+  owner        User              @relation("ClubOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members      ClubMember[]
+  posts        ClubPost[]
   joinRequests ClubJoinRequest[]
+  events       ClubEvent[]
+  bans         ClubBan[]
 
   @@index([slug])
   @@index([category, memberCount])
 }
 
 model ClubMember {
-  id        String   @id @default(cuid())
-  clubId    String
-  userId    String
-  role      String   @default("member")
-  joinedAt  DateTime @default(now())
+  id       String   @id @default(cuid())
+  clubId   String
+  userId   String
+  role     String   @default("member")
+  joinedAt DateTime @default(now())
 
   club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
   user User @relation("ClubMembers", fields: [userId], references: [id], onDelete: Cascade)
@@ -777,8 +798,9 @@ model ClubPost {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  user User @relation("ClubPosts", fields: [userId], references: [id], onDelete: Cascade)
+  club     Club              @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user     User              @relation("ClubPosts", fields: [userId], references: [id], onDelete: Cascade)
+  comments ClubPostComment[]
 
   @@index([clubId, createdAt])
 }
@@ -797,21 +819,21 @@ model ClubJoinRequest {
 }
 
 model WikiPage {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  content     String
-  summary     String?
-  category    String
-  tags        String   @default("")
-  isPublished Boolean  @default(true)
-  version     Int      @default(1)
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  content      String
+  summary      String?
+  category     String
+  tags         String   @default("")
+  isPublished  Boolean  @default(true)
+  version      Int      @default(1)
   lastEditorId String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  editor   User            @relation("WikiEditor", fields: [lastEditorId], references: [id])
-  history  WikiPageHistory[]
+  editor  User              @relation("WikiEditor", fields: [lastEditorId], references: [id])
+  history WikiPageHistory[]
 
   @@index([slug])
   @@index([category])
@@ -935,9 +957,9 @@ model Achievement {
   code        String   @unique
   name        String
   description String
-  icon        String   // emoji or SVG path
-  category    String   // "watching" | "reading" | "community" | "social" | "milestone" | "special"
-  criteria    String   // JSON describing how to earn it
+  icon        String // emoji or SVG path
+  category    String // "watching" | "reading" | "community" | "social" | "milestone" | "special"
+  criteria    String // JSON describing how to earn it
   points      Int      @default(0)
   isHidden    Boolean  @default(false)
   createdAt   DateTime @default(now())
@@ -953,8 +975,8 @@ model UserAchievement {
   userId        String
   achievementId String
   earnedAt      DateTime @default(now())
-  progress      Int?     // progress toward achievement (0-100)
-  metadata      String?  // JSON with context (anime title, etc.)
+  progress      Int? // progress toward achievement (0-100)
+  metadata      String? // JSON with context (anime title, etc.)
 
   achievement Achievement @relation(fields: [achievementId], references: [id])
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1064,13 +1086,13 @@ model Doujinshi {
 }
 
 model DoujinshiEntry {
-  id           String   @id @default(cuid())
-  doujinshiId  String
-  userId       String
-  status       String
-  pagesRead    Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(cuid())
+  doujinshiId String
+  userId      String
+  status      String
+  pagesRead   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   doujinshi Doujinshi @relation(fields: [doujinshiId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1117,12 +1139,13 @@ model MangaChapterData {
   externalId    String?
   createdAt     DateTime  @default(now())
 
-  user User? @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id])
   userId String?
 
   @@unique([mangaId, chapterNumber])
   @@index([mangaId])
 }
+
 model PasswordResetToken {
   id        String   @id @default(cuid())
   email     String
@@ -1146,16 +1169,365 @@ model Feedback {
 }
 
 model UserActivity {
-  id         String   @id @default(cuid())
-  userId     String?
-  action     String
-  mediaId    Int?
-  query      String?
-  genres     String[]
-  metadata   Json?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  mediaId   Int?
+  query     String?
+  genres    String[]
+  metadata  Json?
+  createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
   @@index([action, createdAt])
   @@index([mediaId])
+}
+
+// ── Feature 1: ZyniVerse Community Score ──
+model Rating {
+  id         String   @id @default(cuid())
+  userId     String
+  mediaId    Int
+  rating     Float
+  weight     Float    @default(1.0)
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mediaId])
+  @@index([mediaId])
+}
+
+model ZyniScore {
+  id            String   @id @default(cuid())
+  mediaId       Int      @unique
+  weightedScore Float    @default(0)
+  bayesianScore Float    @default(0)
+  totalVotes    Int      @default(0)
+  verifiedVotes Int      @default(0)
+  sumRatings    Float    @default(0)
+  updatedAt     DateTime @updatedAt
+}
+
+// ── Feature 3: Community Tag System ──
+model CommunityTag {
+  id         String   @id @default(cuid())
+  mediaId    Int
+  tag        String
+  upvotes    Int      @default(0)
+  downvotes  Int      @default(0)
+  score      Float    @default(0)
+  isApproved Boolean  @default(true)
+  createdBy  String
+  createdAt  DateTime @default(now())
+
+  votes   TagVote2[] @relation("TagVotes")
+  creator User       @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, tag])
+  @@index([mediaId, score])
+}
+
+model TagVote2 {
+  id             String   @id @default(cuid())
+  userId         String
+  communityTagId String
+  vote           Int
+  createdAt      DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  communityTag CommunityTag @relation("TagVotes", fields: [communityTagId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, communityTagId])
+}
+
+// ── Feature 4: Social Feed Reactions ──
+model ActivityReaction {
+  id         String   @id @default(cuid())
+  userId     String
+  activityId String
+  type       String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, activityId, type])
+  @@index([activityId])
+}
+
+// ── Feature 6: Club Enhancements ──
+model ClubPostComment {
+  id         String   @id @default(cuid())
+  clubPostId String
+  userId     String
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clubPost ClubPost @relation(fields: [clubPostId], references: [id], onDelete: Cascade)
+
+  @@index([clubPostId, createdAt])
+}
+
+model ClubEvent {
+  id          String    @id @default(cuid())
+  clubId      String
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime?
+  isVirtual   Boolean   @default(false)
+  streamUrl   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  club    Club            @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  members ClubEventRSVP[]
+
+  @@index([clubId, startTime])
+}
+
+model ClubEventRSVP {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  status    String
+  createdAt DateTime @default(now())
+
+  event ClubEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model ClubBan {
+  id        String   @id @default(cuid())
+  clubId    String
+  userId    String
+  bannedBy  String
+  reason    String?
+  createdAt DateTime @default(now())
+
+  club   Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user   User @relation("ClubBanned", fields: [userId], references: [id], onDelete: Cascade)
+  banner User @relation("ClubBanner", fields: [bannedBy], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, userId])
+}
+
+// ── Feature 8: Discord Integration ──
+model DiscordAccount {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  discordId     String   @unique
+  username      String
+  discriminator String?
+  avatar        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ── Feature 9: ZyniVerse Awards & Bracket Tournaments ──
+model ZyniAward {
+  id          String   @id @default(cuid())
+  year        Int
+  category    String
+  title       String
+  description String?
+  status      String   @default("nominating")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  nominees ZyniAwardNominee[]
+  votes    ZyniAwardVote[]
+
+  @@unique([year, category])
+  @@index([year, status])
+}
+
+model ZyniAwardNominee {
+  id       String  @id @default(cuid())
+  awardId  String
+  mediaId  Int
+  title    String
+  image    String?
+  round    Int     @default(1)
+  seed     Int?
+  advanced Boolean @default(false)
+
+  award ZyniAward       @relation(fields: [awardId], references: [id], onDelete: Cascade)
+  votes ZyniAwardVote[]
+
+  @@index([awardId, round])
+}
+
+model ZyniAwardVote {
+  id           String   @id @default(cuid())
+  awardId      String
+  nomineeId    String
+  userId       String
+  round        Int      @default(2)
+  bracketMatch String?
+  createdAt    DateTime @default(now())
+
+  award   ZyniAward        @relation(fields: [awardId], references: [id], onDelete: Cascade)
+  nominee ZyniAwardNominee @relation(fields: [nomineeId], references: [id], onDelete: Cascade)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([awardId, userId, round])
+  @@index([nomineeId])
+}
+
+// ── Feature 10: Figure/Merch Collection Tracking ──
+model FigureCollection {
+  id           String    @id @default(cuid())
+  userId       String
+  name         String
+  anime        String?
+  manufacturer String?
+  scale        String?
+  price        Float?
+  currency     String    @default("INR")
+  purchaseDate DateTime?
+  image        String?
+  condition    String    @default("new")
+  isForSale    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([anime])
+}
+
+// ── Analytics & Retention Infrastructure ──
+model PageView {
+  id        String   @id @default(cuid())
+  userId    String?
+  sessionId String?
+  path      String
+  referrer  String?
+  duration  Int?
+  userAgent String?
+  country   String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([path, createdAt])
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+model UserSession {
+  id             String   @id @default(cuid())
+  userId         String?
+  sessionId      String   @unique
+  startedAt      DateTime @default(now())
+  lastActiveAt   DateTime @default(now())
+  device         String?
+  browser        String?
+  os             String?
+  country        String?
+  pagesViewed    Int      @default(1)
+  isActive       Boolean  @default(true)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, startedAt])
+  @@index([sessionId])
+  @@index([startedAt])
+}
+
+model SearchLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  query        String
+  source       String   @default("search")
+  resultsCount Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([query])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+}
+
+model RetentionMetric {
+  id                 String   @id @default(cuid())
+  date               DateTime @unique
+  dau                Int      @default(0)
+  wau                Int      @default(0)
+  mau                Int      @default(0)
+  newUsers           Int      @default(0)
+  returningUsers     Int      @default(0)
+  avgSessionMinutes  Float    @default(0)
+  avgPagesPerSession Float    @default(0)
+  createdAt          DateTime @default(now())
+
+  @@index([date])
+}
+
+// ── Quiz Server-Side Persistence ──
+model QuizScore {
+  id             String   @id @default(cuid())
+  userId         String
+  category       String
+  difficulty     String
+  score          Int
+  totalQuestions Int
+  timeTaken      Int?
+  xpEarned       Int      @default(0)
+  isDaily        Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([category, score])
+  @@index([createdAt])
+}
+
+model QuizChallenge {
+  id           String   @id @default(cuid())
+  challengerId String
+  challengeeId String
+  category     String
+  difficulty   String
+  status       String   @default("pending")
+  challengerScore Int?
+  challengeeScore Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  challenger User @relation("QuizChallenger", fields: [challengerId], references: [id], onDelete: Cascade)
+  challengee User @relation("QuizChallengee", fields: [challengeeId], references: [id], onDelete: Cascade)
+
+  @@index([challengerId])
+  @@index([challengeeId])
+  @@index([status])
+}
+
+// ── Indian Dub Notifications ──
+model DubNotification {
+  id             String    @id @default(cuid())
+  userId         String
+  malId          Int
+  language       String
+  active         Boolean   @default(true)
+  lastNotifiedAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, malId, language])
+  @@index([userId])
+  @@index([malId, language])
 }
