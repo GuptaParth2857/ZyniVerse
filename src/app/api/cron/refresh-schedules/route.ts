@@ -16,10 +16,11 @@ export async function GET(request: Request) {
   try {
     const epgResults = await fetchAllEpgSchedules();
     for (const entry of epgResults) {
+      const jsonDays = JSON.parse(JSON.stringify(entry.days));
       await prisma.epgCache.upsert({
         where: { channelId: entry.channelId },
-        update: { data: entry.days },
-        create: { channelId: entry.channelId, data: entry.days },
+        update: { data: jsonDays },
+        create: { channelId: entry.channelId, data: jsonDays },
       });
     }
     results.push({ task: "epg-cache", status: 200, detail: `${epgResults.length} channels cached` });
