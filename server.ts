@@ -4,12 +4,147 @@ import { Server } from "socket.io";
 const hostname = "0.0.0.0";
 const port = parseInt(process.env.PORT || "3000", 10);
 
-const httpServer = createServer((req, res) => {
+const JIOTV_EPG_BASE = "https://jiotvapi.cdn.jio.com/apis/v1.3/getepg/get";
+
+const JIOTV_CHANNEL_MAP: Record<string, number> = {
+  cn: 816, sony_yay: 872, hungama: 1391, super_hungama: 1392,
+  pogo: 559, nick: 545, nick_jr: 548, sonic: 815,
+  discovery_kids: 554, disney_channel: 1373, disney_junior: 1374,
+  epic_kids: 3385, animax: 2258,
+};
+
+const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function getDayNameFromDate(d: Date): string {
+  return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d.getDay()];
+}
+
+function epochToIstHHMM(epochMs: number): string {
+  const d = new Date(epochMs);
+  const istMs = d.getTime() + (5.5 * 60 * 60 * 1000) + (d.getTimezoneOffset() * 60 * 1000);
+  const ist = new Date(istMs);
+  return `${ist.getHours().toString().padStart(2, "0")}:${ist.getMinutes().toString().padStart(2, "0")}`;
+}
+
+async function fetchJiotvEpg(channelId: number, offset: number) {
+  const res = await fetch(`${JIOTV_EPG_BASE}?offset=${offset}&channel_id=${channelId}&langId=6`);
+  if (!res.ok) return null;
+  return await res.json() as { epg: { showname: string; description: string; startEpoch: number; endEpoch: number; episode_num: number; episodePoster: string }[] };
+}
+
+async function fetchAllEpg(): Promise<{ channelId: string; days: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> }> {
+  const entries = Object.entries(JIOTV_CHANNEL_MAP);
+  const results: { channelId: string; days: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> }[] = [];
+
+  const BATCH_SIZE = 4;
+  for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+    const batch = entries.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.allSettled(
+      batch.map(async ([channelId, jiotvId]) => {
+        const dayGroups: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> = {};
+        for (const d of ALL_DAYS) dayGroups[d] = [];
+
+        const offsets = [-6, -5, -4, -3, -2, -1, 0];
+        const responses = await Promise.allSettled(offsets.map((o) => fetchJiotvEpg(jiotvId, o)));
+
+        for (const r of responses) {
+          const resp = r.status === "fulfilled" ? r.value : null;
+          if (!resp?.epg) continue;
+          for (const entry of resp.epg) {
+            const dayName = getDayNameFromDate(new Date(entry.startEpoch));
+            if (dayGroups[dayName]) {
+              dayGroups[dayName].push({
+                show: entry.showname,
+                start: epochToIstHHMM(entry.startEpoch),
+                end: epochToIstHHMM(entry.endEpoch),
+                duration: Math.round((entry.endEpoch - entry.startEpoch) / 60000),
+                description: entry.description || undefined,
+              });
+            }
+          }
+        }
+
+        for (const d of ALL_DAYS) {
+          dayGroups[d].sort((a, b) => a.start.localeCompare(b.start));
+        }
+
+        return { channelId, days: dayGroups };
+      })
+    );
+
+    for (const r of batchResults) {
+      if (r.status === "fulfilled") results.push(r.value);
+    }
+  }
+
+  return results.length > 0 ? results[0] : { channelId: "", days: {} };
+}
+
+// EPG endpoint — fetches real JioTV EPG data from Railway's non-datacenter IP
+// Vercel serverless IPs get blocked by JioTV, so we proxy through here
+
+const httpServer = createServer(async (req, res) => {
   if (req.url === "/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ status: "ok" }));
     return;
   }
+
+  if (req.url === "/api/epg") {
+    try {
+      const entries = Object.entries(JIOTV_CHANNEL_MAP);
+      const allResults: { channelId: string; days: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> }[] = [];
+
+      const BATCH_SIZE = 4;
+      for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+        const batch = entries.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.allSettled(
+          batch.map(async ([channelId, jiotvId]) => {
+            const dayGroups: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> = {};
+            for (const d of ALL_DAYS) dayGroups[d] = [];
+
+            const offsets = [-6, -5, -4, -3, -2, -1, 0];
+            const responses = await Promise.allSettled(offsets.map((o) => fetchJiotvEpg(jiotvId, o)));
+
+            for (const r of responses) {
+              const resp = r.status === "fulfilled" ? r.value : null;
+              if (!resp?.epg) continue;
+              for (const entry of resp.epg) {
+                const dayName = getDayNameFromDate(new Date(entry.startEpoch));
+                if (dayGroups[dayName]) {
+                  dayGroups[dayName].push({
+                    show: entry.showname,
+                    start: epochToIstHHMM(entry.startEpoch),
+                    end: epochToIstHHMM(entry.endEpoch),
+                    duration: Math.round((entry.endEpoch - entry.startEpoch) / 60000),
+                    description: entry.description || undefined,
+                  });
+                }
+              }
+            }
+
+            for (const d of ALL_DAYS) {
+              dayGroups[d].sort((a, b) => a.start.localeCompare(b.start));
+            }
+
+            return { channelId, days: dayGroups };
+          })
+        );
+
+        for (const r of batchResults) {
+          if (r.status === "fulfilled") allResults.push(r.value);
+        }
+      }
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ channels: allResults }));
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err instanceof Error ? err.message : "EPG fetch failed" }));
+    }
+    return;
+  }
+
   res.writeHead(404);
   res.end("Not found");
 });
