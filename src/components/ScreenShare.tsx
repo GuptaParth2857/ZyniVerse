@@ -131,14 +131,14 @@ export default function ScreenShare({
       }
     };
 
-    socket.on("webrtc-viewer-join", handleViewerJoin);
-    socket.on("webrtc-viewer-answer", handleViewerAnswer);
-    socket.on("webrtc-ice-candidate-host", handleIceCandidate);
+    socket.on("webrtc-viewer-join", handleViewerJoin as never);
+    socket.on("webrtc-viewer-answer", handleViewerAnswer as never);
+    socket.on("webrtc-ice-candidate-host", handleIceCandidate as never);
 
     return () => {
-      socket.off("webrtc-viewer-join", handleViewerJoin);
-      socket.off("webrtc-viewer-answer", handleViewerAnswer);
-      socket.off("webrtc-ice-candidate-host", handleIceCandidate);
+      socket.off("webrtc-viewer-join", handleViewerJoin as never);
+      socket.off("webrtc-viewer-answer", handleViewerAnswer as never);
+      socket.off("webrtc-ice-candidate-host", handleIceCandidate as never);
     };
   }, [isHost, socket, screenShareActive, partyId]);
 
@@ -190,16 +190,16 @@ export default function ScreenShare({
       onScreenShareToggle(false);
     };
 
-    socket.on("webrtc-offer-viewer", handleOffer);
-    socket.on("webrtc-ice-candidate-viewer", handleIceCandidate);
-    socket.on("screen-share-stopped-viewers", handleStopped);
+    socket.on("webrtc-offer-viewer", handleOffer as never);
+    socket.on("webrtc-ice-candidate-viewer", handleIceCandidate as never);
+    socket.on("screen-share-stopped-viewers", handleStopped as never);
 
     socket.emit("webrtc-viewer-ready", { partyId });
 
     return () => {
-      socket.off("webrtc-offer-viewer", handleOffer);
-      socket.off("webrtc-ice-candidate-viewer", handleIceCandidate);
-      socket.off("screen-share-stopped-viewers", handleStopped);
+      socket.off("webrtc-offer-viewer", handleOffer as never);
+      socket.off("webrtc-ice-candidate-viewer", handleIceCandidate as never);
+      socket.off("screen-share-stopped-viewers", handleStopped as never);
       if (pc) { pc.close(); pc = null; }
     };
   }, [isHost, socket, screenShareActive, partyId, onScreenShareToggle]);
