@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 const hostname = "0.0.0.0";
 const port = parseInt(process.env.PORT || "3000", 10);
 
-const JIOTV_EPG_BASE = "https://jiotvapi.cdn.jio.com/apis/v1.3/getepg/get";
+const JIOTV_EPG_BASE = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get";
 
 const JIOTV_CHANNEL_MAP: Record<string, number> = {
   cn: 816, sony_yay: 872, hungama: 1391, super_hungama: 1392,
@@ -27,57 +27,14 @@ function epochToIstHHMM(epochMs: number): string {
 }
 
 async function fetchJiotvEpg(channelId: number, offset: number) {
-  const res = await fetch(`${JIOTV_EPG_BASE}?offset=${offset}&channel_id=${channelId}&langId=6`);
+  const res = await fetch(`${JIOTV_EPG_BASE}?offset=${offset}&channel_id=${channelId}&langId=6`, {
+    headers: {
+      "User-Agent": "okhttp/3.12.1",
+      "Accept": "application/json",
+    },
+  });
   if (!res.ok) return null;
   return await res.json() as { epg: { showname: string; description: string; startEpoch: number; endEpoch: number; episode_num: number; episodePoster: string }[] };
-}
-
-async function fetchAllEpg(): Promise<{ channelId: string; days: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> }> {
-  const entries = Object.entries(JIOTV_CHANNEL_MAP);
-  const results: { channelId: string; days: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> }[] = [];
-
-  const BATCH_SIZE = 4;
-  for (let i = 0; i < entries.length; i += BATCH_SIZE) {
-    const batch = entries.slice(i, i + BATCH_SIZE);
-    const batchResults = await Promise.allSettled(
-      batch.map(async ([channelId, jiotvId]) => {
-        const dayGroups: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> = {};
-        for (const d of ALL_DAYS) dayGroups[d] = [];
-
-        const offsets = [-6, -5, -4, -3, -2, -1, 0];
-        const responses = await Promise.allSettled(offsets.map((o) => fetchJiotvEpg(jiotvId, o)));
-
-        for (const r of responses) {
-          const resp = r.status === "fulfilled" ? r.value : null;
-          if (!resp?.epg) continue;
-          for (const entry of resp.epg) {
-            const dayName = getDayNameFromDate(new Date(entry.startEpoch));
-            if (dayGroups[dayName]) {
-              dayGroups[dayName].push({
-                show: entry.showname,
-                start: epochToIstHHMM(entry.startEpoch),
-                end: epochToIstHHMM(entry.endEpoch),
-                duration: Math.round((entry.endEpoch - entry.startEpoch) / 60000),
-                description: entry.description || undefined,
-              });
-            }
-          }
-        }
-
-        for (const d of ALL_DAYS) {
-          dayGroups[d].sort((a, b) => a.start.localeCompare(b.start));
-        }
-
-        return { channelId, days: dayGroups };
-      })
-    );
-
-    for (const r of batchResults) {
-      if (r.status === "fulfilled") results.push(r.value);
-    }
-  }
-
-  return results.length > 0 ? results[0] : { channelId: "", days: {} };
 }
 
 // EPG endpoint — fetches real JioTV EPG data from Railway's non-datacenter IP
