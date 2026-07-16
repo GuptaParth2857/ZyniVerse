@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import ClubCard from "@/components/ClubCard";
 
@@ -33,20 +33,33 @@ export default function ClubsPageClient() {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const handleSearch = useCallback((value: string) => {
+    setSearch(value);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => setDebouncedSearch(value), 300);
+  }, []);
 
   useEffect(() => {
-    setLoading(true);
+    return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
     const params = new URLSearchParams();
     if (category) params.set("category", category);
-    if (search) params.set("search", search);
+    if (debouncedSearch) params.set("search", debouncedSearch);
 
     fetch(`/api/clubs?${params.toString()}`)
       .then((r) => r.json())
-      .then((data) => setClubs(data.clubs || []))
-      .catch(() => setClubs([]))
-      .finally(() => setLoading(false));
-  }, [category, search]);
+      .then((data) => { if (!cancelled) { setClubs(data.clubs || []); setLoading(false); } })
+      .catch(() => { if (!cancelled) { setClubs([]); setLoading(false); } });
+
+    return () => { cancelled = true; };
+  }, [category, debouncedSearch]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
@@ -75,14 +88,15 @@ export default function ClubsPageClient() {
           ))}
         </div>
         <div className="flex gap-3">
-          <div className="neon-premium rounded-lg">
-            <div className="neon-premium-track rounded-lg" />
-            <div className="neon-premium-overlay rounded-[6.5px]" />
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-mute)" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+            </svg>
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
               placeholder="Search clubs..."
-              className="neon-premium-content rounded-lg border-0 bg-transparent px-3 py-1.5 text-sm outline-none w-full sm:w-48 text-[var(--color-ink)] placeholder-[var(--color-mute)]"
+              className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] pl-9 pr-3 py-2 text-sm outline-none w-full sm:w-56 text-[var(--color-ink)] placeholder-[var(--color-mute)] focus:border-[var(--color-cyan)] transition-colors"
             />
           </div>
           <Link href="/clubs/create" className="neon-premium rounded-xl no-underline">

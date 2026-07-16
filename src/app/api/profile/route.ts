@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveUserId } from "@/lib/resolve-user";
+import bcrypt from "bcryptjs";
 
 export async function GET() {
   try {
@@ -139,14 +140,64 @@ export async function PATCH(req: NextRequest) {
   try {
     const userId = await resolveUserId();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const { banner, themeColor, signature, bio, avatar, username } = await req.json();
+    const { banner, themeColor, signature, bio, avatar, username, currentPassword, newPassword } = await req.json();
+
+    if (username !== undefined) {
+      if (typeof username !== "string" || username.trim().length < 3) {
+        return NextResponse.json({ error: "Username must be at least 3 characters" }, { status: 400 });
+      }
+      if (username.trim().length > 30) {
+        return NextResponse.json({ error: "Username must be 30 characters or less" }, { status: 400 });
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+        return NextResponse.json({ error: "Username can only contain letters, numbers, and underscores" }, { status: 400 });
+      }
+      const existingUser = await prisma.user.findFirst({
+        where: { username: username.trim(), id: { not: userId } },
+      });
+      if (existingUser) {
+        return NextResponse.json({ error: "This username is already taken" }, { status: 400 });
+      }
+    }
+
+    if (newPassword) {
+      if (!currentPassword) {
+        return NextResponse.json({ error: "Current password is required" }, { status: 400 });
+      }
+      if (typeof newPassword !== "string" || newPassword.length < 8) {
+        return NextResponse.json({ error: "New password must be at least 8 characters" }, { status: 400 });
+      }
+
+      const userWithPassword = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { password: true },
+      });
+
+      if (!userWithPassword?.password) {
+        return NextResponse.json({ error: "No password set for this account" }, { status: 400 });
+      }
+
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, userWithPassword.password);
+      if (!isCurrentPasswordValid) {
+        return NextResponse.json({ error: "Current password is incorrect" }, { status: 400 });
+      }
+
+      const salt = await bcrypt.genSalt(12);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      });
+    }
+
     const data: Record<string, string> = {};
     if (banner !== undefined) data.banner = banner;
     if (themeColor !== undefined) data.themeColor = themeColor;
     if (signature !== undefined) data.signature = signature;
     if (bio !== undefined) data.bio = bio;
     if (avatar !== undefined) data.avatar = avatar;
-    if (username !== undefined) data.username = username;
+    if (username !== undefined) data.username = username.trim();
 
     const user = await prisma.user.update({ where: { id: userId }, data });
     return NextResponse.json({ user });

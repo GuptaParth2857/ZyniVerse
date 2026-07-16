@@ -20,7 +20,11 @@ export async function GET() {
       total: schedule.length,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch airing schedule";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({
+      updatedAt: new Date().toISOString(),
+      days: {},
+      total: 0,
+      error: error instanceof Error ? error.message : "Failed to fetch",
+    });
   }
 }

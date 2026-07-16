@@ -30,7 +30,12 @@ export async function GET() {
     const epgChannelIds = new Set(getEpgChannelIds());
 
     // 1. Fetch live EPG data for TV channels from JioTV API (7-day schedule)
-    const epgResults = await fetchAllEpgSchedules();
+    let epgResults: { channelId: string; days: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> }[] = [];
+    try {
+      epgResults = await fetchAllEpgSchedules();
+    } catch {
+      // EPG API may be down — continue without EPG data
+    }
     const epgDaysMap = new Map(epgResults.map((r) => [r.channelId, r.days]));
 
     // 2. Build channel schedules — EPG data for TV channels, hardcoded for streaming
@@ -86,7 +91,12 @@ export async function GET() {
     }
 
     // 3. Get live streaming schedules from AniList
-    const liveStreaming = await fetchLiveStreamingSchedules();
+    let liveStreaming: Awaited<ReturnType<typeof fetchLiveStreamingSchedules>> = [];
+    try {
+      liveStreaming = await fetchLiveStreamingSchedules();
+    } catch {
+      // AniList may be rate-limited — continue without streaming data
+    }
 
     // 4. Merge live AniList data into streaming channel schedules
     for (const ls of liveStreaming) {
@@ -130,8 +140,13 @@ export async function GET() {
       ),
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch live schedule";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({
+      updatedAt: new Date().toISOString(),
+      today: new Date().toLocaleDateString("en-US", { weekday: "long" }),
+      channels: [],
+      liveAiringTotal: 0,
+      error: error instanceof Error ? error.message : "Failed to fetch",
+    });
   }
 }
 

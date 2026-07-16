@@ -84,15 +84,23 @@ export async function searchAnime(query: string): Promise<JikanAnime[]> {
   if (cached) return cached;
 
   const url = `${BASE_URL}/anime?q=${encodeURIComponent(query)}&limit=8`;
-  try {
-    const res = await rateLimitedFetch(url);
-    if (!res.ok) return [];
-    const body: JikanResponse<JikanAnime> = await res.json();
-    setCache(cacheKey, body.data);
-    return body.data;
-  } catch {
-    return [];
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await rateLimitedFetch(url);
+      if (res.status === 429) {
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
+      if (!res.ok) return [];
+      const body: JikanResponse<JikanAnime> = await res.json();
+      setCache(cacheKey, body.data);
+      return body.data;
+    } catch {
+      if (attempt === 2) return [];
+      await new Promise((r) => setTimeout(r, 1000));
+    }
   }
+  return [];
 }
 
 export async function searchCharacter(query: string): Promise<JikanCharacter[]> {
@@ -102,15 +110,23 @@ export async function searchCharacter(query: string): Promise<JikanCharacter[]> 
   if (cached) return cached;
 
   const url = `${BASE_URL}/characters?q=${encodeURIComponent(query)}&limit=8`;
-  try {
-    const res = await rateLimitedFetch(url);
-    if (!res.ok) return [];
-    const body: JikanResponse<JikanCharacter> = await res.json();
-    setCache(cacheKey, body.data);
-    return body.data;
-  } catch {
-    return [];
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await rateLimitedFetch(url);
+      if (res.status === 429) {
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
+      if (!res.ok) return [];
+      const body: JikanResponse<JikanCharacter> = await res.json();
+      setCache(cacheKey, body.data);
+      return body.data;
+    } catch {
+      if (attempt === 2) return [];
+      await new Promise((r) => setTimeout(r, 1000));
+    }
   }
+  return [];
 }
 
 export function getJikanCacheStats(): { size: number } {

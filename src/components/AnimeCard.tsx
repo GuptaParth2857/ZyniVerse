@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRef } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { useRef, useCallback } from "react";
 import { bestTitle } from "@/lib/anilist";
 import { useWatchlist } from "./WatchlistProvider";
 import CountdownChip from "./CountdownChip";
@@ -22,13 +21,8 @@ export default function AnimeCard({ anime }: { anime: Media }) {
   const saved = isSaved(anime.id);
   const title = bestTitle(anime.title);
   const ref = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useSpring(y, { stiffness: 300, damping: 30 });
-  const rotateY = useSpring(x, { stiffness: 300, damping: 30 });
-  const scale = useSpring(1, { stiffness: 300, damping: 20 });
 
-  function handleMouseMove(e: React.MouseEvent) {
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const el = ref.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -36,26 +30,24 @@ export default function AnimeCard({ anime }: { anime: Media }) {
     const cy = rect.top + rect.height / 2;
     const px = (e.clientX - cx) / (rect.width / 2);
     const py = (e.clientY - cy) / (rect.height / 2);
-    x.set(px * 8);
-    y.set(py * -8);
-    scale.set(1.02);
-  }
+    el.style.transform = `perspective(800px) rotateY(${px * 8}deg) rotateX(${-py * 8}deg) scale(1.02)`;
+  }, []);
 
-  function handleMouseLeave() {
-    x.set(0);
-    y.set(0);
-    scale.set(1);
-  }
+  const handlePointerLeave = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) scale(1)";
+  }, []);
 
   const href = anime.type === "MANGA" ? `/manga/${anime.id}` : `/anime/${anime.id}`;
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{ rotateX, rotateY, scale }}
-      className="group perspective-[800px]"
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className="group"
+      style={{ transition: "transform 0.2s ease-out" }}
     >
       <Link href={href} className="glass-card block">
         <div className="glass-content">
@@ -130,6 +122,6 @@ export default function AnimeCard({ anime }: { anime: Media }) {
           <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
         </svg>
       </button>
-    </motion.div>
+    </div>
   );
 }

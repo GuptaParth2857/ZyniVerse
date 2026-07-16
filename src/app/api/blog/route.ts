@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { dedupedFetch } from "@/lib/wiki-cache";
+import { hasValidAnimeTag, getAnimeTagError } from "@/lib/blog-tags";
 
 function slugify(text: string): string {
   return text
@@ -131,6 +132,10 @@ export async function POST(req: NextRequest) {
 
   const { title, content, excerpt, coverImage, tags, isDraft } = await req.json();
   if (!title?.trim() || !content?.trim()) return NextResponse.json({ error: "Missing title or content" }, { status: 400 });
+
+  if (!isDraft && !hasValidAnimeTag(tags || "")) {
+    return NextResponse.json({ error: getAnimeTagError() }, { status: 400 });
+  }
 
   let slug = slugify(title);
   const existing = await prisma.blogPost.findUnique({ where: { slug } });

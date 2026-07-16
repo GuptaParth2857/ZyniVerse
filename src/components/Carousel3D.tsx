@@ -3,7 +3,6 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { bestTitle } from "@/lib/anilist";
 
 interface CarouselItem {
@@ -29,6 +28,8 @@ export default function Carousel3D({
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [itemWidth, setItemWidth] = useState(220);
+  const [scrollPct, setScrollPct] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   const accentColor = accent === "violet" ? "var(--color-violet)" : "var(--color-magenta)";
 
@@ -44,30 +45,40 @@ export default function Carousel3D({
     return () => ro.disconnect();
   }, []);
 
-  const track = trackRef.current;
-  const scrollProgress = useMotionValue(0);
-
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
-    const maxScroll = el.scrollWidth - el.clientWidth;
     function onScroll() {
-      if (maxScroll <= 0) { scrollProgress.set(0); return; }
-      scrollProgress.set(el!.scrollLeft / maxScroll);
+      if (!el) return;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 0) { setScrollPct(0); return; }
+      setScrollPct(el.scrollLeft / maxScroll);
     }
     el.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => el.removeEventListener("scroll", onScroll);
-  }, [items, scrollProgress]);
+  }, [items]);
+
+  useEffect(() => {
+    if (isPaused || items.length <= 1) return;
+    const interval = setInterval(() => scroll(1), 4000);
+    return () => clearInterval(interval);
+  }, [isPaused, items.length, itemWidth]);
 
   function scroll(dir: number) {
     const el = trackRef.current;
     if (!el) return;
-    el.scrollBy({ left: dir * (itemWidth + 16) * 2, behavior: "smooth" });
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 0) return;
+    if (dir > 0 && el.scrollLeft >= maxScroll - 10) {
+      el.scrollTo({ left: 0, behavior: "smooth" });
+    } else {
+      el.scrollBy({ left: dir * (itemWidth + 16) * 2, behavior: "smooth" });
+    }
   }
 
   return (
-    <div ref={containerRef} className="relative group/carousel">
+    <div ref={containerRef} className="relative group/carousel" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
       {/* Arrows */}
       <button
         onClick={() => scroll(-1)}
@@ -104,7 +115,7 @@ export default function Carousel3D({
               sub={sub}
               index={i}
               total={items.length}
-              scrollProgress={scrollProgress}
+              scrollPct={scrollPct}
               accentColor={accentColor}
             />
           );
@@ -115,50 +126,22 @@ export default function Carousel3D({
 }
 
 function CarouselCard({
-  item, href, score, sub, index, total, scrollProgress, accentColor,
+  item, href, score, sub, index, total, scrollPct, accentColor,
 }: {
   item: CarouselItem; href: string; score: string | null; sub: string | null;
-  index: number; total: number; scrollProgress: import("framer-motion").MotionValue; accentColor: string;
+  index: number; total: number; scrollPct: number; accentColor: string;
 }) {
-  const [snapIndex, setSnapIndex] = useState(0);
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    const parent = el.parentElement;
-    if (!parent) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.4) {
-            const cards = parent.children;
-            for (let i = 0; i < cards.length; i++) {
-              if (cards[i] === el) { setSnapIndex(i); break; }
-            }
-          }
-        }
-      },
-      { root: parent, threshold: [0.4, 0.6, 0.8] }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const offset = useTransform(scrollProgress, [0, 1], [-30, 30]);
-  const rotateY = useTransform(scrollProgress, [0, 0.5, 1], [10, 0, -10]);
-
   return (
     <div
-      ref={cardRef}
       className="snap-center shrink-0 first:ml-8 last:mr-8"
       style={{ width: 200 }}
     >
-      <motion.div
-        style={{ rotateY }}
-        whileHover={{ rotateY: 0, scale: 1.05, z: 50 }}
-        className="card-glow relative rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden transition-shadow duration-300 hover:shadow-[0_0_30px_-5px_var(--tw-shadow-color)]"
+      <div
+        style={{
+          transform: `rotateY(${(scrollPct - 0.5) * 20}deg)`,
+          transition: "transform 0.2s ease-out",
+        }}
+        className="card-glow relative rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden transition-shadow duration-300 hover:shadow-[0_0_30px_-5px_var(--tw-shadow-color)] hover:scale-105 hover:z-10"
       >
         <Link href={href} className="block group">
           <div className="relative aspect-[2/3] overflow-hidden">
@@ -194,7 +177,7 @@ function CarouselCard({
             </div>
           </div>
         </Link>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -459,8 +459,8 @@ body {
   border-radius: 1rem;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
@@ -633,8 +633,8 @@ body {
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
@@ -655,8 +655,8 @@ body {
 .glass-input {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: 0.75rem;
   color: var(--color-ink);
   transition: border-color 0.3s, box-shadow 0.3s;
@@ -703,8 +703,8 @@ body {
 
 .glass-panel {
   background: rgba(18, 17, 30, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--glass-border);
   border-radius: 1rem;
 }
@@ -947,3 +947,43 @@ body {
 }
 
 img[src=""] { display: none; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ─────────── RGB Neon Border (Search Bar) ─────────── */
+
+@keyframes rgbShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.rgb-border {
+  position: relative;
+  border-radius: 0.75rem;
+}
+
+.rgb-border::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 0.85rem;
+  background: linear-gradient(60deg, #ff00ff, #00ffff, #ff00ff, #00ffff, #ff00ff);
+  background-size: 300% 300%;
+  animation: rgbShift 3s ease infinite;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.rgb-border:focus-within::before {
+  opacity: 1;
+  filter: blur(4px);
+}
+
+.rgb-border-always::before {
+  opacity: 1 !important;
+}

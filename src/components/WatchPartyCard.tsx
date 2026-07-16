@@ -59,9 +59,9 @@ export default function WatchPartyCard({
     >
       {/* Cover Image */}
       <div className="relative h-40 w-full overflow-hidden">
-        {party.mediaImage ? (
+        {(party.coverImage || party.mediaImage) ? (
           <Image
-            src={party.mediaImage}
+            src={party.coverImage || party.mediaImage!}
             alt={party.mediaTitle}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"

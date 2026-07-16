@@ -58,11 +58,25 @@ function detectPlatformsFromLinks(externalLinks?: { url: string }[]): string[] {
 }
 
 // Fallback manual platform map for shows where AniList doesn't have streaming links
+// Based on actual platform availability in India (July 2025)
 const MANUAL_PLATFORM_MAP: Record<string, string[]> = {
-  // Sony LIV (Crunchyroll add-on) - shows with Hindi dubs
-  "liar game cour 2": ["sony_liv"],
-  "grand blue dreaming s3": ["sony_liv"],
-  // JioHotstar - library content (Hindi/Tamil/Telugu dubs)
+  // Sony LIV (Crunchyroll add-on ₹99/month) - shows currently simulcasting with Hindi dubs
+  "dan da dan": ["sony_liv", "crunchyroll"],
+  "my dress-up darling": ["sony_liv", "crunchyroll"],
+  "gachiakuta": ["sony_liv", "crunchyroll"],
+  "clevatess": ["sony_liv", "crunchyroll"],
+  "rent-a-girlfriend": ["sony_liv", "crunchyroll"],
+  "new saga": ["sony_liv", "crunchyroll"],
+  "a couple of cuckoos": ["sony_liv", "crunchyroll"],
+  "toilet-bound hanako-kun": ["sony_liv", "crunchyroll"],
+  "kaiju no. 8": ["sony_liv", "crunchyroll"],
+  "grand blue dreaming": ["sony_liv", "crunchyroll"],
+  "re:zero": ["sony_liv", "crunchyroll"],
+  "saga of tanya the evil": ["sony_liv", "crunchyroll"],
+  "trapped in a dating sim": ["sony_liv", "crunchyroll"],
+  "the oblivious saint": ["sony_liv", "crunchyroll"],
+  "liar game": ["sony_liv", "crunchyroll"],
+  // JioHotstar - library content (Hindi/Tamil/Telugu dubs, already completed shows)
   "demon slayer": ["jio_hotstar"],
   "my hero academia": ["jio_hotstar"],
   "jujutsu kaisen": ["jio_hotstar"],
@@ -86,6 +100,30 @@ const MANUAL_PLATFORM_MAP: Record<string, string[]> = {
   "reborn to master the blade": ["jio_hotstar"],
   "cells at work! code black": ["jio_hotstar"],
   "my hero academia: vigilantes": ["jio_hotstar"],
+  "solo leveling": ["jio_hotstar"],
+  "one piece": ["jio_hotstar"],
+  "naruto": ["jio_hotstar"],
+  "naruto shippuden": ["jio_hotstar"],
+  "dragon ball": ["jio_hotstar"],
+  "death note": ["jio_hotstar"],
+  "attack on titan": ["jio_hotstar"],
+  "fullmetal alchemist": ["jio_hotstar"],
+  "hunter x hunter": ["jio_hotstar"],
+  "vinland saga": ["jio_hotstar"],
+  "chainsaw man": ["jio_hotstar"],
+  "dandadan": ["jio_hotstar"],
+  "wind breaker": ["jio_hotstar"],
+  "blue lock": ["jio_hotstar"],
+  "one punch man": ["jio_hotstar"],
+  "cyberpunk: edgerunners": ["jio_hotstar"],
+  "made in abyss": ["jio_hotstar"],
+  "steins;gate": ["jio_hotstar"],
+  "cowboy bebop": ["jio_hotstar"],
+  "the apothecary diaries": ["jio_hotstar"],
+  "sakamoto days": ["jio_hotstar"],
+  "classroom of the elite": ["jio_hotstar"],
+  "black butler": ["jio_hotstar"],
+  "the fable": ["jio_hotstar"],
 };
 
 // Platform IDs that are streaming (not linear TV)

@@ -89,34 +89,46 @@ export async function fetchAllEpgSchedules(): Promise<
   { channelId: string; days: Record<string, TimeSlot[]> }[]
 > {
   const allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const entries = Object.entries(JIOTV_CHANNEL_MAP);
+  const results: { channelId: string; days: Record<string, TimeSlot[]> }[] = [];
 
-  const results = await Promise.all(
-    Object.entries(JIOTV_CHANNEL_MAP).map(async ([channelId, jiotvId]) => {
-      const dayGroups: Record<string, TimeSlot[]> = {};
-      for (const d of allDays) dayGroups[d] = [];
+  // Batch 4 channels at a time to avoid rate limiting
+  const BATCH_SIZE = 4;
+  for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+    const batch = entries.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.allSettled(
+      batch.map(async ([channelId, jiotvId]) => {
+        const dayGroups: Record<string, TimeSlot[]> = {};
+        for (const d of allDays) dayGroups[d] = [];
 
-      const offsets = [-6, -5, -4, -3, -2, -1, 0];
-      const responses = await Promise.all(
-        offsets.map((o) => fetchJiotvEpg(jiotvId, o))
-      );
+        const offsets = [-6, -5, -4, -3, -2, -1, 0];
+        const responses = await Promise.allSettled(
+          offsets.map((o) => fetchJiotvEpg(jiotvId, o))
+        );
 
-      for (const resp of responses) {
-        if (!resp?.epg) continue;
-        for (const entry of resp.epg) {
-          const dayName = getDayNameFromDate(new Date(entry.startEpoch));
-          if (dayGroups[dayName]) {
-            dayGroups[dayName].push(entryToSlot(entry));
+        for (const r of responses) {
+          const resp = r.status === "fulfilled" ? r.value : null;
+          if (!resp?.epg) continue;
+          for (const entry of resp.epg) {
+            const dayName = getDayNameFromDate(new Date(entry.startEpoch));
+            if (dayGroups[dayName]) {
+              dayGroups[dayName].push(entryToSlot(entry));
+            }
           }
         }
-      }
 
-      for (const d of allDays) {
-        dayGroups[d].sort((a, b) => a.start.localeCompare(b.start));
-      }
+        for (const d of allDays) {
+          dayGroups[d].sort((a, b) => a.start.localeCompare(b.start));
+        }
 
-      return { channelId, days: dayGroups };
-    })
-  );
+        return { channelId, days: dayGroups };
+      })
+    );
+
+    for (const r of batchResults) {
+      if (r.status === "fulfilled") results.push(r.value);
+    }
+  }
 
   return results;
 }

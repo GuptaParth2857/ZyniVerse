@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { createParty, getActiveParties, getUserParties } from "@/lib/watch-party";
 
 export async function POST(req: NextRequest) {
@@ -9,16 +8,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { mediaId, mediaTitle, mediaImage } = await req.json();
+  const { mediaId, mediaTitle, mediaImage, coverImage } = await req.json();
   if (!mediaId || !mediaTitle) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
   try {
-    const party = await createParty(session.user.id, mediaId, mediaTitle, mediaImage);
+    const party = await createParty(session.user.id, mediaId, mediaTitle, mediaImage, coverImage);
     return NextResponse.json({ party });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Failed to create party";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

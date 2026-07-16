@@ -8,7 +8,6 @@ import MediaCarousel from "@/components/MediaCarousel";
 import OnAirTicker from "@/components/OnAirTicker";
 import { FadeIn, PageTransition } from "@/components/PageTransition";
 import { DynamicHero3D as Hero3D, DynamicHorizontalScroll as HorizontalScroll } from "@/components/lazy";
-import PersonalizedHero from "@/components/PersonalizedHero";
 import ExpandingFlexCard from "@/components/ExpandingFlexCard";
 import ContinueWatching from "@/components/ContinueWatching";
 import Recommendations from "@/components/Recommendations";
@@ -18,6 +17,7 @@ import QuoteOfTheDay from "@/components/QuoteOfTheDay";
 import HomeMomentButton from "@/components/HomeMomentButton";
 import FriendActivityFeed from "@/components/features/FriendActivityFeed";
 import MonthlyCalendar from "@/components/features/MonthlyCalendar";
+import FeaturedFeedbackCarousel from "@/components/FeaturedFeedbackCarousel";
 import type { Media } from "@/lib/anilist";
 
 function AnimatedSection({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -50,7 +50,7 @@ export default async function Home() {
   return (
     <PageTransition>
       <div className="animate-page-in">
-      {session?.user?.id ? <PersonalizedHero userId={session.user.id} /> : <Hero3D items={trendingData} />}
+      <Hero3D items={trendingData} />
       <HorizontalScroll items={trendingData.slice(0, 20)} />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
         <AdBanner placement="homepage" type="banner" />
@@ -197,6 +197,13 @@ export default async function Home() {
             <Link href="/messages" className="text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)]">💬 Chat</Link>
           </div>
         </AnimatedSection>
+      </FadeIn>
+
+      {/* Featured Feedback */}
+      <FadeIn delay={0.42}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <FeaturedFeedbackCarousel />
+        </div>
       </FadeIn>
 
       {/* Monthly Calendar */}
