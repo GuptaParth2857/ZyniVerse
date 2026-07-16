@@ -36,6 +36,8 @@ export default async function EditProfilePage() {
               themeColor: user.themeColor,
               signature: user.signature,
               avatar: user.avatar,
+              provider: user.provider || undefined,
+              hasPassword: !!user.password,
             }}
           />
         </div>

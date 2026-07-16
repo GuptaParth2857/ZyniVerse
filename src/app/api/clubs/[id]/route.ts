@@ -19,6 +19,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           user: { select: { id: true, username: true, avatar: true } },
         },
       },
+      events: {
+        include: {
+          members: {
+            include: { user: { select: { id: true, username: true, avatar: true } } },
+          },
+        },
+        orderBy: { startTime: "asc" },
+      },
       _count: { select: { members: true, posts: true, joinRequests: true } },
     },
   });
@@ -43,13 +51,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const isAdmin = member?.role === "admin";
   if (!isOwner && !isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { name, description, category, isPrivate, coverImage, icon } = await req.json();
+  const { name, description, rules, category, isPrivate, coverImage, icon } = await req.json();
 
   const updated = await prisma.club.update({
     where: { id },
     data: {
       ...(name !== undefined ? { name } : {}),
       ...(description !== undefined ? { description } : {}),
+      ...(rules !== undefined ? { rules } : {}),
       ...(category !== undefined ? { category } : {}),
       ...(isPrivate !== undefined ? { isPrivate } : {}),
       ...(coverImage !== undefined ? { coverImage } : {}),

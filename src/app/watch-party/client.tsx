@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import WatchPartyCard from "@/components/WatchPartyCard";
+import ImageUploader from "@/components/ImageUploader";
 import { PageTransition } from "@/components/PageTransition";
 import type { WatchPartyData } from "@/lib/watch-party";
 
@@ -88,6 +89,7 @@ export default function WatchPartyClient() {
   const [selectedAnime, setSelectedAnime] = useState<AnimeResult | null>(null);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
+  const [coverImage, setCoverImage] = useState<string | null>(null);
   const searchTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -163,6 +165,7 @@ export default function WatchPartyClient() {
           mediaId: selectedAnime.id,
           mediaTitle: selectedAnime.title,
           mediaImage: selectedAnime.image,
+          coverImage,
         }),
       });
       const data = await res.json();
@@ -186,6 +189,7 @@ export default function WatchPartyClient() {
     setSearchResults([]);
     setSelectedAnime(null);
     setCreateError("");
+    setCoverImage(null);
   }
 
   return (
@@ -392,6 +396,16 @@ export default function WatchPartyClient() {
                       </motion.div>
                     )}
                   </AnimatePresence>
+
+                  {/* Cover image upload */}
+                  {selectedAnime && (
+                    <ImageUploader
+                      currentUrl={coverImage}
+                      onUploaded={(url) => setCoverImage(url || null)}
+                      label="Custom Cover (optional)"
+                      aspect="aspect-video"
+                    />
+                  )}
 
                   {/* Error */}
                   {createError && (

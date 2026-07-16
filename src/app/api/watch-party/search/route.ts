@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchAnime } from "@/lib/jikan";
+import { searchMedia, bestTitle } from "@/lib/anilist";
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q")?.trim();
@@ -8,18 +8,19 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const results = await searchAnime(q);
+    const result = await searchMedia({ search: q, perPage: 8, type: "ANIME" });
     return NextResponse.json({
-      results: results.map((a) => ({
-        id: a.mal_id,
-        title: a.title,
-        image: a.images?.jpg?.large_image_url || a.images?.jpg?.image_url || null,
+      results: result.media.map((a) => ({
+        id: a.idMal || a.id,
+        title: bestTitle(a.title),
+        image: a.coverImage?.large || a.coverImage?.medium || null,
         episodes: a.episodes || null,
         status: a.status || null,
-        year: a.year || null,
+        year: a.startDate?.year || null,
       })),
     });
-  } catch {
-    return NextResponse.json({ results: [] });
+  } catch (e) {
+    console.error("[/api/watch-party/search] error:", e);
+    return NextResponse.json({ results: [], error: "Search failed" });
   }
 }

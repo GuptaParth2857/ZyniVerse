@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
+import { hasValidAnimeTag, getAnimeTagError } from "@/lib/blog-tags";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -45,6 +46,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (post.userId !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { title, content, excerpt, coverImage, tags, isDraft } = await req.json();
+
+  const publishing = isDraft === false || (isDraft === undefined && !post.isDraft);
+  if (publishing && tags !== undefined && !hasValidAnimeTag(tags || "")) {
+    return NextResponse.json({ error: getAnimeTagError() }, { status: 400 });
+  }
 
   const data: Record<string, unknown> = {};
   if (title !== undefined) data.title = title.trim();

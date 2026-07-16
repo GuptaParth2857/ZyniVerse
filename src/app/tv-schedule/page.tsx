@@ -9,6 +9,7 @@ import {
   getDayName,
   getNext7Days,
   getShowPoster,
+  prefetchShowPosters,
   type TimeSlot,
   type TvChannel,
 } from "@/lib/tv-channels";
@@ -135,7 +136,7 @@ const TV_CHANNEL_IDS = [
   "epic_kids",
   "animax",
 ];
-const YT_CHANNEL_IDS = ["muse_asia", "muse_india", "anime_log", "crunchyroll", "netflix_anime", "prime_video", "sony_liv", "jio_hotstar"];
+const YT_CHANNEL_IDS = ["muse_asia", "muse_india", "crunchyroll", "netflix_anime", "prime_video", "sony_liv", "jio_hotstar"];
 
 function parseMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
@@ -382,6 +383,9 @@ function LiveAiringSection({ selectedDay }: { selectedDay: string }) {
                   </h3>
                   <p className="text-[10px] text-[var(--color-mute)]">
                     {daySchedule.length} anime currently airing this week
+                  </p>
+                  <p className="text-[9px] text-[var(--color-mute)]/50">
+                    * Times are Japanese broadcast. Indian streaming platforms may delay 2-3 hours
                   </p>
                 </div>
               </div>
@@ -801,6 +805,7 @@ function TvSchedulePage() {
   const [liveData, setLiveData] = useState<LiveScheduleData | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [refreshCount, setRefreshCount] = useState(0);
+  const [posterVersion, setPosterVersion] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const days = useMemo(() => getNext7Days(), []);
@@ -819,6 +824,11 @@ function TvSchedulePage() {
         hour12: true,
       }));
       setRefreshCount((c) => c + 1);
+      // Pre-fetch posters for all unique show names from AniList
+      const allShows = data.channels.flatMap((ch) =>
+        Object.values(ch.days).flat().map((s) => s.show)
+      );
+      prefetchShowPosters(allShows).then(() => setPosterVersion((v) => v + 1)).catch(() => {});
     } catch {}
   }, []);
 
@@ -881,6 +891,9 @@ function TvSchedulePage() {
               </div>
               <p className="text-sm text-[var(--color-mute)] ml-4">
                 Daily broadcast schedule for Indian TV &amp; YouTube anime channels with exact show timings
+              </p>
+              <p className="text-[10px] text-[var(--color-mute)]/60 ml-4 mt-1">
+                * Streaming platforms (JioHotstar, Sony LIV, Crunchyroll) may air episodes 2-3 hours after Japanese broadcast time
               </p>
             </div>
             {lastUpdated && (

@@ -1,16 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ReactNode } from "react";
 
 export default function RouteTransition({ children }: { children: ReactNode }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.15 }}
-    >
+    <div style={{ animation: "fadeIn 0.15s ease-out" }}>
       {children}
-    </motion.div>
+    </div>
   );
 }

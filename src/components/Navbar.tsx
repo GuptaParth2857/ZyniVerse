@@ -66,6 +66,7 @@ const SECONDARY_LINKS = [
   { to: "/status", label: "Status" },
   { to: "/indian-dubs", label: "Indian Dubs" },
   { to: "/developer", label: "Developer" },
+  { to: "/feedback", label: "Feedback" },
 ];
 
 export default function Navbar() {
@@ -208,6 +209,13 @@ export default function Navbar() {
                             pathname === "/profile" ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
                           }`}
                         >Profile</Link>
+                        {(session.user as Record<string, unknown>)?.email === "admin@zyverse.in" && (
+                          <Link href="/admin" onClick={() => setMoreOpen(false)}
+                            className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
+                              pathname.startsWith("/admin") ? "text-[var(--color-magenta)]" : "text-[var(--color-mute)]"
+                            }`}
+                          >Admin Panel</Link>
+                        )}
                       </>
                     )}
                   </div>
@@ -344,8 +352,11 @@ export default function Navbar() {
             { title: "Browse", items: SECONDARY_LINKS.filter(l => ["/search", "/schedule", "/seasonal", "/browse", "/random", "/season/upcoming", "/recommendations"].includes(l.to)) },
             { title: "Anime", items: SECONDARY_LINKS.filter(l => ["/filler", "/watch-order", "/dubbed", "/indian-dubs", "/dub-schedule", "/themes", "/ost"].includes(l.to)) },
             { title: "Manga & More", items: SECONDARY_LINKS.filter(l => ["/manga", "/light-novels", "/doujinshi", "/characters", "/staff", "/voice-actors", "/voice-actors/indian", "/voice-lines"].includes(l.to)) },
-            { title: "Community", items: SECONDARY_LINKS.filter(l => ["/forum", "/community", "/clubs", "/blog", "/challenges", "/quiz", "/tierlist", "/lists", "/cosplay", "/conventions", "/watch-party", "/messages", "/activity"].includes(l.to)) },
+            { title: "Community", items: SECONDARY_LINKS.filter(l => ["/forum", "/community", "/clubs", "/blog", "/challenges", "/quiz", "/tierlist", "/lists", "/cosplay", "/conventions", "/watch-party", "/messages", "/activity", "/feedback"].includes(l.to)) },
             { title: "Tools", items: SECONDARY_LINKS.filter(l => ["/compare", "/achievements", "/awards", "/leaderboard", "/stats", "/news", "/docs", "/developer", "/premium", "/status", "/wiki"].includes(l.to)) },
+            ...(session?.user && (session.user as Record<string, unknown>).email === "admin@zyverse.in"
+              ? [{ title: "Admin", items: [{ to: "/admin", label: "Admin Panel" }] }]
+              : []),
           ].map((group) => group.items.length > 0 && (
             <div key={group.title} className="mb-3">
               <p className="px-3 text-[10px] font-mono text-[var(--color-mute)] uppercase tracking-wider mb-1">{group.title}</p>

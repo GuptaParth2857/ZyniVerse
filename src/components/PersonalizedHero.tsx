@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface PersonalizedHeroProps {
   userId?: string;
+  fallbackItems?: MediaItem[];
 }
 
 interface WatchlistEntry {
@@ -24,6 +25,7 @@ interface MediaItem {
   genres: string[];
   episodes: number | null;
   trending: number | null;
+  type?: string;
 }
 
 interface AniListPageResponse {
@@ -43,11 +45,12 @@ function stripHtml(s: string | null): string {
   return s.replace(/<[^>]*>/g, "").slice(0, 160);
 }
 
-export default function PersonalizedHero({ userId }: PersonalizedHeroProps) {
+export default function PersonalizedHero({ userId, fallbackItems = [] }: PersonalizedHeroProps) {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
   const [genre, setGenre] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
+  const [isPersonalized, setIsPersonalized] = useState(false);
 
   const fetchPersonalized = useCallback(async () => {
     if (!userId) return;
@@ -98,6 +101,7 @@ export default function PersonalizedHero({ userId }: PersonalizedHeroProps) {
       setItems(trending);
       setGenre(topGenre);
       setLoaded(true);
+      setIsPersonalized(true);
     } catch {
       setLoaded(false);
     }
@@ -115,9 +119,12 @@ export default function PersonalizedHero({ userId }: PersonalizedHeroProps) {
     return () => clearInterval(timer);
   }, [items.length]);
 
-  if (!loaded || items.length === 0) return null;
+  const displayItems = loaded && items.length > 0 ? items : fallbackItems;
+  const showPersonalized = loaded && items.length > 0;
 
-  const active = items[activeIdx];
+  if (displayItems.length === 0) return null;
+
+  const active = displayItems[activeIdx % displayItems.length];
   const title = bestTitle(active.title);
 
   return (
@@ -157,9 +164,14 @@ export default function PersonalizedHero({ userId }: PersonalizedHeroProps) {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">
-              Because you watched {genre}
-            </p>
+            <span className="font-mono text-xs uppercase tracking-[0.3em] text-[var(--color-cyan)]">
+              // Live Discovery Platform
+            </span>
+            {showPersonalized && genre && (
+              <p className="mb-2 mt-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">
+                Because you watched {genre}
+              </p>
+            )}
             <h1 className="font-display text-3xl font-bold sm:text-5xl lg:text-6xl drop-shadow-lg max-w-2xl">
               {title}
             </h1>
@@ -194,9 +206,9 @@ export default function PersonalizedHero({ userId }: PersonalizedHeroProps) {
           </motion.div>
         </AnimatePresence>
 
-        {items.length > 1 && (
+        {displayItems.length > 1 && (
           <div className="mt-6 flex items-center gap-2">
-            {items.map((item, i) => (
+            {displayItems.map((item, i) => (
               <button
                 key={item.id}
                 onClick={() => setActiveIdx(i)}

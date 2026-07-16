@@ -17,5 +17,8 @@ export async function GET() {
     }
   }
 
-  return NextResponse.json({ tags: Array.from(tagSet).sort() });
+  return NextResponse.json(
+    { tags: Array.from(tagSet).sort() },
+    { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+  );
 }

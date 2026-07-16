@@ -44,218 +44,90 @@ export interface TvAnimeEntry {
 
 export const TV_ANIME_SCHEDULE: TvAnimeEntry[] = [];
 
-export const SHOW_POSTER_URLS: Record<string, string> = {
-  "A Gatherer's Adventure in Isekai": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx187663-VVdpMlkhwMSh.jpg",
-  "Atashinchi": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b3006-XANMoAUZPtcn.jpg",
-  "Attack on Titan": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx16498-buvcRTBx4NSm.jpg",
-  "Attack on Titan (Hindi)": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx16498-buvcRTBx4NSm.jpg",
-  "Attack on Titan (Tamil)": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx16498-buvcRTBx4NSm.jpg",
-  "Attack on Titan (Telugu)": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx16498-buvcRTBx4NSm.jpg",
-  "Banana Fish": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx100388-hjkg1AnlJR5z.jpg",
-  "Black Clover": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx97940-fyh8o7gNbha0.png",
-  "Akane-Banashi": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx196935-RnLWBsEvNp8M.jpg",
-  "Chainsmoker Cat": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx207141-h5q5KJPd6vaX.jpg",
-  "Bleach": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx269-d2GmRkJbMopq.png",
-  "Bleach: TYBW": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx116674-p3zK4PUX2Aag.jpg",
-  "Blue Lock": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx137822-U8naszP96vzC.png",
-  "Chainsaw Man": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx127230-DdP4vAdssLoz.png",
-  "Classroom of the Elite (Hindi)": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx98659-WNyPLIZDpGGY.jpg",
-  "Classroom of the Elite (Tamil)": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx98659-WNyPLIZDpGGY.jpg",
-  "Classroom of the Elite (Telugu)": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx98659-WNyPLIZDpGGY.jpg",
-  "Classroom of the Elite S4": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx98659-WNyPLIZDpGGY.jpg",
-  "Cowboy Bebop": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx1-GCsPm7waJ4kS.png",
-  "Cyberpunk: Edgerunners": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx120377-ayZPoxiWt4Li.jpg",
-  "Dandadan": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx171018-60q1B6GK2Ghb.jpg",
-  "Death Note": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx1535-kUgkcrfOrkUM.jpg",
-  "Demon Slayer": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21612-d5zrx9CWkxNl.png",
-  "Demon Slayer: Kimetsu no Yaiba": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21612-d5zrx9CWkxNl.png",
-  "Devilman Crybaby": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx98460-bLtH2c3jd6sV.png",
-  "Dororo": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx101347-TGaDwEYqLfm1.jpg",
-  "Darwin Incident": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx177679-BgsgE0fQk3qN.jpg",
-  "Dragon Ball Daima": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx170083-GTwRrhTApcLR.png",
-  "Dragon Ball Z": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx813-ZhnFNOeCU5dQ.png",
-  "Dragon Ball": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx813-ZhnFNOeCU5dQ.png",
-  "Dragon Ball Super": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21175-EH06qlfF8TnB.jpg",
-  "Fullmetal Alchemist": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx121-zjmixZ428Mwv.png",
-  "Fullmetal Alchemist: Brotherhood": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx5114-nSWCgQlmOMtj.jpg",
-  "Grand Blue": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx100922-uxEhaCsqMMp3.png",
-  "Haikyuu!!": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20464-ooZUyBe4ptp9.png",
-  "Hunter x Hunter": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx136-gj0bbCpDNrKG.jpg",
-  "Inuyasha": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx249-jVBkyLnBvnRE.png",
-  "Jujutsu Kaisen": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx113415-LHBAeoZDIsnF.jpg",
-  "Jujutsu Kaisen (Hindi)": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx113415-LHBAeoZDIsnF.jpg",
-  "Kabaneri of the Iron Fortress": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21196-2PfPfIDrxKki.jpg",
-  "Made in Abyss": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx97986-TQ7dCgbS3y5s.jpg",
-  "My Hero Academia": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21459-nYh85uj2Fuwr.jpg",
-  "Naruto": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20-dE6UHbFFg1A5.jpg",
-  "Naruto Shippuden": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx1735-kGfVm0YqCPcu.png",
-  "Naruto: Shippuden": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx1735-kGfVm0YqCPcu.png",
-  "Neon Genesis Evangelion": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx30-AI1zr74Dh4ye.jpg",
-  "Nippon Sangoku": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx206914-SHKX08LarRzB.jpg",
-  "One Piece": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21-ELSYx3yMPcKM.jpg",
-  "One Punch Man": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21087-B5DHjqZ3kW4b.jpg",
-  "Pluto": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx99088-LTJskMD1wbbQ.png",
-  "Pokemon": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b527-t6dBVJ5OVcXK.png",
-  "Pokémon": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b527-t6dBVJ5OVcXK.png",
-  "Pokemon The Series: XYZ": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b527-t6dBVJ5OVcXK.png",
-  "Pokemon: Arceus Movie": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b527-t6dBVJ5OVcXK.png",
-  "Psycho-Pass": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx13601-i42VFuHpqEOJ.jpg",
-  "Re:Creators": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx97980-9NQwPW0igSMk.jpg",
-  "Re:ZERO S4": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21355-wRVUrGxpvIQQ.jpg",
-  "Remake Our Life!": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx114065-YPPyW7ZSxfYU.jpg",
-  "Rurouni Kenshin": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx45-DEFgZRCxiGmF.png",
-  "Sakamoto Days": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx177709-e5Qx6RlsBgD5.png",
-  "Scott Pilgrim Takes Off": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx170206-ZP4qAzx2I2oR.jpg",
-  "Shin Chan": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b966-QUCdKAk4ls9J.jpg",
-  "Shin-chan": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b966-QUCdKAk4ls9J.jpg",
-  "Sinchan": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b966-QUCdKAk4ls9J.jpg",
-  "Shin Chan & The Legends of Ninja Mononoke Movie": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b966-QUCdKAk4ls9J.jpg",
-  "Shin Chan & The Mystery of Tenkasu Academy Movie": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b966-QUCdKAk4ls9J.jpg",
-  "Shinchan In Very Very Tasty Tasty Movie": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b966-QUCdKAk4ls9J.jpg",
-  "Slam Dunk": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx170-cmD8A0vZsp6g.jpg",
-  "Solo Leveling": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx151807-it355ZgzquUd.png",
-  "Solo Leveling (Hindi)": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx151807-it355ZgzquUd.png",
-  "Sparks of Tomorrow (KyoAni)": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx103303-IF43hFJPPv2Y.png",
-  "Mushoku Tensei: Jobless Reincarnation S3": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx178789-hNXjKFzUq7mk.jpg",
-  "Mushoku Tensei: Jobless Reincarnation": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx178789-hNXjKFzUq7mk.jpg",
-  "Spy x Family": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx140960-Kb6R5nYQfjmP.jpg",
-  "Steins;Gate": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx9253-tIUXF2gfU8Sg.jpg",
-  "Sword Art Online": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx11757-SxYDUzdr9rh2.jpg",
-  "That Time I Got Reincarnated as a Slime": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx101280-tDxCVJm714nt.jpg",
-  "The Apothecary Diaries": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx161645-QLbzHXiYRgV2.jpg",
-  "The God of High School": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx116006-Wt8JSA1ZQxlM.png",
-  "Tokyo Revengers": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx120120-cWDmnmeEntSe.jpg",
-  "Vinland Saga": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx101348-2fhDFPCuMNiz.jpg",
-  "Wind Breaker": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx163270-wboZJp0ybwVK.jpg",
-  "You and I Are Polar Opposites": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx184951-s8Lg2muPBhdX.jpg",
-  "Goodbye, Lara": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx177637-8onaQWqKW1C3.jpg",
-  "Yu Yu Hakusho": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx392-z90299zIvYmx.png",
-  "Beyblade Burst": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21236-8B4fORbuUp6v.jpg",
-  "Doraemon": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/501.jpg",
+// Non-AniList shows that need static posters (Indian cartoons, etc.)
+const STATIC_POSTERS: Record<string, string> = {
+  "Shin Chan": "https://upload.wikimedia.org/wikipedia/en/0/0b/Shin-chan_%28Japanese_logo%29.svg",
+  "Shin-chan": "https://upload.wikimedia.org/wikipedia/en/0/0b/Shin-chan_%28Japanese_logo%29.svg",
+  "Sinchan": "https://upload.wikimedia.org/wikipedia/en/0/0b/Shin-chan_%28Japanese_logo%29.svg",
+  "Doraemon": "https://upload.wikimedia.org/wikipedia/en/b/b4/Doraemon_character.png",
   "Chhota Bheem": "https://upload.wikimedia.org/wikipedia/en/f/f9/Chhota_Bheem.jpg",
-  "Chhota Bheem aur Krishna: Mayanagari Movie": "https://upload.wikimedia.org/wikipedia/en/f/f9/Chhota_Bheem.jpg",
-  "Chhota Bheem Aur Krishna: Patliputra Movie": "https://upload.wikimedia.org/wikipedia/en/f/f9/Chhota_Bheem.jpg",
   "Motu Patlu": "https://upload.wikimedia.org/wikipedia/en/3/3b/Motu_Patlu.Jpg",
-  "Motu Patlu Movie": "https://upload.wikimedia.org/wikipedia/en/3/3b/Motu_Patlu.Jpg",
   "Taarak Mehta Ka Ooltah Chashmah": "https://upload.wikimedia.org/wikipedia/en/e/e2/Taarak_Mehta_Ka_Ooltah_Chashmah.jpg",
   "CID": "https://upload.wikimedia.org/wikipedia/en/b/b5/CID_%28Indian_TV_series%29.png",
   "Bandbudh Aur Budbak": "https://upload.wikimedia.org/wikipedia/en/0/08/Bandbudh_Aur_Budbak_logo.jpg",
   "Lamput": "https://upload.wikimedia.org/wikipedia/commons/d/da/Lamput.png",
   "Kiteretsu": "https://upload.wikimedia.org/wikipedia/en/d/d2/KiteretsuDaihyakka-vol1.jpg",
-  "Chikoo Aur Bunty": "https://upload.wikimedia.org/wikipedia/en/5/57/Chikoo_Aur_Bunty_poster.jpeg",
   "Little Singham": "https://upload.wikimedia.org/wikipedia/en/2/23/Cop_Universe_logo.jpg",
-  "Baby Little Singham": "https://upload.wikimedia.org/wikipedia/en/2/23/Cop_Universe_logo.jpg",
-  "Bhootnath Returns": "",
-  "Bahubali Friends": "",
-  "Fukrey Boyzzz": "",
-  "Gattu Aur Battu": "",
-  "Haddi Mera Buddy": "",
-  "Honey Bunny Ka Jholmaal": "",
-  "Inspector Chingum": "",
-  "Jay Jagannath": "",
-  "Kian And Kiki": "",
-  "Kris Roll No 21": "",
-  "Maca & Roni": "",
-  "Omi No.1": "",
-  "Sampat Champat": "",
-  "Selfie With Bajrangi": "",
-  "Sher Aur Savasher": "",
-  "Titoo": "",
-  "Bittu Bahanebaaz": "",
-  "Daaduji": "",
-  "Smaashhing Simmba": "",
-  "Chuck Chicken": "",
-  "Big Hero 6 The Series": "",
-  "Gravity Falls": "",
-  "Grizzy and the Lemmings": "",
-  "Looney Tunes": "",
-  "Marvel's Spider-Man": "",
-  "Mr. Bean: The Animated Series": "",
-  "Pac-Man and the Ghostly Adventures": "",
-  "Scooby-Doo, Where Are You!": "",
-  "Star Wars Rebels": "",
-  "Teen Titans GO!": "",
-  "Teen Titans Go! Special": "",
-  "The Flintstones": "",
-  "Tom and Jerry": "",
-  "We Bare Bears": "",
-  "Castlevania": "",
-  "Power Rangers Dino Fury": "",
-  "The 100 Girlfriends Who Really Really Really Really REALLY Love You": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx162694-QFBei5pbjSh8.png",
-  "The World's Strongest Rearguard": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx198409-EiWJXfYnvfu4.png",
-  "ONE PIECE HEROINES": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx197178-Ui8PY9HQbNgu.jpg",
-  "The Elusive Samurai": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx162896-hSMTVceb50GY.jpg",
-  "BLACK TORCH": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx187538-fXVXKYUA3VV6.jpg",
-  "Skeleton Knight in Another World": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx132474-J2ECHSPkfb9g.jpg",
-  "KAIJU GIRL CARAMELISE": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx204466-vXMvIs4VOoQd.png",
-  "Smoking Behind the Supermarket with You": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx196187-0dgFi2CPp3xn.jpg",
-  "LIAR GAME": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx197754-Q5KqcUhIdypp.png",
-  "The Oblivious Saint Can't Contain Her Power": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx196219-imvC0rbk4VzH.jpg",
-  "Clevatess": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx178869-qiEz0gQD8H5N.png",
-  "Saga of Tanya the Evil": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21613-qT3NiwYP5dYc.png",
-  "Tomb Raider King": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx184356-SlFIstXUXJYP.png",
-  "Trapped in a Dating Sim": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx142074-pHe4bX791PJh.jpg",
-  "Welcome to Demon School! Iruma-kun": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx107693-A9bSSFAMxA6j.jpg",
-  "Daemons of the Shadow Realm": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx195600-moI0UFArtOme.jpg",
-  "Ascendance of a Bookworm": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx108268-Dtt82uOi3vq5.jpg",
-  "Love Unseen Beneath the Clear Night Sky": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx202269-7KNj8s2fSsJJ.jpg",
-  "The Insipid Prince's Furtive Grab for the Throne": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx169582-quL8VMg45fcu.png",
-  "A Livid Lady's Guide to Getting Even": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx199408-ocRWG4pRWl8f.png",
-  "Draw This, Then Die!": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx188525-uWhw4rQcqOyF.jpg",
-  "BanG Dream! YUME INFINITA": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx198376-sc5qcFv0RSH9.jpg",
-  "Iron Wok Jan!": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx204060-bKhovD8jAlW8.jpg",
-  "Case Closed": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx235-MyYT7K3chBdO.jpg",
+  "Beyblade Burst": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21236-8B4fORbuUp6v.jpg",
+  "Pokemon": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b527-t6dBVJ5OVcXK.png",
+  "Pokémon": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b527-t6dBVJ5OVcXK.png",
+  "Dragon Ball Z": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx813-ZhnFNOeCU5dQ.png",
+  "Dragon Ball": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx813-ZhnFNOeCU5dQ.png",
+  "Naruto": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20-dE6UHbFFg1A5.jpg",
+  "One Piece": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21-ELSYx3yMPcKM.jpg",
   "Detective Conan": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx235-MyYT7K3chBdO.jpg",
-  "Bungo Stray Dogs WAN! 2": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx120150-hxvcRrYzgP2F.png",
-  "The Classroom of a Black Cat and a Witch": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx196974-mZk1uyrx0XNx.png",
-  "Let's Go KAIKIGUMI": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx200230-YuzdgbXSgi38.png",
-  "Though I Am an Inept Villainess": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx188139-1qIJfWxym8FX.jpg",
-  "From Overshadowed to Overpowered": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx208044-Pm2UhvApQFUh.jpg",
-  "Bungo Stray Dogs WAN!": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx120150-hxvcRrYzgP2F.png",
-  "Crowned in a Hundred Days": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx213484-FIyYH43ASHgB.png",
-  "MEBIUS DUST": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx108992-skuOsfmLmMd2.jpg",
-  "Yoroi-Shinden Samurai Troopers": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx194318-V3STmm4wutVQ.jpg",
-  "Victoria of Many Faces": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx198709-3PFLvU6eqPvf.jpg",
-  "Hana-Kimi Season 2": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx209669-7GlPe2ra5f1i.jpg",
-  "The Villager of Level 999": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx197715-KLFLxU24U1uL.png",
-  "Sorry About My Little Brothers": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx203490-YQXiymUiDQNA.jpg",
-  "I Became a Legend After My 10 Year-Long Last Stand": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx199748-PAFk9pGSUmFL.png",
-  "The Frontier Lord Begins with Zero Subjects": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx196218-UsdTTCrwpDIN.jpg",
-  "The Duke's Son Claims He Won't Love Me Yet": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx208225-HJbCC0Z4xRp3.jpg",
-  "Rich Girl Caretaker": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx201514-BHAeWhSbcBrT.png",
-  "Recommendations from Iwamoto-Senpai": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx206249-1AUSry416wGz.png",
-  "The Ogre's Bride": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b194219-56EhyK775lga.jpg",
-  "Hanaori-san Still Wants to Fight": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx199066-YXDVsguvFZMm.jpg",
-  "DIGIMON BEATBREAK": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx188388-aXx9fsnvezBf.jpg",
-  "Star Detective Precure!": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx202957-fxZGgJTvwXzP.jpg",
-  "Anime AzurLane: Slow Ahead! Season 2": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx169080-el4sMLlqMxeI.png",
-  "RILAKKUMA": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b183231-z7SgjmXZBcoX.png",
-  "The Drops of God": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx202508-dk6LEyevJYUY.jpg",
-  "Goblin Slayer": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx100911-wI9h0j5dJzqX.jpg",
-  "JoJo's Bizarre Adventure": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx14719-lM1Jphx5pKJq.jpg",
-  "Campfire Cooking in Another World": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx140739-865qBzGjMY5W.jpg",
-  "Junji Ito Collection": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx101542-jtMjKqN4rjTl.jpg",
-  "Idaten Jump": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx814-GXbWJqz2p3kO.jpg",
-  "Reborn to Master the Blade": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx135447-NlFqQhM4QJ8y.jpg",
-  "Cells at Work! Code Black": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx132033-xBC9jIr2Sq1Y.jpg",
-  "My Hero Academia: Vigilantes": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx183614-7LjBz8pM7gXf.jpg",
-  "Bofuri: I Don't Want to Get Hurt": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx109370-y8q3Vl4T4l3v.jpg",
+  "Case Closed": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx235-MyYT7K3chBdO.jpg",
 };
 
+// In-memory cache for AniList-fetched posters
+const posterCache = new Map<string, string>();
+const posterFetchErrors = new Set<string>();
+
 export function getShowPoster(showName: string): string | undefined {
-  if (SHOW_POSTER_URLS[showName]) return SHOW_POSTER_URLS[showName] || undefined;
+  // 1. Check in-memory cache
+  if (posterCache.has(showName)) return posterCache.get(showName);
+  // 2. Check static posters
+  if (STATIC_POSTERS[showName]) return STATIC_POSTERS[showName];
+  // 3. Fuzzy match static posters
   const lower = showName.toLowerCase().replace(/[:\-!]/g, "").replace(/\s+/g, " ").trim();
-  for (const [key, val] of Object.entries(SHOW_POSTER_URLS)) {
-    if (!val) continue;
-    const kLower = key.toLowerCase().replace(/[:\-!]/g, "").replace(/\s+/g, " ").trim();
-    if (kLower === lower) return val;
-  }
-  for (const [key, val] of Object.entries(SHOW_POSTER_URLS)) {
-    if (!val) continue;
+  for (const [key, val] of Object.entries(STATIC_POSTERS)) {
     const kLower = key.toLowerCase().replace(/[:\-!]/g, "").replace(/\s+/g, " ").trim();
     if (lower.includes(kLower) || kLower.includes(lower)) return val;
   }
   return undefined;
+}
+
+// Fetch poster from AniList API (with caching)
+export async function fetchShowPoster(showName: string): Promise<string | null> {
+  // Already cached
+  if (posterCache.has(showName)) return posterCache.get(showName) || null;
+  // Previously failed
+  if (posterFetchErrors.has(showName)) return null;
+
+  try {
+    const { searchMedia } = await import("./anilist");
+    const result = await searchMedia({ search: showName, type: "ANIME", perPage: 1 });
+    const media = result.media?.[0];
+    if (media?.coverImage?.large) {
+      posterCache.set(showName, media.coverImage.large);
+      return media.coverImage.large;
+    }
+    // Try with cleaned title (remove "S2", "S3", "(Hindi)" etc)
+    const cleaned = showName.replace(/\s*S\d+\s*/g, "").replace(/\s*\(.*?\)\s*/g, "").trim();
+    if (cleaned !== showName) {
+      const result2 = await searchMedia({ search: cleaned, type: "ANIME", perPage: 1 });
+      const media2 = result2.media?.[0];
+      if (media2?.coverImage?.large) {
+        posterCache.set(showName, media2.coverImage.large);
+        return media2.coverImage.large;
+      }
+    }
+    posterFetchErrors.add(showName);
+    return null;
+  } catch {
+    posterFetchErrors.add(showName);
+    return null;
+  }
+}
+
+// Pre-fetch posters for all shows in a schedule (batch)
+export async function prefetchShowPosters(showNames: string[]): Promise<void> {
+  const unique = [...new Set(showNames)].filter((n) => !posterCache.has(n) && !posterFetchErrors.has(n));
+  // Fetch in batches of 5 to respect AniList rate limits
+  for (let i = 0; i < unique.length; i += 5) {
+    const batch = unique.slice(i, i + 5);
+    await Promise.all(batch.map((name) => fetchShowPoster(name)));
+  }
 }
 
 export const TV_CHANNELS: Record<string, TvChannel> = {
@@ -444,17 +316,6 @@ export const TV_CHANNELS: Record<string, TvChannel> = {
     subscriberCount: "1.2M",
     logoUrl: "https://yt3.googleusercontent.com/EhiAEsA972_jooWrHY8oLLDS1C9L84-YVNyKclXsNSKB2tYnUqqqi_O10JkcPd64EnaburVG=s900-c-k-c0x00ffffff-no-rj",
   },
-  anime_log: {
-    id: "anime_log",
-    name: "AnimeLog",
-    shortName: "AL",
-    color: "#3F51B5",
-    region: "India",
-    website: "https://www.youtube.com/@AnimeLog",
-    type: "youtube",
-    subscriberCount: "500K",
-    logoUrl: "https://yt3.googleusercontent.com/I9RVaPzYoqj5C5E5vi37iztgXIJ0qPXRh8v1JeGrYMblRDeqiMO2Gripfevt3o40F_v2FwbSfEY=s900-c-k-c0x00ffffff-no-rj",
-  },
   crunchyroll: {
     id: "crunchyroll",
     name: "Crunchyroll",
@@ -541,13 +402,6 @@ const MUSE_INDIA_WEEKLY: Record<string, TimeSlot[]> = {
     { show: "Mushoku Tensei S3 (Hindi Sub)", start: "20:00", end: "20:30", duration: 30, description: "New episode - Sundays" },
     { show: "The 100 Girlfriends S3 (Hindi Sub)", start: "20:30", end: "21:00", duration: 30, description: "New episode - Sundays" },
     { show: "The World's Strongest Rearguard (Hindi Sub)", start: "21:00", end: "21:30", duration: 30, description: "New episode - Sundays" },
-  ],
-};
-
-const ANIMELOG_DAILY: DaySchedule = {
-  day: "Monday",
-  slots: [
-    { show: "AnimeLog Library - On Demand", start: "00:00", end: "23:59", duration: 1439, description: "Classic anime episodes uploaded daily - watch anytime" },
   ],
 };
 
@@ -693,10 +547,6 @@ export const CHANNEL_SCHEDULES: ChannelSchedule[] = [
   {
     channelId: "muse_india",
     schedules: ALL_DAYS.map((d) => ({ day: d, slots: MUSE_INDIA_WEEKLY[d] || [] })),
-  },
-  {
-    channelId: "anime_log",
-    schedules: ALL_DAYS.map((d) => cloneScheduleForDay(d, { ...ANIMELOG_DAILY, day: d })),
   },
   {
     channelId: "crunchyroll",

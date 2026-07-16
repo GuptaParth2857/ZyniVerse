@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
@@ -10,6 +10,7 @@ interface ClubData {
   name: string;
   slug: string;
   description?: string | null;
+  rules?: string | null;
   coverImage?: string | null;
   icon?: string | null;
   category: string;
@@ -19,6 +20,7 @@ interface ClubData {
   owner: { id: string; username: string; avatar?: string | null };
   members: { id: string; role: string; user: { id: string; username: string; avatar?: string | null } }[];
   posts: { id: string; title: string; content: string; isPinned: boolean; createdAt: string; user: { id: string; username: string; avatar?: string | null } }[];
+  events: { id: string; title: string; description: string | null; startTime: string; endTime: string | null; isVirtual: boolean; streamUrl: string | null; members: { id: string; status: string; user: { id: string; username: string; avatar: string | null } }[] }[];
   _count: { members: number; posts: number; joinRequests: number };
 }
 
@@ -67,6 +69,57 @@ export default function ClubDetailPageClient({ params }: { params: Promise<{ slu
     if (res.ok) fetchClub();
   };
 
+  const handleEditPost = async (postId: string, title: string, content: string) => {
+    const res = await fetch(`/api/clubs/${club?.id}/posts/${postId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, content }),
+    });
+    if (res.ok) fetchClub();
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm("Delete this post?")) return;
+    const res = await fetch(`/api/clubs/${club?.id}/posts/${postId}`, { method: "DELETE" });
+    if (res.ok) fetchClub();
+  };
+
+  const handlePinPost = async (postId: string, isPinned: boolean) => {
+    const res = await fetch(`/api/clubs/${club?.id}/posts/${postId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isPinned }),
+    });
+    if (res.ok) fetchClub();
+  };
+
+  const handleUpdateClub = async (data: { coverImage?: string; icon?: string; rules?: string; description?: string }) => {
+    const res = await fetch(`/api/clubs/${club?.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) fetchClub();
+  };
+
+  const handleCreateEvent = async (eventData: { title: string; description?: string; startTime: string; endTime?: string; isVirtual?: boolean; streamUrl?: string }) => {
+    const res = await fetch(`/api/clubs/${club?.id}/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(eventData),
+    });
+    if (res.ok) fetchClub();
+  };
+
+  const handleRsvp = async (eventId: string, status: string) => {
+    await fetch(`/api/clubs/${club?.id}/events/${eventId}/rsvp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    fetchClub();
+  };
+
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
@@ -96,5 +149,20 @@ export default function ClubDetailPageClient({ params }: { params: Promise<{ slu
     );
   }
 
-  return <ClubDetail club={club} isMember={isMember} memberRole={memberRole} onJoin={handleJoin} onLeave={handleLeave} onCreatePost={handleCreatePost} />;
+  return (
+    <ClubDetail
+      club={club}
+      isMember={isMember}
+      memberRole={memberRole}
+      onJoin={handleJoin}
+      onLeave={handleLeave}
+      onCreatePost={handleCreatePost}
+      onEditPost={handleEditPost}
+      onDeletePost={handleDeletePost}
+      onPinPost={handlePinPost}
+      onUpdateClub={handleUpdateClub}
+      onCreateEvent={handleCreateEvent}
+      onRsvp={handleRsvp}
+    />
+  );
 }

@@ -594,8 +594,9 @@ export async function getAiringSchedule(fromSec: number, toSec: number) {
   const all: AiringScheduleEntry[] = [];
   while (hasNext && page <= 6) {
     const data = await gql(q, { from: fromSec, to: toSec, page });
+    if (!data?.Page?.airingSchedules) break;
     all.push(...data.Page.airingSchedules);
-    hasNext = data.Page.pageInfo.hasNextPage;
+    hasNext = data.Page.pageInfo?.hasNextPage ?? false;
     page++;
   }
   return all;

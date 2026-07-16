@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
 
@@ -56,15 +55,16 @@ export default function ExpandingFlexCard({ items }: { items: Media[] }) {
           const isHovered = hovered === item.id;
 
           return (
-            <motion.div
+            <div
               key={item.id}
-              layout
-              animate={{ flex: isHovered ? 3 : 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
               onMouseEnter={() => setHovered(item.id)}
               onMouseLeave={() => setHovered(null)}
               className="relative overflow-hidden rounded-2xl border border-[var(--color-line)] cursor-pointer group"
-              style={{ minWidth: 0 }}
+              style={{
+                flex: isHovered ? 3 : 1,
+                minWidth: 0,
+                transition: "flex 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
+              }}
             >
               <Link
                 href={item.type === "MANGA" ? `/manga/${item.id}` : `/anime/${item.id}`}
@@ -84,19 +84,23 @@ export default function ExpandingFlexCard({ items }: { items: Media[] }) {
                 )}
 
                 <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <motion.p
-                    animate={{ opacity: isHovered ? 0 : 1 }}
+                  <p
                     className="font-display text-xs font-bold leading-tight [writing-mode:vertical-lr] rotate-180 truncate"
+                    style={{
+                      opacity: isHovered ? 0 : 1,
+                      transition: "opacity 0.3s ease",
+                    }}
                   >
                     {bestTitle(item.title)}
-                  </motion.p>
+                  </p>
                 </div>
 
-                <motion.div
-                  initial={false}
-                  animate={{ opacity: isHovered ? 1 : 0 }}
-                  transition={{ duration: 0.2 }}
+                <div
                   className="absolute inset-x-0 bottom-0 p-5"
+                  style={{
+                    opacity: isHovered ? 1 : 0,
+                    transition: "opacity 0.2s ease",
+                  }}
                 >
                   <p className="font-display text-lg font-bold leading-tight drop-shadow-lg">
                     {bestTitle(item.title)}
@@ -125,15 +129,17 @@ export default function ExpandingFlexCard({ items }: { items: Media[] }) {
                     </p>
                   )}
 
-                  <motion.span
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.15 }}
+                  <span
                     className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-magenta)]"
+                    style={{
+                      opacity: 1,
+                      transform: isHovered ? "translateX(0)" : "translateX(-10px)",
+                      transition: "transform 0.3s ease 0.15s",
+                    }}
                   >
                     View Details →
-                  </motion.span>
-                </motion.div>
+                  </span>
+                </div>
 
                 <div className="absolute left-3 top-3">
                   <span className="font-mono text-[10px] font-bold text-white/40">
@@ -141,7 +147,7 @@ export default function ExpandingFlexCard({ items }: { items: Media[] }) {
                   </span>
                 </div>
               </Link>
-            </motion.div>
+            </div>
           );
         })}
       </div>

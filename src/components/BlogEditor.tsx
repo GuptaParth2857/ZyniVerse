@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { hasValidAnimeTag, getAnimeTagError } from "@/lib/blog-tags";
 
 interface BlogEditorProps {
   post?: {
@@ -40,18 +41,22 @@ function insertMarkdown(textarea: HTMLTextAreaElement, action: string, wrap?: st
 }
 
 export default function BlogEditor({ post }: BlogEditorProps) {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const isEdit = !!post;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState(post?.title || "");
   const [content, setContent] = useState(post?.content || "");
   const [excerpt, setExcerpt] = useState(post?.excerpt || "");
   const [coverImage, setCoverImage] = useState(post?.coverImage || "");
   const [tags, setTags] = useState(post?.tags || "");
-  const [isDraft, setIsDraft] = useState(post?.isDraft ?? true);
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [saving, setSaving] = useState(false);
+  const [tagError, setTagError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [dragOver, setDragOver] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -88,8 +93,41 @@ export default function BlogEditor({ post }: BlogEditorProps) {
     textarea.focus();
   }, []);
 
+  const uploadImage = async (file: File) => {
+    setUploading(true);
+    setUploadError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload/blog", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setCoverImage(data.url);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
+    }
+    setUploading(false);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadImage(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) uploadImage(file);
+  };
+
   const handleSave = async (draft: boolean) => {
     if (!title.trim() || !content.trim()) return;
+    if (!draft && !hasValidAnimeTag(tags)) {
+      setTagError(getAnimeTagError());
+      return;
+    }
+    setTagError("");
     setSaving(true);
     try {
       const url = isEdit ? `/api/blog/${post!.id}` : "/api/blog";
@@ -154,13 +192,84 @@ export default function BlogEditor({ post }: BlogEditorProps) {
           className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 text-lg font-semibold outline-none focus:border-[var(--color-cyan)] transition-colors"
         />
 
-        {/* Cover Image */}
-        <input
-          value={coverImage}
-          onChange={(e) => setCoverImage(e.target.value)}
-          placeholder="Cover image URL (optional)"
-          className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
-        />
+        {/* Cover Image — Premium Card */}
+        <div className="relative rounded-[16px]">
+          <div className="absolute inset-0 rounded-[16px] overflow-hidden pointer-events-none">
+            <div className="absolute inset-0"
+              style={{ background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)", animation: "spin 6s linear infinite", willChange: "transform" }}
+            />
+            <div className="absolute inset-[1.5px] rounded-[14.5px]" style={{ background: "rgba(10,10,15,0.92)" }} />
+          </div>
+          <div className="relative z-10 p-4">
+            <p className="text-xs font-semibold text-[var(--color-mute)] uppercase tracking-wider mb-3">Cover Image</p>
+
+            {coverImage ? (
+              <div className="relative rounded-xl overflow-hidden group">
+                <div className="h-48 w-full" style={{ background: `url(${coverImage}) center/cover` }} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="rounded-lg bg-[var(--color-cyan)]/20 backdrop-blur-sm border border-[var(--color-cyan)]/30 px-3 py-1.5 text-[10px] font-bold text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/30 transition-colors"
+                  >Replace</button>
+                  <button
+                    onClick={() => { setCoverImage(""); setUploadError(""); }}
+                    className="rounded-lg bg-red-500/20 backdrop-blur-sm border border-red-500/30 px-3 py-1.5 text-[10px] font-bold text-red-400 hover:bg-red-500/30 transition-colors"
+                  >Remove</button>
+                </div>
+              </div>
+            ) : (
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`relative rounded-xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center h-40 ${
+                  dragOver
+                    ? "border-[var(--color-cyan)] bg-[var(--color-cyan)]/5"
+                    : "border-[var(--color-line)] hover:border-[var(--color-cyan)]/40 bg-[var(--color-panel)]"
+                }`}
+              >
+                {uploading ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <svg className="animate-spin h-6 w-6 text-[var(--color-cyan)]" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    <span className="text-xs text-[var(--color-mute)]">Uploading...</span>
+                  </div>
+                ) : (
+                  <>
+                    <svg className="w-8 h-8 text-[var(--color-mute)] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                    </svg>
+                    <span className="text-xs text-[var(--color-mute)]">Drop image or click to upload</span>
+                    <span className="text-[10px] text-[var(--color-mute)]/50 mt-1">JPG, PNG, WebP, GIF — Max 5MB</span>
+                  </>
+                )}
+              </div>
+            )}
+
+            {uploadError && <p className="mt-2 text-xs text-red-400">{uploadError}</p>}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
+            <div className="mt-3">
+              <input
+                value={coverImage}
+                onChange={(e) => setCoverImage(e.target.value)}
+                placeholder="Or paste image URL..."
+                className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2 text-xs outline-none focus:border-[var(--color-cyan)] transition-colors"
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Excerpt */}
         <input
@@ -171,12 +280,15 @@ export default function BlogEditor({ post }: BlogEditorProps) {
         />
 
         {/* Tags */}
-        <input
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-          placeholder="Tags (comma-separated): anime, review, action"
-          className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
-        />
+        <div>
+          <input
+            value={tags}
+            onChange={(e) => { setTags(e.target.value); setTagError(""); }}
+            placeholder="Tags (comma-separated): anime, review, action"
+            className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
+          />
+          {tagError && <p className="mt-1 text-xs text-red-400">{tagError}</p>}
+        </div>
 
         {/* Toolbar */}
         <div className="flex items-center gap-1 flex-wrap">
