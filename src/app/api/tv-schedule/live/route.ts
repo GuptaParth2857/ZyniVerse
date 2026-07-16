@@ -35,7 +35,7 @@ export async function GET() {
 
     const tvSchedules: ChannelLiveSchedule[] = [];
 
-    // 2. TV channels from cached EPG
+    // 2. TV channels from cached EPG, falling back to hardcoded schedules
     const epgChannelIds = [
       "cn", "sony_yay", "hungama", "super_hungama", "pogo", "nick",
       "nick_jr", "sonic", "discovery_kids", "disney_channel",
@@ -48,9 +48,27 @@ export async function GET() {
 
       const cachedDays = epgMap.get(channelId) || {};
       const days: Record<string, LiveScheduleEntry[]> = {};
+      let hasData = false;
 
       for (const dayName of allDayNames) {
-        days[dayName] = (cachedDays[dayName] || []) as LiveScheduleEntry[];
+        const cached = cachedDays[dayName] || [];
+        if (cached.length > 0) hasData = true;
+        days[dayName] = cached as LiveScheduleEntry[];
+      }
+
+      // If EPG cache is empty for this channel, use hardcoded fallback from CHANNEL_SCHEDULES
+      if (!hasData) {
+        const fallback = CHANNEL_SCHEDULES.find((cs) => cs.channelId === channelId);
+        if (fallback) {
+          for (const ds of fallback.schedules) {
+            if (ds.slots.length > 0) {
+              days[ds.day] = ds.slots.map((s) => ({
+                show: s.show, start: s.start, end: s.end,
+                duration: s.duration, description: s.description,
+              }));
+            }
+          }
+        }
       }
 
       tvSchedules.push({
