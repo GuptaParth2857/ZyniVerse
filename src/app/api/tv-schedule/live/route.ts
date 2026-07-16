@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { fetchLiveStreamingSchedules } from "@/lib/streaming-live";
 import { TV_CHANNELS, getDayName, CHANNEL_SCHEDULES } from "@/lib/tv-channels";
-import { fetchAllEpgSchedules, getEpgChannelIds } from "@/lib/epg";
 
 export const revalidate = 1800;
 
@@ -27,34 +27,30 @@ interface ChannelLiveSchedule {
 
 export async function GET() {
   try {
-    const epgChannelIds = new Set(getEpgChannelIds());
-
-    // 1. Fetch live EPG data for TV channels from JioTV API (7-day schedule)
-    let epgResults: { channelId: string; days: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> }[] = [];
-    try {
-      epgResults = await fetchAllEpgSchedules();
-    } catch {
-      // EPG API may be down — continue without EPG data
-    }
-    const epgDaysMap = new Map(epgResults.map((r) => [r.channelId, r.days]));
-
-    // 2. Build channel schedules — EPG data for TV channels, hardcoded for streaming
-    const tvSchedules: ChannelLiveSchedule[] = [];
     const allDayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-    // TV channels from JioTV EPG (full week data)
+    // 1. Read EPG cache from Supabase (fast — single DB query)
+    const epgRows = await prisma.epgCache.findMany();
+    const epgMap = new Map(epgRows.map((r) => [r.channelId, r.data as Record<string, LiveScheduleEntry[]>]));
+
+    const tvSchedules: ChannelLiveSchedule[] = [];
+
+    // 2. TV channels from cached EPG
+    const epgChannelIds = [
+      "cn", "sony_yay", "hungama", "super_hungama", "pogo", "nick",
+      "nick_jr", "sonic", "discovery_kids", "disney_channel",
+      "disney_junior", "epic_kids", "animax",
+    ];
+
     for (const channelId of epgChannelIds) {
       const channel = TV_CHANNELS[channelId];
       if (!channel) continue;
 
-      const epgDays = epgDaysMap.get(channelId) || {};
+      const cachedDays = epgMap.get(channelId) || {};
       const days: Record<string, LiveScheduleEntry[]> = {};
 
       for (const dayName of allDayNames) {
-        days[dayName] = (epgDays[dayName] || []).map((s) => ({
-          show: s.show, start: s.start, end: s.end,
-          duration: s.duration, description: s.description,
-        }));
+        days[dayName] = (cachedDays[dayName] || []) as LiveScheduleEntry[];
       }
 
       tvSchedules.push({
@@ -67,7 +63,7 @@ export async function GET() {
       });
     }
 
-    // Streaming channels from hardcoded schedules
+    // 3. Streaming channels from hardcoded schedules
     for (const cs of CHANNEL_SCHEDULES) {
       const channel = TV_CHANNELS[cs.channelId];
       if (!channel) continue;
@@ -90,15 +86,15 @@ export async function GET() {
       });
     }
 
-    // 3. Get live streaming schedules from AniList
+    // 4. Get live streaming schedules from AniList
     let liveStreaming: Awaited<ReturnType<typeof fetchLiveStreamingSchedules>> = [];
     try {
       liveStreaming = await fetchLiveStreamingSchedules();
     } catch {
-      // AniList may be rate-limited — continue without streaming data
+      // AniList may be rate-limited
     }
 
-    // 4. Merge live AniList data into streaming channel schedules
+    // 5. Merge live AniList data into streaming channel schedules
     for (const ls of liveStreaming) {
       const existing = tvSchedules.find((s) => s.channelId === ls.platformId);
       if (existing) {
