@@ -31,7 +31,7 @@ export async function GET() {
 
     // 1. Read EPG cache from Supabase (fast — single DB query)
     const epgRows = await prisma.epgCache.findMany();
-    const epgMap = new Map(epgRows.map((r) => [r.channelId, r.data as Record<string, LiveScheduleEntry[]>]));
+    const epgMap = new Map(epgRows.map((r) => [r.channelId, r.data as unknown as Record<string, LiveScheduleEntry[]>]));
 
     const tvSchedules: ChannelLiveSchedule[] = [];
 
