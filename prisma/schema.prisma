@@ -1595,3 +1595,14 @@ model DubNotification {
   @@index([userId])
   @@index([malId, language])
 }
+
+// ── EPG Cache ──
+model EpgCache {
+  id        String   @id @default(cuid())
+  channelId String
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@unique([channelId])
+  @@index([channelId])
+}
