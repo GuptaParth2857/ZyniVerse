@@ -15,6 +15,7 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const userId = session.user.id;
   const { id: cosplayId } = await params;
   const cosplay = await prisma.cosplay.findUnique({ where: { id: cosplayId } });
   if (!cosplay) {
@@ -22,7 +23,7 @@ export async function POST(
   }
 
   const existing = await prisma.cosplayLike.findUnique({
-    where: { cosplayId_userId: { cosplayId, userId: session.user.id } },
+    where: { cosplayId_userId: { cosplayId, userId } },
   });
 
   const result = await prisma.$transaction(async (tx) => {
@@ -35,7 +36,7 @@ export async function POST(
       return { liked: false, likes: updated.likes };
     } else {
       await tx.cosplayLike.create({
-        data: { cosplayId, userId: session.user.id },
+        data: { cosplayId, userId },
       });
       const updated = await tx.cosplay.update({
         where: { id: cosplayId },
