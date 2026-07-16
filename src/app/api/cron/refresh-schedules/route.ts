@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { fetchAllEpgSchedules } from "@/lib/epg";
 
 export const revalidate = 0;
+
+const RAILWAY_EPG_URL = "https://zyniverse.up.railway.app/api/epg";
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -12,18 +13,22 @@ export async function GET(request: Request) {
 
   const results: { task: string; status: number; detail?: string }[] = [];
 
-  // 1. Fetch EPG data from JioTV and cache in Supabase
+  // 1. Fetch real EPG data from Railway (proxy for JioTV API — Vercel IPs get blocked)
   try {
-    const epgResults = await fetchAllEpgSchedules();
-    for (const entry of epgResults) {
-      const jsonDays = JSON.parse(JSON.stringify(entry.days));
+    const res = await fetch(RAILWAY_EPG_URL, { next: { revalidate: 0 } });
+    if (!res.ok) throw new Error(`Railway EPG returned ${res.status}`);
+    const data = await res.json() as { channels: { channelId: string; days: Record<string, unknown[]> }[] };
+
+    for (const entry of data.channels) {
+      if (!entry.channelId || Object.keys(entry.days).length === 0) continue;
+      const jsonData = JSON.parse(JSON.stringify(entry.days));
       await prisma.epgCache.upsert({
         where: { channelId: entry.channelId },
-        update: { data: jsonDays },
-        create: { channelId: entry.channelId, data: jsonDays },
+        update: { data: jsonData },
+        create: { channelId: entry.channelId, data: jsonData },
       });
     }
-    results.push({ task: "epg-cache", status: 200, detail: `${epgResults.length} channels cached` });
+    results.push({ task: "epg-cache", status: 200, detail: `${data.channels.length} channels cached from Railway` });
   } catch (error) {
     results.push({ task: "epg-cache", status: 500, detail: error instanceof Error ? error.message : "Failed" });
   }
