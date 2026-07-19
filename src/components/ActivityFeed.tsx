@@ -74,11 +74,17 @@ export default function ActivityFeed() {
 
   const fetchActivities = useCallback(async (offset: number) => {
     const res = await fetch(`/api/activity?limit=${LIMIT}&offset=${offset}`);
-    const data = await res.json();
-    return data;
+    if (!res.ok) {
+      console.error(`Activity feed request failed: ${res.status}`);
+      return { activities: [], total: 0 };
+    }
+    const text = await res.text();
+    if (!text) return { activities: [], total: 0 };
+    return JSON.parse(text);
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetchActivities(0).then((data) => {
       setActivities(data.activities || []);

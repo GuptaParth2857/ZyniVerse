@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check key limit per user based on tier
-  const { allowed, currentKeys, maxKeys } = await canCreateKey(session.user.id);
+  const { allowed, currentKeys: _currentKeys, maxKeys } = await canCreateKey(session.user.id);
   if (!allowed) {
     return NextResponse.json({ error: `Maximum ${maxKeys} API keys per account. Delete an old key or upgrade.` }, { status: 400 });
   }

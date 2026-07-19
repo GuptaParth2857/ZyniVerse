@@ -43,8 +43,17 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const ref = useRef<HTMLDivElement>(null);
 
+  async function fetchUnreadCount() {
+    try {
+      const res = await fetch("/api/notifications/unread");
+      const data = await res.json();
+      setUnreadCount(data.count ?? 0);
+    } catch {}
+  }
+
   useEffect(() => {
     if (!session?.user?.id) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
@@ -57,14 +66,6 @@ export default function NotificationBell() {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
-
-  async function fetchUnreadCount() {
-    try {
-      const res = await fetch("/api/notifications/unread");
-      const data = await res.json();
-      setUnreadCount(data.count ?? 0);
-    } catch {}
-  }
 
   async function openPanel() {
     setOpen(true);

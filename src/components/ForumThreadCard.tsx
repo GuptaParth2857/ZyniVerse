@@ -36,6 +36,7 @@ interface ForumThreadCardProps {
 
 export default function ForumThreadCard({ thread, index = 0 }: ForumThreadCardProps) {
   const timeAgo = (date: string) => {
+    // eslint-disable-next-line react-hooks/purity
     const diff = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return "just now";

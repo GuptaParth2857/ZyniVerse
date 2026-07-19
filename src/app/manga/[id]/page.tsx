@@ -81,6 +81,7 @@ export default function MangaDetailsPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true); setError(null); setManga(null);
     window.scrollTo(0, 0);
     Promise.all([

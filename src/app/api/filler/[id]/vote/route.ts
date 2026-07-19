@@ -15,33 +15,34 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (isNaN(mediaId)) return NextResponse.json({ error: "Invalid media ID" }, { status: 400 });
 
   const { episode, vote } = await req.json();
-  if (episode == null || !vote) {
-    return NextResponse.json({ error: "Episode number and vote type required" }, { status: 400 });
+  const epNum = Number(episode);
+  if (isNaN(epNum) || epNum < 1 || !vote) {
+    return NextResponse.json({ error: "Valid episode number and vote type required" }, { status: 400 });
   }
 
-  const validVotes = ["canon", "filler", "mixed", "anime-canon"];
+  const validVotes = ["manga-canon", "anime-canon", "filler", "mixed"];
   if (!validVotes.includes(vote)) {
     return NextResponse.json({ error: `Vote must be one of: ${validVotes.join(", ")}` }, { status: 400 });
   }
 
   const existing = await prisma.fillerVote.findUnique({
-    where: { userId_mediaId_episode: { userId: session.user.id, mediaId, episode } },
+    where: { userId_mediaId_episode: { userId: session.user.id, mediaId, episode: epNum } },
   });
 
-  let result;
+  let _result;
   if (existing) {
-    result = await prisma.fillerVote.update({
+    _result = await prisma.fillerVote.update({
       where: { id: existing.id },
       data: { vote },
     });
   } else {
-    result = await prisma.fillerVote.create({
-      data: { userId: session.user.id, mediaId, episode, vote },
+    _result = await prisma.fillerVote.create({
+      data: { userId: session.user.id, mediaId, episode: epNum, vote },
     });
   }
 
   // Tally votes for this episode
-  const votes = await prisma.fillerVote.findMany({ where: { mediaId, episode } });
+  const votes = await prisma.fillerVote.findMany({ where: { mediaId, episode: epNum } });
   const tally: Record<string, number> = {};
   for (const v of votes) {
     tally[v.vote] = (tally[v.vote] || 0) + 1;
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   return NextResponse.json({
     success: true,
     yourVote: vote,
-    episode,
+    episode: epNum,
     tally,
     totalVotes: votes.length,
   });

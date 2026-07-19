@@ -35,6 +35,7 @@ export default function WikiDetailPageClient() {
 
   useEffect(() => {
     if (typeof slug !== "string") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`/api/wiki/${slug}`)
       .then((r) => r.json())

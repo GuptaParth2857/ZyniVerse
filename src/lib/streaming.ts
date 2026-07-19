@@ -34,15 +34,15 @@ function jioSearch(q: string): string {
   return `https://www.jiohotstar.com/search?q=${encodeURIComponent(q)}`;
 }
 
-function mxSearch(q: string): string {
+function _mxSearch(q: string): string {
   return `https://www.mxplayer.in/search?query=${encodeURIComponent(q)}`;
 }
 
-function sonyLivSearch(q: string): string {
+function _sonyLivSearch(q: string): string {
   return `https://www.sonyliv.com/search/${encodeURIComponent(q)}`;
 }
 
-function animesearch(q: string): string {
+function _animesearch(q: string): string {
   return `https://www.anime-search.in/search?q=${encodeURIComponent(q)}`;
 }
 

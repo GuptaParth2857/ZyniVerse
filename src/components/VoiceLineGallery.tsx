@@ -73,6 +73,7 @@ export default function VoiceLineGallery() {
   }, [search, charFilter, langFilter, typeFilter, page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchLines();
   }, [fetchLines]);
 

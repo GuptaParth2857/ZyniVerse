@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAwardsForYear, AWARD_CATEGORIES, createAwardCycle } from "@/lib/zyni-awards";
+import { getAwardsForYear, AWARD_CATEGORIES } from "@/lib/zyni-awards";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);

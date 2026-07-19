@@ -53,6 +53,7 @@ export default function WikiPageClient() {
 
   useEffect(() => {
     const abort = new AbortController();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     const params = new URLSearchParams();
     if (category) params.set("category", category);

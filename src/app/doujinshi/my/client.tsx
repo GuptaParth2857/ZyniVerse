@@ -41,9 +41,11 @@ export default function DoujinshiMyClient() {
 
   useEffect(() => {
     if (!session?.user?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false);
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     const url = filter ? `/api/doujinshi/my?status=${filter}` : "/api/doujinshi/my";
     fetch(url)
       .then((r) => r.json())

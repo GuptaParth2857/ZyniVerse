@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
-import { getAnimeNews, getSeasonalAnnouncements, getRecentReviews, getActivityFeed } from "@/lib/news";
+import { getAnimeNews, getSeasonalAnnouncements, getRecentReviews, getActivityFeed, getAllRSSNews } from "@/lib/news";
 import { auth } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
@@ -40,6 +40,11 @@ export async function GET(req: NextRequest) {
     news = [...news, ...activity];
   }
 
+  if (type === "all" || type === "news") {
+    const rssNews = await getAllRSSNews();
+    news = [...news, ...rssNews];
+  }
+
   if (period !== "all") {
     const now = Date.now();
     const cutoff =
@@ -52,5 +57,9 @@ export async function GET(req: NextRequest) {
 
   news.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
-  return NextResponse.json({ news });
+  return NextResponse.json({ news }, {
+    headers: {
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+    },
+  });
 }

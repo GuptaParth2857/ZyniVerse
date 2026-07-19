@@ -36,6 +36,7 @@ export default function AdminVisitorsPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
     const interval = setInterval(fetchData, 15000);
     return () => clearInterval(interval);

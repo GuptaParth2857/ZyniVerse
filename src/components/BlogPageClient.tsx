@@ -41,12 +41,14 @@ export default function BlogPageClient() {
   const currentSearch = searchParams.get("search") || "";
   const currentTag = searchParams.get("tag") || "";
   const currentSort = searchParams.get("sort") || "recent";
+  const currentPage = Math.max(1, parseInt(searchParams.get("page") || "1"));
 
-  const fetchPosts = useCallback(async (search: string, tag: string, sort: string) => {
+  const fetchPosts = useCallback(async (search: string, tag: string, sort: string, page: number) => {
     setLoading(true);
     const params = new URLSearchParams();
     params.set("limit", "12");
     params.set("sort", sort);
+    params.set("page", page.toString());
     if (search) params.set("search", search);
     if (tag) params.set("tag", tag);
 
@@ -62,8 +64,9 @@ export default function BlogPageClient() {
   }, []);
 
   useEffect(() => {
-    fetchPosts(currentSearch, currentTag, currentSort);
-  }, [currentSearch, currentTag, currentSort, fetchPosts]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchPosts(currentSearch, currentTag, currentSort, currentPage);
+  }, [currentSearch, currentTag, currentSort, currentPage, fetchPosts]);
 
   const pushParams = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -323,9 +326,9 @@ export default function BlogPageClient() {
             </div>
           )}
 
-          {total > 12 && (
+          {total > currentPage * 12 && (
             <div className="mt-8 text-center">
-              <Link href={`/blog?page=2${currentTag ? `&tag=${currentTag}` : ""}${currentSearch ? `&search=${currentSearch}` : ""}`}
+              <Link href={`/blog?page=${currentPage + 1}${currentTag ? `&tag=${currentTag}` : ""}${currentSearch ? `&search=${currentSearch}` : ""}${currentSort !== "recent" ? `&sort=${currentSort}` : ""}`}
                 className="text-sm text-[var(--color-cyan)] hover:underline">Load more posts →</Link>
             </div>
           )}

@@ -7,7 +7,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const { score, totalQuestions, timeTaken } = await req.json();
+  const { score, totalQuestions, _timeTaken } = await req.json();
   if (score === undefined || !totalQuestions) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }

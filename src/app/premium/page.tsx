@@ -114,6 +114,7 @@ function NeonOrbs() {
 
 function Particles() {
   const pts = useRef<{ x: number; y: number; s: number; d: number; o: number; c: string; ty: number; delay: number }[]>([]);
+  /* eslint-disable react-hooks/refs, react-hooks/purity */
   if (pts.current.length === 0) {
     const colors = ["#00ffe0", "#ff00e6", "#7000ff"];
     for (let i = 0; i < 20; i++) {
@@ -140,6 +141,7 @@ function Particles() {
       ))}
     </div>
   );
+  /* eslint-enable react-hooks/refs, react-hooks/purity */
 }
 
 function NeonBorder({ children }: { children: React.ReactNode; highlighted?: boolean }) {

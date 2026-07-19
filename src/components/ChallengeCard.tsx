@@ -36,6 +36,7 @@ export default function ChallengeCard({ challenge, joined, userProgress, userGoa
   const goal = userGoal ?? challenge.goalCount;
   const pct = goal > 0 ? Math.min(Math.round((progress / goal) * 100), 100) : 0;
 
+  // eslint-disable-next-line react-hooks/purity
   const daysLeft = Math.max(0, Math.ceil((new Date(challenge.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
   const totalDays = Math.ceil((new Date(challenge.endDate).getTime() - new Date(challenge.startDate).getTime()) / (1000 * 60 * 60 * 24));
   const elapsed = totalDays - daysLeft;

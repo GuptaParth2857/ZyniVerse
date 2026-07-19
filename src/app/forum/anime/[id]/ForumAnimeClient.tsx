@@ -12,6 +12,7 @@ export default function ForumAnimeClient({ animeId }: { animeId: number }) {
   const limit = 20;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`/api/forum/threads?animeId=${animeId}&page=${page}&limit=${limit}`)
       .then(r => r.json())

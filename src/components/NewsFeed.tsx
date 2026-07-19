@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { NewsItem } from "@/lib/news";
@@ -10,12 +11,14 @@ const FILTERS = [
   { key: "airing", label: "Airing" },
   { key: "seasonal", label: "Seasonal" },
   { key: "activity", label: "Community" },
+  { key: "news", label: "News" },
 ] as const;
 
 const SOURCE_STYLES: Record<string, { bg: string; text: string; border: string }> = {
   Trending: { bg: "bg-blue-500/15", text: "text-blue-400", border: "border-blue-500/30" },
   Community: { bg: "bg-green-500/15", text: "text-green-400", border: "border-green-500/30" },
   Seasonal: { bg: "bg-purple-500/15", text: "text-purple-400", border: "border-purple-500/30" },
+  News: { bg: "bg-orange-500/15", text: "text-orange-400", border: "border-orange-500/30" },
 };
 
 const TYPE_STYLES: Record<string, string> = {
@@ -24,6 +27,7 @@ const TYPE_STYLES: Record<string, string> = {
   trending: "bg-rose-500/15 text-rose-400 border-rose-500/30",
   seasonal: "bg-purple-500/15 text-purple-400 border-purple-500/30",
   community: "bg-green-500/15 text-green-400 border-green-500/30",
+  rss: "bg-orange-500/15 text-orange-400 border-orange-500/30",
 };
 
 function TimeAgo({ date }: { date: string }) {
@@ -75,13 +79,14 @@ function NewsCardSkeleton() {
 function NewsCard({ item }: { item: NewsItem }) {
   const sourceStyle = SOURCE_STYLES[item.source] || SOURCE_STYLES.Trending;
   const typeStyle = TYPE_STYLES[item.type] || TYPE_STYLES.community;
+  const href = item.type === "rss" ? `/news/${item.id}` : item.url;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <Link href={item.url} className="neon-premium rounded-xl no-underline group block">
+      <Link href={href} className="neon-premium rounded-xl no-underline group block">
         <div className="neon-premium-track rounded-xl" />
         <div className="neon-premium-overlay rounded-[10.5px]" />
         <div className="neon-premium-content">
@@ -129,10 +134,19 @@ function NewsCard({ item }: { item: NewsItem }) {
 }
 
 export default function NewsFeed({ defaultType = "all" }: { defaultType?: string }) {
-  const [type, setType] = useState(defaultType);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [type, setType] = useState(() => searchParams.get("type") || defaultType);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const switchType = useCallback((newType: string) => {
+    setType(newType);
+    const params = new URLSearchParams(window.location.search);
+    params.set("type", newType);
+    router.replace(`/news?${params.toString()}`, { scroll: false });
+  }, [router]);
 
   const fetchNews = useCallback(async (t: string) => {
     setLoading(true);
@@ -151,6 +165,7 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchNews(type);
   }, [type, fetchNews]);
 
@@ -160,7 +175,7 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
         {FILTERS.map((f) => (
           <button
             key={f.key}
-            onClick={() => setType(f.key)}
+            onClick={() => switchType(f.key)}
             className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
               type === f.key
                 ? "text-black shadow-lg"

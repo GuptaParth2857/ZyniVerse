@@ -117,6 +117,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
     if (animeTitle) params.set("title", animeTitle);
     const url = `/api/filler/${anilistId}?${params.toString()}`;
     if (!fillerFetchCache.has(cacheKey)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(true);
       fillerFetchCache.set(cacheKey, fetch(url).then((r) => r.json()));
     }
@@ -207,6 +208,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
 
   const consensusOverrides = useMemo(() => computeConsensusOverrides(votes), [votes]);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const episodesWithConsensus = useMemo(() => {
     if (!data?.episodes) return [];
     return data.episodes.map((ep) => ({

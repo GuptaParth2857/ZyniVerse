@@ -6,7 +6,7 @@ vi.mock("@/lib/anilist", () => ({
   getAnimeDetailFull: vi.fn(),
   searchMedia: vi.fn(),
   getMediaBatch: vi.fn(),
-  bestTitle: (title: any) => title?.romaji || title?.english || "Unknown",
+  bestTitle: (title: { romaji?: string; english?: string } | undefined) => title?.romaji || title?.english || "Unknown",
 }));
 
 import { getTrending, getAnimeDetailFull, searchMedia } from "@/lib/anilist";
@@ -17,7 +17,8 @@ import {
   getSimilarAnime,
 } from "@/lib/recommender";
 
-function mockResolvedValue(fn: any, value: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mockResolvedValue(fn: any, value: unknown) {
   fn.mockResolvedValue(value);
 }
 
@@ -49,7 +50,7 @@ describe("getTrendingRecs", () => {
   });
 
   it("returns empty array when getTrending fails", async () => {
-    getTrending.mockRejectedValue(new Error("fail"));
+    vi.mocked(getTrending).mockRejectedValue(new Error("fail"));
     const recs = await getTrendingRecs();
     expect(recs).toEqual([]);
   });

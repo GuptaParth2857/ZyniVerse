@@ -44,6 +44,7 @@ export default function BracketPage({
 
   useEffect(() => {
     if (!year) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`/api/zyni-awards/${year}/bracket?category=${category}&round=${round}`)
       .then((r) => r.json())

@@ -24,7 +24,7 @@ export default function DeveloperPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <div className="mb-10">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">// Developers</p>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">{/* Developers */}</p>
         <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">ZyniVerse API</h1>
         <p className="mt-2 text-[var(--color-mute)] max-w-3xl">
           Build anime-powered apps with India&apos;s most unique anime API. Access filler guides, Indian dub schedules,

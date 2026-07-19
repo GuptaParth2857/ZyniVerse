@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { searchMedia, getGenres, bestTitle } from "@/lib/anilist";
-import Loader, { ErrorState } from "@/components/Loader";
+import { searchMedia, getGenres } from "@/lib/anilist";
+import { ErrorState } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
 import AnimeCard from "@/components/AnimeCard";
@@ -25,6 +25,7 @@ export default function GenrePage() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true); setError(null);
     searchMedia({ genre: decodedName, type, sort: "POPULARITY_DESC", perPage: 48 })
       .then((d) => !cancelled && setList(d.media))
@@ -41,7 +42,7 @@ export default function GenrePage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end gap-4 pb-8 border-b border-[var(--color-line)]">
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">// Genre</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">{/* Genre */}</p>
             <h1 className="font-display text-3xl font-bold sm:text-4xl">{decodedName}</h1>
           </div>
           <div className="flex rounded-xl border border-[var(--color-line)] overflow-hidden">

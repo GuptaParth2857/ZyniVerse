@@ -82,6 +82,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return; }
     if (status !== "authenticated") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true); setError(null);
     fetch("/api/profile")
       .then(async (r) => {
@@ -122,6 +123,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!profile) return;
     const ids = profile.user.entries.map((e) => e.mediaId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (ids.length > 0) fetchMediaBatch(ids);
   }, [profile, fetchMediaBatch]);
 

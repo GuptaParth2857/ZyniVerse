@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getAwardsByYear, AWARD_YEARS, CRUNCHYROLL_AWARDS } from "@/lib/awards-data";
+import { describe, it, expect } from "vitest";
+import { getAwardsByYear, AWARD_YEARS, ALL_AWARDS } from "@/lib/awards-data";
 
-describe("CRUNCHYROLL_AWARDS", () => {
+describe("ALL_AWARDS", () => {
   it("has correct structure", () => {
-    expect(Array.isArray(CRUNCHYROLL_AWARDS)).toBe(true);
-    expect(CRUNCHYROLL_AWARDS.length).toBeGreaterThan(0);
-    for (const award of CRUNCHYROLL_AWARDS) {
+    expect(Array.isArray(ALL_AWARDS)).toBe(true);
+    expect(ALL_AWARDS.length).toBeGreaterThan(0);
+    for (const award of ALL_AWARDS) {
       expect(award).toHaveProperty("year");
       expect(award).toHaveProperty("category");
       expect(award).toHaveProperty("winner");

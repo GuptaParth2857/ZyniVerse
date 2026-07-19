@@ -12,7 +12,7 @@ export default function WatchlistPage() {
 
   return (
     <PageTransition><div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">// Saved</p>
+      <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">{/* Saved */}</p>
       <h1 className="font-display text-3xl font-bold sm:text-4xl">My List</h1>
       <p className="mt-1 text-sm text-[var(--color-mute)]">
         Saved items are synced to your account when logged in.

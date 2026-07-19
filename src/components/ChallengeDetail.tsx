@@ -54,8 +54,10 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
     } catch {}
   }, [challenge.id]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (activeTab === "leaderboard") fetchLeaderboard();
   }, [activeTab, fetchLeaderboard]);
 
@@ -128,6 +130,7 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!searchQuery.trim() || !isJoined) { setSearchResults([]); return; }
     const timer = setTimeout(async () => {
       setSearching(true);

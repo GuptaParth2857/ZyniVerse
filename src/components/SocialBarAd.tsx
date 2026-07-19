@@ -14,7 +14,7 @@ export default function SocialBarAd() {
   const injectedRef = useRef(false);
 
   const user = session?.user
-    ? { premium: (session.user as any).premium || false }
+    ? { premium: Boolean((session.user as Record<string, unknown>).premium) }
     : undefined;
 
   const showAds = shouldShowAds(user);

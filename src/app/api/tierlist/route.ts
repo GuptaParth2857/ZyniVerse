@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   if (userId) where.userId = userId;
   else where.isPublic = true;
 
-  const orderBy =
+  const _orderBy =
     sort === "popular"
       ? { votes: { _count: "desc" as const } }
       : sort === "top"

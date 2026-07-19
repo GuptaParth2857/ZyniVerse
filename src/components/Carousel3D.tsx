@@ -25,6 +25,7 @@ export default function Carousel3D({
   accent?: "magenta" | "violet";
   hrefFn: (item: CarouselItem) => string;
 }) {
+  const safeItems = items.filter((item): item is CarouselItem => item != null && item.type != null);
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [itemWidth, setItemWidth] = useState(220);
@@ -57,13 +58,13 @@ export default function Carousel3D({
     el.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => el.removeEventListener("scroll", onScroll);
-  }, [items]);
+  }, [safeItems]);
 
   useEffect(() => {
-    if (isPaused || items.length <= 1) return;
+    if (isPaused || safeItems.length <= 1) return;
     const interval = setInterval(() => scroll(1), 4000);
     return () => clearInterval(interval);
-  }, [isPaused, items.length, itemWidth]);
+  }, [isPaused, safeItems.length, itemWidth]);
 
   function scroll(dir: number) {
     const el = trackRef.current;
@@ -101,7 +102,7 @@ export default function Carousel3D({
         className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4"
         style={{ perspective: "1200px", scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {items.map((item, i) => {
+        {safeItems.map((item, i) => {
           const href = hrefFn(item);
           const score = item.averageScore ? (item.averageScore / 10).toFixed(1) : null;
           const sub = item.episodes ? `${item.episodes} ep` : item.chapters ? `${item.chapters} ch` : null;

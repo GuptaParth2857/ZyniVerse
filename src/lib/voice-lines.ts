@@ -1733,8 +1733,8 @@ const KNOWN_ANIME_MAP: Record<string, number> = {
   "your name": 16664,
 };
 
-let animechanCache: { data: VoiceLine[]; timestamp: number }[] = [];
-const ANIMECHAN_CACHE_TTL = 60 * 60 * 1000;
+const animechanCache: { data: VoiceLine[]; timestamp: number }[] = [];
+const _ANIMECHAN_CACHE_TTL = 60 * 60 * 1000;
 
 const ANIMECHAN_BASE = "https://animechan.xyz/api";
 

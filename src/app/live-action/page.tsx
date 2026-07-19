@@ -1,15 +1,11 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LIVE_ACTION_ANIME,
   LIVE_ACTION_PLATFORMS,
-  getAvailableAnime,
-  getUpcomingAnime,
-  getMostPopular,
-  getByPlatform,
   type LiveActionAnime,
 } from "@/lib/live-action-anime";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -160,16 +156,16 @@ function HorizontalCarousel({ items, title }: { items: LiveActionAnime[]; title:
   );
 }
 
-function MostPopularSection({ items }: { items?: LiveActionAnime[] }) {
+function MostPopularSection({ items, allData }: { items?: LiveActionAnime[]; allData: LiveActionAnime[] }) {
   const [hovered, setHovered] = useState<string | null>(null);
-  const popular = items || getMostPopular();
+  const popular = items || [...allData].sort((a, b) => b.popularity - a.popularity).slice(0, 8);
 
   return (
     <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.08 }} className="mb-8">
       <div className="mb-5 flex items-end justify-between">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">
-            // Explore
+            {/* Explore */}
           </p>
           <h2 className="font-display text-2xl font-bold sm:text-3xl">Most Popular</h2>
           <p className="text-sm text-[var(--color-mute)] mt-1">Discover what everyone is watching</p>
@@ -249,8 +245,8 @@ function MostPopularSection({ items }: { items?: LiveActionAnime[] }) {
   );
 }
 
-function PlatformSection({ platform, color }: { platform: string; color: string }) {
-  const items = getByPlatform(platform);
+function PlatformSection({ platform, color, allData }: { platform: string; color: string; allData: LiveActionAnime[] }) {
+  const items = allData.filter((a) => a.platforms.some((p) => p.name.toLowerCase() === platform.toLowerCase()));
   if (items.length === 0) return null;
 
   return (
@@ -260,7 +256,7 @@ function PlatformSection({ platform, color }: { platform: string; color: string 
           <div className="h-5 w-1 rounded-full" style={{ background: color }} />
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-mute)]">
-              // Platform
+              {/* Platform */}
             </p>
             <h2 className="font-display text-xl font-bold sm:text-2xl">{platform}</h2>
             <p className="text-xs text-[var(--color-mute)] mt-0.5">{items.length} title{items.length !== 1 ? "s" : ""}</p>
@@ -272,24 +268,24 @@ function PlatformSection({ platform, color }: { platform: string; color: string 
   );
 }
 
-function FilterableGrid() {
+function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "upcoming">("all");
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<"all" | "series" | "movie">("all");
 
   const filtered = useMemo(() => {
-    let result = [...LIVE_ACTION_ANIME];
+    let result = [...allData];
     if (statusFilter !== "all") result = result.filter((a) => a.status === statusFilter);
     if (selectedType !== "all") result = result.filter((a) => a.type === selectedType);
     if (selectedPlatform) result = result.filter((a) => a.platforms.some((p) => p.name === selectedPlatform));
     return result.sort((a, b) => b.popularity - a.popularity);
-  }, [statusFilter, selectedPlatform, selectedType]);
+  }, [statusFilter, selectedPlatform, selectedType, allData]);
 
   return (
     <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.3 }} className="mb-8">
       <div className="mb-5 flex items-end justify-between">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">// All Titles</p>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">{/* All Titles */}</p>
           <h2 className="font-display text-2xl font-bold sm:text-3xl">Full Catalog</h2>
           <p className="text-sm text-[var(--color-mute)] mt-1">{filtered.length} titles</p>
         </div>
@@ -323,7 +319,7 @@ function FilterableGrid() {
           </button>
         ))}
         <span className="w-px h-6 bg-[var(--color-line)] self-center mx-1" />
-        {LIVE_ACTION_PLATFORMS.filter((p) => getByPlatform(p.name).length > 0).map((p) => (
+        {LIVE_ACTION_PLATFORMS.filter((p) => allData.some((a) => a.platforms.some((pl) => pl.name.toLowerCase() === p.name.toLowerCase()))).map((p) => (
           <button key={p.name} onClick={() => setSelectedPlatform(selectedPlatform === p.name ? null : p.name)}
             className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all"
             style={{
@@ -357,11 +353,26 @@ function FilterableGrid() {
 
 function LiveActionPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const available = getAvailableAnime();
-  const upcoming = getUpcomingAnime();
+  const [liveData, setLiveData] = useState<LiveActionAnime[]>(LIVE_ACTION_ANIME);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/live-action")
+      .then((res) => res.json())
+      .then((data: LiveActionAnime[]) => {
+        setLiveData(data);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  const available = useMemo(() => liveData.filter((a) => a.status === "available").sort((a, b) => b.popularity - a.popularity), [liveData]);
+  const upcoming = useMemo(() => liveData.filter((a) => a.status === "upcoming").sort((a, b) => b.popularity - a.popularity), [liveData]);
   const availableCount = available.length;
   const upcomingCount = upcoming.length;
-  const platformCount = new Set(LIVE_ACTION_ANIME.flatMap((a) => a.platforms.map((p) => p.name))).size;
+  const platformCount = new Set(liveData.flatMap((a) => a.platforms.map((p) => p.name))).size;
 
   const filterTitles = (titles: LiveActionAnime[]) => {
     if (!searchQuery) return titles;
@@ -379,7 +390,10 @@ function LiveActionPage() {
 
   const filteredAvailable = useMemo(() => filterTitles(available), [searchQuery, available]);
   const filteredUpcoming = useMemo(() => filterTitles(upcoming), [searchQuery, upcoming]);
-  const filteredPopular = useMemo(() => filterTitles(getMostPopular()), [searchQuery]);
+  const filteredPopular = useMemo(() => {
+    const popular = [...liveData].sort((a, b) => b.popularity - a.popularity).slice(0, 8);
+    return filterTitles(popular);
+  }, [searchQuery, liveData]);
 
   return (
     <PageTransition>
@@ -457,7 +471,7 @@ function LiveActionPage() {
           {/* Stats */}
           <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.05 }} className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
             {[
-              { label: "Total Titles", value: LIVE_ACTION_ANIME.length, color: "var(--color-cyan)" },
+              { label: "Total Titles", value: liveData.length, color: "var(--color-cyan)" },
               { label: "Available Now", value: availableCount, color: "#48BB78" },
               { label: "Coming Soon", value: upcomingCount, color: "#ED8936" },
               { label: "Platforms", value: platformCount, color: "var(--color-amber)" },
@@ -470,7 +484,7 @@ function LiveActionPage() {
           </motion.div>
 
           {/* Most Popular */}
-          <MostPopularSection items={searchQuery ? filteredPopular : undefined} />
+          <MostPopularSection items={searchQuery ? filteredPopular : undefined} allData={liveData} />
 
           {/* Available Now */}
           {filteredAvailable.length > 0 && (
@@ -479,7 +493,7 @@ function LiveActionPage() {
                 <div className="flex items-center gap-3">
                   <div className="h-5 w-1 rounded-full bg-[#48BB78]" />
                   <div>
-                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-mute)]">// Available Now</p>
+                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-mute)]">{/* Available Now */}</p>
                     <h2 className="font-display text-2xl font-bold sm:text-3xl">Watch Today</h2>
                     <p className="text-xs text-[var(--color-mute)] mt-0.5">Stream these live-action adaptations right now</p>
                   </div>
@@ -496,7 +510,7 @@ function LiveActionPage() {
                 <div className="flex items-center gap-3">
                   <div className="h-5 w-1 rounded-full bg-[#ED8936]" />
                   <div>
-                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-mute)]">// Upcoming</p>
+                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-mute)]">{/* Upcoming */}</p>
                     <h2 className="font-display text-2xl font-bold sm:text-3xl">Coming Soon</h2>
                     <p className="text-xs text-[var(--color-mute)] mt-0.5">Live-action adaptations in production</p>
                   </div>
@@ -507,12 +521,12 @@ function LiveActionPage() {
           )}
 
           {/* By Platform */}
-          {!searchQuery && LIVE_ACTION_PLATFORMS.filter((p) => getByPlatform(p.name).length > 0).map((platform) => (
-            <PlatformSection key={platform.name} platform={platform.name} color={platform.logoColor} />
+          {!searchQuery && LIVE_ACTION_PLATFORMS.filter((p) => liveData.some((a) => a.platforms.some((pl) => pl.name.toLowerCase() === p.name.toLowerCase()))).map((platform) => (
+            <PlatformSection key={platform.name} platform={platform.name} color={platform.logoColor} allData={liveData} />
           ))}
 
           {/* Full Catalog */}
-          <FilterableGrid />
+          <FilterableGrid allData={liveData} />
         </div>
       </div>
     </PageTransition>

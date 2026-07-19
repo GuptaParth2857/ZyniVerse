@@ -36,7 +36,7 @@ export default function FeedbackPage() {
   const { data: session } = useSession();
   const [featured, setFeatured] = useState<FeedbackItem[]>([]);
   const [allFeedback, setAllFeedback] = useState<FeedbackItem[]>([]);
-  const [total, setTotal] = useState(0);
+  const [_total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("");
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
@@ -64,7 +64,7 @@ export default function FeedbackPage() {
       const data = await res.json();
       setLikedIds((prev) => {
         const next = new Set(prev);
-        data.liked ? next.add(id) : next.delete(id);
+        void (data.liked ? next.add(id) : next.delete(id));
         return next;
       });
       setAllFeedback((prev) => prev.map((f) => (f.id === id ? { ...f, likeCount: data.likes } : f)));

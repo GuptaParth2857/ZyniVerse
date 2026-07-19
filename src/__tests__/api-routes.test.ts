@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
 
-function createNextRequest(url: string, init?: RequestInit): Request {
-  return new Request(url, { ...init, headers: new Headers(init?.headers) });
+function createNextRequest(url: string, init?: RequestInit): NextRequest {
+  return new NextRequest(new Request(url, { ...init, headers: new Headers(init?.headers) }));
 }
 
 beforeEach(() => {

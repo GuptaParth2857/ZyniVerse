@@ -1,3 +1,5 @@
+import { getMediaBatch, bestTitle } from "@/lib/anilist";
+
 const FILLER_JSON_URL = "https://github.com/AniraTeam/AniFiller/releases/latest/download/anifiller.json";
 
 interface CacheEntry {
@@ -26,7 +28,7 @@ export async function getFillerData(): Promise<FillerShow[]> {
   if (fillerCache && Date.now() - fillerCache.timestamp < CACHE_TTL) {
     return fillerCache.data;
   }
-  const res = await fetch(FILLER_JSON_URL, { cache: "no-store" });
+  const res = await fetch(FILLER_JSON_URL, { cache: "no-store", signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error("Failed to fetch filler data");
   const data: FillerShow[] = await res.json();
   fillerCache = { data, timestamp: Date.now() };
@@ -159,8 +161,7 @@ export async function getFillerForAnime(anilistId: number, animeTitle?: string) 
 export async function getPopularFillerAnime(limit = 20) {
   const all = await getFillerData();
   const popularIds = [
-    20, 1735, 21, 5114, 22319, 813, 16498, 11757, 23755,
-    22147, 11061, 9253, 15335, 37521, 19815, 30276, 41467, 100, 150, 5116,
+    20, 1735, 21, 5114, 813, 16498, 11061, 269,
   ];
   const result: {
     id: number;
@@ -170,6 +171,7 @@ export async function getPopularFillerAnime(limit = 20) {
     fillerPct: number;
     canonPct: number;
     mixedPct: number;
+    coverImage: string | null;
   }[] = [];
   for (const id of popularIds) {
     const show = all.find((s) => s.mappings.anilist_id === id);
@@ -183,9 +185,20 @@ export async function getPopularFillerAnime(limit = 20) {
     const fillerPct = total > 0 ? Math.round((filler / total) * 100) : 0;
     const canonPct = total > 0 ? Math.round((canonTotal / total) * 100) : 0;
     const mixedPct = total > 0 ? Math.round((mixed / total) * 100) : 0;
-    result.push({ id, title: show.title, slug: show.slug, episodes: total, fillerPct, canonPct, mixedPct });
+    result.push({ id, title: show.title, slug: show.slug, episodes: total, fillerPct, canonPct, mixedPct, coverImage: null });
     if (result.length >= limit) break;
   }
+
+  const mediaData = await getMediaBatch(result.map((r) => r.id));
+  const mediaMap = new Map(mediaData.map((m) => [m.id, m]));
+  for (const item of result) {
+    const media = mediaMap.get(item.id);
+    if (media) {
+      item.title = bestTitle(media.title);
+      item.coverImage = media.coverImage?.extraLarge || media.coverImage?.large || null;
+    }
+  }
+
   return result;
 }
 

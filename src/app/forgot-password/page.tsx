@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -9,21 +9,25 @@ import { PageTransition } from "@/components/PageTransition";
 
 /* ─── Particles ─── */
 function Particles() {
-  const pts = useRef<{ x: number; y: number; s: number; d: number; o: number }[]>([]);
-  if (pts.current.length === 0) {
+  /* eslint-disable react-hooks/purity */
+  const pts = useMemo(() => {
+    const particles: { x: number; y: number; s: number; d: number; o: number; animY: number }[] = [];
     for (let i = 0; i < 60; i++) {
-      pts.current.push({
+      particles.push({
         x: Math.random() * 100,
         y: Math.random() * 100,
         s: Math.random() * 2.5 + 0.5,
         d: Math.random() * 12 + 6,
         o: Math.random() * 0.4 + 0.1,
+        animY: Math.random() * 50 + 10,
       });
     }
-  }
+    return particles;
+  }, []);
+  /* eslint-enable react-hooks/purity */
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {pts.current.map((p, i) => (
+      {pts.map((p, i) => (
         <motion.div
           key={i}
           className="absolute rounded-full"
@@ -36,7 +40,7 @@ function Particles() {
             opacity: p.o,
             boxShadow: i % 2 === 0 ? "0 0 6px rgba(0,255,224,0.3)" : "0 0 6px rgba(255,0,230,0.3)",
           }}
-          animate={{ y: [0, -(Math.random() * 50 + 10), 0], opacity: [p.o * 0.2, p.o, p.o * 0.2] }}
+          animate={{ y: [0, -p.animY, 0], opacity: [p.o * 0.2, p.o, p.o * 0.2] }}
           transition={{ duration: p.d, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
         />
       ))}

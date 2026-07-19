@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
-import { getChallenge, getLeaderboard } from "@/lib/challenges";
+import { getLeaderboard } from "@/lib/challenges";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = (await params).id;

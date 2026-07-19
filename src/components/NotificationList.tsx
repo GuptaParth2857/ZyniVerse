@@ -64,11 +64,13 @@ export default function NotificationList() {
   }, [offset]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOffset(0);
     fetchNotifications(true);
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchNotifications(true);
   }, [filter]);
 

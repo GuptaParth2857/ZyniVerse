@@ -3,15 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 const CACHE = new Map<string, { data: unknown; ts: number }>();
 const CACHE_TTL = 30 * 60 * 1000;
 
-interface ChapterData {
-  chapter: number;
-  title: string;
-  volume: number | null;
-  pages: number | null;
-  rating: number | null;
-  replies: number;
-}
-
 function decodeHtmlEntities(str: string): string {
   return str
     .replace(/&#039;/g, "'")
@@ -20,29 +11,6 @@ function decodeHtmlEntities(str: string): string {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&nbsp;/g, " ");
-}
-
-async function fetchMalMangaReviews(malId: number): Promise<{ rating: number; total: number }> {
-  try {
-    const url = `https://myanimelist.net/manga/${malId}/reviews`;
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.9",
-      },
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!res.ok) return { rating: 0, total: 0 };
-    const html = await res.text();
-    const ratingMatch = html.match(/score-label[\s\S]*?(\d+\.?\d*)\s*\/\s*10/);
-    const totalMatch = html.match(/(\d+)\s*Reviews/i);
-    return {
-      rating: ratingMatch ? parseFloat(ratingMatch[1]) : 0,
-      total: totalMatch ? parseInt(totalMatch[1]) : 0,
-    };
-  } catch {
-    return { rating: 0, total: 0 };
-  }
 }
 
 async function fetchMangaDexStats(mangaId: number): Promise<{ average: number; bayesian: number; follows: number } | null> {
@@ -116,7 +84,7 @@ export async function GET(
 
     CACHE.set(cacheKey, { data: result, ts: Date.now() });
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: "Failed to fetch manga data" },
       { status: 502 }

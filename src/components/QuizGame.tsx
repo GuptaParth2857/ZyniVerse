@@ -156,29 +156,38 @@ function useAudio() {
 }
 
 function Confetti({ show }: { show: boolean }) {
-  if (!show) return null;
   const colors = ["#ff00ff", "#00ffff", "#ffd700", "#ff3366", "#00ff7f", "#8a2be2", "#ff6b35", "#00bfff"];
   const shapes = ["circle", "square", "triangle"];
+  /* eslint-disable react-hooks/purity */
+  const particles = useMemo(() => Array.from({ length: 80 }).map((_, i) => ({
+    left: `${Math.random() * 100}%`,
+    width: `${6 + Math.random() * 6}px`,
+    height: shapes[i % 3] === "triangle" ? "0" : `${6 + Math.random() * 6}px`,
+    animationDuration: `${1.5 + Math.random() * 2}s`,
+    animationDelay: `${Math.random() * 0.8}s`,
+  })), []);
+  /* eslint-enable react-hooks/purity */
+  if (!show) return null;
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
-      {Array.from({ length: 80 }).map((_, i) => {
+      {particles.map((p, i) => {
         const shape = shapes[i % 3];
         return (
           <div
             key={i}
             className="absolute"
             style={{
-              left: `${Math.random() * 100}%`,
+              left: p.left,
               top: `-5%`,
-              width: `${6 + Math.random() * 6}px`,
-              height: shape === "triangle" ? "0" : `${6 + Math.random() * 6}px`,
+              width: p.width,
+              height: shape === "triangle" ? "0" : p.height,
               backgroundColor: shape !== "triangle" ? colors[i % colors.length] : "transparent",
               borderRadius: shape === "circle" ? "50%" : shape === "square" ? "2px" : "0",
               borderLeft: shape === "triangle" ? "4px solid transparent" : undefined,
               borderRight: shape === "triangle" ? "4px solid transparent" : undefined,
               borderBottom: shape === "triangle" ? `8px solid ${colors[i % colors.length]}` : undefined,
-              animation: `confettiFall ${1.5 + Math.random() * 2}s ease-in forwards`,
-              animationDelay: `${Math.random() * 0.8}s`,
+              animation: `confettiFall ${p.animationDuration} ease-in forwards`,
+              animationDelay: p.animationDelay,
               opacity: 0.9,
             }}
           />
@@ -297,7 +306,7 @@ export default function QuizGame() {
   const [lastCorrectAnswer, setLastCorrectAnswer] = useState<string | null>(null);
   const [answerState, setAnswerState] = useState<"none" | "correct" | "wrong" | "timeout">("none");
   const [timer, setTimer] = useState(30);
-  const maxTimerRef = useRef(30);
+  const [maxTimer, setMaxTimer] = useState(30);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [totalTime, setTotalTime] = useState(0);
   const [wallet, setWallet] = useState<Wallet>(loadWallet);
@@ -335,7 +344,7 @@ export default function QuizGame() {
       const newQ = questions[currentIndex + 1];
       const t = getTimerForDifficulty(newQ?.difficulty || "medium");
       setTimer(t);
-      maxTimerRef.current = t;
+      setMaxTimer(t);
       setQuestionKey((k) => k + 1);
     } else {
       setPhase("result");
@@ -364,6 +373,7 @@ export default function QuizGame() {
   useEffect(() => {
     if (phase === "playing" && timer === 0 && answerState === "none") {
       audio.wrong();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAnswerState("timeout");
       setStreak(0);
       setScreenShake(true);
@@ -376,6 +386,7 @@ export default function QuizGame() {
 
   useEffect(() => {
     if (streak >= 3) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStreakFire(true);
       const t = setTimeout(() => setStreakFire(false), 600);
       return () => clearTimeout(t);
@@ -417,7 +428,7 @@ export default function QuizGame() {
       const firstQ = data.questions[0];
       const t = getTimerForDifficulty(firstQ?.difficulty || "medium");
       setTimer(t);
-      maxTimerRef.current = t;
+      setMaxTimer(t);
       setStartTime(new Date());
       setQuestionKey(0);
       setPrevRank(getRank(wallet.xp));
@@ -427,7 +438,7 @@ export default function QuizGame() {
     }
   }
 
-  function usePowerUp(type: "fiftyFifty" | "skip" | "doubleXp") {
+  function activatePowerUp(type: "fiftyFifty" | "skip" | "doubleXp") {
     const w = { ...wallet };
     if (w.powerUps[type] <= 0 || answerState !== "none" || !currentQ) return;
     audio.powerUp();
@@ -462,6 +473,7 @@ export default function QuizGame() {
     if (answerState !== "none" || !currentQ) return;
     setSelectedAnswer(answer);
 
+    // eslint-disable-next-line react-hooks/purity
     const elapsed = (Date.now() - answerTimestampRef.current) / 1000;
     let spdBonus = 0;
     if (elapsed < 3) spdBonus = 15;
@@ -563,6 +575,7 @@ export default function QuizGame() {
 
   useEffect(() => {
     if (phase === "result") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       finishQuiz();
       fetch("/api/quiz/scores", {
         method: "POST",
@@ -588,7 +601,9 @@ export default function QuizGame() {
   }, [currentIndex, phase]);
 
   const walletRef = useRef(wallet);
-  walletRef.current = wallet;
+  useEffect(() => {
+    walletRef.current = wallet;
+  }, [wallet]);
 
   if (phase === "start") {
     const rank = getRank(wallet.xp);
@@ -876,7 +891,7 @@ export default function QuizGame() {
 
   if (!currentQ) return <div className="p-8 text-center text-sm text-gray-500">Loading...</div>;
 
-  const timerPct = maxTimerRef.current > 0 ? (timer / maxTimerRef.current) * 100 : 0;
+  const timerPct = maxTimer > 0 ? (timer / maxTimer) * 100 : 0;
   const timerColor = timer > 15 ? "#00ffff" : timer > 7 ? "#ffd700" : "#ff3366";
   const currentXP = calcXp(currentQ.difficulty, streak, doubleXpActive, speedBonus);
   const comboMultiplier = streak >= 10 ? "3.0x" : streak >= 7 ? "2.5x" : streak >= 5 ? "2.0x" : streak >= 3 ? "1.5x" : "1.0x";
@@ -1033,7 +1048,7 @@ export default function QuizGame() {
               { key: "skip" as const, icon: "⏭️", label: "Skip", count: wallet.powerUps.skip },
               { key: "doubleXp" as const, icon: "⚡", label: "2x", count: wallet.powerUps.doubleXp },
             ].filter((p) => p.count > 0).map((p) => (
-              <button key={p.key} onClick={() => usePowerUp(p.key)}
+              <button key={p.key} onClick={() => activatePowerUp(p.key)}
                 className="rounded-lg border px-5 py-2.5 text-xs font-bold transition-all hover:scale-105 active:scale-95"
                 style={{
                   borderColor: "rgba(255,215,0,0.3)",

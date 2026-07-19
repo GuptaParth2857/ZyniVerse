@@ -24,7 +24,7 @@ interface ClubData {
   _count: { members: number; posts: number; joinRequests: number };
 }
 
-export default function ClubDetailPageClient({ params }: { params: Promise<{ slug: string }> }) {
+export default function ClubDetailPageClient({ params: _params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = useParams();
   const slug = resolvedParams?.slug as string;
   const { data: session } = useSession();
@@ -45,10 +45,11 @@ export default function ClubDetailPageClient({ params }: { params: Promise<{ slu
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { if (typeof slug === "string") fetchClub(); }, [slug]);
+  useEffect(() => { if (typeof slug === "string") { // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchClub(); } }, [slug]);
 
-  const isMember = club?.members?.some((m: any) => m.user.id === (session as any)?.user?.id) ?? false;
-  const memberRole = club?.members?.find((m: any) => m.user.id === (session as any)?.user?.id)?.role ?? null;
+  const isMember = club?.members?.some((m: { user: { id: string } }) => m.user.id === (session as { user?: { id: string } })?.user?.id) ?? false;
+  const memberRole = club?.members?.find((m: { user: { id: string } }) => m.user.id === (session as { user?: { id: string } })?.user?.id)?.role ?? null;
 
   const handleJoin = async () => {
     const res = await fetch(`/api/clubs/${club?.id}/join`, { method: "POST" });

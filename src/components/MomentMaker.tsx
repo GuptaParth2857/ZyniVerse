@@ -35,6 +35,7 @@ export default function MomentMaker({
   const [capturing, setCapturing] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setQuote(initialQuote);
     setCharacter(initialCharacter);
     setEpisode(initialEpisode?.toString() || "");

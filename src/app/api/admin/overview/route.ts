@@ -11,7 +11,7 @@ export async function GET() {
       where: { id: session.user.id },
       select: { email: true },
     });
-    if (user?.email !== "admin@zyverse.in") {
+    if (user?.email !== "gupta.parth2857@gmail.com") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { checkAnswer } = await import("@/lib/quiz");
-  const result = checkAnswer(questionId, options[0]);
+  const result = await checkAnswer(questionId, options[0]);
 
   const wrongOptions = options.filter((o: string) => o !== result.correctAnswer);
   const toRemove = wrongOptions.sort(() => Math.random() - 0.5).slice(0, 2);

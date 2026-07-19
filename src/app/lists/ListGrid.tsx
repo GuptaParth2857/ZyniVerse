@@ -49,7 +49,9 @@ export default function ListGrid() {
     } catch {}
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchLists(); }, [fetchLists]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchFeatured(); }, [fetchFeatured]);
 
   const totalPages = Math.ceil(total / limit);

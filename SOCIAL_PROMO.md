@@ -185,3 +185,127 @@
 > Built solo from Delhi. Would love your feedback! 
 >
 > #BuildInPublic #AnimeAPI #IndianDeveloper #NextJS #OpenSource
+
+---
+
+## 🎬 Watch Order Feature — Social Media Posts
+
+---
+
+### 🐦 Twitter / X — Thread (4 tweets)
+
+**Tweet 1:**
+> 🎬 Confused about watch order?
+>
+> "Should I watch Fate/Zero first or UBW?"
+> "Where do the Monogatari movies fit?"
+> "Is Naruto → Shippuden → Boruto correct?"
+>
+> We built a tool that answers ALL of these.
+>
+> 👇
+
+**Tweet 2:**
+> Search ANY anime → get instant watch orders.
+>
+> • 39 curated guides (Fate, Monogatari, Haruhi, etc.)
+> • 200+ anime searchable via AniList
+> • Auto-generated orders for ANY anime
+> • Prequels → Main → Sequels → Side Stories
+>
+> No more Googling "watch order reddit" 🙏
+
+**Tweet 3:**
+> How it works:
+>
+> 1. Go to zyniverse.vercel.app/watch-order
+> 2. Search any anime name
+> 3. Get a visual timeline with the correct order
+>
+> Movies, OVAs, specials — everything in its place.
+>
+> Free. No signup needed.
+
+**Tweet 4:**
+> Built this because I spent 20 minutes figuring out the correct Monogatari order.
+>
+> Never again.
+>
+> Try it: zyniverse.vercel.app/watch-order
+>
+> RT if you know someone who needs this 🙏
+>
+> #AnimeWatchOrder #ZyniVerse #Anime
+
+---
+
+### 🔴 Reddit — r/anime (Text Post)
+
+**Title:** I built a free anime watch order tool — search any anime, get instant visual timelines
+
+**Body:**
+
+> Hey r/anime!
+>
+> I got tired of googling "watch order" every time I started a new anime franchise. So I built a tool that does it for you.
+>
+> **What it does:**
+> - Search any anime name → get instant results
+> - 39 curated watch order guides (Fate, Monogatari, Haruhi, Evangelion, etc.)
+> - Auto-generates watch orders for ANY anime using AniList relations
+> - Visual timeline showing Prequels → Main → Sequels → Side Stories
+> - Movies, OVAs, specials all tagged and ordered
+>
+> **Tech:**
+> - Built with Next.js + AniList GraphQL API
+> - Curated guides have detailed entries with episode counts
+> - Auto-generated guides pull from AniList's relation data
+> - 100% free, no signup required
+>
+> **Try it:** https://zyniverse.vercel.app/watch-order
+>
+> Would love feedback! What other anime should I add curated guides for?
+
+---
+
+### 💬 Discord Announcement
+
+> **🎬 NEW: Watch Order Guides are LIVE!**
+>
+> Tired of arguing about whether to watch Fate/Zero first? We built a solution.
+>
+> **What's new:**
+> • Search any anime → instant watch order
+> • 39 curated guides (Fate, Monogatari, Haruhi, etc.)
+> • Auto-generated orders for ANY anime
+> • Visual timelines with movies & OVAs included
+>
+> **How to use:**
+> 1. Go to https://zyniverse.vercel.app/watch-order
+> 2. Search any anime name
+> 3. Get the correct order instantly
+>
+> **Curated guides include:**
+> Attack on Titan · JoJo · SAO · Demon Slayer · Monogatari · Steins;Gate · Fate · Code Geass · Re:Zero · Dragon Ball · Gundam · Toaru · Made in Abyss · Madoka · Evangelion · Naruto · Bleach · FMA · One Piece · Hunter x Hunter · MHA · Psycho-Pass · Haruhi · Durarara · Baccano · Higurashi · Ghost in the Shell · Gintama · Detective Conan · Digimon · Pokémon · Initial D · Symphogear · Macross · YuYu Hakusho · Slam Dunk · Precure · Katanagatari · Tiger & Bunny
+>
+> **Can't find yours?** The auto-generator handles ANY anime from AniList!
+>
+> Check it out and let us know what other guides you want! 🙏
+
+---
+
+### 📸 Instagram / Poster Caption
+
+> 🎬 Never Confused About Watch Order Again.
+>
+> Search any anime → Get instant watch orders.
+>
+> ✅ 200+ anime searchable
+> ✅ 39 curated guides
+> ✅ Auto-generated for ANY anime
+> ✅ Movies, OVAs, specials included
+> ✅ 100% Free
+>
+> Link in bio 🔗
+>
+> #anime #watchorder #animecommunity #otaku #animelist #animefan #otakulife #animeaddict #weeb #animelovers #fate #monogatari #evangelion #naruto #onepiece #animeart #animeweekly #crunchyroll #funimation #anilist #zyniverse

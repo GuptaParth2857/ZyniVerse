@@ -1,3 +1,5 @@
+import { getAnimaxSchedule } from "./animax-schedule";
+
 export interface TvChannel {
   id: string;
   name: string;
@@ -40,94 +42,6 @@ export interface TvAnimeEntry {
   channel?: string;
   airTime?: string;
   image?: string;
-}
-
-export const TV_ANIME_SCHEDULE: TvAnimeEntry[] = [];
-
-// Non-AniList shows that need static posters (Indian cartoons, etc.)
-const STATIC_POSTERS: Record<string, string> = {
-  "Shin Chan": "https://upload.wikimedia.org/wikipedia/en/9/92/Crayon_Shin-chan_vol_1_cover.jpg",
-  "Shin-chan": "https://upload.wikimedia.org/wikipedia/en/9/92/Crayon_Shin-chan_vol_1_cover.jpg",
-  "Sinchan": "https://upload.wikimedia.org/wikipedia/en/9/92/Crayon_Shin-chan_vol_1_cover.jpg",
-  "Doraemon": "https://upload.wikimedia.org/wikipedia/en/c/c8/Doraemon_volume_1_cover.jpg",
-  "Chhota Bheem": "https://upload.wikimedia.org/wikipedia/en/f/f9/Chhota_Bheem.jpg",
-  "Motu Patlu": "https://upload.wikimedia.org/wikipedia/en/3/3b/Motu_Patlu.Jpg",
-  "Taarak Mehta Ka Ooltah Chashmah": "https://upload.wikimedia.org/wikipedia/en/e/e2/Taarak_Mehta_Ka_Ooltah_Chashmah.jpg",
-  "CID": "https://upload.wikimedia.org/wikipedia/en/b/b5/CID_%28Indian_TV_series%29.png",
-  "Bandbudh Aur Budbak": "https://upload.wikimedia.org/wikipedia/en/0/08/Bandbudh_Aur_Budbak_logo.jpg",
-  "Lamput": "https://upload.wikimedia.org/wikipedia/commons/d/da/Lamput.png",
-  "Kiteretsu": "https://upload.wikimedia.org/wikipedia/en/d/d2/KiteretsuDaihyakka-vol1.jpg",
-  "Little Singham": "https://upload.wikimedia.org/wikipedia/en/2/23/Cop_Universe_logo.jpg",
-  "Beyblade Burst": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21236-8B4fORbuUp6v.jpg",
-  "Pokemon": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b527-t6dBVJ5OVcXK.png",
-  "Pokémon": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b527-t6dBVJ5OVcXK.png",
-  "Dragon Ball Z": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx813-ZhnFNOeCU5dQ.png",
-  "Dragon Ball": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx813-ZhnFNOeCU5dQ.png",
-  "Naruto": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20-dE6UHbFFg1A5.jpg",
-  "One Piece": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21-ELSYx3yMPcKM.jpg",
-  "Detective Conan": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx235-MyYT7K3chBdO.jpg",
-  "Case Closed": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx235-MyYT7K3chBdO.jpg",
-};
-
-// In-memory cache for AniList-fetched posters
-const posterCache = new Map<string, string>();
-const posterFetchErrors = new Set<string>();
-
-export function getShowPoster(showName: string): string | undefined {
-  // 1. Check in-memory cache
-  if (posterCache.has(showName)) return posterCache.get(showName);
-  // 2. Check static posters
-  if (STATIC_POSTERS[showName]) return STATIC_POSTERS[showName];
-  // 3. Fuzzy match static posters
-  const lower = showName.toLowerCase().replace(/[:\-!]/g, "").replace(/\s+/g, " ").trim();
-  for (const [key, val] of Object.entries(STATIC_POSTERS)) {
-    const kLower = key.toLowerCase().replace(/[:\-!]/g, "").replace(/\s+/g, " ").trim();
-    if (lower.includes(kLower) || kLower.includes(lower)) return val;
-  }
-  return undefined;
-}
-
-// Fetch poster from AniList API (with caching)
-export async function fetchShowPoster(showName: string): Promise<string | null> {
-  // Already cached
-  if (posterCache.has(showName)) return posterCache.get(showName) || null;
-  // Previously failed
-  if (posterFetchErrors.has(showName)) return null;
-
-  try {
-    const { searchMedia } = await import("./anilist");
-    const result = await searchMedia({ search: showName, type: "ANIME", perPage: 1 });
-    const media = result.media?.[0];
-    if (media?.coverImage?.large) {
-      posterCache.set(showName, media.coverImage.large);
-      return media.coverImage.large;
-    }
-    // Try with cleaned title (remove "S2", "S3", "(Hindi)" etc)
-    const cleaned = showName.replace(/\s*S\d+\s*/g, "").replace(/\s*\(.*?\)\s*/g, "").trim();
-    if (cleaned !== showName) {
-      const result2 = await searchMedia({ search: cleaned, type: "ANIME", perPage: 1 });
-      const media2 = result2.media?.[0];
-      if (media2?.coverImage?.large) {
-        posterCache.set(showName, media2.coverImage.large);
-        return media2.coverImage.large;
-      }
-    }
-    posterFetchErrors.add(showName);
-    return null;
-  } catch {
-    posterFetchErrors.add(showName);
-    return null;
-  }
-}
-
-// Pre-fetch posters for all shows in a schedule (batch)
-export async function prefetchShowPosters(showNames: string[]): Promise<void> {
-  const unique = [...new Set(showNames)].filter((n) => !posterCache.has(n) && !posterFetchErrors.has(n));
-  // Fetch in batches of 5 to respect AniList rate limits
-  for (let i = 0; i < unique.length; i += 5) {
-    const batch = unique.slice(i, i + 5);
-    await Promise.all(batch.map((name) => fetchShowPoster(name)));
-  }
 }
 
 export const TV_CHANNELS: Record<string, TvChannel> = {
@@ -528,10 +442,109 @@ const JIO_HOTSTAR_WEEKLY: Record<string, TimeSlot[]> = {
   Sunday: [],
 };
 
-// Indian TV channel schedules are fetched live from JioTV API via Railway proxy (see cron route)
+// Indian TV channel schedules are fetched live from INTV Schedule CDN (see epg-scraper.ts)
 // Streaming platform schedules remain hardcoded here
 
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+const SONIC_WEEKLY: Record<string, TimeSlot[]> = {
+  Monday: [
+    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
+    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
+    { show: "Chhota Bheem", start: "08:00", end: "09:00", duration: 60 },
+    { show: "Motu Patlu", start: "09:00", end: "12:00", duration: 180 },
+    { show: "Gattu Aur Battu", start: "12:00", end: "13:00", duration: 60 },
+    { show: "Motu Patlu", start: "13:00", end: "15:00", duration: 120 },
+    { show: "Chhota Bheem", start: "15:00", end: "16:00", duration: 60 },
+    { show: "Motu Patlu", start: "16:00", end: "18:00", duration: 120 },
+    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
+    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
+    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
+    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
+  ],
+  Tuesday: [
+    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
+    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
+    { show: "Chhota Bheem", start: "08:00", end: "09:00", duration: 60 },
+    { show: "Motu Patlu", start: "09:00", end: "12:00", duration: 180 },
+    { show: "Gattu Aur Battu", start: "12:00", end: "13:00", duration: 60 },
+    { show: "Motu Patlu", start: "13:00", end: "15:00", duration: 120 },
+    { show: "Chhota Bheem", start: "15:00", end: "16:00", duration: 60 },
+    { show: "Motu Patlu", start: "16:00", end: "18:00", duration: 120 },
+    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
+    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
+    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
+    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
+  ],
+  Wednesday: [
+    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
+    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
+    { show: "Chhota Bheem", start: "08:00", end: "09:00", duration: 60 },
+    { show: "Motu Patlu", start: "09:00", end: "12:00", duration: 180 },
+    { show: "Gattu Aur Battu", start: "12:00", end: "13:00", duration: 60 },
+    { show: "Motu Patlu", start: "13:00", end: "15:00", duration: 120 },
+    { show: "Chhota Bheem", start: "15:00", end: "16:00", duration: 60 },
+    { show: "Motu Patlu", start: "16:00", end: "18:00", duration: 120 },
+    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
+    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
+    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
+    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
+  ],
+  Thursday: [
+    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
+    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
+    { show: "Chhota Bheem", start: "08:00", end: "09:00", duration: 60 },
+    { show: "Motu Patlu", start: "09:00", end: "12:00", duration: 180 },
+    { show: "Gattu Aur Battu", start: "12:00", end: "13:00", duration: 60 },
+    { show: "Motu Patlu", start: "13:00", end: "15:00", duration: 120 },
+    { show: "Chhota Bheem", start: "15:00", end: "16:00", duration: 60 },
+    { show: "Motu Patlu", start: "16:00", end: "18:00", duration: 120 },
+    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
+    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
+    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
+    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
+  ],
+  Friday: [
+    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
+    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
+    { show: "Chhota Bheem", start: "08:00", end: "09:00", duration: 60 },
+    { show: "Motu Patlu", start: "09:00", end: "12:00", duration: 180 },
+    { show: "Gattu Aur Battu", start: "12:00", end: "13:00", duration: 60 },
+    { show: "Motu Patlu", start: "13:00", end: "15:00", duration: 120 },
+    { show: "Chhota Bheem", start: "15:00", end: "16:00", duration: 60 },
+    { show: "Motu Patlu", start: "16:00", end: "18:00", duration: 120 },
+    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
+    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
+    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
+    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
+  ],
+  Saturday: [
+    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
+    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
+    { show: "Chhota Bheem", start: "08:00", end: "10:00", duration: 120 },
+    { show: "Motu Patlu", start: "10:00", end: "13:00", duration: 180 },
+    { show: "Gattu Aur Battu", start: "13:00", end: "14:00", duration: 60 },
+    { show: "Motu Patlu", start: "14:00", end: "16:00", duration: 120 },
+    { show: "Chhota Bheem", start: "16:00", end: "18:00", duration: 120 },
+    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
+    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
+    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
+    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
+  ],
+  Sunday: [
+    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
+    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
+    { show: "Chhota Bheem", start: "08:00", end: "10:00", duration: 120 },
+    { show: "Motu Patlu", start: "10:00", end: "13:00", duration: 180 },
+    { show: "Gattu Aur Battu", start: "13:00", end: "14:00", duration: 60 },
+    { show: "Motu Patlu", start: "14:00", end: "16:00", duration: 120 },
+    { show: "Chhota Bheem", start: "16:00", end: "18:00", duration: 120 },
+    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
+    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
+    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
+    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
+  ],
+};
 
 export const CHANNEL_SCHEDULES: ChannelSchedule[] = [
   {
@@ -557,6 +570,14 @@ export const CHANNEL_SCHEDULES: ChannelSchedule[] = [
   {
     channelId: "jio_hotstar",
     schedules: ALL_DAYS.map((d) => ({ day: d, slots: JIO_HOTSTAR_WEEKLY[d] || [] })),
+  },
+  {
+    channelId: "animax",
+    schedules: getAnimaxSchedule().schedules,
+  },
+  {
+    channelId: "sonic",
+    schedules: ALL_DAYS.map((d) => ({ day: d, slots: SONIC_WEEKLY[d] || [] })),
   },
 ];
 
@@ -596,7 +617,7 @@ export function getNowPlaying(): { channel: TvChannel; slot: TimeSlot }[] {
       const [endH, endM] = slot.end.split(":").map(Number);
       const startMinutes = startH * 60 + startM;
       const endMinutes = endH * 60 + endM;
-      if (endMinutes === 0 && startMinutes > 0) {
+      if (startMinutes > endMinutes) {
         return currentMinutes >= startMinutes || currentMinutes < endMinutes;
       }
       return currentMinutes >= startMinutes && currentMinutes < endMinutes;

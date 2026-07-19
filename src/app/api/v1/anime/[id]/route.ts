@@ -55,7 +55,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         } : null,
       },
     });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json({ error: "Failed to fetch anime details" }, { status: 500 });
   }
 }

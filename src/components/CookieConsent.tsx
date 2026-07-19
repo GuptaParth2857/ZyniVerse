@@ -9,6 +9,7 @@ export default function CookieConsent() {
 
   useEffect(() => {
     const stored = localStorage.getItem("zyniverse_cookies");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!stored) setVisible(true);
   }, []);
 

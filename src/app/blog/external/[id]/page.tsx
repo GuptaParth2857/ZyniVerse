@@ -5,7 +5,7 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params: _params }: Props): Promise<Metadata> {
   return {
     title: `Blog Article | ZyniVerse`,
     description: "Read this anime blog article curated by ZyniBot from dev.to.",

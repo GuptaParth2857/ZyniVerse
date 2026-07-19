@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { UPCOMING_DUBS, getDubsByStatus, getAllDubs, type DubEntry } from "@/lib/dub-data";
+import { UPCOMING_DUBS, getDubsByStatus, getAllDubs } from "@/lib/dub-data";
 
 describe("UPCOMING_DUBS", () => {
   it("has at least 20 entries", () => {
@@ -39,7 +39,7 @@ describe("getDubsByStatus", () => {
   });
 
   it("returns empty array for non-existent status", () => {
-    const result = getDubsByStatus("Unknown" as any);
+    const result = getDubsByStatus("Unknown" as "Airing" | "Upcoming" | "Completed");
     expect(result).toEqual([]);
   });
 });

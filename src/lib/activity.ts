@@ -42,7 +42,7 @@ export async function getActivityFeed(userId: string, limit = 20, offset = 0) {
   const followingIds = follows.map((f) => f.followingId);
   if (followingIds.length === 0) return [];
 
-  return prisma.activity.findMany({
+  const rawActivities = await prisma.activity.findMany({
     where: { userId: { in: followingIds } },
     orderBy: { createdAt: "desc" },
     take: limit,
@@ -51,10 +51,11 @@ export async function getActivityFeed(userId: string, limit = 20, offset = 0) {
       user: { select: { id: true, username: true, avatar: true } },
     },
   });
+  return rawActivities.filter((a) => a.user !== null);
 }
 
 export async function getUserActivity(userId: string, limit = 20, offset = 0) {
-  return prisma.activity.findMany({
+  const rawActivities = await prisma.activity.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
     take: limit,
@@ -63,4 +64,5 @@ export async function getUserActivity(userId: string, limit = 20, offset = 0) {
       user: { select: { id: true, username: true, avatar: true } },
     },
   });
+  return rawActivities.filter((a) => a.user !== null);
 }

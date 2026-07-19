@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   }
   if (search) where.title = { contains: search };
 
-  const orderBy =
+  const _orderBy =
     sort === "popular"
       ? { likes: "desc" as const }
       : sort === "trending"

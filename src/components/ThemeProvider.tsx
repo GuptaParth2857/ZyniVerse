@@ -18,6 +18,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as ThemeId | null;
       if (saved && THEMES.some((t) => t.id === saved)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setThemeIdState(saved);
       }
     } catch {}

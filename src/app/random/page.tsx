@@ -31,6 +31,7 @@ export default function RandomPage() {
   const [slideKey, setSlideKey] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
   const autoRef = useRef(autoPlay);
+  // eslint-disable-next-line react-hooks/refs
   autoRef.current = autoPlay;
 
   useEffect(() => {

@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   const questions = await generateDynamicQuiz(difficulty, category, count);
   storeQuestions(questions);
-  const safeQuestions = questions.map(({ correctAnswer, ...rest }) => rest);
+  const safeQuestions = questions.map(({ correctAnswer: _correctAnswer, ...rest }) => rest);
 
   return NextResponse.json({ questions: safeQuestions });
 }

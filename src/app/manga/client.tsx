@@ -49,6 +49,7 @@ export default function MangaBrowseClient() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true); setError(null);
 
     if (showMyList) {
@@ -71,7 +72,7 @@ export default function MangaBrowseClient() {
 
   return (
     <PageTransition><div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-violet)]">// Manga</p>
+      <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-violet)]">{/* Manga */}</p>
       <h1 className="font-display text-3xl font-bold sm:text-4xl">Manga Tracker</h1>
 
       {/* Search */}

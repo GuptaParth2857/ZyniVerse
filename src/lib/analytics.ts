@@ -68,6 +68,8 @@ export async function startSession(params: {
 
 export async function updateSessionActivity(sessionId: string) {
   try {
+    const existing = await prisma.userSession.findUnique({ where: { sessionId }, select: { sessionId: true } });
+    if (!existing) return;
     await prisma.userSession.update({
       where: { sessionId },
       data: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -254,7 +254,8 @@ export default function LeaderboardPage() {
     }
   };
 
-  useEffect(() => { fetchData(tab); }, [tab, seasonYear, seasonName]);
+  useEffect(() => { // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchData(tab); }, [tab, seasonYear, seasonName]);
 
   const heading =
     tab === "trending" ? "Trending Now" :

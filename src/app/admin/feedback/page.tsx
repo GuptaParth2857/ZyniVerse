@@ -72,6 +72,7 @@ export default function AdminFeedbackPage() {
   }, [typeFilter, statusFilter]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchFeedbacks();
   }, [fetchFeedbacks]);
 

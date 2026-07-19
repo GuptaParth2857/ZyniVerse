@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getActiveChallenges, getPastChallenges } from "@/lib/challenges";
+import Link from "next/link";
 import ChallengeCard from "@/components/ChallengeCard";
 
 export const metadata = {
@@ -71,13 +72,13 @@ export default async function ChallengesPage() {
         <p className="text-sm text-[var(--color-mute)] max-w-lg mx-auto leading-relaxed">
           Set goals, track your watchlist, and compete with the community. Join challenges to earn achievements and climb the leaderboard.
         </p>
-        <a
+        <Link
           href="/challenges/create"
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-magenta)] px-6 py-2.5 text-sm font-bold text-black hover:opacity-90 hover:shadow-lg hover:shadow-[var(--color-cyan)]/20 transition-all"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           Create Challenge
-        </a>
+        </Link>
       </div>
 
       {yearlyChallenge && (

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  getTrending, getPopular, getUpcoming, getTopRated, getAiringSchedule, bestTitle,
+  getTrending, getPopular, getUpcoming, getTopRated, getAiringSchedule,
 } from "@/lib/anilist";
 import { auth } from "@/lib/auth";
 import Section from "@/components/Section";

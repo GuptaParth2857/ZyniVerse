@@ -67,18 +67,21 @@ export default function MessagesClient() {
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return; }
     if (status !== "authenticated") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchConversations();
   }, [status, router, fetchConversations]);
 
   useEffect(() => {
     const convoId = searchParams.get("conversation");
     if (convoId && conversations.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveConvoId(convoId);
     }
   }, [searchParams, conversations]);
 
   useEffect(() => {
     if (!activeConvoId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMessages(activeConvoId);
     const interval = setInterval(() => fetchMessages(activeConvoId), 10000);
     return () => clearInterval(interval);

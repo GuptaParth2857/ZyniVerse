@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -61,6 +61,10 @@ export default function CreateChallengeClient() {
   const [goalCount, setGoalCount] = useState("12");
   const [rules, setRules] = useState("");
   const [coverImage, setCoverImage] = useState("");
+  const [coverImageMode, setCoverImageMode] = useState<"url" | "upload">("url");
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPublic, setIsPublic] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -75,6 +79,48 @@ export default function CreateChallengeClient() {
         </a>
       </div>
     );
+  }
+
+  async function handleFileUpload(file: File) {
+    if (!file) return;
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowed.includes(file.type)) {
+      setError("Invalid file type. Use JPG, PNG, WebP, or GIF.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("File too large. Max 5MB.");
+      return;
+    }
+    setUploading(true);
+    setUploadProgress(0);
+    setError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const xhr = new XMLHttpRequest();
+      const url = await new Promise<string>((resolve, reject) => {
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+        });
+        xhr.addEventListener("load", () => {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (xhr.status === 200 && data.url) resolve(data.url);
+            else reject(new Error(data.error || "Upload failed"));
+          } catch { reject(new Error("Upload failed")); }
+        });
+        xhr.addEventListener("error", () => reject(new Error("Network error")));
+        xhr.open("POST", "/api/cosplay/upload");
+        xhr.send(formData);
+      });
+      setCoverImage(url);
+      setUploadProgress(100);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -353,13 +399,71 @@ export default function CreateChallengeClient() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-[var(--color-mute)] mb-1.5">Cover Image URL</label>
-                    <input
-                      value={coverImage}
-                      onChange={(e) => setCoverImage(e.target.value)}
-                      placeholder="https://example.com/cover.jpg (optional)"
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors placeholder:text-[var(--color-mute)]/40"
-                    />
+                    <label className="block text-[11px] font-semibold text-[var(--color-mute)] mb-1.5">Cover Image</label>
+                    {/* Mode toggle */}
+                    <div className="flex gap-1 mb-2 p-0.5 rounded-lg border border-white/10 bg-white/5 w-fit">
+                      <button type="button" onClick={() => setCoverImageMode("url")}
+                        className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all ${coverImageMode === "url" ? "bg-[var(--color-cyan)]/15 text-[var(--color-cyan)]" : "text-[var(--color-mute)] hover:text-white"}`}>
+                        <span className="flex items-center gap-1.5">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+                          URL
+                        </span>
+                      </button>
+                      <button type="button" onClick={() => setCoverImageMode("upload")}
+                        className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all ${coverImageMode === "upload" ? "bg-[var(--color-magenta)]/15 text-[var(--color-magenta)]" : "text-[var(--color-mute)] hover:text-white"}`}>
+                        <span className="flex items-center gap-1.5">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                          Upload
+                        </span>
+                      </button>
+                    </div>
+
+                    {coverImageMode === "url" ? (
+                      <input
+                        value={coverImage}
+                        onChange={(e) => setCoverImage(e.target.value)}
+                        placeholder="https://example.com/cover.jpg (optional)"
+                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors placeholder:text-[var(--color-mute)]/40"
+                      />
+                    ) : (
+                      <div className="space-y-3">
+                        <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                          className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); e.target.value = ""; }} />
+                        <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                          className="w-full rounded-xl border-2 border-dashed border-white/10 bg-white/3 p-6 text-center hover:border-[var(--color-magenta)]/30 hover:bg-[var(--color-magenta)]/5 transition-all disabled:opacity-50">
+                          {uploading ? (
+                            <div className="space-y-3">
+                              <div className="mx-auto h-10 w-10 rounded-full border-2 border-[var(--color-magenta)]/30 border-t-[var(--color-magenta)] animate-spin" />
+                              <p className="text-xs text-[var(--color-mute)]">Uploading... {uploadProgress}%</p>
+                              <div className="mx-auto h-1 w-48 rounded-full bg-white/10 overflow-hidden">
+                                <div className="h-full rounded-full bg-gradient-to-r from-[var(--color-magenta)] to-[var(--color-cyan)] transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto mb-2 text-[var(--color-mute)]">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <circle cx="8.5" cy="8.5" r="1.5" />
+                                <polyline points="21 15 16 10 5 21" />
+                              </svg>
+                              <p className="text-xs text-[var(--color-mute)]">Click to upload or drag & drop</p>
+                              <p className="text-[10px] text-[var(--color-mute)]/50 mt-1">JPG, PNG, WebP, GIF (max 5MB)</p>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Image preview */}
+                    {coverImage && (
+                      <div className="mt-3 relative group">
+                        <img src={coverImage} alt="Cover preview" className="w-full h-32 object-cover rounded-xl border border-white/10" />
+                        <button type="button" onClick={() => setCoverImage("")}
+                          className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/60 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div>

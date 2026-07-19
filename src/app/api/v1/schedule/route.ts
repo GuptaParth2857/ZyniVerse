@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
         to: now + hoursAhead * 3600,
       },
     });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json({ error: "Failed to fetch schedule" }, { status: 500 });
   }
 }

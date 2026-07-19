@@ -6,7 +6,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; postId: string }> }
 ) {
-  const { id: clubId, postId } = await params;
+  const { id: _clubId, postId } = await params;
   const comments = await prisma.clubPostComment.findMany({
     where: { clubPostId: postId },
     include: { user: { select: { id: true, username: true, avatar: true } } },

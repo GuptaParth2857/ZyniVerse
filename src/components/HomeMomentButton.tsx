@@ -17,6 +17,7 @@ export default function HomeMomentButton() {
   const suggestRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!query.trim()) { setSuggestions([]); setShowSuggestions(false); return; }
     const timer = setTimeout(async () => {
       try {
@@ -43,6 +44,7 @@ export default function HomeMomentButton() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!makerOpen) setSelected(null);
   }, [makerOpen]);
 

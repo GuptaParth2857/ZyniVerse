@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import type { Challenge, ChallengeParticipant, ChallengeEntry } from "@prisma/client";
+import type { Challenge, ChallengeEntry } from "@prisma/client";
 
 export type ChallengeWithCounts = Challenge & {
   _count?: { participants: number; entries: number };
