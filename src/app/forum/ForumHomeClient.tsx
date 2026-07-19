@@ -16,6 +16,7 @@ export default function ForumHomeClient() {
   const limit = 20;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`/api/forum/threads?page=${page}&limit=${limit}&sort=${sort}`)
       .then(r => r.json())

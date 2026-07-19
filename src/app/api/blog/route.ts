@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { dedupedFetch } from "@/lib/wiki-cache";
 import { hasValidAnimeTag, getAnimeTagError } from "@/lib/blog-tags";
+import { searchAll } from "@/lib/anilist";
+import { extractAnimeFromTitle, fetchAnimeFromWikipedia, fetchWikipediaAnimeArticles, searchAndFetchWikipediaArticles } from "@/lib/wikipedia";
 
 function slugify(text: string): string {
   return text
@@ -32,6 +34,39 @@ interface ExternalPost {
 
 const USER_AGENT = "ZyniVerse/1.0";
 const MAX_LIMIT = 50;
+
+async function enrichPostsWithAnimePosters(posts: ExternalPost[]): Promise<ExternalPost[]> {
+  const enriched = await Promise.all(
+    posts.map(async (post) => {
+      const animeName = extractAnimeFromTitle(post.title);
+      if (!animeName) return post;
+
+      const tasks: Promise<{ type: string; url: string | null }>[] = [];
+
+      if (!post.coverImage) {
+        tasks.push(
+          searchAll(animeName, 1, 3).then(data => {
+            const all = [...(data.anime || []), ...(data.manga || [])];
+            const best = all.find((m: any) => m.coverImage?.large) || all[0];
+            return { type: "anilist", url: best?.coverImage?.large || null };
+          }).catch(() => ({ type: "anilist", url: null }))
+        );
+      }
+
+      tasks.push(
+        fetchAnimeFromWikipedia(animeName).then(wiki => {
+          return { type: "wiki", url: wiki?.bannerUrl || wiki?.imageUrl || null };
+        }).catch(() => ({ type: "wiki", url: null }))
+      );
+
+      const results = await Promise.all(tasks);
+      const coverImage = post.coverImage || results.find(r => r.type === "anilist")?.url || results.find(r => r.type === "wiki")?.url || null;
+
+      return { ...post, coverImage };
+    })
+  );
+  return enriched;
+}
 
 async function fetchDevToPosts(tag: string): Promise<ExternalPost[]> {
   const res = await fetch(
@@ -73,10 +108,11 @@ export async function GET(req: NextRequest) {
 
   if (slug) where.slug = slug;
   if (userId) where.userId = userId;
-  if (tag) where.tags = { contains: tag };
+  if (tag) where.tags = { contains: tag, mode: "insensitive" };
   if (search) where.OR = [
-    { title: { contains: search } },
-    { content: { contains: search } },
+    { title: { contains: search, mode: "insensitive" } },
+    { content: { contains: search, mode: "insensitive" } },
+    { tags: { contains: search, mode: "insensitive" } },
   ];
 
   const orderBy = sort === "popular" ? { viewCount: "desc" as const } : { publishedAt: "desc" as const };
@@ -106,22 +142,42 @@ export async function GET(req: NextRequest) {
 
   // Fetch external posts (only on listing, not for specific slug/userId)
   let externalItems: ExternalPost[] = [];
+  let wikiItems: ExternalPost[] = [];
   if (!slug && !userId) {
     try {
-      const searchTag = tag || "anime";
-      externalItems = await dedupedFetch(
+      const searchTag = tag || search || "anime";
+      const rawExternal = await dedupedFetch(
         `blog:devto:${searchTag}`,
         () => fetchDevToPosts(searchTag),
         10 * 60 * 1000
       );
+      externalItems = await dedupedFetch(
+        `blog:devto:posters:${searchTag}`,
+        () => enrichPostsWithAnimePosters(rawExternal),
+        30 * 60 * 1000
+      );
     } catch {
       // External fetch failed
     }
+
+    // Fetch Wikipedia anime articles
+    try {
+      if (search) {
+        wikiItems = await searchAndFetchWikipediaArticles(search, 6);
+      } else if (tag) {
+        const { fetchWikipediaAnimeArticlesByTag } = await import("@/lib/wikipedia");
+        wikiItems = await fetchWikipediaAnimeArticlesByTag(tag, 6);
+      } else {
+        wikiItems = await fetchWikipediaAnimeArticles(8);
+      }
+    } catch {
+      // Wikipedia fetch failed
+    }
   }
 
-  const merged = [...dbItems, ...externalItems].slice(0, limit);
+  const merged = [...dbItems, ...wikiItems, ...externalItems].slice(0, limit);
 
-  const response = NextResponse.json({ posts: merged, total: total + externalItems.length, hasMore: page * limit < total + externalItems.length });
+  const response = NextResponse.json({ posts: merged, total: total + wikiItems.length + externalItems.length, hasMore: page * limit < total + wikiItems.length + externalItems.length });
   response.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
   return response;
 }

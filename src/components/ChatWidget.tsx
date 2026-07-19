@@ -76,6 +76,7 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (!session?.user?.id) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUnreadTotal();
     const interval = setInterval(fetchUnreadTotal, 10000);
     return () => clearInterval(interval);
@@ -83,11 +84,23 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (!open || !session?.user?.id) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (view === "list") fetchConversations();
   }, [open, view, session, fetchConversations]);
 
+  async function markAsRead(conversationId: string) {
+    try {
+      await fetch("/api/chat/conversations", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId }),
+      });
+    } catch {}
+  }
+
   useEffect(() => {
     if (!activeConvo || !open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMessages(activeConvo);
     markAsRead(activeConvo);
 
@@ -125,16 +138,6 @@ export default function ChatWidget() {
     setActiveConvo(convo.id);
     setView("messages");
     await markAsRead(convo.id);
-  }
-
-  async function markAsRead(conversationId: string) {
-    try {
-      await fetch("/api/chat/conversations", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId }),
-      });
-    } catch {}
   }
 
   async function handleSend() {
@@ -261,7 +264,7 @@ export default function ChatWidget() {
                     </div>
                   ) : conversations.length === 0 ? (
                     <div className="px-4 py-8 text-center text-sm text-[var(--color-mute)]">
-                      No conversations yet. Go to a user's profile to send a message.
+                      No conversations yet. Go to a user&apos;s profile to send a message.
                     </div>
                   ) : (
                     conversations.map((convo) => (

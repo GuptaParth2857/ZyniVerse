@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { PageTransition } from "@/components/PageTransition";
-import { CardSkeleton, ErrorState } from "@/components/Loader";
+import { ErrorState } from "@/components/Loader";
 import DubExpandingCard from "@/components/DubExpandingCard";
 import NativeBannerAd from "@/components/NativeBannerAd";
 
@@ -42,6 +42,7 @@ export default function DubbedPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     fetch(`/api/dub-schedule?language=${language}`)

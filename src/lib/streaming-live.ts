@@ -1,4 +1,4 @@
-import { getAiringSchedule, type AiringScheduleEntry } from "./anilist";
+import { getAiringSchedule } from "./anilist";
 
 const IST_OFFSET = 5.5 * 60 * 60;
 

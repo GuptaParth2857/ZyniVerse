@@ -133,7 +133,7 @@ async function getGenreBasedAIRecs(profile: ActivityProfile): Promise<AIRecommen
 
         const genreOverlap = media.genres?.filter((g) => profile.topGenres.some((tg) => tg.genre === g)).length || 0;
         const pop = media.popularity || 0;
-        let score = Math.min(100, Math.round(
+        const score = Math.min(100, Math.round(
           (genreOverlap * 12) + (weight * 5) + (pop / 5000) * 20
         ));
 

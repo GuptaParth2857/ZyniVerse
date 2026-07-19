@@ -14,7 +14,7 @@ export default async function EditProfilePage() {
   if (!session?.user) redirect("/login");
 
   // Resolve the real DB user - handles OAuth users where session.user.id might be provider ID
-  let userId = session.user.id || "";
+  const userId = session.user.id || "";
   let user = userId ? await prisma.user.findUnique({ where: { id: userId } }) : null;
   if (!user && session.user.email) {
     user = await prisma.user.findUnique({ where: { email: session.user.email } });

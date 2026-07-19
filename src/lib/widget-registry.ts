@@ -79,7 +79,7 @@ export function generateEmbedScript(
   const def = getWidgetDef(widgetId);
   if (!def) throw new Error(`Unknown widget: ${widgetId}`);
 
-  const entries = Object.entries(params);
+  const _entries = Object.entries(params);
   const script = def.script;
   const iframe = def.iframe;
 

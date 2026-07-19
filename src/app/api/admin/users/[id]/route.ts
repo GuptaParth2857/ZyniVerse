@@ -22,7 +22,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       where: { id: session.user.id },
       select: { email: true },
     });
-    if (admin?.email !== "admin@zyverse.in") {
+    if (admin?.email !== "gupta.parth2857@gmail.com") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

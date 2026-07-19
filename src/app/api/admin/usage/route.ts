@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { API_TIERS } from "@/lib/api-key";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     select: { email: true },
   });
 
-  if (user?.email !== "admin@zyverse.in") {
+  if (user?.email !== "gupta.parth2857@gmail.com") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

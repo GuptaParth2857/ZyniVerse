@@ -26,6 +26,7 @@ export default function CommunityTagPanel({ mediaId }: { mediaId: number }) {
     setLoading(false);
   }, [mediaId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchTags(); }, [fetchTags]);
 
   const handleVote = async (communityTagId: string, vote: number) => {

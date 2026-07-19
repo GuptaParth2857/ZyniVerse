@@ -11,6 +11,7 @@ const links = [
   { href: "/admin/users", label: "Users", icon: "👥" },
   { href: "/admin/analytics", label: "Analytics", icon: "📈" },
   { href: "/admin/ads", label: "Ads", icon: "📢" },
+  { href: "/admin/awards", label: "Awards", icon: "🏆" },
 ];
 
 export default function AdminSidebar() {

@@ -36,13 +36,15 @@ function getGradient(id: string) {
 export default function BlogCard({ post }: BlogCardProps) {
   const tags = post.tags ? post.tags.split(",").filter(Boolean) : [];
   const isExternal = post.isExternal;
-  const href = isExternal ? `/blog/external/${post.id}` : `/blog/${post.slug}`;
+  const isWikipedia = isExternal && post.id.startsWith("wiki-");
+  const href = isWikipedia ? (post.url || "#") : isExternal ? `/blog/external/${post.id}` : `/blog/${post.slug}`;
   const [gradFrom, gradTo] = getGradient(post.id);
 
   return (
     <Link
       href={href}
       className="group relative rounded-[16px] no-underline"
+      {...(isWikipedia ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
       {/* Animated conic-gradient border */}
       <div className="absolute inset-0 rounded-[16px] overflow-hidden pointer-events-none">
@@ -67,8 +69,8 @@ export default function BlogCard({ post }: BlogCardProps) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,0.8)] via-transparent to-transparent" />
             {isExternal && (
-              <div className="absolute top-3 right-3 rounded-full bg-[rgba(10,10,15,0.6)] backdrop-blur-sm border border-[rgba(255,255,255,0.1)] px-2 py-0.5 text-[8px] font-bold text-[var(--color-cyan)]">
-                ZyniBot
+              <div className={`absolute top-3 right-3 rounded-full bg-[rgba(10,10,15,0.6)] backdrop-blur-sm border border-[rgba(255,255,255,0.1)] px-2 py-0.5 text-[8px] font-bold ${isWikipedia ? "text-amber-400" : "text-[var(--color-cyan)]"}`}>
+                {isWikipedia ? "Wikipedia" : "ZyniBot"}
               </div>
             )}
           </div>
@@ -84,8 +86,8 @@ export default function BlogCard({ post }: BlogCardProps) {
 
             <div className="text-center z-10 px-4">
               {isExternal ? (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-cyan)] to-[var(--color-violet)] text-[11px] font-black text-black mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(0,255,224,0.3)]">
-                  ZB
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${isWikipedia ? "from-amber-500 to-orange-500" : "from-[var(--color-cyan)] to-[var(--color-violet)]"} text-[11px] font-black text-black mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(0,255,224,0.3)]`}>
+                  {isWikipedia ? "W" : "ZB"}
                 </div>
               ) : (
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] text-[11px] font-bold text-black mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(255,0,230,0.3)]">
@@ -98,8 +100,8 @@ export default function BlogCard({ post }: BlogCardProps) {
             </div>
 
             {isExternal && (
-              <div className="absolute top-3 right-3 rounded-full bg-[rgba(10,10,15,0.6)] backdrop-blur-sm border border-[rgba(255,255,255,0.1)] px-2 py-0.5 text-[8px] font-bold text-[var(--color-cyan)]">
-                ZyniBot
+              <div className={`absolute top-3 right-3 rounded-full bg-[rgba(10,10,15,0.6)] backdrop-blur-sm border border-[rgba(255,255,255,0.1)] px-2 py-0.5 text-[8px] font-bold ${isWikipedia ? "text-amber-400" : "text-[var(--color-cyan)]"}`}>
+                {isWikipedia ? "Wikipedia" : "ZyniBot"}
               </div>
             )}
           </div>
@@ -108,8 +110,8 @@ export default function BlogCard({ post }: BlogCardProps) {
         <div className="p-4">
           <div className="flex items-center gap-2 mb-2.5">
             {isExternal ? (
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-cyan)] to-[var(--color-violet)] text-[9px] font-black text-black shrink-0 ring-2 ring-[rgba(10,10,15,0.8)]">
-                ZB
+              <div className={`flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br ${isWikipedia ? "from-amber-500 to-orange-500" : "from-[var(--color-cyan)] to-[var(--color-violet)]"} text-[9px] font-black text-black shrink-0 ring-2 ring-[rgba(10,10,15,0.8)]`}>
+                {isWikipedia ? "W" : "ZB"}
               </div>
             ) : (
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] text-[9px] font-bold text-black shrink-0 ring-2 ring-[rgba(10,10,15,0.8)]">
@@ -117,7 +119,7 @@ export default function BlogCard({ post }: BlogCardProps) {
               </div>
             )}
             <span className="text-xs text-[var(--color-mute)] font-medium">
-              {isExternal ? "ZyniBot" : post.user.username}
+              {isWikipedia ? "Wikipedia" : isExternal ? "ZyniBot" : post.user.username}
             </span>
             {post.publishedAt && (
               <span className="text-[10px] text-[var(--color-mute)]/60 ml-auto font-mono">

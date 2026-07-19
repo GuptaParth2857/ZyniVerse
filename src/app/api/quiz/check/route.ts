@@ -11,6 +11,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing questionId or answer" }, { status: 400 });
   }
 
-  const result = checkAnswer(questionId, answer);
+  const result = await checkAnswer(questionId, answer);
   return NextResponse.json(result);
 }

@@ -46,6 +46,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
   // Search for manga on mount if title provided
   useEffect(() => {
     if (propMangaId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setManga({ id: propMangaId, title: mangaTitle || "", altTitles: [], description: "", status: "" });
       return;
     }
@@ -76,6 +77,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
   // Load pages when chapter selected
   useEffect(() => {
     if (!currentChapter) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPages(currentChapter);
   }, [currentChapter, loadPages]);
 

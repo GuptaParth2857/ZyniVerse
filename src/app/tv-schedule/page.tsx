@@ -8,8 +8,6 @@ import {
   getNowPlaying,
   getDayName,
   getNext7Days,
-  getShowPoster,
-  prefetchShowPosters,
   type TimeSlot,
   type TvChannel,
 } from "@/lib/tv-channels";
@@ -148,7 +146,7 @@ function isCurrentlyAiring(slot: TimeSlot): boolean {
   const cur = now.getHours() * 60 + now.getMinutes();
   const start = parseMinutes(slot.start);
   const end = parseMinutes(slot.end);
-  if (end === 0 && start > 0) {
+  if (start > end) {
     return cur >= start || cur < end;
   }
   return cur >= start && cur < end;
@@ -157,7 +155,11 @@ function isCurrentlyAiring(slot: TimeSlot): boolean {
 function isPast(slot: TimeSlot): boolean {
   const now = new Date();
   const cur = now.getHours() * 60 + now.getMinutes();
+  const start = parseMinutes(slot.start);
   const end = parseMinutes(slot.end);
+  if (start > end) {
+    return cur >= end && cur < start;
+  }
   return cur >= end && end !== 0;
 }
 
@@ -280,27 +282,16 @@ function NowPlayingBanner({ liveData }: { liveData?: LiveScheduleData | null }) 
                   </div>
                 </div>
 
-                {getShowPoster(slot.show) ? (
-                  <div className="mt-3 rounded-xl overflow-hidden border border-white/5">
-                    <img
-                      src={getShowPoster(slot.show)}
-                      alt={slot.show}
-                      className="w-full h-28 object-cover"
-                      loading="lazy"
-                    />
+                <div className="mt-3 rounded-xl overflow-hidden border border-white/5 relative h-28">
+                  <img
+                    src={channel.logoUrl}
+                    alt={channel.name}
+                    className="w-full h-full object-cover opacity-30"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-[10px] font-bold text-white/60 text-center px-2 leading-tight">{slot.show}</span>
                   </div>
-                ) : (
-                  <div className="mt-3 rounded-xl overflow-hidden border border-white/5 relative h-28">
-                    <img
-                      src={channel.logoUrl}
-                      alt={channel.name}
-                      className="w-full h-full object-cover opacity-30"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-[10px] font-bold text-white/60 text-center px-2 leading-tight">{slot.show}</span>
-                    </div>
-                  </div>
-                )}
+                </div>
 
                 <div className="relative mt-3 h-1 rounded-full bg-white/5 overflow-hidden">
                   <div
@@ -509,9 +500,9 @@ function TimeSlotRow({
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          {(getShowPoster(slot.show) || channelLogoUrl) && (airing || (!past && !isAlwaysAvailable)) && (
+          {channelLogoUrl && (airing || (!past && !isAlwaysAvailable)) && (
             <img
-              src={getShowPoster(slot.show) || channelLogoUrl}
+              src={channelLogoUrl}
               alt={slot.show}
               className="w-8 h-8 rounded-md object-cover shrink-0 border border-white/10"
               loading="lazy"
@@ -620,10 +611,8 @@ function ChannelScheduleCard({
     return () => clearTimeout(timer);
   }, [filteredSlots, day]);
 
-  if (filteredSlots.length === 0) return null;
-
-  const uniqueShows = [...new Set(filteredSlots.map((s) => s.show))];
   const showDesc = channel.type === "tv";
+  const uniqueShows = [...new Set(filteredSlots.map((s) => s.show))];
 
   return (
     <motion.div
@@ -685,16 +674,25 @@ function ChannelScheduleCard({
             </div>
 
             <div ref={scrollRef} className="space-y-1 mt-3 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-line)]">
-              {filteredSlots.map((slot, i) => (
-                <TimeSlotRow
-                  key={`${slot.start}-${slot.show}-${i}`}
-                  slot={slot}
-                  channelColor={channel.color}
-                  showDescription={showDesc}
-                  isStreaming={channel.type !== "tv"}
-                  channelLogoUrl={channel.logoUrl}
-                />
-              ))}
+              {filteredSlots.length === 0 ? (
+                <div className="flex items-center justify-center py-6 text-center">
+                  <div>
+                    <p className="text-xs text-[var(--color-mute)] font-medium">No schedule data available</p>
+                    <p className="text-[10px] text-[var(--color-mute)]/60 mt-1">EPG data pending — check back later</p>
+                  </div>
+                </div>
+              ) : (
+                filteredSlots.map((slot, i) => (
+                  <TimeSlotRow
+                    key={`${slot.start}-${slot.show}-${i}`}
+                    slot={slot}
+                    channelColor={channel.color}
+                    showDescription={showDesc}
+                    isStreaming={channel.type !== "tv"}
+                    channelLogoUrl={channel.logoUrl}
+                  />
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -805,7 +803,6 @@ function TvSchedulePage() {
   const [liveData, setLiveData] = useState<LiveScheduleData | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [refreshCount, setRefreshCount] = useState(0);
-  const [posterVersion, setPosterVersion] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const days = useMemo(() => getNext7Days(), []);
@@ -824,16 +821,12 @@ function TvSchedulePage() {
         hour12: true,
       }));
       setRefreshCount((c) => c + 1);
-      // Pre-fetch posters for all unique show names from AniList
-      const allShows = data.channels.flatMap((ch) =>
-        Object.values(ch.days).flat().map((s) => s.show)
-      );
-      prefetchShowPosters(allShows).then(() => setPosterVersion((v) => v + 1)).catch(() => {});
     } catch {}
   }, []);
 
   // Initial fetch + auto-refresh every 30 minutes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchLiveData();
     intervalRef.current = setInterval(fetchLiveData, 30 * 60 * 1000);
     return () => {

@@ -80,7 +80,7 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
     author: { "@type": "Organization", name: "ZyniVerse" },
     publisher: { "@type": "Organization", name: "ZyniVerse" },
     image: anime.coverImage?.extraLarge || anime.coverImage?.large || "",
-    mainEntityOfPage: { "@type": "WebPage", "@id": `https://zyniverse.in/anime/${anilistId}/filler` },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `https://zyverse.in/anime/${anilistId}/filler` },
     about: {
       "@type": "TVSeries",
       name: title,

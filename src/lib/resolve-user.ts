@@ -5,7 +5,7 @@ export async function resolveUserId(): Promise<string | null> {
   const session = await auth();
   if (!session?.user) return null;
 
-  let userId = session.user.id;
+  const userId = session.user.id;
 
   if (userId) {
     const exists = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });

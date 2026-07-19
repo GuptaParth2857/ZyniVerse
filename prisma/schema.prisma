@@ -226,7 +226,7 @@ model Activity {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
   reactions ActivityReaction[]
 
   @@index([userId, createdAt])
@@ -1605,4 +1605,25 @@ model EpgCache {
 
   @@unique([channelId])
   @@index([channelId])
+}
+
+// ── External Awards (scraped from Crunchyroll, MAL, ANN, etc.) ──
+model ExternalAward {
+  id        Int      @id @default(autoincrement())
+  year      Int
+  category  String
+  winner    String
+  malId     Int?
+  anilistId Int?
+  image     String?
+  platform  String
+  type      String
+  source    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([year, category, platform, winner])
+  @@index([year])
+  @@index([platform])
+  @@index([type])
 }

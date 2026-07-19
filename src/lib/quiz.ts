@@ -382,11 +382,11 @@ export function getDailyQuiz(): QuizQuestion[] {
   });
 }
 
-export function checkAnswer(questionId: string, answer: string): { correct: boolean; correctAnswer: string; explanation?: string } {
+export async function checkAnswer(questionId: string, answer: string): Promise<{ correct: boolean; correctAnswer: string; explanation?: string }> {
   let question = QUESTIONS.find((q) => q.id === questionId);
   if (!question) {
     try {
-      const { findQuestion } = require("./quiz-store");
+      const { findQuestion } = await import("./quiz-store");
       question = findQuestion?.(questionId);
     } catch {}
   }

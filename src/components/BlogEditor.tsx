@@ -57,6 +57,28 @@ export default function BlogEditor({ post }: BlogEditorProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [posterSearch, setPosterSearch] = useState("");
+  const [posterResults, setPosterResults] = useState<any[]>([]);
+  const [posterSearching, setPosterSearching] = useState(false);
+  const [posterOpen, setPosterOpen] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!posterSearch.trim()) { setPosterResults([]); return; }
+    const timer = setTimeout(async () => {
+      setPosterSearching(true);
+      try {
+        const res = await fetch(`/api/anilist/search?q=${encodeURIComponent(posterSearch.trim())}`);
+        if (res.ok) {
+          const data = await res.json();
+          setPosterResults((data.results || []).slice(0, 10));
+        }
+      } catch {}
+      setPosterSearching(false);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [posterSearch]);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -68,6 +90,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
     if (saved) {
       try {
         const d = JSON.parse(saved);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTitle(d.title || "");
         setContent(d.content || "");
         setExcerpt(d.excerpt || "");
@@ -128,6 +151,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
       return;
     }
     setTagError("");
+    setSaveError("");
     setSaving(true);
     try {
       const url = isEdit ? `/api/blog/${post!.id}` : "/api/blog";
@@ -146,13 +170,13 @@ export default function BlogEditor({ post }: BlogEditorProps) {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to save");
-
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save");
+
       if (!isEdit) localStorage.removeItem("blog-draft");
       router.push(`/blog/${data.post.slug}`);
     } catch (err) {
-      console.error(err);
+      setSaveError(err instanceof Error ? err.message : "Something went wrong");
     }
     setSaving(false);
   };
@@ -268,6 +292,66 @@ export default function BlogEditor({ post }: BlogEditorProps) {
                 className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2 text-xs outline-none focus:border-[var(--color-cyan)] transition-colors"
               />
             </div>
+
+            {/* Anime Poster Search */}
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={() => setPosterOpen(!posterOpen)}
+                className="flex items-center gap-2 text-[11px] font-semibold text-[var(--color-magenta)] hover:text-[var(--color-cyan)] transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                {posterOpen ? "Close Search" : "Search Anime/Manga Poster"}
+              </button>
+
+              {posterOpen && (
+                <div className="mt-2 space-y-2">
+                  <div className="relative">
+                    <input
+                      value={posterSearch}
+                      onChange={(e) => setPosterSearch(e.target.value)}
+                      placeholder="Search anime or manga title..."
+                      className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2 text-xs outline-none focus:border-[var(--color-magenta)] transition-colors"
+                      autoFocus
+                    />
+                    {posterSearching && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="h-3.5 w-3.5 rounded-full border-2 border-[var(--color-magenta)] border-t-transparent animate-spin" />
+                      </div>
+                    )}
+                  </div>
+
+                  {posterResults.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-2">
+                      {posterResults.map((media: any) => {
+                        const img = media.coverImage?.large || media.coverImage?.medium;
+                        const name = media.title?.userPreferred || media.title?.english || media.title?.romaji || "Unknown";
+                        if (!img) return null;
+                        return (
+                          <button
+                            key={media.id}
+                            type="button"
+                            onClick={() => { setCoverImage(img); setPosterSearch(""); setPosterResults([]); setPosterOpen(false); }}
+                            className="relative group rounded-lg overflow-hidden ring-1 ring-white/10 hover:ring-[var(--color-magenta)]/50 transition-all aspect-[3/4]"
+                          >
+                            <img src={img} alt={name} className="h-full w-full object-cover" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute bottom-0 left-0 right-0 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <p className="text-[9px] font-bold text-white truncate">{name}</p>
+                              <p className="text-[8px] text-white/60">{media.type}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {posterSearch && !posterSearching && posterResults.length === 0 && (
+                    <p className="text-[10px] text-[var(--color-mute)] text-center py-2">No results found</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -333,6 +417,12 @@ export default function BlogEditor({ post }: BlogEditorProps) {
         )}
 
         {/* Actions */}
+        {saveError && (
+          <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-400 flex items-center gap-2">
+            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+            {saveError}
+          </div>
+        )}
         <div className="flex items-center justify-between pt-2">
           <button
             onClick={() => router.back()}

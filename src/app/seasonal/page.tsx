@@ -63,6 +63,7 @@ export default function SeasonalPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     if (type === "ANIME") {
@@ -98,7 +99,7 @@ export default function SeasonalPage() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         {/* Header */}
         <div className="mb-8">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-violet)]">// {isManga ? "Recent Releases" : "Seasonal"}</p>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-violet)]">{/* {isManga ? "Recent Releases" : "Seasonal"} */}</p>
           <div className="flex items-center gap-3 mt-1">
             {!isManga && <span className="text-3xl">{SEASON_EMOJIS[season]}</span>}
             <h1 className="font-display text-3xl font-bold sm:text-4xl">

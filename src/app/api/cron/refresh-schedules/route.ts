@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { fetchAllEpgFromPw } from "@/lib/epg-pw";
+import { getAnimaxSchedule } from "@/lib/animax-schedule";
 
 export const revalidate = 0;
-
-const RAILWAY_EPG_URL = "https://zyniverse.up.railway.app/api/epg";
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -13,13 +13,11 @@ export async function GET(request: Request) {
 
   const results: { task: string; status: number; detail?: string }[] = [];
 
-  // 1. Fetch real EPG data from Railway (proxy for JioTV API — Vercel IPs get blocked)
+  // 1. Fetch EPG data from epg.pw (free, works from any IP — no datacenter blocking)
   try {
-    const res = await fetch(RAILWAY_EPG_URL, { next: { revalidate: 0 } });
-    if (!res.ok) throw new Error(`Railway EPG returned ${res.status}`);
-    const data = await res.json() as { channels: { channelId: string; days: Record<string, unknown[]> }[] };
+    const epgData = await fetchAllEpgFromPw();
 
-    for (const entry of data.channels) {
+    for (const entry of epgData) {
       if (!entry.channelId || Object.keys(entry.days).length === 0) continue;
       const jsonData = JSON.parse(JSON.stringify(entry.days));
       await prisma.epgCache.upsert({
@@ -28,12 +26,34 @@ export async function GET(request: Request) {
         create: { channelId: entry.channelId, data: jsonData },
       });
     }
-    results.push({ task: "epg-cache", status: 200, detail: `${data.channels.length} channels cached from Railway` });
+    results.push({ task: "epg-cache", status: 200, detail: `${epgData.length} channels cached from epg.pw` });
   } catch (error) {
     results.push({ task: "epg-cache", status: 500, detail: error instanceof Error ? error.message : "Failed" });
   }
 
-  // 2. Warm other caches
+  // 2. Cache Animax schedule (hardcoded weekly rotation)
+  try {
+    const animaxResult = getAnimaxSchedule();
+    const animaxDays: Record<string, typeof animaxResult.schedules[number]["slots"]> = {};
+    for (const ds of animaxResult.schedules) {
+      animaxDays[ds.day] = ds.slots;
+    }
+    if (Object.keys(animaxDays).length > 0) {
+      const jsonData = JSON.parse(JSON.stringify(animaxDays));
+      await prisma.epgCache.upsert({
+        where: { channelId: "animax" },
+        update: { data: jsonData },
+        create: { channelId: "animax", data: jsonData },
+      });
+      results.push({ task: "animax-cache", status: 200, detail: "Animax cached (hardcoded schedule)" });
+    } else {
+      results.push({ task: "animax-cache", status: 200, detail: "Animax: no data (keeping existing cache)" });
+    }
+  } catch (error) {
+    results.push({ task: "animax-cache", status: 500, detail: error instanceof Error ? error.message : "Failed" });
+  }
+
+  // 3. Warm caches
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
   const routes = ["/api/tv-schedule/live", "/api/airing/live"];
 
@@ -47,6 +67,24 @@ export async function GET(request: Request) {
     } catch {
       results.push({ task: `warm:${route}`, status: 500 });
     }
+  }
+
+  // 4. Update live-action anime data
+  try {
+    const { fetchLiveActionUpdates } = await import("@/lib/live-action-updater");
+    const updateResult = await fetchLiveActionUpdates();
+    const updatedCount = Object.values(updateResult.updates).length;
+    results.push({
+      task: "live-action-updates",
+      status: 200,
+      detail: `${updatedCount} titles checked, cache updated at ${updateResult.lastUpdated}`,
+    });
+  } catch (error) {
+    results.push({
+      task: "live-action-updates",
+      status: 500,
+      detail: error instanceof Error ? error.message : "Failed to update live-action data",
+    });
   }
 
   return NextResponse.json({ refreshedAt: new Date().toISOString(), results });

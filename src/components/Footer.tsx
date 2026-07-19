@@ -99,6 +99,7 @@ const ICON_PATHS: Record<string, string> = {
 
 export default function Footer() {
   const [year, setYear] = useState(2026);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setYear(new Date().getFullYear()); }, []);
   return (
     <footer className="border-t border-[var(--color-line)] bg-[var(--color-void)] relative z-20">

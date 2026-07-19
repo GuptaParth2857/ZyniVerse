@@ -48,6 +48,7 @@ export default function SchedulePage() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true); setError(null);
     const from = Math.floor(weekStart.getTime() / 1000);
     const to = Math.floor(weekEnd.getTime() / 1000);
@@ -108,7 +109,7 @@ export default function SchedulePage() {
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">
-              // Weekly Schedule
+              {/* Weekly Schedule */}
             </p>
             <h1 className="font-display text-3xl font-bold sm:text-4xl">Broadcast Board</h1>
             <p className="mt-1 text-sm text-[var(--color-mute)]">

@@ -105,6 +105,7 @@ function SearchInner() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!inputVal.trim()) { setSuggestions([]); setShowSuggestions(false); return; }
     const timer = setTimeout(async () => {
       try {
@@ -196,6 +197,7 @@ function SearchInner() {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
     setAnimeResults([]);
     setMangaResults([]);
@@ -259,7 +261,7 @@ function SearchInner() {
         <ErrorBoundary label="Search"><div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-16">
           {/* Neon Search Bar */}
           <div className="mb-10 max-w-2xl mx-auto text-center relative" ref={suggestRef}>
-            <p className="font-mono text-xs uppercase tracking-[0.25em] text-[var(--color-magenta)] mb-3">// Discover Anime</p>
+            <p className="font-mono text-xs uppercase tracking-[0.25em] text-[var(--color-magenta)] mb-3">{/* Discover Anime */}</p>
             <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight mb-6">
               Search Anime
             </h1>
@@ -340,7 +342,7 @@ function SearchInner() {
 
           <div className="mb-8 flex items-end justify-between">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.25em] text-[var(--color-cyan)]">// Explore</p>
+              <p className="font-mono text-xs uppercase tracking-[0.25em] text-[var(--color-cyan)]">{/* Explore */}</p>
               <h2 className="font-display text-3xl font-black sm:text-5xl tracking-tight">Most Popular</h2>
               <p className="mt-1 text-sm text-[var(--color-mute)]">Discover what everyone is watching</p>
             </div>
@@ -354,7 +356,7 @@ function SearchInner() {
         <ErrorBoundary label="Search"><div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
           <div className="flex items-end justify-between gap-2 flex-wrap">
             <div className="min-w-0">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">// Search</p>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">{/* Search */}</p>
               <h1 className="font-display text-3xl font-bold sm:text-4xl truncate">
                 {query ? `"${query}"` : "Browse All"}
               </h1>

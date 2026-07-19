@@ -29,8 +29,8 @@ export default function UserListForm() {
       }
       const data = await res.json();
       router.push(`/lists/edit/${data.list.id}`);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "An error occurred");
     }
     setSaving(false);
   }

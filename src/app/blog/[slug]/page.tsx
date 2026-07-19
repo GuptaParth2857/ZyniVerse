@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import BlogPostDetailView from "./client";
 
@@ -15,7 +14,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!res.ok) return { title: "Blog Post | ZyniVerse" };
 
-    const post = await res.json();
+    const data = await res.json();
+    const post = data.post;
 
     if (!post || !post.title) return { title: "Blog Post | ZyniVerse" };
 
@@ -44,7 +44,10 @@ export default async function BlogPostPage({ params }: Props) {
   let post = null;
   try {
     const res = await fetch(`${BASE_URL}/api/blog/${slug}`, { cache: "no-store" });
-    if (res.ok) post = await res.json();
+    if (res.ok) {
+      const data = await res.json();
+      post = data.post;
+    }
   } catch {}
 
   const jsonLd = post?.title

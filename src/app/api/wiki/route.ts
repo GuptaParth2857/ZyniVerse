@@ -132,7 +132,7 @@ export async function GET(req: NextRequest) {
 
   const remaining = limit - dbPages.length;
   const merged = [...dbPages, ...wikiPages].slice(0, limit);
-  const shownWiki = Math.max(0, remaining - (merged.length - dbPages.length));
+  const _shownWiki = Math.max(0, remaining - (merged.length - dbPages.length));
   const wikiCount = Math.min(wikiPages.length, Math.max(0, limit - dbPages.length));
 
   const response = NextResponse.json({ pages: merged, total: total + wikiCount, page, limit });

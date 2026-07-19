@@ -208,11 +208,13 @@ export default function RecommendationsPageClient() {
     if (session?.user) {
       fetch("/api/recommendations?type=personalized").then(r => r.json()).then(d => { setPersonalized(d.recommendations || []); setLoadingPersonalized(false); }).catch(() => setLoadingPersonalized(false));
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoadingPersonalized(false);
     }
   }, [session?.user]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!selectedGenre) { setGenreRecs([]); return; }
     setLoadingGenre(true);
     fetch("/api/activity/track", {

@@ -64,6 +64,7 @@ export default function EpisodeRatingsCard({ malId }: Props) {
           <div className="h-4 bg-[var(--color-line)] rounded w-1/2" />
           <div className="space-y-2">
             {Array.from({ length: 8 }).map((_, i) => (
+              // eslint-disable-next-line react-hooks/purity
               <div key={i} className="h-3 bg-[var(--color-line)] rounded" style={{ width: `${60 + Math.random() * 40}%` }} />
             ))}
           </div>

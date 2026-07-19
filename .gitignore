@@ -8,6 +8,7 @@ dist
 build_error.txt
 build_output.txt
 prisma/dev.db
+data/
 
 # server logs
 *.log

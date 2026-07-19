@@ -93,6 +93,7 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
   }, [partyId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchParty();
     fetchMessages();
   }, [fetchParty, fetchMessages]);

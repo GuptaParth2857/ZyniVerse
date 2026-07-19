@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 interface UsageData {
@@ -31,11 +31,7 @@ export default function UsageDashboard() {
   const [keys, setKeys] = useState<KeyWithUsage[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchKeys();
-  }, []);
-
-  async function fetchKeys() {
+  const fetchKeys = useCallback(async () => {
     try {
       const res = await fetch("/api/keys");
       if (!res.ok) throw new Error("Failed");
@@ -59,7 +55,12 @@ export default function UsageDashboard() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchKeys();
+  }, [fetchKeys]);
 
   function getRateLimitColor(today: number, limit: number): string {
     const pct = limit > 0 ? (today / limit) * 100 : 0;

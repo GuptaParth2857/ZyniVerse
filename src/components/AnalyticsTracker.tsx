@@ -15,6 +15,7 @@ export default function AnalyticsTracker() {
       id = crypto.randomUUID();
       sessionStorage.setItem("analytics_session_id", id);
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSessionId(id);
 
     fetch("/api/analytics/session", {

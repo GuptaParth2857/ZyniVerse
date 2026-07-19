@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import AffiliateLink from "@/components/AffiliateLink";
 import FillerSearch from "@/components/FillerSearch";
@@ -69,13 +70,30 @@ export default async function FillerListingPage() {
           >
             <div className="neon-premium-track rounded-xl" />
             <div className="neon-premium-overlay rounded-[10.5px]" />
-            <div className="neon-premium-content p-4">
+            <div className="neon-premium-content p-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--color-magenta)]/10 text-sm font-bold font-mono text-[var(--color-magenta)] group-hover:bg-[var(--color-magenta)]/20 transition-colors">
-                  {anime.fillerPct}%
-                </div>
+                {anime.coverImage ? (
+                  <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg border border-[var(--color-line)]">
+                    <Image
+                      src={anime.coverImage}
+                      alt={anime.title}
+                      fill
+                      className="object-cover"
+                      sizes="48px"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-16 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10 border border-[var(--color-line)]">
+                    <span className="text-[8px] text-[var(--color-mute)]">N/A</span>
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-sm truncate group-hover:text-[var(--color-cyan)] transition-colors">{anime.title}</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-magenta)]/10 text-xs font-bold font-mono text-[var(--color-magenta)] group-hover:bg-[var(--color-magenta)]/20 transition-colors">
+                      {anime.fillerPct}%
+                    </div>
+                    <p className="font-semibold text-sm truncate group-hover:text-[var(--color-cyan)] transition-colors">{anime.title}</p>
+                  </div>
                   <p className="text-[10px] text-[var(--color-mute)] mt-0.5">{anime.episodes} episodes · {anime.fillerPct}% filler</p>
                 </div>
               </div>

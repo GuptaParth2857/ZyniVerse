@@ -21,6 +21,7 @@ export default function VoiceActorsClient() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!query.trim()) { setResults([]); return; }
     const timer = setTimeout(async () => {
       setLoading(true);

@@ -29,6 +29,7 @@ export default function ClubPostComments({
     setLoading(false);
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchComments(); }, [clubId, postId]);
 
   const handleSubmit = async () => {

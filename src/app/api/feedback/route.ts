@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +15,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid feedback type" }, { status: 400 });
     }
 
+    const session = await auth();
     const userAgent = req.headers.get("user-agent") || null;
 
     const feedback = await prisma.feedback.create({
@@ -22,6 +24,7 @@ export async function POST(req: NextRequest) {
         message: message.trim().slice(0, 2000),
         page: page || null,
         email: email?.trim() || null,
+        userId: session?.user?.id || null,
         userAgent,
       },
     });

@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { apiLimiter } from "@/lib/rate-limiter";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const rateCheck = apiLimiter.middleware(req);
+  if (rateCheck) return rateCheck;
+
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "You must be logged in to report" }, { status: 401 });
@@ -47,7 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     });
 
     return NextResponse.json({ success: true, report: { id: report.id, reason: report.reason, note: report.note, createdAt: report.createdAt } });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json({ error: "Failed to submit report" }, { status: 500 });
   }
 }

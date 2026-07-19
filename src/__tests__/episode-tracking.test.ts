@@ -4,12 +4,12 @@ import {
   markEpisodeWatched,
   markEpisodeUnwatched,
   getEpisodeProgress,
-  getRecentlyWatched,
   getWatchStreak,
   autoUpdateListEntry,
 } from "@/lib/episode-tracking";
 
-function mockResolvedValue(fn: any, value: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mockResolvedValue(fn: any, value: unknown) {
   fn.mockResolvedValue(value);
 }
 

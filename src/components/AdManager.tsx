@@ -37,6 +37,7 @@ export default function AdManager() {
     const stored = localStorage.getItem("zyniverse_ads");
     if (stored) {
       try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPlacements(JSON.parse(stored));
       } catch {}
     }

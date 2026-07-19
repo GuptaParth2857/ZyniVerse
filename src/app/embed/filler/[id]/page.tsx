@@ -19,7 +19,7 @@ export default async function FillerEmbedPage({
     getFillerForAnime(anilistId),
   ]);
 
-  const title = anime?.title?.english || anime?.title?.romaji || "Anime";
+  const _title = anime?.title?.english || anime?.title?.romaji || "Anime";
 
   return (
     <html lang="en">

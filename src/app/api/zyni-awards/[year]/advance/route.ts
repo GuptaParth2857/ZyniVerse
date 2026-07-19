@@ -9,7 +9,7 @@ export async function POST(
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (session.user.email !== "admin@zyverse.in") {
+  if (session.user.email !== "gupta.parth2857@gmail.com") {
     return NextResponse.json({ error: "Admin only" }, { status: 403 });
   }
 

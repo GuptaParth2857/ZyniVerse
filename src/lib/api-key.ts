@@ -130,7 +130,7 @@ export async function verifyApiKey(request: Request): Promise<{ userId?: string;
     return { error: NextResponse.json({ error: "API key has expired" }, { status: 403 }) };
   }
 
-  const { allowed, remaining, resetAt } = await checkRateLimit(apiKey);
+  const { allowed, remaining: _remaining, resetAt } = await checkRateLimit(apiKey);
   if (!allowed) {
     return { error: NextResponse.json({
       error: "Daily request limit reached",

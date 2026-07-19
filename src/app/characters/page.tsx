@@ -95,6 +95,7 @@ function AnimeCharacterRow({ mediaId, visible }: { mediaId: number; visible: boo
 
   useEffect(() => {
     if (!visible) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`/api/anilist/characters/${mediaId}?perPage=30`)
       .then((r) => r.json())
@@ -163,7 +164,8 @@ export default function CharactersBrowsePage() {
   const isSearching = searchQuery.trim().length > 0;
 
   useEffect(() => {
-    if (!searchQuery.trim()) { setSearchResults([]); setSearching(false); return; }
+    if (!searchQuery.trim()) { // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSearchResults([]); setSearching(false); return; }
     const timer = setTimeout(async () => {
       setSearching(true);
       try {

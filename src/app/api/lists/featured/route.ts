@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const lists = await prisma.userList.findMany({
     where: { isFeatured: true, isPublic: true },
     orderBy: { sortOrder: "asc" },

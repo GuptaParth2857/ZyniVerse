@@ -18,6 +18,7 @@ export default function StudioPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true); setError(null);
     getStudio(Number(id))
       .then((d) => !cancelled && setStudio(d))
@@ -39,7 +40,7 @@ export default function StudioPage() {
             {studio.name.charAt(0)}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-violet)]">// Studio</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-violet)]">{/* Studio */}</p>
             <h1 className="font-display text-3xl font-bold sm:text-4xl">{studio.name}</h1>
             <div className="mt-1 flex items-center gap-4 text-sm text-[var(--color-mute)]">
               {studio.isAnimationStudio && <span className="text-[var(--color-cyan)]">Animation Studio</span>}

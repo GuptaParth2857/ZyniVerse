@@ -21,6 +21,7 @@ export default function VoiceActorDetail({ id }: { id: string }) {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     getVoiceActor(parseInt(id))

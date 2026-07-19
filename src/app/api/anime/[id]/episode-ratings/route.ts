@@ -106,7 +106,7 @@ export async function GET(
 
     CACHE.set(cacheKey, { data: result, ts: Date.now() });
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: "Failed to fetch episode data from MAL" },
       { status: 502 }

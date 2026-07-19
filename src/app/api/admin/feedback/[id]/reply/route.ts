@@ -13,7 +13,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       where: { id: session.user.id },
       select: { email: true, username: true },
     });
-    if (user?.email !== "admin@zyverse.in") {
+    if (user?.email !== "gupta.parth2857@gmail.com") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -39,20 +39,26 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       data: { status: "replied", replyCount: { increment: 1 } },
     });
 
-    if (feedback.email) {
+    let notifyUserId: string | null = null;
+
+    if (feedback.userId) {
+      notifyUserId = feedback.userId;
+    } else if (feedback.email) {
       const feedbackUser = await prisma.user.findFirst({
         where: { email: feedback.email },
         select: { id: true },
       });
-      if (feedbackUser) {
-        await createNotification({
-          userId: feedbackUser.id,
-          type: "SYSTEM",
-          title: "Feedback Reply",
-          body: `Admin replied to your feedback: "${message.trim().slice(0, 100)}"`,
-          link: "/notifications",
-        });
-      }
+      if (feedbackUser) notifyUserId = feedbackUser.id;
+    }
+
+    if (notifyUserId) {
+      await createNotification({
+        userId: notifyUserId,
+        type: "SYSTEM",
+        title: "Feedback Reply",
+        body: `Admin replied to your feedback: "${message.trim().slice(0, 100)}"`,
+        link: "/notifications",
+      });
     }
 
     return NextResponse.json({ reply }, { status: 201 });

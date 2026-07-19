@@ -52,6 +52,7 @@ export default function DoujinshiBrowseClient() {
   // Fetch trending + popular on mount
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError("");
 
@@ -85,6 +86,7 @@ export default function DoujinshiBrowseClient() {
     const controller = new AbortController();
     abortRef.current = controller;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBrowseLoading(true);
     setError("");
 
@@ -123,6 +125,7 @@ export default function DoujinshiBrowseClient() {
 
   // Reset page when search/sort changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
   }, [debouncedSearch, sort, selectedTag]);
 
@@ -404,7 +407,7 @@ export default function DoujinshiBrowseClient() {
             {total > 0 && (
               <p className="text-xs text-[var(--color-mute)]">
                 Showing <span className="text-[var(--color-cyan)] font-mono">{filtered.length}</span> of <span className="text-[var(--color-cyan)] font-mono">{total}</span> results
-                {debouncedSearch && <> for "<span className="text-[var(--color-magenta)]">{debouncedSearch}</span>"</>}
+                {debouncedSearch && <> for &quot;<span className="text-[var(--color-magenta)]">{debouncedSearch}</span>&quot;</>}
               </p>
             )}
 

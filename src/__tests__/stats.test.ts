@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { getUserStats } from "@/lib/stats";
 
-function mockResolvedValue(fn: any, value: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mockResolvedValue(fn: any, value: unknown) {
   fn.mockResolvedValue(value);
 }
 

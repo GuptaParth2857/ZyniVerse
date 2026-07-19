@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState, useRef, useCallback } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -158,7 +158,7 @@ function PostCard({ post, onSave, sessionUserId }: { post: Post; onSave: (id: st
   );
 }
 
-function CritiqueCard({ post, cover, onSave, sessionUserId }: { post: Post; cover?: MediaCover; onSave: (id: string) => void; sessionUserId: string | null }) {
+function CritiqueCard({ post, cover, onSave, sessionUserId: _sessionUserId }: { post: Post; cover?: MediaCover; onSave: (id: string) => void; sessionUserId: string | null }) {
   const getColor = (r: number) => r >= 7 ? "var(--color-cyan)" : r >= 5 ? "var(--color-amber)" : "var(--color-magenta)";
 
   return (
@@ -236,8 +236,8 @@ function CommunityContent() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    setPosts([]);
     setCovers(new Map());
     const type = tab === "critiques" ? "CRITIQUE" : "ALL";
     fetch(`/api/posts?type=${type}`)

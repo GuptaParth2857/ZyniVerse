@@ -16,7 +16,7 @@ export default function ConventionsPage() {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="mb-8">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">
-          // Events
+          {/* Events */}
         </p>
         <h1 className="font-display text-3xl font-bold sm:text-4xl">Anime Conventions in India</h1>
         <p className="mt-2 text-sm text-[var(--color-mute)] max-w-2xl">

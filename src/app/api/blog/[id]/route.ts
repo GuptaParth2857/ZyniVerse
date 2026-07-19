@@ -8,8 +8,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const session = await auth();
   const userId = session?.user?.id;
 
-  const post = await prisma.blogPost.findUnique({
-    where: { id },
+  const post = await prisma.blogPost.findFirst({
+    where: { OR: [{ id }, { slug: id }], isDeleted: false },
     include: {
       user: { select: { id: true, username: true, avatar: true } },
       _count: { select: { comments: true, likes: true } },
@@ -17,10 +17,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     },
   });
 
-  if (!post || post.isDeleted) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if ((post.isDraft || post.isDeleted) && post.userId !== userId) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (post.isDraft && post.userId !== userId) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await prisma.blogPost.update({ where: { id }, data: { viewCount: { increment: 1 } } });
+  const isOwn = userId === post.userId;
+  if (!isOwn) {
+    await prisma.blogPost.update({ where: { id: post.id }, data: { viewCount: { increment: 1 } } });
+  }
 
   return NextResponse.json({
     post: {

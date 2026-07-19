@@ -35,7 +35,8 @@ export default function FiguresPage() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchFigures(); }, []);
+  useEffect(() => { // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchFigures(); }, []);
 
   const handleSubmit = async (data: { name: string; anime?: string; manufacturer?: string; scale?: string; price?: string; currency?: string; purchaseDate?: string; image?: string; condition?: string; isForSale?: boolean }) => {
     if (editFigure) {

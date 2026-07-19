@@ -41,7 +41,7 @@ const DUB_LANG_STYLES: Record<string, { bg: string; text: string; border: string
   Telugu: { bg: "#6c63ff22", text: "#6c63ff", border: "#6c63ff44" },
 };
 
-const SITE_COLOR: Record<string, string> = {
+const _SITE_COLOR: Record<string, string> = {
   Crunchyroll: "#ff8a00", Funimation: "#5b0bb5", HIDIVE: "#00b4e6",
   Netflix: "#e50914", "Amazon Prime Video": "#00a8e1", Hulu: "#1ce783",
   "Disney+": "#113cc2", "Apple TV": "#555555", "YouTube": "#ff0000",
@@ -63,6 +63,7 @@ export default function AnimeDetailsPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true); setError(null); setAnime(null);
     window.scrollTo(0, 0);
     getAnimeDetailFull(id!)
@@ -408,7 +409,7 @@ export default function AnimeDetailsPage() {
             <section>
               <SectionTitle>You May Also Like</SectionTitle>
               <Carousel3D
-                items={recs.map((e) => e.node.mediaRecommendation)}
+                items={recs.map((e) => e.node.mediaRecommendation).filter(Boolean)}
                 accent="magenta"
                 hrefFn={(m) => m.type === "MANGA" ? `/manga/${m.id}` : `/anime/${m.id}`}
               />

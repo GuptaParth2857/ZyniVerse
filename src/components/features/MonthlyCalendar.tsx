@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getAiringSchedule, bestTitle } from "@/lib/anilist";
+import { getAiringSchedule, bestTitle, type AiringScheduleEntry } from "@/lib/anilist";
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-function getEntriesByDate(schedule: any[], date: number, month: number, year: number) {
+function getEntriesByDate(schedule: AiringScheduleEntry[], date: number, month: number, year: number) {
   return schedule.filter((e) => {
     const d = new Date(e.airingAt * 1000);
     return d.getDate() === date && d.getMonth() === month && d.getFullYear() === year;
@@ -17,7 +17,7 @@ function getEntriesByDate(schedule: any[], date: number, month: number, year: nu
 
 export default function MonthlyCalendar() {
   const [date, setDate] = useState(new Date());
-  const [schedule, setSchedule] = useState<any[]>([]);
+  const [schedule, setSchedule] = useState<AiringScheduleEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const year = date.getFullYear();
@@ -27,6 +27,7 @@ export default function MonthlyCalendar() {
   const today = new Date();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     const from = Math.floor(new Date(year, month, 1).getTime() / 1000);
     const to = Math.floor(new Date(year, month + 1, 0, 23, 59, 59).getTime() / 1000);
@@ -105,13 +106,13 @@ export default function MonthlyCalendar() {
                   <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-[var(--color-magenta)]/5 to-[var(--color-cyan)]/5 pointer-events-none" />
                 )}
                 <div className="relative z-10 space-y-1">
-                  {displayEntries.map((e: any) => (
+                  {displayEntries.map((e: AiringScheduleEntry) => (
                     <Link key={e.id} href={`/anime/${e.media.id}`}
                       className="flex items-center gap-1.5 rounded-md bg-black/20 hover:bg-[var(--color-magenta)]/10 px-1.5 py-1 transition-all group"
                     >
-                      {e.media.coverImage?.medium && (
+                      {e.media.coverImage?.large && (
                         <div className="relative w-6 h-[17px] rounded overflow-hidden shrink-0 border border-white/5">
-                          <Image src={e.media.coverImage.medium} alt="" fill className="object-cover" sizes="24px" />
+                          <Image src={e.media.coverImage.large} alt="" fill className="object-cover" sizes="24px" />
                         </div>
                       )}
                       <div className="min-w-0 flex-1 flex items-center gap-1">

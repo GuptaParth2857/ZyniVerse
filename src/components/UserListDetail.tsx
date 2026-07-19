@@ -66,6 +66,7 @@ export default function UserListDetail({
     if (editMode) {
       const notes: Record<string, string> = {};
       items.forEach((item) => { notes[item.id] = item.note || ""; });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditNote(notes);
     }
   }, [editMode]);

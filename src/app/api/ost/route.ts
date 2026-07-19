@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
   const limit = Math.min(100, Math.max(1, Number(searchParams.get("limit")) || 20));
 
-  let results = getOSTs(search, type, artist, animeId);
+  const results = getOSTs(search, type, artist, animeId);
   const total = results.length;
 
   const start = (page - 1) * limit;

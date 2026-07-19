@@ -45,6 +45,7 @@ function generateParticles() {
 export default function FluidNeonOrb() {
   const particles = useMemo(() => generateParticles(), []);
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setMounted(true); }, []);
   return (
     <div className="relative flex items-center justify-center w-full min-h-[60vh] overflow-hidden select-none">

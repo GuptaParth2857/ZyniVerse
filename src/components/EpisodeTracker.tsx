@@ -18,6 +18,7 @@ export default function EpisodeTracker({ mediaId, totalEpisodes, animeTitle }: E
   const [toggling, setToggling] = useState<number | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!session?.user?.id) { setLoading(false); return; }
     fetch(`/api/track/progress?mediaId=${mediaId}`)
       .then((r) => r.json())

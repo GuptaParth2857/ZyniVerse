@@ -48,7 +48,8 @@ const SECONDARY_LINKS = [
   { to: "/tierlist", label: "Tier Lists" },
   { to: "/lists", label: "Lists" },
   { to: "/ost", label: "OST" },
-  { to: "/conventions", label: "Events" },
+  { to: "/events", label: "Anime Events" },
+  { to: "/conventions", label: "India Cons" },
   { to: "/voice-actors", label: "Voice Actors" },
   { to: "/voice-actors/indian", label: "Indian VAs" },
   { to: "/voice-lines", label: "Quotes" },
@@ -69,10 +70,94 @@ const SECONDARY_LINKS = [
   { to: "/feedback", label: "Feedback" },
 ];
 
+const MORE_CATEGORIES = [
+  {
+    title: "Discover",
+    icon: "🔍",
+    items: [
+      { to: "/news", label: "News" },
+      { to: "/live-action", label: "Live Action" },
+      { to: "/random", label: "Random" },
+      { to: "/recommendations", label: "Recommend" },
+      { to: "/season/upcoming", label: "Upcoming" },
+    ],
+  },
+  {
+    title: "Anime",
+    icon: "🎬",
+    items: [
+      { to: "/filler", label: "Filler Guides" },
+      { to: "/watch-order", label: "Watch Orders" },
+      { to: "/indian-dubs", label: "Indian Dubs" },
+      { to: "/themes", label: "Theme Songs" },
+      { to: "/ost", label: "OST" },
+      { to: "/characters", label: "Characters" },
+      { to: "/voice-actors", label: "Voice Actors" },
+      { to: "/voice-actors/indian", label: "Indian VAs" },
+      { to: "/voice-lines", label: "Quotes" },
+      { to: "/staff", label: "Staff" },
+    ],
+  },
+  {
+    title: "Reading",
+    icon: "📚",
+    items: [
+      { to: "/manga", label: "Manga" },
+      { to: "/light-novels", label: "Light Novels" },
+      { to: "/doujinshi", label: "Doujinshi" },
+    ],
+  },
+  {
+    title: "Events & Fun",
+    icon: "🎪",
+    items: [
+      { to: "/events", label: "Anime Events" },
+      { to: "/conventions", label: "India Cons" },
+      { to: "/tv-schedule", label: "TV Channels" },
+      { to: "/cosplay", label: "Cosplay" },
+      { to: "/quiz", label: "Quiz" },
+      { to: "/challenges", label: "Challenges" },
+      { to: "/watch-party", label: "Watch Party" },
+    ],
+  },
+  {
+    title: "Community",
+    icon: "💬",
+    items: [
+      { to: "/forum", label: "Forum" },
+      { to: "/community", label: "Social Feed" },
+      { to: "/clubs", label: "Clubs" },
+      { to: "/blog", label: "Blog" },
+      { to: "/tierlist", label: "Tier Lists" },
+      { to: "/lists", label: "Lists" },
+      { to: "/feedback", label: "Feedback" },
+    ],
+  },
+  {
+    title: "Platform",
+    icon: "⚙️",
+    items: [
+      { to: "/stats", label: "My Stats" },
+      { to: "/achievements", label: "Achievements" },
+      { to: "/awards", label: "Awards" },
+      { to: "/compare", label: "Compare" },
+      { to: "/tags", label: "Tags" },
+      { to: "/figures", label: "Figures" },
+      { to: "/docs", label: "API Docs" },
+      { to: "/developer", label: "Developer" },
+      { to: "/premium", label: "Premium" },
+      { to: "/wiki", label: "Wiki" },
+      { to: "/status", label: "Status" },
+    ],
+  },
+];
+
 export default function Navbar() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [moreTab, setMoreTab] = useState(MORE_CATEGORIES[0].title);
+  const [mobileTab, setMobileTab] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestRef = useRef<HTMLDivElement>(null);
@@ -83,6 +168,7 @@ export default function Navbar() {
   const { data: session } = useSession();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!query.trim()) { setSuggestions([]); setShowSuggestions(false); return; }
     const timer = setTimeout(async () => {
       try {
@@ -165,60 +251,68 @@ export default function Navbar() {
               </svg>
             </button>
             {moreOpen && (
-              <div className="absolute top-full right-0 mt-1 w-[90vw] sm:w-[28rem] max-w-[28rem] rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl z-50 overflow-hidden">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-0">
-                  <div>
-                    {SECONDARY_LINKS.slice(0, 14).map((l) => (
-                      <Link key={l.to} href={l.to}
-                        onClick={() => setMoreOpen(false)}
-                        className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
-                          pathname === l.to ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
-                        }`}
-                      >{l.label}</Link>
-                    ))}
-                  </div>
-                  <div className="border-l border-[var(--color-line)]">
-                    {SECONDARY_LINKS.slice(14, 28).map((l) => (
-                      <Link key={l.to} href={l.to}
-                        onClick={() => setMoreOpen(false)}
-                        className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
-                          pathname === l.to ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
-                        }`}
-                      >{l.label}</Link>
-                    ))}
-                  </div>
-                  <div className="border-l border-[var(--color-line)]">
-                    {SECONDARY_LINKS.slice(28).map((l) => (
-                      <Link key={l.to} href={l.to}
-                        onClick={() => setMoreOpen(false)}
-                        className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
-                          pathname === l.to ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
-                        }`}
-                      >{l.label}</Link>
-                    ))}
-                    {session && (
-                      <>
-                        <div className="border-t border-[var(--color-line)] my-1" />
-                        <Link href="/messages" onClick={() => setMoreOpen(false)}
-                          className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
-                            pathname === "/messages" ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
-                          }`}
-                        >Messages</Link>
-                        <Link href="/profile" onClick={() => setMoreOpen(false)}
-                          className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
-                            pathname === "/profile" ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
-                          }`}
-                        >Profile</Link>
-                        {(session.user as Record<string, unknown>)?.email === "admin@zyverse.in" && (
-                          <Link href="/admin" onClick={() => setMoreOpen(false)}
-                            className={`block px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 ${
-                              pathname.startsWith("/admin") ? "text-[var(--color-magenta)]" : "text-[var(--color-mute)]"
+              <div className="absolute top-full right-0 mt-1 w-[95vw] sm:w-[42rem] max-w-[42rem] rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl z-50 overflow-hidden">
+                {/* Horizontal category tabs */}
+                <div className="flex overflow-x-auto border-b border-[var(--color-line)] scrollbar-none">
+                  {MORE_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.title}
+                      onClick={() => setMoreTab(cat.title)}
+                      className={`flex items-center gap-1.5 px-4 py-3 text-xs font-semibold whitespace-nowrap transition-colors border-b-2 shrink-0 ${
+                        moreTab === cat.title
+                          ? "text-[var(--color-cyan)] border-[var(--color-cyan)] bg-[var(--color-cyan)]/5"
+                          : "text-[var(--color-mute)] border-transparent hover:text-[var(--color-text)] hover:bg-white/5"
+                      }`}
+                    >
+                      <span>{cat.icon}</span>
+                      <span>{cat.title}</span>
+                    </button>
+                  ))}
+                </div>
+                {/* Links for active tab */}
+                <div className="max-h-[50vh] overflow-y-auto">
+                  {MORE_CATEGORIES.filter((cat) => cat.title === moreTab).map((cat) => (
+                    <div key={cat.title} className="p-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
+                        {cat.items.map((l) => (
+                          <Link key={l.to} href={l.to}
+                            onClick={() => setMoreOpen(false)}
+                            className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                              pathname === l.to
+                                ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/10 font-semibold"
+                                : "text-[var(--color-mute)] hover:bg-white/5 hover:text-[var(--color-text)]"
                             }`}
-                          >Admin Panel</Link>
-                        )}
-                      </>
-                    )}
-                  </div>
+                          >
+                            {pathname === l.to && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-cyan)] shrink-0" />}
+                            {l.label}
+                          </Link>
+                        ))}
+                      </div>
+                      {cat.title === "Platform" && session && (
+                        <div className="mt-2 pt-2 border-t border-[var(--color-line)]/50">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
+                            <Link href="/messages" onClick={() => setMoreOpen(false)}
+                              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                                pathname === "/messages" ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/10 font-semibold" : "text-[var(--color-mute)] hover:bg-white/5 hover:text-[var(--color-text)]"
+                              }`}
+                            >Messages</Link>
+                            <Link href="/profile" onClick={() => setMoreOpen(false)}
+                              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                                pathname === "/profile" ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/10 font-semibold" : "text-[var(--color-mute)] hover:bg-white/5 hover:text-[var(--color-text)]"
+                              }`}
+                            >Profile</Link>
+                            {(session.user as Record<string, unknown>)?.email === "gupta.parth2857@gmail.com" && (
+                              <Link href="/admin" onClick={() => setMoreOpen(false)}
+                                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                                  pathname.startsWith("/admin") ? "text-[var(--color-magenta)] bg-[var(--color-magenta)]/10 font-semibold" : "text-[var(--color-mute)] hover:bg-white/5 hover:text-[var(--color-text)]"
+                                }`}
+                              >Admin Panel</Link>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -347,30 +441,39 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Secondary links grouped */}
-          {[
-            { title: "Browse", items: SECONDARY_LINKS.filter(l => ["/search", "/schedule", "/seasonal", "/browse", "/random", "/season/upcoming", "/recommendations"].includes(l.to)) },
-            { title: "Anime", items: SECONDARY_LINKS.filter(l => ["/filler", "/watch-order", "/dubbed", "/indian-dubs", "/dub-schedule", "/themes", "/ost"].includes(l.to)) },
-            { title: "Manga & More", items: SECONDARY_LINKS.filter(l => ["/manga", "/light-novels", "/doujinshi", "/characters", "/staff", "/voice-actors", "/voice-actors/indian", "/voice-lines"].includes(l.to)) },
-            { title: "Community", items: SECONDARY_LINKS.filter(l => ["/forum", "/community", "/clubs", "/blog", "/challenges", "/quiz", "/tierlist", "/lists", "/cosplay", "/conventions", "/watch-party", "/messages", "/activity", "/feedback"].includes(l.to)) },
-            { title: "Tools", items: SECONDARY_LINKS.filter(l => ["/compare", "/achievements", "/awards", "/leaderboard", "/stats", "/news", "/docs", "/developer", "/premium", "/status", "/wiki"].includes(l.to)) },
-            ...(session?.user && (session.user as Record<string, unknown>).email === "admin@zyverse.in"
-              ? [{ title: "Admin", items: [{ to: "/admin", label: "Admin Panel" }] }]
-              : []),
-          ].map((group) => group.items.length > 0 && (
-            <div key={group.title} className="mb-3">
-              <p className="px-3 text-[10px] font-mono text-[var(--color-mute)] uppercase tracking-wider mb-1">{group.title}</p>
-              <div className="grid grid-cols-2 gap-1">
-                {group.items.map((l) => (
+          {/* Secondary links with horizontal tabs */}
+          <div className="mb-3">
+            <div className="flex overflow-x-auto gap-1 mb-2 scrollbar-none">
+              {MORE_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.title}
+                  onClick={() => setMobileTab(mobileTab === cat.title ? null : cat.title)}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all border shrink-0 ${
+                    mobileTab === cat.title
+                      ? "text-[var(--color-cyan)] border-[var(--color-cyan)]/50 bg-[var(--color-cyan)]/10"
+                      : "text-[var(--color-mute)] border-[var(--color-line)] hover:border-[var(--color-mute)]/50"
+                  }`}
+                >
+                  <span>{cat.icon}</span>
+                  {cat.title}
+                </button>
+              ))}
+            </div>
+            {mobileTab && MORE_CATEGORIES.filter((cat) => cat.title === mobileTab).map((cat) => (
+              <div key={cat.title} className="grid grid-cols-2 gap-1">
+                {cat.items.map((l) => (
                   <Link key={l.to} href={l.to} onClick={() => setOpen(false)}
-                    className={`block rounded-md px-3 py-2.5 text-sm font-medium ${
+                    className={`flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium ${
                       pathname === l.to ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/5" : "text-[var(--color-mute)] hover:bg-white/5"
                     }`}
-                  >{l.label}</Link>
+                  >
+                    {pathname === l.to && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-cyan)] shrink-0" />}
+                    {l.label}
+                  </Link>
                 ))}
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
           {!session && (
             <Link href="/login" onClick={() => setOpen(false)}

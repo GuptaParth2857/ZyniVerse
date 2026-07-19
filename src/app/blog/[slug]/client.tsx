@@ -13,15 +13,11 @@ export default function BlogPostDetailView({ slug }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/blog?slug=${encodeURIComponent(slug)}&limit=1`)
+    fetch(`/api/blog/${encodeURIComponent(slug)}`)
       .then((r) => r.json())
-      .then(async (d) => {
-        const posts = d.posts || [];
-        if (posts.length === 0) { setError("Not found"); return; }
-        const found = posts[0];
-        const res = await fetch(`/api/blog/${found.id}`);
-        if (!res.ok) { setError("Not found"); return; }
-        setData(await res.json());
+      .then((d) => {
+        if (!d.post) { setError("Not found"); return; }
+        setData(d);
       })
       .catch(() => setError("Failed to load"));
   }, [slug]);

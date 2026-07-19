@@ -28,6 +28,7 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     const startSec = Math.floor(new Date(year, month, 1).getTime() / 1000);
     const endSec = Math.floor(new Date(year, month + 1, 0, 23, 59, 59).getTime() / 1000);

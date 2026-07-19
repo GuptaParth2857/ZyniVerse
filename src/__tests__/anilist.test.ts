@@ -2,20 +2,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.stubGlobal("fetch", vi.fn());
 
-function createMockFetch(data: unknown) {
-  return vi.fn().mockResolvedValue({
-    ok: true,
-    json: () => Promise.resolve({ data }),
-  });
-}
-
 beforeEach(() => {
   vi.mocked(fetch).mockReset();
 });
 
 describe("AniList API", () => {
   it("handles rate limiting error", async () => {
-    vi.mocked(fetch).mockRejectedValueOnce(new Error("Rate limited by AniList — try again later."));
+    vi.mocked(fetch).mockRejectedValue(new Error("Rate limited by AniList — try again later."));
 
     const { clearAnilistCache, getTrending } = await import("@/lib/anilist");
     clearAnilistCache();
@@ -67,7 +60,7 @@ describe("AniList API", () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ data: mockData }),
-    } as any);
+    } as Response);
 
     const { clearAnilistCache, getTrending } = await import("@/lib/anilist");
     clearAnilistCache();
@@ -117,7 +110,7 @@ describe("AniList API", () => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ data: mockData }),
-    } as any);
+    } as Response);
 
     const { clearAnilistCache, getTrending, getAnilistCacheStats } = await import("@/lib/anilist");
     clearAnilistCache();

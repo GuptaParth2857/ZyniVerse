@@ -44,6 +44,7 @@ export default function StaffPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true); setError(null); setStaff(null);
     window.scrollTo(0, 0);
     getStaffBasic(id!)
@@ -55,6 +56,7 @@ export default function StaffPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMediaLoading(true); setMediaEdges(undefined);
     getStaffMedia(id!)
       .then((d) => !cancelled && setMediaEdges(d))

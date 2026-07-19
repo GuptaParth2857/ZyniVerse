@@ -108,6 +108,7 @@ export default function PersonalizedHero({ userId, fallbackItems = [] }: Persona
   }, [userId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPersonalized();
   }, [fetchPersonalized]);
 
@@ -165,7 +166,7 @@ export default function PersonalizedHero({ userId, fallbackItems = [] }: Persona
             transition={{ duration: 0.5 }}
           >
             <span className="font-mono text-xs uppercase tracking-[0.3em] text-[var(--color-cyan)]">
-              // Live Discovery Platform
+              {/* Live Discovery Platform */}
             </span>
             {showPersonalized && genre && (
               <p className="mb-2 mt-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">

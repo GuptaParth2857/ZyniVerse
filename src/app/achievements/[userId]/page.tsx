@@ -44,7 +44,7 @@ export default function UserAchievementsPage() {
               <img src={user.avatar} alt={user.username} className="h-16 w-16 rounded-full border-2 border-[#8a2be2]" style={{ boxShadow: "0 0 20px rgba(138,43,226,0.4)" }} />
             )}
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#8a2be2]" style={{ textShadow: "0 0 10px rgba(138,43,226,0.5)" }}>// Achievements</p>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#8a2be2]" style={{ textShadow: "0 0 10px rgba(138,43,226,0.5)" }}>{/* Achievements */}</p>
               <h1 className="font-display text-3xl font-bold sm:text-4xl text-white">
                 {user?.username ? `${user.username}&apos;s Achievements` : "User Achievements"}
               </h1>

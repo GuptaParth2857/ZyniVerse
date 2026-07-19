@@ -88,6 +88,7 @@ export function getAvailableLocales(): { code: Language; name: string; nativeNam
 }
 
 export function isRTL(_locale: Language): boolean {
+  void _locale;
   return false;
 }
 

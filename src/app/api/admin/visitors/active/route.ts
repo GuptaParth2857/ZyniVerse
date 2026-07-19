@@ -11,7 +11,7 @@ export async function GET() {
       where: { id: session.user.id },
       select: { email: true },
     });
-    if (user?.email !== "admin@zyverse.in") {
+    if (user?.email !== "gupta.parth2857@gmail.com") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -19,7 +19,7 @@ export async function GET() {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const activeThreshold = new Date(now.getTime() - 90000);
 
-    const [liveCount, activeSessions, todayVisitors, returningVisitors] = await Promise.all([
+    const [liveCount, activeSessions, todayVisitors, _returningVisitors] = await Promise.all([
       prisma.userSession.count({
         where: { isActive: true, lastActiveAt: { gte: activeThreshold } },
       }),
