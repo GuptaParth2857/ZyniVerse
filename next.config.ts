@@ -52,6 +52,11 @@ const nextConfig: NextConfig = {
   },
   images: {
     unoptimized: true,
+    remotePatterns: [
+      { protocol: "https", hostname: "img.anili.st" },
+      { protocol: "https", hostname: "s4.anilist.co" },
+      { protocol: "https", hostname: "cdn.myanimelist.net" },
+    ],
   },
   experimental: {
     optimizePackageImports: ["framer-motion"],

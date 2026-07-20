@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import WatchOrderDetail from "./WatchOrderDetail";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -12,12 +14,40 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const order = WATCH_ORDERS_DATA[id as keyof typeof WATCH_ORDERS_DATA];
   if (!order) return { title: "Watch Order — ZyniVerse" };
 
+  const slugToAnimeName: Record<string, string> = {
+    rezero: "Re:Zero", sao: "Sword Art Online", fate: "Fate",
+    monogatari: "Monogatari", naruto: "Naruto", "dragon-ball": "Dragon Ball",
+    jojo: "JoJo's Bizarre Adventure", aot: "Attack on Titan",
+    "steins-gate": "Steins;Gate", evangelion: "Neon Genesis Evangelion",
+    "demon-slayer": "Demon Slayer", bleach: "Bleach", fma: "Fullmetal Alchemist",
+    "one-piece": "One Piece", "hunter-x-hunter": "Hunter x Hunter",
+    mha: "My Hero Academia", "code-geass": "Code Geass",
+  };
+  const animeName = slugToAnimeName[id] || order.title;
+
   return {
-    title: `${order.title} Watch Order — Complete Viewing Guide | ZyniVerse`,
-    description: order.description,
+    title: `${animeName} Watch Order — Correct Order to Watch (2026) | ZyniVerse`,
+    description: `${order.description} Complete ${animeName} watch order with release order, chronological order, and spoiler-free tips. Updated for 2026.`,
+    keywords: [
+      `${animeName.toLowerCase()} watch order`,
+      `how to watch ${animeName.toLowerCase()}`,
+      `${animeName.toLowerCase()} viewing order`,
+      `${animeName.toLowerCase()} order`,
+      "anime watch order 2026",
+    ],
     openGraph: {
-      title: `${order.title} Watch Order — ZyniVerse`,
+      title: `${animeName} Watch Order — ZyniVerse`,
       description: order.description,
+      url: `${BASE_URL}/watch-order/${id}`,
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${animeName} Watch Order — ZyniVerse`,
+      description: order.description,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/watch-order/${id}`,
     },
     robots: { index: true, follow: true },
   };
@@ -31,8 +61,39 @@ export default async function WatchOrderDetailPage({ params }: Props) {
   const entries = getWatchEntries(id);
   const methods = order.methods || ["Release Order"];
 
+  const slugToAnimeName: Record<string, string> = {
+    rezero: "Re:Zero", sao: "Sword Art Online", fate: "Fate",
+    monogatari: "Monogatari", naruto: "Naruto", "dragon-ball": "Dragon Ball",
+    jojo: "JoJo's Bizarre Adventure", aot: "Attack on Titan",
+    "steins-gate": "Steins;Gate", evangelion: "Neon Genesis Evangelion",
+    "demon-slayer": "Demon Slayer", bleach: "Bleach", fma: "Fullmetal Alchemist",
+    "one-piece": "One Piece", "hunter-x-hunter": "Hunter x Hunter",
+    mha: "My Hero Academia", "code-geass": "Code Geass",
+  };
+  const animeName = slugToAnimeName[id] || order.title;
+  const firstMethod = methods[0];
+  const methodEntries = entries[firstMethod] || [];
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: `How to Watch ${animeName} — ${firstMethod}`,
+    description: order.description,
+    step: methodEntries.map((entry, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      name: entry.title,
+      text: entry.info,
+    })),
+  };
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 animate-page-in">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 animate-page-in">
       {/* Breadcrumb */}
       <nav className="mb-6 flex items-center gap-2 text-xs text-[var(--color-mute)]">
         <Link href="/" className="hover:text-[var(--color-cyan)] transition-colors">Home</Link>
@@ -101,6 +162,7 @@ export default async function WatchOrderDetailPage({ params }: Props) {
         </Link>
       </div>
     </div>
+    </>
   );
 }
 

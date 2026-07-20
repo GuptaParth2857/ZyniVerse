@@ -8,12 +8,28 @@ import NativeBannerAd from "@/components/NativeBannerAd";
 import { getPopularFillerAnime } from "@/lib/filler";
 
 export const metadata: Metadata = {
-  title: "Anime Filler List — Complete Filler Guide for Every Anime | ZyniVerse",
+  title: "Anime Filler List — Skip Filler for Naruto, One Piece, Bleach & 200+ Anime | ZyniVerse",
   description:
-    "The ultimate anime filler guide. Find out which episodes to skip for Naruto, One Piece, Bleach, Boruto, Dragon Ball, and hundreds more. Every episode marked as canon or filler.",
+    "The ultimate anime filler guide. Find out which episodes to skip for Naruto, One Piece, Bleach, Boruto, Dragon Ball, and hundreds more. Every episode marked as canon, filler, or mixed. Updated for 2026.",
+  keywords: [
+    "anime filler list", "naruto filler list", "one piece filler list",
+    "bleach filler list", "boruto filler list", "dragon ball filler list",
+    "skip filler episodes", "anime canon episodes", "filler guide",
+    "which episodes to skip anime", "anime episode guide",
+  ],
   openGraph: {
     title: "Anime Filler List — Complete Filler Guide | ZyniVerse",
     description: "Never watch filler again. Complete filler lists for Naruto, One Piece, Bleach, and 200+ anime.",
+    url: "https://zyverse.in/filler",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Anime Filler List — ZyniVerse",
+    description: "Complete filler guides for 200+ anime. Know exactly which episodes to skip.",
+  },
+  alternates: {
+    canonical: "https://zyverse.in/filler",
   },
   robots: { index: true, follow: true },
 };

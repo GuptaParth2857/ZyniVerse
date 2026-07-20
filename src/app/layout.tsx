@@ -68,12 +68,6 @@ export const metadata: Metadata = {
   robots: "index, follow",
   alternates: {
     canonical: BASE_URL,
-    languages: {
-      "en": "/",
-      "hi": "/hi",
-      "ta": "/ta",
-      "te": "/te",
-    },
   },
   icons: {
     icon: "/logo.png",
@@ -113,7 +107,7 @@ export default function RootLayout({
                   "query-input": "required name=search_term_string",
                 },
                 description: "India's ultimate anime platform — filler guides for 200+ anime, Indian dub tracking (Hindi/Tamil/Telugu), AI recommendations, watchlist, manga reader, cosplay gallery, and anime community.",
-                inLanguage: ["en", "hi", "ta", "te"],
+                inLanguage: "en",
                 publisher: {
                   "@type": "Organization",
                   name: "ZyniVerse",
