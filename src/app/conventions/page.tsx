@@ -2,13 +2,33 @@ import type { Metadata } from "next";
 import ConventionCalendar from "@/components/ConventionCalendar";
 import ConventionMap from "@/components/ConventionMap";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
 export const metadata: Metadata = {
-  title: "Anime Conventions in India — Calendar & Events | ZyniVerse",
-  description: "Find anime conventions, comic cons, and otaku events near you in India. Upcoming events, ticket info, and community meetups.",
+  title: "Anime Conventions India 2026 — Comic Con, Events & Meetups Calendar | ZyniVerse",
+  description:
+    "Complete calendar of anime conventions, comic cons, and otaku events in India for 2026. Comic Con Hyderabad, Comic Con Delhi, Anime Events Bangalore, Mumbai, Chennai, and more. Ticket info, dates, and venues.",
+  keywords: [
+    "anime conventions india 2026", "comic con hyderabad 2026", "comic con delhi 2026",
+    "anime events in bangalore 2026", "anime events india", "comic con india",
+    "otaku events india", "anime meetup india", "manga events india",
+    "comic con mumbai 2026", "anime convention chennai", "anime expo india",
+  ],
   openGraph: {
-    title: "Anime Conventions in India — Calendar & Events | ZyniVerse",
-    description: "Find anime conventions, comic cons, and otaku events near you in India.",
+    title: "Anime Conventions India 2026 — Complete Calendar | ZyniVerse",
+    description: "Find every anime convention, comic con, and otaku event in India for 2026. Dates, venues, and ticket info.",
+    url: `${BASE_URL}/conventions`,
+    type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Anime Conventions India 2026 — ZyniVerse",
+    description: "Complete calendar of anime conventions and comic cons across India for 2026.",
+  },
+  alternates: {
+    canonical: `${BASE_URL}/conventions`,
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function ConventionsPage() {

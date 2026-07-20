@@ -120,11 +120,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
+  // Dynamic: Watch order detail pages (high SEO value)
+  const watchOrderSlugs = [
+    "rezero", "sao", "fate", "monogatari", "naruto", "dragon-ball",
+    "jojo", "aot", "steins-gate", "evangelion", "demon-slayer",
+    "bleach", "fma", "one-piece", "hunter-x-hunter", "mha",
+    "code-geass", "made-in-abyss", "madoka", "gundam", "toaru",
+    "psycho-pass", "haruhi", "durarara", "baccano", "higurashi",
+    "ghost-in-the-shell", "gintama", "conan", "digimon", "pokemon",
+    "initial-d", "symphogear", "macross", "yu-yu-hakusho", "slam-dunk",
+    "precure", "katangatari", "tiger-and-bunny",
+  ];
+  const watchOrderPages: MetadataRoute.Sitemap = watchOrderSlugs.map((slug) => ({
+    url: `${BASE_URL}/watch-order/${slug}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
   return [
     ...staticPages,
     ...blogPages,
     ...wikiPages,
     ...wikiSeedPages,
+    ...watchOrderPages,
     ...cosplayPages,
   ];
 }
