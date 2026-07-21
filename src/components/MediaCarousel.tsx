@@ -3,7 +3,6 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
 
@@ -93,8 +92,8 @@ function CarouselRow({ items }: { items: Media[] }) {
         className="flex gap-2 sm:gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-1"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {items.map((item) => (
-          <CarouselCard key={item.id} item={item} />
+        {items.map((item, i) => (
+          <CarouselCard key={item.id} item={item} index={i} />
         ))}
       </div>
 
@@ -118,40 +117,47 @@ function CarouselRow({ items }: { items: Media[] }) {
   );
 }
 
-function CarouselCard({ item }: { item: Media }) {
+const CARD_COLORS = ["#29f2e0", "#ff2d78", "#8a5cff", "#22c55e", "#f59e0b", "#06b6d4", "#ec4899", "#f97316"];
+
+function CarouselCard({ item, index }: { item: Media; index: number }) {
   const title = bestTitle(item.title);
   const href = item.type === "MANGA" ? `/manga/${item.id}` : `/anime/${item.id}`;
+  const color = CARD_COLORS[index % CARD_COLORS.length];
 
   return (
-    <Link
-      href={href}
-      className="snap-start shrink-0 group/card w-[140px] sm:w-[160px] md:w-[180px]"
-    >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300 group-hover/card:border-[var(--color-magenta)] group-hover/card:shadow-[0_0_35px_-10px_var(--color-magenta)]">
-        <Image
-          src={item.coverImage?.extraLarge || item.coverImage?.large || item.coverImage?.medium || ""}
-          alt={title}
-          fill
-          className="object-cover transition-transform duration-500 group-hover/card:scale-110"
-          sizes="(max-width: 768px) 50vw, 25vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
-        <div className="absolute inset-x-0 bottom-0 p-2.5 sm:p-3 translate-y-2 group-hover/card:translate-y-0 opacity-0 group-hover/card:opacity-100 transition-all duration-300">
-          <p className="font-display text-xs sm:text-sm font-bold leading-tight line-clamp-2 drop-shadow-lg">
-            {title}
-          </p>
-          <div className="mt-1 flex items-center gap-2 text-[10px] text-[var(--color-mute)]">
-            {item.averageScore ? (
-              <span className="text-[var(--color-cyan)]">★ {(item.averageScore / 10).toFixed(1)}</span>
-            ) : null}
-            {item.episodes ? <span>{item.episodes} ep</span> : null}
+    <Link href={href} className="snap-start shrink-0 group/card overflow-hidden rounded-xl neon-feature-card" style={{ width: 180 }}>
+      <div className="neon-border rounded-xl" style={{ background: `conic-gradient(from var(--border-angle), ${color}, transparent 40%, ${color}80, transparent 70%, ${color})` }} />
+      <div className="neon-glow rounded-xl" style={{ background: color }} />
+      <div className="neon-inner rounded-xl p-0 overflow-hidden" style={{ background: "var(--color-panel)" }}>
+        <div className="h-[2px] w-full" style={{ background: color }} />
+
+        <div className="relative aspect-[2/3] overflow-hidden">
+          <Image
+            src={item.coverImage?.extraLarge || item.coverImage?.large || item.coverImage?.medium || ""}
+            alt={title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover/card:scale-110"
+            sizes="180px"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+
+          {/* Score */}
+          {item.averageScore != null && (
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md backdrop-blur-md text-[10px] font-mono font-bold z-10"
+              style={{ background: `${color}25`, color, border: `1px solid ${color}40` }}>
+              ★ {(item.averageScore / 10).toFixed(1)}
+            </div>
+          )}
+
+          {/* Bottom info */}
+          <div className="absolute inset-x-0 bottom-0 p-2.5 z-10">
+            <p className="font-display text-xs font-bold leading-tight line-clamp-2 drop-shadow-lg">{title}</p>
+            <div className="mt-1 flex items-center gap-2 text-[10px] text-[var(--color-mute)]">
+              {item.episodes && <span>{item.episodes} ep</span>}
+              {item.genres && item.genres[0] && <span className="truncate">{item.genres[0]}</span>}
+            </div>
           </div>
         </div>
-        {item.averageScore ? (
-          <span className="absolute right-1.5 top-1.5 rounded-full bg-black/70 px-1.5 py-0.5 text-[9px] font-mono font-semibold text-[var(--color-cyan)] backdrop-blur">
-            {(item.averageScore / 10).toFixed(1)}
-          </span>
-        ) : null}
       </div>
     </Link>
   );

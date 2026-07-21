@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
@@ -23,15 +24,9 @@ interface Post {
 function SavedPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const sessionUserId = session?.user?.id || null;
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
-
-  useEffect(() => {
-    fetch("/api/auth/session")
-      .then((r) => r.json())
-      .then((d) => { if (d?.user?.id) setSessionUserId(d.user.id); })
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     fetch("/api/saved")

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import ForumSignature from "@/components/ForumSignature";
@@ -19,12 +20,12 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
   const [replyContent, setReplyContent] = useState("");
   const [replying, setReplying] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [sessionUser, setSessionUser] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const sessionUser = session?.user?.id || null;
   const limit = 20;
 
   useEffect(() => {
     fetchThread();
-    fetch("/api/auth/session").then(r => r.json()).then(d => setSessionUser(d?.user?.id || null)).catch(() => {});
   }, [threadId, page]);
 
   async function fetchThread() {

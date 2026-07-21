@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
@@ -232,7 +233,8 @@ function CommunityContent() {
   const [content, setContent] = useState("");
   const [postType, setPostType] = useState<"POST" | "CRITIQUE">("POST");
   const [showCreate, setShowCreate] = useState(false);
-  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const sessionUserId = session?.user?.id || null;
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -263,13 +265,6 @@ function CommunityContent() {
       setCovers(new Map(map));
     })();
   }, [posts]);
-
-  useEffect(() => {
-    fetch("/api/auth/session")
-      .then((r) => r.json())
-      .then((d) => { if (d?.user?.id) setSessionUserId(d.user.id); })
-      .catch(() => {});
-  }, []);
 
   const switchTab = (t: Tab) => {
     setTab(t);

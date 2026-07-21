@@ -35,17 +35,20 @@ const TYPE_LABELS: Record<string, string> = {
   REWATCHING: "rewatching", REVIEWED: "reviewed", RATED: "rated",
 };
 
-const TYPE_COLORS: Record<string, string> = {
-  COMPLETED: "from-emerald-500/20 to-emerald-500/5 border-emerald-500/20",
-  WATCHING: "from-cyan-500/20 to-cyan-500/5 border-cyan-500/20",
-  CURRENT: "from-cyan-500/20 to-cyan-500/5 border-cyan-500/20",
-  PLANNING: "from-blue-500/20 to-blue-500/5 border-blue-500/20",
-  DROPPED: "from-red-500/20 to-red-500/5 border-red-500/20",
-  PAUSED: "from-amber-500/20 to-amber-500/5 border-amber-500/20",
-  REWATCHING: "from-purple-500/20 to-purple-500/5 border-purple-500/20",
-  REVIEWED: "from-yellow-500/20 to-yellow-500/5 border-yellow-500/20",
-  RATED: "from-pink-500/20 to-pink-500/5 border-pink-500/20",
+const TYPE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
+  COMPLETED: { bg: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.25)", text: "#22c55e" },
+  WATCHING: { bg: "rgba(41,242,224,0.12)", border: "rgba(41,242,224,0.25)", text: "#29f2e0" },
+  CURRENT: { bg: "rgba(41,242,224,0.12)", border: "rgba(41,242,224,0.25)", text: "#29f2e0" },
+  PLANNING: { bg: "rgba(138,92,255,0.12)", border: "rgba(138,92,255,0.25)", text: "#8a5cff" },
+  DROPPED: { bg: "rgba(255,45,120,0.12)", border: "rgba(255,45,120,0.25)", text: "#ff2d78" },
+  PAUSED: { bg: "rgba(234,179,8,0.12)", border: "rgba(234,179,8,0.25)", text: "#eab308" },
+  REWATCHING: { bg: "rgba(6,182,212,0.12)", border: "rgba(6,182,212,0.25)", text: "#06b6d4" },
+  REVIEWED: { bg: "rgba(255,179,0,0.12)", border: "rgba(255,179,0,0.25)", text: "#f59e0b" },
+  RATED: { bg: "rgba(41,242,224,0.12)", border: "rgba(41,242,224,0.25)", text: "#29f2e0" },
+  IMPORTED: { bg: "rgba(138,92,255,0.12)", border: "rgba(138,92,255,0.25)", text: "#8a5cff" },
 };
+
+const CARD_COLORS = ["#29f2e0", "#ff2d78", "#8a5cff", "#22c55e", "#f59e0b", "#06b6d4", "#ec4899", "#f97316"];
 
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime();
@@ -63,74 +66,28 @@ function groupByUser(activities: Activity[]): UserGroup[] {
   const map = new Map<string, UserGroup>();
   for (const a of activities) {
     const existing = map.get(a.userId);
-    if (existing) {
-      existing.activities.push(a);
-    } else {
-      map.set(a.userId, {
-        user: a.user,
-        activities: [a],
-        latestTime: a.createdAt,
-      });
-    }
+    if (existing) existing.activities.push(a);
+    else map.set(a.userId, { user: a.user, activities: [a], latestTime: a.createdAt });
   }
-  return Array.from(map.values()).sort(
-    (a, b) => new Date(b.latestTime).getTime() - new Date(a.latestTime).getTime()
-  );
+  return Array.from(map.values()).sort((a, b) => new Date(b.latestTime).getTime() - new Date(a.latestTime).getTime());
 }
 
-function ActivityPill({ activity, compact = false }: { activity: Activity; compact?: boolean }) {
-  const colorClass = TYPE_COLORS[activity.type] || "from-gray-500/20 to-gray-500/5 border-gray-500/20";
-  const icon = TYPE_ICONS[activity.type] || "📌";
-  const label = TYPE_LABELS[activity.type] || activity.type?.toLowerCase();
-
-  if (compact) {
-    return (
-      <div className={`flex items-center gap-2 rounded-lg border bg-gradient-to-r px-2.5 py-1.5 ${colorClass} group/activity hover:scale-[1.02] transition-transform`}>
-        <span className="text-xs">{icon}</span>
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] truncate">
-            <span className="text-white/60">{label}</span>
-            {activity.mediaTitle && (
-              <>
-                <span className="text-white/20 mx-0.5">•</span>
-                <Link href={`/anime/${activity.mediaId}`} className="font-medium text-white/80 hover:text-[var(--color-cyan)] transition-colors">
-                  {activity.mediaTitle}
-                </Link>
-              </>
-            )}
-          </p>
-        </div>
-        {activity.mediaImage && (
-          <Link href={`/anime/${activity.mediaId}`} className="shrink-0">
-            <div className="relative h-6 w-5 rounded overflow-hidden border border-white/10 group-hover/activity:border-white/20 transition-colors">
-              <Image src={activity.mediaImage} alt="" fill className="object-cover" sizes="20px" />
-            </div>
-          </Link>
-        )}
-      </div>
-    );
-  }
-
+function ActivityPill({ activity }: { activity: Activity }) {
+  const c = TYPE_COLORS[activity.type] || { bg: "rgba(128,123,163,0.12)", border: "rgba(128,123,163,0.25)", text: "#807ba3" };
   return (
-    <div className={`flex items-center gap-2.5 rounded-xl border bg-gradient-to-r px-3 py-2 ${colorClass} group/activity hover:scale-[1.02] transition-transform`}>
-      <span className="text-sm">{icon}</span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs truncate">
-          <span className="text-white/70">{label}</span>
-          {activity.mediaTitle && (
-            <>
-              <span className="text-white/30 mx-1">•</span>
-              <Link href={`/anime/${activity.mediaId}`} className="font-medium text-white/90 hover:text-[var(--color-cyan)] transition-colors">
-                {activity.mediaTitle}
-              </Link>
-            </>
-          )}
-        </p>
-      </div>
+    <div className="flex items-center gap-2 rounded-lg px-2 py-1.5 shrink-0"
+      style={{ background: c.bg, border: `1px solid ${c.border}` }}>
+      <span className="text-xs">{TYPE_ICONS[activity.type] || "📌"}</span>
+      <span className="text-[11px] whitespace-nowrap overflow-hidden text-ellipsis min-w-0">
+        <span style={{ color: c.text }}>{TYPE_LABELS[activity.type] || activity.type?.toLowerCase()}</span>
+        {activity.mediaTitle && (
+          <Link href={`/anime/${activity.mediaId}`} className="font-semibold text-white/90 hover:opacity-80 ml-1">{activity.mediaTitle}</Link>
+        )}
+      </span>
       {activity.mediaImage && (
         <Link href={`/anime/${activity.mediaId}`} className="shrink-0">
-          <div className="relative h-8 w-6 rounded-md overflow-hidden border border-white/10 group-hover/activity:border-white/20 transition-colors">
-            <Image src={activity.mediaImage} alt="" fill className="object-cover" sizes="24px" />
+          <div className="relative h-6 w-5 rounded overflow-hidden" style={{ border: `1px solid ${c.border}` }}>
+            <Image src={activity.mediaImage} alt="" fill className="object-cover" sizes="20px" />
           </div>
         </Link>
       )}
@@ -138,57 +95,47 @@ function ActivityPill({ activity, compact = false }: { activity: Activity; compa
   );
 }
 
-function UserTreeCard({ group, index }: { group: UserGroup; index: number }) {
-  const maxShow = 3;
-  const hasMore = group.activities.length > maxShow;
-  const shownActivities = group.activities.slice(0, maxShow);
+function UserCard({ group, index }: { group: UserGroup; index: number }) {
+  const color = CARD_COLORS[index % CARD_COLORS.length];
+  const shown = group.activities.slice(0, 3);
+  const more = group.activities.length - 3;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative"
+      transition={{ delay: index * 0.06, type: "spring", stiffness: 260, damping: 24 }}
+      className="flex-shrink-0 w-[calc(25%-9px)] min-w-[200px] max-w-[260px] overflow-hidden rounded-xl neon-feature-card"
     >
-      <div className="relative rounded-2xl border border-[var(--color-line)] overflow-hidden bg-gradient-to-br from-[var(--color-panel)] to-[rgba(10,10,20,0.8)] hover:border-[var(--color-cyan)]/30 transition-all duration-300 hover:shadow-[0_0_40px_-15px_rgba(0,255,224,0.15)] h-full">
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{ background: "radial-gradient(300px circle at 50% 0%, rgba(0,255,224,0.03) 0%, transparent 100%)" }}
-        />
-
-        <div className="relative p-3 sm:p-4">
-          <div className="flex items-center gap-2.5 mb-2.5">
-            <Link href={`/profile?user=${group.user.id}`} className="shrink-0">
-              <div className="relative h-9 w-9 rounded-full overflow-hidden border-2 border-[var(--color-line)] group-hover:border-[var(--color-cyan)]/40 transition-colors shadow-[0_0_15px_-3px_rgba(0,255,224,0.2)]">
-                {group.user.avatar ? (
-                  <Image src={group.user.avatar} alt="" fill className="object-cover" sizes="36px" />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center text-xs font-bold bg-gradient-to-br from-[var(--color-magenta)]/30 to-[var(--color-cyan)]/20 text-[var(--color-cyan)]">
-                    {group.user.username[0].toUpperCase()}
-                  </div>
-                )}
-              </div>
-            </Link>
+      <div className="neon-border rounded-xl" style={{ background: `conic-gradient(from var(--border-angle), ${color}, transparent 40%, ${color}80, transparent 70%, ${color})` }} />
+      <div className="neon-glow rounded-xl" style={{ background: color }} />
+      <div className="neon-inner rounded-xl p-0 overflow-hidden" style={{ background: "var(--color-panel)" }}>
+        <div className="h-[2px] w-full" style={{ background: color }} />
+        <div className="p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-9 h-9 rounded-full overflow-hidden shrink-0" style={{ border: `2px solid ${color}40` }}>
+              {group.user.avatar ? (
+                <Image src={group.user.avatar} alt="" width={36} height={36} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs font-bold" style={{ color, background: `${color}15` }}>
+                  {group.user.username[0].toUpperCase()}
+                </div>
+              )}
+            </div>
             <div className="min-w-0 flex-1">
-              <Link href={`/profile?user=${group.user.id}`} className="font-display text-xs font-bold text-white hover:text-[var(--color-cyan)] transition-colors truncate block">
-                {group.user.username}
-              </Link>
-              <p className="text-[9px] text-white/30">{timeAgo(group.latestTime)}</p>
+              <Link href={`/profile?user=${group.user.id}`} className="text-[12px] font-bold text-white truncate block hover:opacity-80">{group.user.username}</Link>
+              <span className="text-[9px] text-white/25">{timeAgo(group.latestTime)}</span>
             </div>
             {group.activities.length > 1 && (
-              <span className="shrink-0 text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-white/5 text-white/40 border border-white/5">
+              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full shrink-0" style={{ color, background: `${color}15`, border: `1px solid ${color}25` }}>
                 {group.activities.length}x
               </span>
             )}
           </div>
-
           <div className="space-y-1">
-            {shownActivities.map((a) => (
-              <ActivityPill key={a.id} activity={a} compact />
-            ))}
-            {hasMore && (
-              <div className="flex items-center justify-center py-0.5">
-                <span className="text-[9px] text-white/20">+{group.activities.length - maxShow} more</span>
-              </div>
+            {shown.map((a) => <ActivityPill key={a.id} activity={a} />)}
+            {more > 0 && (
+              <Link href="/activity" className="block text-center text-[9px] text-white/20 hover:text-white/40 py-0.5">+{more} more</Link>
             )}
           </div>
         </div>
@@ -203,25 +150,18 @@ export default function FriendActivityFeed() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(() => {
-    const url = session?.user?.id ? "/api/activity?type=following&limit=20" : "/api/activity?limit=20";
-    fetch(url)
-      .then((r) => r.json())
-      .then((d) => { setActivities(d.activities || []); setLoading(false); })
-      .catch(() => setLoading(false));
+    const url = session?.user?.id ? "/api/activity?type=following&limit=50" : "/api/activity?limit=50";
+    fetch(url).then((r) => r.json()).then((d) => { setActivities(d.activities || []); setLoading(false); }).catch(() => setLoading(false));
   }, [session]);
 
   useEffect(() => { load(); }, [load]);
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6">
-        <div className="animate-pulse space-y-4">
+      <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+        <div className="animate-pulse space-y-3">
           <div className="h-4 w-32 rounded bg-white/5" />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 rounded-2xl bg-white/5" />
-            ))}
-          </div>
+          <div className="flex gap-3">{[1, 2, 3, 4].map((i) => <div key={i} className="flex-shrink-0 w-[calc(25%-9px)] min-w-[200px] h-40 rounded-xl bg-white/5" />)}</div>
         </div>
       </div>
     );
@@ -232,34 +172,32 @@ export default function FriendActivityFeed() {
   const groups = groupByUser(activities);
 
   return (
-    <div className="relative rounded-2xl border border-[var(--color-line)] overflow-hidden bg-gradient-to-br from-[var(--color-panel)] via-[rgba(10,10,25,0.9)] to-[rgba(5,5,15,1)]">
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: "radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
-      }} />
-      <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 80px 20px rgba(0,0,0,0.3)" }} />
-
-      <div className="relative p-5 sm:p-6">
-        <div className="flex items-end justify-between mb-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-cyan)] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--color-cyan)]" />
-              </span>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">Live</p>
+    <div className="overflow-hidden rounded-2xl neon-feature-card">
+      <div className="neon-border rounded-2xl" style={{ background: "conic-gradient(from var(--border-angle), #29f2e0, #ff2d78, #8a5cff, #22c55e, #f59e0b, #29f2e0)" }} />
+      <div className="neon-glow rounded-2xl" style={{ background: "linear-gradient(90deg, #29f2e0, #ff2d78, #8a5cff)" }} />
+      <div className="neon-inner rounded-2xl p-0 overflow-hidden" style={{ background: "var(--color-panel)" }}>
+        <div className="p-5">
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#29f2e0] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#29f2e0]" />
+                </span>
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#29f2e0]">Live</p>
+              </div>
+              <h3 className="font-display text-xl font-bold">Friend Activity</h3>
             </div>
-            <h3 className="font-display text-xl font-bold">Friend Activity</h3>
+            <Link href="/activity" className="text-xs text-white/30 hover:text-[#29f2e0] transition-colors">View all →</Link>
           </div>
-          <Link href="/activity" className="text-xs text-white/30 hover:text-[var(--color-cyan)] transition-colors">
-            View all →
-          </Link>
-        </div>
 
-        <div className="grid gap-2.5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 auto-rows-min">
-          {groups.map((group, i) => (
-            <UserTreeCard key={group.user.id} group={group} index={i} />
-          ))}
+          <div className="relative">
+            <div className="absolute left-0 top-0 bottom-0 w-6 z-10 pointer-events-none bg-gradient-to-r from-[var(--color-panel)] to-transparent" />
+            <div className="absolute right-0 top-0 bottom-0 w-6 z-10 pointer-events-none bg-gradient-to-l from-[var(--color-panel)] to-transparent" />
+            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+              {groups.map((group, i) => <UserCard key={group.user.id} group={group} index={i} />)}
+            </div>
+          </div>
         </div>
       </div>
     </div>

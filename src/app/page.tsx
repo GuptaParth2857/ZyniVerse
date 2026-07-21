@@ -18,6 +18,8 @@ import HomeMomentButton from "@/components/HomeMomentButton";
 import FriendActivityFeed from "@/components/features/FriendActivityFeed";
 import MonthlyCalendar from "@/components/features/MonthlyCalendar";
 import FeaturedFeedbackCarousel from "@/components/FeaturedFeedbackCarousel";
+import WhyZyniVerse from "@/components/WhyZyniVerse";
+import NeonBanner from "@/components/NeonBanner";
 import type { Media } from "@/lib/anilist";
 
 function AnimatedSection({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -51,7 +53,13 @@ export default async function Home() {
     <PageTransition>
       <div className="animate-page-in">
       <Hero3D items={trendingData} />
+      <FadeIn delay={0.02}>
+        <NeonBanner />
+      </FadeIn>
       <HorizontalScroll items={trendingData.slice(0, 20)} />
+      <FadeIn delay={0.05}>
+        <WhyZyniVerse />
+      </FadeIn>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
         <AdBanner placement="homepage" type="banner" />
       </div>
@@ -119,27 +127,27 @@ export default async function Home() {
               View all →
             </Link>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Link href="/indian-dubs" className="rounded-xl border border-[var(--color-line)] bg-gradient-to-br from-[#ff9933]/10 to-transparent p-5 hover:border-[#ff9933]/40 transition-all">
-              <span className="text-2xl">🇮🇳</span>
-              <p className="font-display text-lg font-bold mt-2">Hindi Dubs</p>
-              <p className="text-xs text-[var(--color-mute)] mt-1">25+ anime dubbed in Hindi</p>
-            </Link>
-            <Link href="/indian-dubs" className="rounded-xl border border-[var(--color-line)] bg-gradient-to-br from-[#e84a5f]/10 to-transparent p-5 hover:border-[#e84a5f]/40 transition-all">
-              <span className="text-2xl">🏛️</span>
-              <p className="font-display text-lg font-bold mt-2">Tamil Dubs</p>
-              <p className="text-xs text-[var(--color-mute)] mt-1">15+ anime dubbed in Tamil</p>
-            </Link>
-            <Link href="/indian-dubs" className="rounded-xl border border-[var(--color-line)] bg-gradient-to-br from-[#6c63ff]/10 to-transparent p-5 hover:border-[#6c63ff]/40 transition-all">
-              <span className="text-2xl">🌊</span>
-              <p className="font-display text-lg font-bold mt-2">Telugu Dubs</p>
-              <p className="text-xs text-[var(--color-mute)] mt-1">10+ anime dubbed in Telugu</p>
-            </Link>
-            <Link href="/voice-actors/indian" className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 hover:border-[var(--color-cyan)]/40 transition-all">
-              <span className="text-2xl">🎙️</span>
-              <p className="font-display text-lg font-bold mt-2">Indian VAs</p>
-              <p className="text-xs text-[var(--color-mute)] mt-1">Meet the voice artists</p>
-            </Link>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { href: "/indian-dubs", emoji: "🇮🇳", title: "Hindi Dubs", desc: "25+ anime dubbed in Hindi", color: "#ff9933" },
+              { href: "/indian-dubs", emoji: "🏛️", title: "Tamil Dubs", desc: "15+ anime dubbed in Tamil", color: "#e84a5f" },
+              { href: "/indian-dubs", emoji: "🌊", title: "Telugu Dubs", desc: "10+ anime dubbed in Telugu", color: "#6c63ff" },
+              { href: "/voice-actors/indian", emoji: "🎙️", title: "Indian VAs", desc: "Meet the voice artists", color: "#29f2e0" },
+            ].map((card) => (
+              <Link key={card.title} href={card.href} className="overflow-hidden rounded-xl neon-feature-card group">
+                <div className="neon-border rounded-xl" style={{ background: `conic-gradient(from var(--border-angle), ${card.color}, transparent 40%, ${card.color}80, transparent 70%, ${card.color})` }} />
+                <div className="neon-glow rounded-xl" style={{ background: card.color }} />
+                <div className="neon-inner rounded-xl p-0 overflow-hidden" style={{ background: "var(--color-panel)" }}>
+                  <div className="h-[2px] w-full" style={{ background: card.color }} />
+                  <div className="p-5 relative">
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 0%, ${card.color}08, transparent 70%)` }} />
+                    <span className="text-3xl relative z-10 block mb-3">{card.emoji}</span>
+                    <p className="font-display text-lg font-bold relative z-10">{card.title}</p>
+                    <p className="text-xs text-[var(--color-mute)] mt-1 relative z-10">{card.desc}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </AnimatedSection>
       </FadeIn>
@@ -156,45 +164,45 @@ export default async function Home() {
               Explore →
             </Link>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <Link href="/challenges" className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 hover:border-[var(--color-magenta)]/40 transition-all text-center">
-              <span className="text-xl">🏆</span>
-              <p className="text-sm font-bold mt-2">Challenges</p>
-              <p className="text-[10px] text-[var(--color-mute)]">Seasonal &amp; yearly</p>
-            </Link>
-            <Link href="/forum" className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 hover:border-[var(--color-magenta)]/40 transition-all text-center">
-              <span className="text-xl">💬</span>
-              <p className="text-sm font-bold mt-2">Forums</p>
-              <p className="text-[10px] text-[var(--color-mute)]">Discuss anime</p>
-            </Link>
-            <Link href="/quiz" className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 hover:border-[var(--color-magenta)]/40 transition-all text-center">
-              <span className="text-xl">🧠</span>
-              <p className="text-sm font-bold mt-2">Quiz</p>
-              <p className="text-[10px] text-[var(--color-mute)]">100+ questions</p>
-            </Link>
-            <Link href="/tierlist" className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 hover:border-[var(--color-magenta)]/40 transition-all text-center">
-              <span className="text-xl">📊</span>
-              <p className="text-sm font-bold mt-2">Tier Lists</p>
-              <p className="text-[10px] text-[var(--color-mute)]">Make your ranking</p>
-            </Link>
-            <Link href="/achievements" className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 hover:border-[var(--color-magenta)]/40 transition-all text-center">
-              <span className="text-xl">🎖️</span>
-              <p className="text-sm font-bold mt-2">Achievements</p>
-              <p className="text-[10px] text-[var(--color-mute)]">30 badges to earn</p>
-            </Link>
+          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {[
+              { href: "/challenges", emoji: "🏆", title: "Challenges", desc: "Seasonal & yearly", color: "#ff2d78" },
+              { href: "/forum", emoji: "💬", title: "Forums", desc: "Discuss anime", color: "#29f2e0" },
+              { href: "/quiz", emoji: "🧠", title: "Quiz", desc: "100+ questions", color: "#8a5cff" },
+              { href: "/tierlist", emoji: "📊", title: "Tier Lists", desc: "Make your ranking", color: "#22c55e" },
+              { href: "/achievements", emoji: "🎖️", title: "Achievements", desc: "30 badges to earn", color: "#f59e0b" },
+            ].map((card) => (
+              <Link key={card.title} href={card.href} className="overflow-hidden rounded-xl neon-feature-card group text-center">
+                <div className="neon-border rounded-xl" style={{ background: `conic-gradient(from var(--border-angle), ${card.color}, transparent 40%, ${card.color}80, transparent 70%, ${card.color})` }} />
+                <div className="neon-glow rounded-xl" style={{ background: card.color }} />
+                <div className="neon-inner rounded-xl p-0 overflow-hidden" style={{ background: "var(--color-panel)" }}>
+                  <div className="h-[2px] w-full" style={{ background: card.color }} />
+                  <div className="p-4 relative">
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 0%, ${card.color}08, transparent 70%)` }} />
+                    <span className="text-2xl relative z-10 block mb-2">{card.emoji}</span>
+                    <p className="text-sm font-bold relative z-10">{card.title}</p>
+                    <p className="text-[10px] text-[var(--color-mute)] mt-0.5 relative z-10">{card.desc}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
-          <div className="mt-4 flex flex-wrap gap-2 justify-center">
-            <Link href="/blog" className="text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)]">✍️ Blogs</Link>
-            <span className="text-xs text-[var(--color-line)]">·</span>
-            <Link href="/clubs" className="text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)]">👥 Clubs</Link>
-            <span className="text-xs text-[var(--color-line)]">·</span>
-            <Link href="/conventions" className="text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)]">📅 Conventions</Link>
-            <span className="text-xs text-[var(--color-line)]">·</span>
-            <Link href="/cosplay" className="text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)]">📸 Cosplay</Link>
-            <span className="text-xs text-[var(--color-line)]">·</span>
-            <Link href="/watch-party" className="text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)]">🎬 Watch Parties</Link>
-            <span className="text-xs text-[var(--color-line)]">·</span>
-            <Link href="/messages" className="text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)]">💬 Chat</Link>
+          <div className="mt-5 flex flex-wrap gap-2 justify-center">
+            {[
+              { href: "/blog", emoji: "✍️", label: "Blogs" },
+              { href: "/clubs", emoji: "👥", label: "Clubs" },
+              { href: "/conventions", emoji: "📅", label: "Conventions" },
+              { href: "/cosplay", emoji: "📸", label: "Cosplay" },
+              { href: "/watch-party", emoji: "🎬", label: "Watch Parties" },
+              { href: "/messages", emoji: "💬", label: "Chat" },
+            ].map((link, i, arr) => (
+              <span key={link.href} className="flex items-center gap-2 text-xs">
+                <Link href={link.href} className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors flex items-center gap-1">
+                  <span>{link.emoji}</span>{link.label}
+                </Link>
+                {i < arr.length - 1 && <span className="text-[var(--color-line)]">·</span>}
+              </span>
+            ))}
           </div>
         </AnimatedSection>
       </FadeIn>
