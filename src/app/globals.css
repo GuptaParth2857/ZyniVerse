@@ -987,3 +987,250 @@ img[src=""] { display: none; }
 .rgb-border-always::before {
   opacity: 1 !important;
 }
+
+/* ─────────── WhyZyniVerse Neon Cards ─────────── */
+
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes rotateFeatureBorder {
+  to { --border-angle: 360deg; }
+}
+
+.neon-feature-card {
+  --border-angle: 0deg;
+  position: relative;
+  border-radius: 1rem;
+  padding: 1px;
+  animation: rotateFeatureBorder 4s linear infinite;
+}
+
+.neon-feature-card .neon-border {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0.35;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.neon-feature-card:hover .neon-border {
+  opacity: 1;
+}
+
+.neon-feature-card .neon-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  opacity: 0;
+  filter: blur(12px);
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.neon-feature-card:hover .neon-glow {
+  opacity: 0.6;
+}
+
+.neon-feature-card .neon-inner {
+  position: relative;
+  z-index: 1;
+  border-radius: inherit;
+  background: var(--color-panel);
+  padding: 1.5rem;
+  height: 100%;
+}
+
+.neon-feature-card:hover {
+  transform: scale(1.02);
+}
+
+.neon-feature-card:hover .neon-arrow {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-feature-card {
+    animation: none !important;
+  }
+}
+
+/* ─────────── Neon Banner (Hero CTA) ─────────── */
+
+.neon-banner-card {
+  overflow: hidden;
+  position: relative;
+}
+
+.neon-banner-card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--banner-angle, 0deg),
+    var(--color-magenta),
+    var(--color-cyan),
+    var(--color-violet),
+    #ff9933,
+    var(--color-magenta)
+  );
+  animation: rotateBannerBorder 4s linear infinite;
+  z-index: 0;
+}
+
+.neon-banner-card::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: calc(1.25rem - 1px);
+  background: linear-gradient(
+    135deg,
+    var(--color-panel) 0%,
+    rgba(18, 17, 30, 0.95) 50%,
+    var(--color-panel) 100%
+  );
+  z-index: 0;
+}
+
+.neon-banner-card > * {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+@property --banner-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes rotateBannerBorder {
+  to { --banner-angle: 360deg; }
+}
+
+.neon-text-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-cyan),
+    var(--color-magenta),
+    var(--color-violet),
+    var(--color-cyan)
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiftGradient 4s ease-in-out infinite;
+}
+
+@keyframes shiftGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.feature-pill {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-line);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.75rem;
+  transition: border-color 0.3s, color 0.3s;
+  pointer-events: none;
+}
+
+.feature-dot {
+  color: var(--color-magenta);
+  font-weight: bold;
+}
+
+.neon-banner-btn {
+  background: linear-gradient(135deg, var(--color-magenta), var(--color-cyan));
+  box-shadow: 0 0 20px rgba(255, 45, 120, 0.3), 0 0 40px rgba(41, 242, 224, 0.15);
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+
+.neon-banner-btn:hover {
+  box-shadow: 0 0 30px rgba(255, 45, 120, 0.5), 0 0 60px rgba(41, 242, 224, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-banner-card::before {
+    animation: none !important;
+  }
+  .neon-text-gradient {
+    animation: none !important;
+  }
+}
+
+/* ─────────── Activity Feed Neon Cards ─────────── */
+
+.activity-neon-card {
+  position: relative;
+  border-radius: 0.75rem;
+}
+
+.activity-neon-border {
+  border: 1px solid var(--act-color, var(--color-line));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.activity-neon-card:hover .activity-neon-border {
+  opacity: 1;
+  box-shadow: 0 0 12px -2px var(--act-color, var(--color-cyan)),
+              inset 0 0 12px -4px var(--act-color, var(--color-cyan));
+}
+
+.activity-neon-glow {
+  background: var(--act-color, var(--color-cyan));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.activity-neon-card:hover .activity-neon-glow {
+  opacity: 0.15;
+}
+
+/* ─────────── Activity User Cards ─────────── */
+
+.activity-user-card {
+  position: relative;
+  border-radius: 1rem;
+}
+
+.activity-user-border {
+  border: 1px solid var(--color-line);
+  transition: border-color 0.3s ease;
+}
+
+.activity-user-card:hover .activity-user-border {
+  border-color: rgba(41, 242, 224, 0.3);
+}
+
+.activity-user-glow {
+  background: linear-gradient(135deg, var(--color-magenta), var(--color-cyan));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.activity-user-card:hover .activity-user-glow {
+  opacity: 0.08;
+}
+
+/* ─────────── Leaderboard ─────────── */
+
+.leaderboard-podium-card {
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaderboard-podium-card {
+    animation: none !important;
+  }
+}

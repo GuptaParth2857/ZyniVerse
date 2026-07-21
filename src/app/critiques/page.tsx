@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
@@ -31,7 +32,8 @@ function CritiquesPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [covers, setCovers] = useState<Map<number, MediaCover>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const sessionUserId = session?.user?.id || null;
 
   useEffect(() => {
     fetch("/api/posts?type=CRITIQUE")
@@ -39,13 +41,6 @@ function CritiquesPage() {
       .then((d) => setPosts(d.posts || []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/auth/session")
-      .then((r) => r.json())
-      .then((d) => { if (d?.user?.id) setSessionUserId(d.user.id); })
-      .catch(() => {});
   }, []);
 
   useEffect(() => {

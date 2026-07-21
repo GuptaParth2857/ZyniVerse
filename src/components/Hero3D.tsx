@@ -61,8 +61,11 @@ export default function Hero3D({ items }: { items: Media[] }) {
         {/* Left content */}
         <div className="max-w-2xl">
           <span className="font-mono text-xs uppercase tracking-[0.3em] text-[var(--color-cyan)]">
-            {hero?.type === "MANGA" ? "// Manga Spotlight" : "// Live Discovery Platform"}
+            {hero?.type === "MANGA" ? "// Manga Spotlight" : "// Everything an Anime Fan Needs — In One Place"}
           </span>
+          <p className="mt-3 max-w-lg text-sm leading-relaxed text-[var(--color-mute)]">
+            Skip Filler. Find the Right Watch Order. Track Indian TV &amp; Dubs. All in One Place.
+          </p>
 
           <AnimatePresence mode="wait">
             <motion.div
@@ -109,7 +112,7 @@ export default function Hero3D({ items }: { items: Media[] }) {
                 )}
                 <Link href="/search"
                   className="rounded-full border border-[var(--color-line)] px-6 py-3 text-sm font-semibold text-[var(--color-ink)] hover:border-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 transition-all"
-                >Explore All →</Link>
+                >Start Exploring →</Link>
               </div>
             </motion.div>
           </AnimatePresence>

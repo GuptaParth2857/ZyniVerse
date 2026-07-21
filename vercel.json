@@ -9,7 +9,7 @@
     },
     {
       "path": "/api/cron/refresh-awards",
-      "schedule": "0 */4 * * *"
+      "schedule": "0 2 * * *"
     }
   ]
 }
