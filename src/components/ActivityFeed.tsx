@@ -41,21 +41,6 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; icon: string }
 
 const MAX_PER_USER = 2;
 
-function ActivitySkeleton() {
-  return (
-    <div className="flex gap-4">
-      <div className="flex flex-col items-center">
-        <div className="h-10 w-10 rounded-full bg-white/10 animate-pulse" />
-        <div className="w-px flex-1 bg-white/5 animate-pulse" />
-      </div>
-      <div className="flex-1 animate-pulse rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
-        <div className="h-3 w-1/3 rounded bg-white/10" />
-        <div className="mt-2 h-2 w-2/3 rounded bg-white/5" />
-      </div>
-    </div>
-  );
-}
-
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime();
   const mins = Math.floor(diff / 60000);
@@ -227,7 +212,6 @@ export default function ActivityFeed() {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
     fetchActivities(0).then((data) => {
       setActivities(data.activities || []);
       setTotal(data.total || 0);

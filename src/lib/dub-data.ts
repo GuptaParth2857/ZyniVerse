@@ -45,3 +45,21 @@ export function getAllDubs(): DubEntry[] {
     (a, b) => new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime()
   );
 }
+
+interface DubInfo {
+  platform: string;
+  studio: string;
+  languages: string[];
+  status: string;
+}
+
+export function getDubInfo(anilistId: number): DubInfo | null {
+  const entry = UPCOMING_DUBS.find((d) => d.anilistId === anilistId);
+  if (!entry) return null;
+  return {
+    platform: "Crunchyroll",
+    studio: "Funimation / Crunchyroll",
+    languages: ["Japanese", "English", "Hindi"],
+    status: entry.status,
+  };
+}

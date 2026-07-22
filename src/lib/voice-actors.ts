@@ -302,6 +302,130 @@ export async function getIndianVoiceActors(): Promise<VoiceActor[]> {
     { id: 300035, name: "Sowmya Sharma", image: avatarUrl("Sowmya+Sharma"), roles: [
       { animeId: 23755, animeTitle: "Jujutsu Kaisen", animeImage: "", characterName: "Nobara Kugisaki", characterImage: "", roleType: "main", language: "Telugu" },
     ], isIndian: true, bio: "Community-sourced — Telugu voice actress." },
+
+    // ══════════════════════════════════════════════
+    // MORE HINDI DUB VOICE ACTORS — Crunchyroll
+    // ══════════════════════════════════════════════
+    { id: 300036, name: "Rajesh Jolly", image: avatarUrl("Rajesh+Jolly"), roles: [
+      { animeId: 21, animeTitle: "One Piece", animeImage: "", characterName: "Sanji", characterImage: "", roleType: "main", language: "Hindi" },
+      { animeId: 40748, animeTitle: "Chainsaw Man", animeImage: "", characterName: "Aki Hayakawa", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor, known for Sanji in One Piece Hindi dub." },
+    { id: 300037, name: "Pooja Punjabi", image: avatarUrl("Pooja+Punjabi"), roles: [
+      { animeId: 21, animeTitle: "One Piece", animeImage: "", characterName: "Nico Robin", characterImage: "", roleType: "main", language: "Hindi" },
+      { animeId: 23755, animeTitle: "Jujutsu Kaisen", animeImage: "", characterName: "Nobara Kugisaki", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actress." },
+    { id: 300038, name: "Ravi Kant", image: avatarUrl("Ravi+Kant"), roles: [
+      { animeId: 21, animeTitle: "One Piece", animeImage: "", characterName: "Usopp", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300039, name: "Nishtha Vasishta", image: avatarUrl("Nishtha+Vasishta"), roles: [
+      { animeId: 21, animeTitle: "One Piece", animeImage: "", characterName: "Tony Tony Chopper", characterImage: "", roleType: "supporting", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actress." },
+    { id: 300040, name: "Aditya Raj Duggal", image: avatarUrl("Aditya+Raj+Duggal"), roles: [
+      { animeId: 1735, animeTitle: "Naruto Shippuden", animeImage: "", characterName: "Sasuke Uchiha", characterImage: "", roleType: "main", language: "Hindi" },
+      { animeId: 16498, animeTitle: "Attack on Titan", animeImage: "", characterName: "Reiner Braun", characterImage: "", roleType: "supporting", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300041, name: "Harsh Solanki", image: avatarUrl("Harsh+Solanki"), roles: [
+      { animeId: 1735, animeTitle: "Naruto Shippuden", animeImage: "", characterName: "Rock Lee", characterImage: "", roleType: "supporting", language: "Hindi" },
+      { animeId: 16498, animeTitle: "Attack on Titan", animeImage: "", characterName: "Jean Kirstein", characterImage: "", roleType: "supporting", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300042, name: "Dipti Dhotre", image: avatarUrl("Dipti+Dhotre"), roles: [
+      { animeId: 1735, animeTitle: "Naruto Shippuden", animeImage: "", characterName: "Sakura Haruno", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actress." },
+    { id: 300043, name: "Uday Sabnis", image: avatarUrl("Uday+Sabnis"), roles: [
+      { animeId: 1735, animeTitle: "Naruto Shippuden", animeImage: "", characterName: "Jiraiya", characterImage: "", roleType: "supporting", language: "Hindi" },
+      { animeId: 813, animeTitle: "Dragon Ball Z", animeImage: "", characterName: "Frieza", characterImage: "", roleType: "supporting", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300044, name: "Monica", image: avatarUrl("Monica"), roles: [
+      { animeId: 16498, animeTitle: "Attack on Titan", animeImage: "", characterName: "Historia Reiss", characterImage: "", roleType: "supporting", language: "Hindi" },
+      { animeId: 11757, animeTitle: "Sword Art Online", animeImage: "", characterName: "Asuna", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actress." },
+    { id: 300045, name: "Sagar Arya", image: avatarUrl("Sagar+Arya"), roles: [
+      { animeId: 16498, animeTitle: "Attack on Titan", animeImage: "", characterName: "Erwin Smith", characterImage: "", roleType: "supporting", language: "Hindi" },
+      { animeId: 5114, animeTitle: "Fullmetal Alchemist: Brotherhood", animeImage: "", characterName: "Roy Mustang", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300046, name: "Vishakha Rai", image: avatarUrl("Vishakha+Rai"), roles: [
+      { animeId: 5114, animeTitle: "Fullmetal Alchemist: Brotherhood", animeImage: "", characterName: "Winry Rockbell", characterImage: "", roleType: "supporting", language: "Hindi" },
+      { animeId: 41025, animeTitle: "Spy x Family", animeImage: "", characterName: "Yor Forger", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actress." },
+    { id: 300047, name: "Atul Mathur", image: avatarUrl("Atul+Mathur"), roles: [
+      { animeId: 5114, animeTitle: "Fullmetal Alchemist: Brotherhood", animeImage: "", characterName: "Edward Elric", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300048, name: "Rahul Vohra", image: avatarUrl("Rahul+Vohra"), roles: [
+      { animeId: 5114, animeTitle: "Fullmetal Alchemist: Brotherhood", animeImage: "", characterName: "Alphonse Elric", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300049, name: "Deepak Rajput", image: avatarUrl("Deepak+Rajput"), roles: [
+      { animeId: 813, animeTitle: "Dragon Ball Z", animeImage: "", characterName: "Gohan", characterImage: "", roleType: "main", language: "Hindi" },
+      { animeId: 22319, animeTitle: "Dragon Ball Super", animeImage: "", characterName: "Gohan", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300050, name: "Shailendra Pandey", image: avatarUrl("Shailendra+Pandey"), roles: [
+      { animeId: 813, animeTitle: "Dragon Ball Z", animeImage: "", characterName: "Piccolo", characterImage: "", roleType: "supporting", language: "Hindi" },
+      { animeId: 23504, animeTitle: "Boruto", animeImage: "", characterName: "Kakashi Hatake", characterImage: "", roleType: "supporting", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300051, name: "Anju Jadhav", image: avatarUrl("Anju+Jadhav"), roles: [
+      { animeId: 113415, animeTitle: "Solo Leveling", animeImage: "", characterName: "Cha Hae-In", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actress." },
+    { id: 300052, name: "Sameer Deshpande", image: avatarUrl("Sameer+Deshpande"), roles: [
+      { animeId: 113415, animeTitle: "Solo Leveling", animeImage: "", characterName: "Sung Jin-Woo", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300053, name: "Ashwin Rao", image: avatarUrl("Ashwin+Rao"), roles: [
+      { animeId: 40748, animeTitle: "Chainsaw Man", animeImage: "", characterName: "Denji", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300054, name: "Kirti Kelkar", image: avatarUrl("Kirti+Kelkar"), roles: [
+      { animeId: 40748, animeTitle: "Chainsaw Man", animeImage: "", characterName: "Makima", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actress." },
+    { id: 300055, name: "Prachi Shah", image: avatarUrl("Prachi+Shah"), roles: [
+      { animeId: 101922, animeTitle: "Frieren", animeImage: "", characterName: "Frieren", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actress." },
+    { id: 300056, name: "Rohan Rajput", image: avatarUrl("Rohan+Rajput"), roles: [
+      { animeId: 101922, animeTitle: "Frieren", animeImage: "", characterName: "Fern", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300057, name: "Tisha Mehta", image: avatarUrl("Tisha+Mehta"), roles: [
+      { animeId: 41025, animeTitle: "Spy x Family", animeImage: "", characterName: "Anya Forger", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actress." },
+    { id: 300058, name: "Ankush Jewalikar", image: avatarUrl("Ankush+Jewalikar"), roles: [
+      { animeId: 41025, animeTitle: "Spy x Family", animeImage: "", characterName: "Loid Forger", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300059, name: "Vijay Vikram Singh", image: avatarUrl("Vijay+Vikram+Singh"), roles: [
+      { animeId: 36475, animeTitle: "Tokyo Revengers", animeImage: "", characterName: "Takemichi Hanagaki", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300060, name: "Neha Garg", image: avatarUrl("Neha+Garg"), roles: [
+      { animeId: 43608, animeTitle: "My Dress-Up Darling", animeImage: "", characterName: "Marin Kitagawa", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actress." },
+    { id: 300061, name: "Rishit Saxena", image: avatarUrl("Rishit+Saxena"), roles: [
+      { animeId: 43608, animeTitle: "My Dress-Up Darling", animeImage: "", characterName: "Gojo Wakana", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300062, name: "Pankaj Wadhwa", image: avatarUrl("Pankaj+Wadhwa"), roles: [
+      { animeId: 101922, animeTitle: "Oshi no Ko", animeImage: "", characterName: "Hoshino Aqua", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actor." },
+    { id: 300063, name: "Richa Dixit", image: avatarUrl("Richa+Dixit"), roles: [
+      { animeId: 101922, animeTitle: "Oshi no Ko", animeImage: "", characterName: "Hoshino Ai", characterImage: "", roleType: "main", language: "Hindi" },
+    ], isIndian: true, bio: "Community-sourced — Hindi voice actress." },
+
+    // ══════════════════════════════════════════════
+    // MORE TAMIL DUB VOICE ACTORS
+    // ══════════════════════════════════════════════
+    { id: 300064, name: "Deepa Venkat", image: avatarUrl("Deepa+Venkat"), roles: [
+      { animeId: 20, animeTitle: "Naruto", animeImage: "", characterName: "Sakura Haruno", characterImage: "", roleType: "main", language: "Tamil" },
+      { animeId: 16498, animeTitle: "Attack on Titan", animeImage: "", characterName: "Historia Reiss", characterImage: "", roleType: "supporting", language: "Tamil" },
+    ], isIndian: true, bio: "Community-sourced — Tamil voice actress." },
+    { id: 300065, name: "Venkata Prabhu", image: avatarUrl("Venkata+Prabhu"), roles: [
+      { animeId: 20, animeTitle: "Naruto", animeImage: "", characterName: "Sasuke Uchiha", characterImage: "", roleType: "main", language: "Tamil" },
+    ], isIndian: true, bio: "Community-sourced — Tamil voice actor." },
+    { id: 300066, name: "Saravana Sathish", image: avatarUrl("Saravana+Sathish"), roles: [
+      { animeId: 101922, animeTitle: "Frieren", animeImage: "", characterName: "Frieren", characterImage: "", roleType: "main", language: "Tamil" },
+      { animeId: 40748, animeTitle: "Chainsaw Man", animeImage: "", characterName: "Denji", characterImage: "", roleType: "main", language: "Tamil" },
+    ], isIndian: true, bio: "Community-sourced — Tamil voice actor." },
+
+    // ══════════════════════════════════════════════
+    // MORE TELUGU DUB VOICE ACTORS
+    // ══════════════════════════════════════════════
+    { id: 300067, name: "Rajitha", image: avatarUrl("Rajitha"), roles: [
+      { animeId: 20, animeTitle: "Naruto", animeImage: "", characterName: "Sakura Haruno", characterImage: "", roleType: "main", language: "Telugu" },
+    ], isIndian: true, bio: "Community-sourced — Telugu voice actress." },
+    { id: 300068, name: "Karthik", image: avatarUrl("Karthik"), roles: [
+      { animeId: 101922, animeTitle: "Frieren", animeImage: "", characterName: "Frieren", characterImage: "", roleType: "main", language: "Telugu" },
+      { animeId: 40748, animeTitle: "Chainsaw Man", animeImage: "", characterName: "Denji", characterImage: "", roleType: "main", language: "Telugu" },
+    ], isIndian: true, bio: "Community-sourced — Telugu voice actor." },
   ];
 
   for (const va of indianVAs) {

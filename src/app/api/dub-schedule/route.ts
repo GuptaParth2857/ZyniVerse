@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { DUBBED_ANIME_STATIC } from "@/lib/data/dubbed-static";
 
 interface DubAnime {
   mal_id: number;
@@ -23,17 +24,17 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const language = searchParams.get("language") || "all";
 
+  let allDubs: DubAnime[] = [];
+  let useFallback = false;
+
   try {
-    const [regionalRes, recentlyRes, englishDubRes] = await Promise.all([
+    const [regionalRes, , englishDubRes] = await Promise.all([
       fetch(`${ANITALY_BASE}/regional-dubs`, { signal: AbortSignal.timeout(8000) }),
       fetch(`${ANITALY_BASE}/recently-added-dubs`, { signal: AbortSignal.timeout(8000) }),
-      fetch(MYDUBLIST_URL, {
-        signal: AbortSignal.timeout(8000),
-        next: { revalidate: 86400 },
-      }),
+      fetch(MYDUBLIST_URL, { signal: AbortSignal.timeout(8000) }),
     ]);
 
-    if (!regionalRes.ok) throw new Error("Failed to fetch dub data");
+    if (!regionalRes.ok) throw new Error("API unavailable");
 
     const englishDubData = englishDubRes.ok ? await englishDubRes.json() : null;
     const englishDubIds = englishDubData?.dubbed
@@ -41,35 +42,32 @@ export async function GET(request: Request) {
       : new Set<number>();
 
     const regionalData = await regionalRes.json();
-    const recentlyData = recentlyRes.ok ? (await recentlyRes.json()).data : [];
 
-    const recentIds = new Set(recentlyData.map((r: any) => r.mal_id));
-
-    let allDubs: DubAnime[] = (regionalData.data || []).map((item: any) => {
-      const comingSoon = item.coming_soon_languages
+    allDubs = (regionalData.data || []).map((item: Record<string, unknown>) => {
+      const comingSoon = typeof item.coming_soon_languages === "string"
         ? item.coming_soon_languages.split(",").map((l: string) => l.trim()).filter(Boolean)
         : [];
-
-      const score = item.localRating?.average
-        ? item.localRating.average
-        : item.dubRatings?.Hindi?.average && item.dubRatings.Hindi.average !== "No Ratings"
-          ? item.dubRatings.Hindi.average
+      const localRating = item.localRating as Record<string, unknown> | undefined;
+      const dubRatings = item.dubRatings as Record<string, Record<string, unknown>> | undefined;
+      const score = localRating?.average
+        ? localRating.average
+        : dubRatings?.Hindi?.average && dubRatings.Hindi.average !== "No Ratings"
+          ? dubRatings.Hindi.average
           : null;
-
       return {
-        mal_id: item.mal_id,
-        title: item.title,
-        displayTitle: item.displayTitle || item.title,
-        image: item.image_url,
-        synopsis: item.synopsis || "",
-        genres: item.genres || [],
-        hasHindi: item.has_hindi || comingSoon.includes("Hindi"),
-        hasTamil: item.has_tamil || comingSoon.includes("Tamil"),
-        hasTelugu: item.has_telugu || comingSoon.includes("Telugu"),
-        hasEnglish: englishDubIds.has(item.mal_id),
+        mal_id: item.mal_id as number,
+        title: item.title as string,
+        displayTitle: (item.displayTitle as string) || (item.title as string),
+        image: item.image_url as string,
+        synopsis: (item.synopsis as string) || "",
+        genres: (item.genres as string[]) || [],
+        hasHindi: (item.has_hindi as boolean) || comingSoon.includes("Hindi"),
+        hasTamil: (item.has_tamil as boolean) || comingSoon.includes("Tamil"),
+        hasTelugu: (item.has_telugu as boolean) || comingSoon.includes("Telugu"),
+        hasEnglish: englishDubIds.has(item.mal_id as number),
         comingSoonLanguages: comingSoon,
         isCurrentSeason: item.is_current_season_dub === 1,
-        score,
+        score: score as string,
       };
     });
 
@@ -79,39 +77,41 @@ export async function GET(request: Request) {
       seen.add(d.mal_id);
       return true;
     });
-
-    let filtered = allDubs;
-    if (language === "hindi") filtered = allDubs.filter((d) => d.hasHindi);
-    else if (language === "tamil") filtered = allDubs.filter((d) => d.hasTamil);
-    else if (language === "telugu") filtered = allDubs.filter((d) => d.hasTelugu);
-    else if (language === "english") filtered = allDubs.filter((d) => d.hasEnglish);
-
-    const currentSeason = filtered.filter((d) => d.isCurrentSeason);
-    const available = filtered.filter((d) => !d.isCurrentSeason && !d.comingSoonLanguages.length);
-    const comingSoon = filtered.filter((d) => d.comingSoonLanguages.length > 0);
-    const recent = filtered.filter((d) => recentIds.has(d.mal_id));
-
-    return NextResponse.json({
-      success: true,
-      counts: {
-        total: filtered.length,
-        hindi: allDubs.filter((d) => d.hasHindi).length,
-        tamil: allDubs.filter((d) => d.hasTamil).length,
-        telugu: allDubs.filter((d) => d.hasTelugu).length,
-        english: allDubs.filter((d) => d.hasEnglish).length,
-        currentSeason: currentSeason.length,
-        available: available.length,
-        comingSoon: comingSoon.length,
-        recent: recent.length,
-      },
-      data: {
-        currentSeason,
-        available,
-        comingSoon,
-        recent,
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch {
+    useFallback = true;
+    allDubs = [...DUBBED_ANIME_STATIC];
   }
+
+  let filtered = allDubs;
+  if (language === "hindi") filtered = allDubs.filter((d) => d.hasHindi);
+  else if (language === "tamil") filtered = allDubs.filter((d) => d.hasTamil);
+  else if (language === "telugu") filtered = allDubs.filter((d) => d.hasTelugu);
+  else if (language === "english") filtered = allDubs.filter((d) => d.hasEnglish);
+
+  const currentSeason = filtered.filter((d) => d.isCurrentSeason);
+  const available = filtered.filter((d) => !d.isCurrentSeason && !d.comingSoonLanguages.length);
+  const comingSoon = filtered.filter((d) => d.comingSoonLanguages.length > 0);
+  const recent = filtered.filter((d) => d.isCurrentSeason);
+
+  return NextResponse.json({
+    success: true,
+    source: useFallback ? "static" : "api",
+    counts: {
+      total: filtered.length,
+      hindi: allDubs.filter((d) => d.hasHindi).length,
+      tamil: allDubs.filter((d) => d.hasTamil).length,
+      telugu: allDubs.filter((d) => d.hasTelugu).length,
+      english: allDubs.filter((d) => d.hasEnglish).length,
+      currentSeason: currentSeason.length,
+      available: available.length,
+      comingSoon: comingSoon.length,
+      recent: recent.length,
+    },
+    data: {
+      currentSeason,
+      available,
+      comingSoon,
+      recent,
+    },
+  });
 }

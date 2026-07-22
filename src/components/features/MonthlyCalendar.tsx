@@ -27,7 +27,6 @@ export default function MonthlyCalendar() {
   const today = new Date();
 
   useEffect(() => {
-    setLoading(true);
     const from = Math.floor(new Date(year, month, 1).getTime() / 1000);
     const to = Math.floor(new Date(year, month + 1, 0, 23, 59, 59).getTime() / 1000);
     getAiringSchedule(from, to)

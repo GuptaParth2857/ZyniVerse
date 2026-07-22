@@ -28,15 +28,16 @@ export default function DubExpandingCard({ items }: Props) {
           <Link
             key={`${item.mal_id}-${idx}`}
             href={`/search?q=${encodeURIComponent(item.displayTitle || item.title)}`}
-            className="relative w-[140px] shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--color-line)] group"
+            className="relative w-[140px] shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--color-line)] group bg-[var(--color-panel)]"
           >
-            <div className="relative h-[210px] w-full">
+            <div className="relative h-[210px] w-full bg-[var(--color-panel)]">
               <Image
                 src={item.image}
                 alt=""
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes="140px"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
             </div>
@@ -73,7 +74,7 @@ export default function DubExpandingCard({ items }: Props) {
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               onMouseEnter={() => setHovered(item.mal_id)}
               onMouseLeave={() => setHovered(null)}
-              className="relative overflow-hidden rounded-2xl border border-[var(--color-line)] cursor-pointer group"
+              className="relative overflow-hidden rounded-2xl border border-[var(--color-line)] cursor-pointer group bg-[var(--color-panel)]"
               style={{ minWidth: 0 }}
             >
               <Link
@@ -86,6 +87,7 @@ export default function DubExpandingCard({ items }: Props) {
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                   sizes="(max-width: 768px) 50vw, 25vw"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
