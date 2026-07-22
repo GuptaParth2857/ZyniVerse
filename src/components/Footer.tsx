@@ -32,11 +32,31 @@ const LINK_COLUMNS = [
       { href: "/manga", label: "Manga", icon: "book" },
       { href: "/seasonal", label: "Seasonal", icon: "calendar" },
       { href: "/schedule", label: "Schedule", icon: "clock" },
-      { href: "/tv-schedule", label: "TV Channels", icon: "globe" },
       { href: "/live-action", label: "Live Action Anime", icon: "film" },
       { href: "/dubbed", label: "Regional Dubs", icon: "globe" },
+      { href: "/random", label: "Random Anime", icon: "shuffle" },
+    ],
+  },
+  {
+    title: "India",
+    links: [
       { href: "/indian-dubs", label: "Indian Dubs", icon: "globe" },
-      { href: "/figures", label: "Figure Collection", icon: "box" },
+      { href: "/theatrical-releases", label: "Theatrical Releases", icon: "film" },
+      { href: "/toons", label: "Toons & Cartoons", icon: "tv" },
+      { href: "/tv-schedule", label: "TV Channels", icon: "globe" },
+      { href: "/conventions", label: "Anime Conventions", icon: "calendar" },
+      { href: "/voice-actors/indian", label: "Indian Voice Actors", icon: "users" },
+    ],
+  },
+  {
+    title: "Content",
+    links: [
+      { href: "/guides", label: "Guides & Articles", icon: "edit" },
+      { href: "/podcast", label: "Podcast", icon: "mic" },
+      { href: "/merch", label: "Merch Store", icon: "shopping-bag" },
+      { href: "/filler", label: "Filler Guides", icon: "edit" },
+      { href: "/watch-order", label: "Watch Orders", icon: "list" },
+      { href: "/blog", label: "Blog", icon: "edit" },
     ],
   },
   {
@@ -52,17 +72,6 @@ const LINK_COLUMNS = [
     ],
   },
   {
-    title: "Guides",
-    links: [
-      { href: "/filler", label: "Filler Guides", icon: "edit" },
-      { href: "/watch-order", label: "Watch Orders", icon: "list" },
-      { href: "/wiki", label: "Wiki", icon: "book" },
-      { href: "/blog", label: "Blog", icon: "edit" },
-      { href: "/docs", label: "API Docs", icon: "code" },
-      { href: "/status", label: "Status", icon: "bar-chart" },
-    ],
-  },
-  {
     title: "Account",
     links: [
       { href: "/watchlist", label: "My List", icon: "list" },
@@ -71,6 +80,9 @@ const LINK_COLUMNS = [
       { href: "/login", label: "Login", icon: "log-in" },
       { href: "/register", label: "Register", icon: "user-plus" },
       { href: "/premium", label: "Premium", icon: "award" },
+      { href: "/docs", label: "API Docs", icon: "code" },
+      { href: "/wiki", label: "Wiki", icon: "book" },
+      { href: "/status", label: "Status", icon: "bar-chart" },
     ],
   },
 ];
@@ -95,6 +107,9 @@ const ICON_PATHS: Record<string, string> = {
   "user-plus": "M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2m8-10a4 4 0 100-8 4 4 0 000 8zm13 0v6m-3-3h6",
   "code": "M16 18l6-6-6-6M8 6l-6 6 6 6",
   "film": "M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z",
+  "tv": "M9.75 17.9l4.4-2.2c.4-.2.9-.2 1.3 0l4.4 2.2V4a1 1 0 00-1-1H5.3a1 1 0 00-1 1v13.9zM3 5h18v14H3V5z",
+  "mic": "M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3zM19 10v2a7 7 0 01-14 0v-2M12 19v4m-4 0h8",
+  "shopping-bag": "M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0",
 };
 
 export default function Footer() {
@@ -220,14 +235,15 @@ export default function Footer() {
         >
           <div className="flex flex-wrap gap-4 text-xs">
             <Link href="/search" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Browse Anime</Link>
+            <Link href="/guides" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Guides</Link>
+            <Link href="/theatrical-releases" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Theatrical</Link>
+            <Link href="/toons" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Toons</Link>
+            <Link href="/podcast" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Podcast</Link>
+            <Link href="/merch" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Merch</Link>
             <Link href="/forum" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Forum</Link>
             <Link href="/filler" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Filler Guides</Link>
             <Link href="/watch-order" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Watch Orders</Link>
             <Link href="/docs" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">API Docs</Link>
-            <Link href="/seasonal" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Seasonal</Link>
-            <Link href="/leaderboard" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Leaderboard</Link>
-            <Link href="/dubbed" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Regional Dubs</Link>
-            <Link href="/manga/read/1" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Read Manga</Link>
           </div>
           <div className="flex gap-3 text-xs text-[var(--color-mute)]">
             <Link href="/privacy" className="hover:text-[var(--color-cyan)] transition">Privacy</Link>

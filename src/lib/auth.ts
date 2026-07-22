@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
+import Discord from "next-auth/providers/discord";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
@@ -36,10 +37,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientId: process.env.AUTH_GITHUB_ID!,
       clientSecret: process.env.AUTH_GITHUB_SECRET!,
     }),
+    Discord({
+      clientId: process.env.AUTH_DISCORD_ID!,
+      clientSecret: process.env.AUTH_DISCORD_SECRET!,
+    }),
   ],
   callbacks: {
     async signIn({ account, profile }) {
-      if (account?.provider === "google" || account?.provider === "github") {
+      if (account?.provider === "google" || account?.provider === "github" || account?.provider === "discord") {
         const email = profile?.email as string;
         if (!email) return false;
         const existing = await prisma.user.findUnique({ where: { email } });

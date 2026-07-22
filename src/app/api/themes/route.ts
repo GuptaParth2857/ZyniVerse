@@ -1,99 +1,68 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { THEME_SONGS } from "@/lib/data/themes";
+import { THEME_COVERS } from "@/lib/data/theme-covers";
 
-const ANIMETHEMES_API = "https://api.animethemes.moe";
+const ANILIST_GQL = "https://graphql.anilist.co";
 
-const ANIME_TITLES: Record<number, string> = {
-  1: "Cowboy Bebop",
-  21: "One Piece",
-  813: "Dragon Ball",
-  1535: "Fullmetal Alchemist: Brotherhood",
-  1735: "Naruto Shippuden",
-  2001: "Steins;Gate",
-  2904: "Puella Magi Madoka Magica",
-  5114: "Fullmetal Alchemist: Brotherhood",
-  9253: "K-On!",
-  10087: "Guilty Crown",
-  11061: "Fate/Zero",
-  11757: "Sword Art Online",
-  16498: "Attack on Titan",
-  19815: "Kill la Kill",
-  20464: "Parasyte",
-  21459: "No Game No Life",
-  21570: "Barakamon",
-  22319: "Dragon Ball Super",
-  23273: "Yuki Yuna is a Hero",
-  23755: "Jujutsu Kaisen",
-  24701: "Mashle: Magic and Muscles",
-  28755: "Your Lie in April",
-  30276: "Code Geass",
-  31240: "Kabaneri of the Iron Fortress",
-  31964: "Beastars",
-  33352: "The Idolmaster Cinderella Girls",
-  34438: "Yuri on Ice",
-  35760: "Your Lie in April",
-  37521: "Princess Connect! Re:Dive",
-  37991: "Interspecies Reviewers",
-  40748: "Chainsaw Man",
-  41467: "Blue Lock",
-  101922: "Frieren: Beyond Journey's End",
-  113415: "Solo Leveling",
-  127230: "Demon Slayer: Entertainment District Arc",
-};
-
-async function fetchPopularThemesFromApi(): Promise<{ mediaId: number; title: string; image: string | null; count: number }[]> {
-  try {
-    const ids = [21, 16498, 1735, 5114, 1535, 813, 11061, 113415, 101922, 127230, 30276, 9253, 1, 2001, 23755];
-    const groups: { mediaId: number; title: string; image: string | null; count: number }[] = [];
-
-    for (const id of ids) {
-      const url = `${ANIMETHEMES_API}/anime?filter[has]&include=animethemes.animethemeentries.video&page[size]=1&filter[anilist_id]=${id}`;
-      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
-      const data = await res.json();
-      const anime = data?.anime?.[0];
-      if (anime) {
-        groups.push({
-          mediaId: id,
-          title: anime.name || `Anime #${id}`,
-          image: null,
-          count: anime.animethemes?.length || 0,
-        });
-      }
-    }
-    return groups;
-  } catch { return []; }
+interface AniListResult {
+  id: number;
+  title: string;
+  image: string | null;
 }
 
-export async function GET() {
-  const dbGroups = await prisma.themeSong.findMany({
-    select: { mediaId: true },
-    distinct: ["mediaId"],
+async function searchAniList(query: string): Promise<AniListResult[]> {
+  try {
+    const q = `query($search:String){Page(page:1,perPage:20){media(search:$search,type:ANIME){id title{romaji english}coverImage{large}}}}`;
+    const res = await fetch(ANILIST_GQL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ query: q, variables: { search: query } }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const media = data?.data?.Page?.media || [];
+    return media.map((m: { id: number; title: { romaji: string; english: string | null }; coverImage: { large: string | null } }) => ({
+      id: m.id,
+      title: m.title?.english || m.title?.romaji || `Anime #${m.id}`,
+      image: m.coverImage?.large || null,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const search = searchParams.get("q")?.toLowerCase() || "";
+
+  const mediaIds = [...new Set(THEME_SONGS.map((t) => t.mediaId))];
+
+  // Build groups for hardcoded anime
+  const localGroups: { mediaId: number; title: string; image: string | null; count: number }[] = mediaIds.map((id) => {
+    const cover = THEME_COVERS[id];
+    const count = THEME_SONGS.filter((t) => t.mediaId === id).length;
+    return {
+      mediaId: id,
+      title: cover?.title || `Anime #${id}`,
+      image: cover?.image || null,
+      count,
+    };
   });
 
-  let groups: { mediaId: number; title: string; image: string | null; count: number }[] = dbGroups.map((t) => ({ mediaId: t.mediaId, title: ANIME_TITLES[t.mediaId] || `Anime #${t.mediaId}`, image: null, count: 0 }));
+  if (search) {
+    // Filter local matches
+    const localMatches = localGroups.filter((g) => g.title.toLowerCase().includes(search));
 
-  if (groups.length < 10) {
-    const staticIds = [...new Set(THEME_SONGS.map((t) => t.mediaId))];
-    const existingIds = new Set(groups.map((g) => g.mediaId));
-    for (const id of staticIds) {
-      if (!existingIds.has(id)) {
-        groups.push({ mediaId: id, title: ANIME_TITLES[id] || `Anime #${id}`, image: null, count: THEME_SONGS.filter((t) => t.mediaId === id).length });
-      }
-    }
+    // Also search AniList for any anime (not in local list)
+    const anilistResults = await searchAniList(search);
+    const localIds = new Set(localGroups.map((g) => g.mediaId));
+    const remoteGroups = anilistResults
+      .filter((r) => !localIds.has(r.id))
+      .map((r) => ({ mediaId: r.id, title: r.title, image: r.image, count: 0 }));
 
-    try {
-      const apiGroups = await fetchPopularThemesFromApi();
-      const dbIds = new Set(groups.map((g) => g.mediaId));
-      for (const ag of apiGroups) {
-        if (!dbIds.has(ag.mediaId)) {
-          groups.push(ag);
-        }
-      }
-    } catch {}
+    return NextResponse.json({ groups: [...localMatches, ...remoteGroups] });
   }
 
-  groups = groups.filter((g, i, a) => a.findIndex((x) => x.mediaId === g.mediaId) === i);
-
-  return NextResponse.json({ groups });
+  return NextResponse.json({ groups: localGroups });
 }

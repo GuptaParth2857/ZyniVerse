@@ -6,8 +6,6 @@ import Image from "next/image";
 import { bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
 
-const CARD_COLORS = ["#29f2e0", "#ff2d78", "#8a5cff", "#22c55e", "#f59e0b", "#06b6d4", "#ec4899", "#f97316"];
-
 export default function HorizontalScroll({
   items,
   title = "Trending Now",
@@ -58,7 +56,7 @@ export default function HorizontalScroll({
     intervalRef.current = setInterval(() => {
       const el = scrollRef.current;
       if (!el) return;
-      const cardWidth = 220 + 12;
+      const cardWidth = 200 + 4;
       if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
         el.scrollTo({ left: 0, behavior: "smooth" });
       } else {
@@ -87,6 +85,7 @@ export default function HorizontalScroll({
     <section className="relative overflow-hidden border-b border-[var(--color-line)]">
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a0a2e]/60 via-[#2d1b4e]/30 to-transparent pointer-events-none" />
       <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-[var(--color-magenta)]/5 blur-[120px] pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-[#461518]/20 blur-[100px] pointer-events-none" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14">
         <div className="mb-6 flex items-end justify-between">
@@ -106,53 +105,42 @@ export default function HorizontalScroll({
           ref={scrollRef}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-4 sm:px-6 pb-6 pt-2"
+          className="flex gap-1 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-4 sm:px-6 pb-4"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {items.map((item, i) => (
             <Link
               key={item.id}
               href={item.type === "MANGA" ? `/manga/${item.id}` : `/anime/${item.id}`}
-              className="snap-start shrink-0 group/card relative overflow-hidden rounded-xl neon-feature-card"
-              style={{ width: 210 }}
+              className="snap-start shrink-0 group/card relative"
+              style={{ width: 200 }}
             >
-              <div className="neon-border rounded-xl" style={{ background: `conic-gradient(from var(--border-angle), ${CARD_COLORS[i % CARD_COLORS.length]}, transparent 40%, ${CARD_COLORS[i % CARD_COLORS.length]}80, transparent 70%, ${CARD_COLORS[i % CARD_COLORS.length]})` }} />
-              <div className="neon-glow rounded-xl" style={{ background: CARD_COLORS[i % CARD_COLORS.length] }} />
-              <div className="neon-inner rounded-xl p-0 overflow-hidden" style={{ background: "var(--color-panel)" }}>
-                <div className="h-[2px] w-full" style={{ background: CARD_COLORS[i % CARD_COLORS.length] }} />
+              <div className="absolute -left-2 bottom-0 z-20 select-none pointer-events-none">
+                <span className="font-display text-[130px] font-black leading-none text-black/40 [-webkit-text-stroke:2px_rgba(255,255,255,0.08)]">
+                  {(i + 1).toString().padStart(2, "0")}
+                </span>
+              </div>
 
-                {/* Rank number */}
-                <div className="absolute -left-1 bottom-8 z-20 select-none pointer-events-none">
-                  <span className="font-display text-[100px] font-black leading-none text-black/30" style={{ WebkitTextStroke: `2px ${CARD_COLORS[i % CARD_COLORS.length]}15` }}>
-                    {(i + 1).toString().padStart(2, "0")}
-                  </span>
-                </div>
-
-                {/* Cover */}
-                <div className="relative aspect-[2/3] overflow-hidden">
+              <div className="relative z-10 ml-[30px]">
+                <div className="relative aspect-[2/3] overflow-hidden rounded-[8px] bg-[#161616] transition-all duration-500 group-hover/card:scale-[1.02] group-hover/card:shadow-[0_0_40px_-8px_var(--color-magenta)]">
                   <Image
                     src={item.coverImage?.extraLarge || item.coverImage?.large || ""}
-                    alt={bestTitle(item.title)}
+                    alt=""
                     fill
-                    className="object-cover transition-transform duration-700 group-hover/card:scale-110"
-                    sizes="(max-width: 768px) 50vw, 210px"
+                    className="object-cover transition-transform duration-700 group-hover/card:scale-105"
+                    sizes="(max-width: 768px) 50vw, 25vw"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
 
-                  {/* Score */}
-                  {item.averageScore != null && (
-                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md backdrop-blur-md text-[10px] font-mono font-bold z-10"
-                      style={{ background: `${CARD_COLORS[i % CARD_COLORS.length]}25`, color: CARD_COLORS[i % CARD_COLORS.length], border: `1px solid ${CARD_COLORS[i % CARD_COLORS.length]}40` }}>
-                      ★ {(item.averageScore / 10).toFixed(1)}
-                    </div>
-                  )}
-
-                  {/* Bottom info */}
-                  <div className="absolute inset-x-0 bottom-0 p-3 z-10">
-                    <p className="font-display text-sm font-bold leading-tight line-clamp-2 drop-shadow-lg">{bestTitle(item.title)}</p>
-                    <div className="mt-1.5 flex items-center gap-2 text-[10px] text-[var(--color-mute)]">
-                      {item.episodes && <span>{item.episodes} ep</span>}
-                      {item.genres && item.genres[0] && <span className="truncate">{item.genres[0]}</span>}
+                  <div className="absolute inset-x-0 bottom-0 p-3">
+                    <p className="font-display text-xs sm:text-sm font-bold leading-tight line-clamp-2 drop-shadow-lg">
+                      {bestTitle(item.title)}
+                    </p>
+                    <div className="mt-1 flex items-center gap-2 text-[10px] text-[var(--color-mute)]">
+                      {item.averageScore ? (
+                        <span className="text-[var(--color-cyan)]">★ {(item.averageScore / 10).toFixed(1)}</span>
+                      ) : null}
+                      {item.episodes ? <span>{item.episodes} ep</span> : null}
                     </div>
                   </div>
                 </div>

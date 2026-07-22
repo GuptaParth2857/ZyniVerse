@@ -125,7 +125,7 @@ export default function RandomPage() {
           className="absolute inset-0 pointer-events-none"
         >
           <div className="relative w-full h-full">
-            <Image src={imgSrc} alt="" fill className="object-cover object-top" sizes="(max-width: 768px) 50vw, 25vw" />
+            <Image src={imgSrc} alt="" fill className="object-cover object-center" sizes="100vw" />
           </div>
           <div className="absolute inset-0 bg-gradient-to-b from-[#05080f]/70 via-[#05080f]/50 to-[#05080f]/90" />
         </motion.div>
@@ -179,8 +179,8 @@ export default function RandomPage() {
                 <div className="absolute inset-0 rounded-[24px] bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none z-[1]" />
 
                 {/* hero */}
-                <div className="relative w-full h-[220px] sm:h-[260px] overflow-hidden rounded-t-[22px] bg-[#0a0a14] z-[3]">
-                  <Image src={imgSrc} alt="" fill className="object-cover object-top transition-all duration-700 group-hover:scale-[1.03]" sizes="(max-width: 768px) 50vw, 25vw" />
+                <div className="relative w-full h-[240px] sm:h-[300px] overflow-hidden rounded-t-[22px] bg-[#0a0a14] z-[3]">
+                  <Image src={imgSrc} alt="" fill className="object-cover object-center transition-all duration-700 group-hover:scale-[1.03]" sizes="(max-width: 768px) 100vw, 600px" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#05080f]/85 via-[#05080f]/15 to-transparent" />
 
                   {current.averageScore && (

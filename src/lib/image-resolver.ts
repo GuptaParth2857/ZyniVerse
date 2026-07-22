@@ -80,7 +80,7 @@ function extractAnimeTitle(raw: string): string | null {
     return null;
   }
 
-  let cleaned = raw
+  const cleaned = raw
     .replace(/\s*-\s*Arise from the Shadow-?/gi, "")
     .replace(/\s*Season \d+/gi, "")
     .replace(/\s*S\d+/gi, "")
