@@ -43,13 +43,21 @@ export default function EventFilters({
   return (
     <div>
       <div className="flex flex-col gap-3 mb-6">
-        <input
-          type="text"
-          placeholder="Search events by name, description, or tag..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="text-sm bg-[var(--color-void)]/50 border border-[var(--color-line)] rounded-lg px-4 py-2 text-[var(--color-text)] placeholder:text-[var(--color-mute)]/40 focus:outline-none focus:border-[var(--color-cyan)]/50"
-        />
+        <div className="neon-input rounded-xl">
+          <div className="flex items-center gap-3 px-4 py-2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)]/40 shrink-0">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search events by name, description, or tag..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="text-sm bg-transparent py-0.5 text-[var(--color-text)] placeholder:text-[var(--color-mute)]/40 focus:outline-none"
+            />
+          </div>
+        </div>
 
         <div className="flex flex-wrap gap-2">
           <div className="flex gap-1">
@@ -57,42 +65,46 @@ export default function EventFilters({
               <button
                 key={s}
                 onClick={() => setStatus(s)}
-                className={`text-[10px] font-bold px-3 py-1 rounded-full border capitalize transition-colors ${
+                className={`text-[10px] font-bold px-3 py-1 rounded-full border capitalize transition-all duration-200 ${
                   status === s
-                    ? "text-[var(--color-cyan)] border-[var(--color-cyan)]/50 bg-[var(--color-cyan)]/10"
-                    : "text-[var(--color-mute)] border-[var(--color-line)] hover:border-[var(--color-mute)]/50"
+                    ? "text-[var(--color-cyan)] border-[var(--color-cyan)]/50 bg-[var(--color-cyan)]/10 shadow-[0_0_12px_-4px_rgba(0,255,224,0.3)]"
+                    : "text-[var(--color-mute)] border-[var(--color-line)] hover:border-[var(--color-mute)]/50 hover:text-[var(--color-text)]"
                 }`}
               >
-                {s}
+                {s === "all" ? "All" : s}
               </button>
             ))}
           </div>
 
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="text-[10px] font-bold px-3 py-1 rounded-full border border-[var(--color-line)] bg-[var(--color-void)] text-[var(--color-mute)] focus:outline-none focus:border-[var(--color-cyan)]/50 capitalize"
-          >
-            <option value="all">All Types</option>
-            {types.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
+          <div className="neon-input rounded-full">
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="text-[10px] font-bold px-3 py-1 bg-[var(--color-void)] text-[var(--color-mute)] focus:outline-none capitalize cursor-pointer"
+            >
+              <option value="all">All Types</option>
+              {types.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className="text-[10px] font-bold px-3 py-1 rounded-full border border-[var(--color-line)] bg-[var(--color-void)] text-[var(--color-mute)] focus:outline-none focus:border-[var(--color-cyan)]/50"
-          >
-            <option value="all">All Countries</option>
-            {countries.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+          <div className="neon-input rounded-full">
+            <select
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="text-[10px] font-bold px-3 py-1 bg-[var(--color-void)] text-[var(--color-mute)] focus:outline-none cursor-pointer"
+            >
+              <option value="all">All Countries</option>
+              {countries.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -109,7 +121,7 @@ export default function EventFilters({
                 <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
                 Happening Now ({ongoing.length})
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {ongoing.map((e) => (
                   <EventCard key={e.id} event={e} />
                 ))}
@@ -123,7 +135,7 @@ export default function EventFilters({
                 <span className="w-2 h-2 rounded-full bg-green-400" />
                 Upcoming ({upcoming.length})
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {upcoming.map((e) => (
                   <EventCard key={e.id} event={e} />
                 ))}
@@ -137,7 +149,7 @@ export default function EventFilters({
                 <span className="w-2 h-2 rounded-full bg-gray-400" />
                 Past ({past.length})
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {past.map((e) => (
                   <EventCard key={e.id} event={e} />
                 ))}

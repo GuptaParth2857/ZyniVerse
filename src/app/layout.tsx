@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { Rajdhani, Inter as InterFont, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -20,6 +20,7 @@ import HeartbeatProvider from "@/components/HeartbeatProvider";
 import ActivityTracker from "@/components/ActivityTracker";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 
 const rajdhani = Rajdhani({
   variable: "--font-rajdhani",
@@ -44,28 +45,53 @@ const jetbrainsMono = JetBrains_Mono({
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
+export const viewport: Viewport = {
+  themeColor: "#d946ef",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
-  title: { default: "ZyniVerse — Anime Filler Guides, Indian Dubs & Manga Tracker", template: "%s | ZyniVerse" },
+  title: {
+    default: "ZyniVerse — #1 Anime Site: Filler List, Hindi Dubs, Watch Tracker & Community (2026)",
+    template: "%s | ZyniVerse — Free Anime Platform",
+  },
   description:
-    "ZyniVerse — India's ultimate anime platform. Filler guides for 200+ anime, Indian dub tracking (Hindi/Tamil/Telugu), AI recommendations, watchlist, manga reader, and anime community.",
+    "India's #1 anime platform — skip filler in 200+ anime (Naruto, One Piece, Bleach), track Hindi/Tamil/Telugu dubs, get AI recommendations, build your watchlist, read manga, check anime schedules & join India's biggest anime community — all free.",
   manifest: "/manifest.json",
-  keywords: ["anime filler list", "indian anime dubs", "hindi dubbed anime", "anime tracker", "anime community india", "anime conventions india", "filler episodes skip", "anime watchlist"],
+  keywords: [
+    "anime", "anime filler list", "naruto filler list", "one piece filler list", "bleach filler list",
+    "hindi dubbed anime", "hindi anime", "tamil dubbed anime", "telugu dubbed anime", "indian anime dubs",
+    "anime tracker", "anime watchlist", "anime community india", "boruto filler list",
+    "anime schedule", "anime recommendations", "best anime 2026", "anime watch order",
+    "dragon ball z filler list", "fairy tail filler list", "my hero academia filler list",
+    "anime sites", "free anime", "anime streaming india", "anime dubbed hindi",
+    "anime filler episodes", "which episodes to skip", "anime episode guide",
+    "manga reader india", "anime wiki", "anime conventions india",
+    "crunchyroll india", "anime alternative", "anime community",
+    "seasonal anime 2026", "anime airing schedule", "simulcast anime",
+  ],
   openGraph: {
-    title: "ZyniVerse — Anime Filler Guides & Indian Dubs",
-    description: "India's ultimate anime platform. Skip filler, track Indian dubs, discover new anime.",
+    title: "ZyniVerse — #1 Anime Site: Filler List, Hindi Dubs, Watch Tracker & Community",
+    description: "India's #1 anime platform — filler guides for 200+ anime, Hindi/Tamil/Telugu dubs, AI recommendations, watchlist, manga reader & anime community. Free.",
     type: "website",
     siteName: "ZyniVerse",
     locale: "en_IN",
     countryName: "India",
     url: BASE_URL,
+    images: [{ url: `${BASE_URL}/logo.png`, width: 512, height: 512, alt: "ZyniVerse Logo" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ZyniVerse — Anime Filler Guides & Indian Dubs",
-    description: "India's ultimate anime platform. Skip filler, track Indian dubs, discover new anime.",
+    site: "@GuptaParth2857",
+    creator: "@GuptaParth2857",
+    title: "ZyniVerse — #1 Anime Site: Filler List, Hindi Dubs, Watch Tracker",
+    description: "India's #1 anime platform — filler guides for 200+ anime, Hindi/Tamil/Telugu dubs, AI recommendations & community. Free.",
   },
-  robots: "index, follow",
+  robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   alternates: {
     canonical: BASE_URL,
   },
@@ -86,8 +112,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`h-full antialiased ${rajdhani.variable} ${inter.variable} ${jetbrainsMono.variable}`} data-scroll-behavior="smooth">
       <head>
-        <meta name="theme-color" content="#d946ef" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -96,7 +120,7 @@ export default function RootLayout({
                 "@context": "https://schema.org",
                 "@type": "WebSite",
                 name: "ZyniVerse",
-                alternateName: ["Zyni Verse", "Zyniverse", "Zyverse"],
+                alternateName: ["Zyni Verse", "Zyniverse", "Zyverse", "Zyni Verse Anime"],
                 url: BASE_URL,
                 potentialAction: {
                   "@type": "SearchAction",
@@ -106,8 +130,8 @@ export default function RootLayout({
                   },
                   "query-input": "required name=search_term_string",
                 },
-                description: "India's ultimate anime platform — filler guides for 200+ anime, Indian dub tracking (Hindi/Tamil/Telugu), AI recommendations, watchlist, manga reader, cosplay gallery, and anime community.",
-                inLanguage: "en",
+                description: "India's #1 anime platform — filler guides for 200+ anime, Indian dub tracking (Hindi/Tamil/Telugu), AI recommendations, watchlist, manga reader, cosplay gallery, and anime community.",
+                inLanguage: ["en", "hi"],
                 publisher: {
                   "@type": "Organization",
                   name: "ZyniVerse",
@@ -118,15 +142,16 @@ export default function RootLayout({
                 "@context": "https://schema.org",
                 "@type": "Organization",
                 name: "ZyniVerse",
-                alternateName: ["Zyni Verse", "Zyniverse", "Zyverse"],
+                alternateName: ["Zyni Verse", "Zyniverse", "Zyverse", "ZyniVerse Anime"],
                 url: BASE_URL,
                 logo: `${BASE_URL}/logo.png`,
-                description: "India's ultimate anime platform. Filler guides, Indian dub tracking, AI recommendations, manga reader, cosplay gallery, and anime community for Indian anime fans.",
+                description: "India's #1 anime platform. Filler guides, Indian dub tracking, AI recommendations, manga reader, cosplay gallery, and anime community for Indian anime fans.",
                 foundingDate: "2025",
-                areaServed: {
-                  "@type": "Country",
-                  name: "India",
-                },
+                areaServed: [
+                  { "@type": "Country", name: "India" },
+                  { "@type": "Country", name: "United States" },
+                  { "@type": "Country", name: "Japan" },
+                ],
                 sameAs: [
                   "https://www.youtube.com/@Itz_parth_2007",
                   "https://www.facebook.com/profile.php?id=61584572784224",
@@ -162,7 +187,7 @@ export default function RootLayout({
                     name: "What is ZyniVerse?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "ZyniVerse is India's ultimate anime platform. It provides filler guides for 200+ anime, Indian dub tracking (Hindi, Tamil, Telugu), AI-powered anime recommendations, a manga reader, cosplay gallery, watch parties, and a community for Indian anime fans. The website is zyverse.in.",
+                      text: "ZyniVerse is India's #1 free anime platform. It provides filler guides for 200+ anime, Indian dub tracking (Hindi, Tamil, Telugu), AI-powered anime recommendations, a manga reader, cosplay gallery, watch parties, and a community for Indian anime fans. Visit zyverse.in to get started.",
                     },
                   },
                   {
@@ -170,7 +195,7 @@ export default function RootLayout({
                     name: "Is ZyniVerse free to use?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "Yes, ZyniVerse is free to use. Users can track their anime watchlist, access filler guides, join the community, and use most features without paying. Premium features may be available for advanced tools.",
+                      text: "Yes, ZyniVerse is completely free to use. Users can track their anime watchlist, access filler guides, join the community, and use all features without paying. No premium subscription required.",
                     },
                   },
                   {
@@ -178,7 +203,7 @@ export default function RootLayout({
                     name: "Does ZyniVerse have Hindi dubbed anime?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "Yes, ZyniVerse tracks Hindi, Tamil, and Telugu dubbed anime. Users can see which anime are available in Indian languages and get alerts when new dubbed episodes air on Indian TV channels.",
+                      text: "Yes, ZyniVerse tracks Hindi, Tamil, and Telugu dubbed anime. You can see which anime are available in Indian languages, get alerts when new dubbed episodes air, and check the complete dubbed anime schedule. We track 25+ Hindi dubbed anime, 15+ Tamil dubs, and 10+ Telugu dubs.",
                     },
                   },
                   {
@@ -186,7 +211,23 @@ export default function RootLayout({
                     name: "What anime filler guides does ZyniVerse offer?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "ZyniVerse provides filler guides for over 200 anime including Naruto, One Piece, Bleach, Dragon Ball Z, Fairy Tail, and more. Each guide tells you exactly which episodes are filler and which are canon, so you can skip the boring parts.",
+                      text: "ZyniVerse provides detailed filler guides for over 200 anime including Naruto, One Piece, Bleach, Dragon Ball Z, Fairy Tail, Boruto, My Hero Academia, and more. Each guide tells you exactly which episodes are filler, mixed, or canon, so you can skip the filler and enjoy the main story.",
+                    },
+                  },
+                  {
+                    "@type": "Question",
+                    name: "How to skip filler in Naruto?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "ZyniVerse's Naruto filler list shows all 220 filler episodes out of 720 total episodes. You can watch episodes 1-101 (canon), skip to 107-135 (mixed), then resume at 136-220 (filler). Visit zyverse.in/filler for the complete episode-by-episode guide.",
+                    },
+                  },
+                  {
+                    "@type": "Question",
+                    name: "Best anime to watch in 2026?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "Top anime of 2026 include Solo Leveling Season 2, Demon Slayer Infinity Castle, Jujutsu Kaisen, Attack on Titan Final Season, One Piece, and My Hero Academia. ZyniVerse provides AI recommendations tailored to your taste — visit zyverse.in/search to discover new anime.",
                     },
                   },
                 ],
@@ -227,6 +268,7 @@ export default function RootLayout({
             <SplashScreen />
           </Providers>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );

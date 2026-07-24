@@ -7,7 +7,7 @@ type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const c = getConventionById(id);
+  const c = await getConventionById(id);
   if (!c) return { title: "Convention Not Found" };
   return {
     title: `${c.name} — Anime Conventions | ZyniVerse`,
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ConventionDetailPage({ params }: Props) {
   const { id } = await params;
-  const c = getConventionById(id);
+  const c = await getConventionById(id);
   if (!c) notFound();
 
   const start = new Date(c.startDate);
@@ -45,10 +45,6 @@ export default async function ConventionDetailPage({ params }: Props) {
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
         Back to Conventions
       </Link>
-
-      <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-2.5 text-xs text-amber-300">
-        <span><strong>Community-sourced.</strong> Details are illustrative — verify with the official event website before attending.</span>
-      </div>
 
       <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)]/50 backdrop-blur-sm p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
@@ -93,7 +89,7 @@ export default async function ConventionDetailPage({ params }: Props) {
               Official Website
             </a>
             {c.estimatedAttendance && (
-              <DetailRow label="Expected Attendance" value={`${c.estimatedAttendance.toLocaleString("en-IN")}+`} />
+              <DetailRow label="Expected Attendance" value={`${c.estimatedAttendance.toLocaleString("en-IN")}`} />
             )}
           </div>
         </div>
@@ -111,15 +107,14 @@ export default async function ConventionDetailPage({ params }: Props) {
           </div>
         )}
 
-        {c.guests && c.guests.length > 0 && (
+        {c.organizers.length > 0 && (
           <div>
-            <h3 className="font-display font-bold text-sm mb-3">Guests</h3>
+            <h3 className="font-display font-bold text-sm mb-3">Organizers</h3>
             <div className="space-y-2">
-              {c.guests.map((g, i) => (
+              {c.organizers.map((org, i) => (
                 <div key={i} className="flex items-center gap-2 text-sm">
                   <span className="h-2 w-2 rounded-full bg-[var(--color-magenta)]" />
-                  <span className="font-medium">{g.name}</span>
-                  <span className="text-[var(--color-mute)]">— {g.role}</span>
+                  <span className="font-medium">{org}</span>
                 </div>
               ))}
             </div>

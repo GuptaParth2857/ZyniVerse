@@ -616,7 +616,7 @@ body {
 .neon-premium-overlay {
   position: absolute;
   inset: 1.5px;
-  background: rgba(10, 10, 15, 0.7);
+  background: rgba(10, 10, 15, 0.45);
 }
 .neon-premium-content {
   position: relative;
@@ -624,6 +624,96 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* ─────────── Neon RGB Input ─────────── */
+.neon-input {
+  position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+.neon-input::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, #00ffe0, #ff00e6, #7000ff, #00ffe0);
+  animation: spin 4s linear infinite;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+.neon-input::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: calc(inherit - 1px);
+  background: var(--color-void);
+}
+.neon-input:focus-within::before {
+  opacity: 0.8;
+}
+.neon-input > input,
+.neon-input > select {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text);
+}
+.neon-input > input::placeholder {
+  color: color-mix(in srgb, var(--color-mute) 40%, transparent);
+}
+
+/* ─────────── Neon Poster Card ─────────── */
+.neon-poster {
+  position: relative;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.neon-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10, 10, 15, 0.95) 0%, rgba(10, 10, 15, 0.4) 40%, transparent 100%);
+  pointer-events: none;
+}
+
+/* ─────────── Toon Cards — Border Glow ─────────── */
+
+.toon-card {
+  position: relative;
+  border-radius: 1rem;
+  background: var(--color-panel);
+  padding: 1px;
+  overflow: hidden;
+}
+
+.toon-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0);
+  animation: spin 6s linear infinite;
+  opacity: 0.25;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.toon-card:hover::before {
+  opacity: 0.8;
+}
+
+.toon-card::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: var(--color-panel);
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* ─────────── Upgraded Glassmorphism Utilities ─────────── */
@@ -1233,4 +1323,78 @@ img[src=""] { display: none; }
   .leaderboard-podium-card {
     animation: none !important;
   }
+}
+
+/* ─────────── Cookie Consent — Neon RGB Border ─────────── */
+
+.cookie-banner {
+  position: relative;
+}
+
+.cookie-rgb-border {
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    var(--color-cyan),
+    var(--color-magenta),
+    #7000ff,
+    var(--color-cyan),
+    var(--color-magenta),
+    #7000ff,
+    var(--color-cyan)
+  );
+  animation: rotateCookieBorder 4s linear infinite;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.cookie-banner:hover .cookie-rgb-border {
+  opacity: 1;
+}
+
+@keyframes rotateCookieBorder {
+  to {
+    --border-angle: 360deg;
+  }
+}
+
+/* Fallback animation for browsers without @property */
+@supports not (animation: rotateCookieBorder 1s) {
+  .cookie-rgb-border {
+    background: linear-gradient(
+      60deg,
+      var(--color-cyan),
+      var(--color-magenta),
+      #7000ff,
+      var(--color-cyan),
+      var(--color-magenta)
+    );
+    background-size: 300% 300%;
+    animation: rgbShift 3s ease infinite;
+  }
+}
+
+.cookie-icon-ring {
+  background: linear-gradient(135deg, rgba(41, 242, 224, 0.15), rgba(255, 45, 120, 0.15));
+  border: 1px solid rgba(41, 242, 224, 0.2);
+}
+
+.cookie-btn-accept {
+  background: linear-gradient(135deg, var(--color-cyan), var(--color-magenta));
+  box-shadow:
+    0 0 15px rgba(41, 242, 224, 0.2),
+    0 0 30px rgba(255, 45, 120, 0.1);
+}
+
+.cookie-btn-accept:hover {
+  box-shadow:
+    0 0 20px rgba(41, 242, 224, 0.3),
+    0 0 40px rgba(255, 45, 120, 0.2);
+}
+
+.cookie-btn-secondary {
+  backdrop-filter: blur(4px);
+}
+
+.cookie-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.03);
 }

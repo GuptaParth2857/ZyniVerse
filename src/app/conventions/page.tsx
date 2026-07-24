@@ -33,31 +33,42 @@ export const metadata: Metadata = {
 
 export default function ConventionsPage() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-      <div className="mb-8">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">
-          {/* Events */}
-        </p>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">Anime Conventions in India</h1>
-        <p className="mt-2 text-sm text-[var(--color-mute)] max-w-2xl">
-          Find anime conventions, comic cons, and otaku events near you. Upcoming events, ticket info, and community meetups across India.
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-2.5 text-xs text-amber-300">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-          <span><strong>Community-sourced data.</strong> No public API exists for Indian convention data. Dates/venues are illustrative — verify with official event websites.</span>
+    <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
+      <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
+        backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
+        backgroundSize: "24px 24px",
+      }} />
+      <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.6)" }} />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6">
+        <div className="text-center mb-12">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#00ffe0]">
+            Events
+          </p>
+          <h1 className="font-display text-4xl font-bold sm:text-5xl mt-2 bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
+            Anime Conventions in India
+          </h1>
+          <p className="mt-3 text-sm max-w-2xl mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Find anime conventions, comic cons, and otaku events near you. Upcoming events, ticket info, and community meetups across India.
+          </p>
         </div>
-      </div>
 
-      <div className="mb-10">
-        <ConventionCalendar />
-      </div>
+        <div className="mb-16">
+          <ConventionCalendar />
+        </div>
 
-      <hr className="border-[var(--color-line)] my-10" />
+        <div className="border-t border-[rgba(0,255,224,0.06)] pt-10">
+          <div className="text-center mb-8">
+            <h2 className="font-display text-2xl font-bold text-white">Conventions by Location</h2>
+            <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Browse conventions grouped by state and city</p>
+          </div>
+          <ConventionMap />
+        </div>
 
-      <div>
-        <h2 className="font-display text-2xl font-bold mb-2">Conventions by Location</h2>
-        <p className="text-sm text-[var(--color-mute)] mb-6">Browse conventions grouped by state and city</p>
-        <ConventionMap />
+        <p className="mt-10 text-center font-mono text-[9px] tracking-[0.3em]" style={{ color: "rgba(255,255,255,0.06)" }}>
+          ZYNIVERSE • v2.4.1 • ENCRYPTED
+        </p>
       </div>
     </div>
   );
