@@ -3,23 +3,25 @@ import type { Metadata } from "next";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "Search Anime & Manga — Browse by Genre, Season, Rating | ZyniVerse",
+  title: "Search 10,000+ Anime & Manga — Find Your Next Show Free",
   description:
-    "Search thousands of anime and manga titles. Filter by genre, season, year, format, status, and more. Find your next favorite show from 10,000+ titles.",
+    "Search thousands of anime and manga. Filter by genre, season, year, format & score. Find your next favorite show from 10,000+ titles — completely free.",
   keywords: [
     "anime search", "search anime", "find anime", "anime database",
     "browse anime by genre", "anime by season", "manga search",
+    "best anime finder", "anime recommendation tool",
   ],
   openGraph: {
-    title: "Search Anime & Manga — ZyniVerse",
-    description: "Search and filter thousands of anime and manga titles by genre, season, and rating.",
+    title: "Search 10,000+ Anime & Manga — Find Your Next Show",
+    description: "Filter by genre, season, year, format & score. 10,000+ titles — completely free.",
     url: `${BASE_URL}/search`,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Search Anime & Manga — ZyniVerse",
-    description: "Search 10,000+ anime and manga titles with advanced filters.",
+    site: "@GuptaParth2857",
+    title: "Search 10,000+ Anime & Manga — Find Your Next Show",
+    description: "Filter by genre, season, year, format & score. 10,000+ titles — completely free.",
   },
   alternates: {
     canonical: `${BASE_URL}/search`,

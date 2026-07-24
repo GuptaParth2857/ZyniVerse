@@ -1627,3 +1627,78 @@ model ExternalAward {
   @@index([platform])
   @@index([type])
 }
+
+// ── Conventions / Events ──
+model Convention {
+  id                  String   @id @default(cuid())
+  name                String
+  shortName           String?
+  city                String
+  state               String
+  venue               String
+  startDate           DateTime
+  endDate             DateTime
+  website             String
+  ticketUrl           String?
+  image               String?
+  description         String
+  estimatedAttendance Int?
+  status              String   @default("upcoming") // upcoming | ongoing | past | cancelled
+  organizers          String[]
+  tags                String[]
+  isPublic            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([status])
+  @@index([city])
+  @@index([state])
+  @@index([startDate])
+  @@index([isPublic, startDate])
+}
+
+// ── Anime Events (curated global events) ──
+model AnimeEvent {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  shortName   String
+  type        String  // expo | convention | stream | festival | premiere
+  location    String
+  country     String
+  startDate   DateTime
+  endDate     DateTime
+  website     String
+  image       String?
+  description String
+  status      String  @default("upcoming") // upcoming | ongoing | past
+  attendance  Int?
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  announcements AnimeAnnouncement[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([type])
+  @@index([startDate])
+}
+
+model AnimeAnnouncement {
+  id          String  @id @default(cuid())
+  eventId     String
+  title       String
+  description String
+  category    String  // anime-reveal | season-announcement | movie-reveal | game-reveal | collab | trailer | key-visual | casting | merchandise | other
+  trailerUrl  String?
+  posterUrl   String?
+  sourceUrl   String?
+  animeId     Int?
+  createdAt   DateTime @default(now())
+
+  event AnimeEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([category])
+}

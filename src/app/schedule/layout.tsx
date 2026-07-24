@@ -1,10 +1,23 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Anime Airing Schedule — Weekly Release Calendar | ZyniVerse",
+  title: "Anime Airing Schedule — What's On This Week (India)",
   description:
-    "Complete weekly anime airing schedule. See when your favorite shows air, upcoming episodes, and countdown timers. Stay up to date with every new release.",
-  openGraph: { title: "Anime Airing Schedule — ZyniVerse", description: "Weekly anime airing schedule with episode countdowns." },
+    "See exactly when your favorite anime air this week. Episode schedules, countdown timers & Indian TV dub times. Never miss a new episode.",
+  keywords: ["anime schedule", "anime airing today", "anime release schedule", "what anime is airing", "indian anime tv schedule", "weekly anime calendar"],
+  openGraph: {
+    title: "Anime Airing Schedule — What's On This Week",
+    description: "Episode schedules, countdown timers & Indian TV dub times. Never miss a new episode.",
+    url: "https://zyverse.in/schedule",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@GuptaParth2857",
+    title: "Anime Airing Schedule — What's On This Week",
+    description: "Episode schedules, countdown timers & Indian TV dub times.",
+  },
+  alternates: { canonical: "https://zyverse.in/schedule" },
   robots: { index: true, follow: true },
 };
 

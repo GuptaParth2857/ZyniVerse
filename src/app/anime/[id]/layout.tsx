@@ -16,14 +16,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? anime.description.replace(/<[^>]*>/g, "").slice(0, 200)
       : `Discover ${title} — anime details, characters, episodes, filler guide, and more on ZyniVerse.`;
 
+    const genres = anime.genres?.slice(0, 5).join(", ") || "";
+    const fillerNote = "Skip filler episodes with our detailed guide.";
+
     return {
-      title: `${title} — Anime Details, Characters & Filler Guide | ZyniVerse`,
-      description: desc,
+      title: `${title} — ${anime.episodes || "?"} Episodes, ${genres} | Free Filler Guide`,
+      description: `${desc} ${fillerNote} Watch order, characters, reviews & where to watch on ZyniVerse.`,
+      keywords: [
+        title, `${title} filler list`, `${title} watch order`,
+        `${title} episodes`, `${title} characters`, `${title} review`,
+        "anime details", "anime filler guide", "anime watch order",
+        ...(anime.genres || []).slice(0, 5),
+      ],
       openGraph: {
         title: `${title} — Anime Details | ZyniVerse`,
         description: desc,
         url: `${BASE_URL}/anime/${id}`,
-        images: anime.coverImage?.extraLarge ? [{ url: anime.coverImage.extraLarge }] : [],
+        images: anime.coverImage?.extraLarge ? [{ url: anime.coverImage.extraLarge, alt: title }] : [],
       },
       twitter: {
         card: "summary_large_image",
@@ -64,6 +73,7 @@ export default async function AnimeLayout({ children, params }: { children: Reac
     numberOfEpisodes: anime.episodes || undefined,
     numberOfSeasons: anime.season ? 1 : undefined,
     genre: anime.genres || undefined,
+    inLanguage: ["ja"],
     aggregateRating: anime.averageScore ? {
       "@type": "AggregateRating",
       ratingValue: (anime.averageScore / 10).toFixed(1),
@@ -75,7 +85,15 @@ export default async function AnimeLayout({ children, params }: { children: Reac
       "@type": "Organization",
       name: anime.studios.nodes[0].name,
     } : undefined,
-    sameAs: anime.idMal ? `https://myanimelist.net/anime/${anime.idMal}` : undefined,
+    sameAs: [
+      anime.idMal ? `https://myanimelist.net/anime/${anime.idMal}` : null,
+      anime.idMal ? `https://anilist.co/anime/${anime.id}` : null,
+    ].filter(Boolean),
+    review: {
+      "@type": "Review",
+      reviewBody: desc || `Watch ${title} on ZyniVerse — filler guide, episodes, characters & more.`,
+      author: { "@type": "Organization", name: "ZyniVerse" },
+    },
   } : null;
 
   return (

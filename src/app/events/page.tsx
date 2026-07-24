@@ -21,13 +21,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AnimeEventsPage() {
-  const events = getAnimeEvents();
-  const types = getEventTypes();
-  const countries = getCountries();
-  const meta = getAnimeEventsMeta();
-  const announcements = getAllAnnouncements();
-  const upcoming = getUpcomingEvents();
+export default async function AnimeEventsPage() {
+  const events = await getAnimeEvents();
+  const types = await getEventTypes();
+  const countries = await getCountries();
+  const meta = await getAnimeEventsMeta();
+  const announcements = await getAllAnnouncements();
+  const upcoming = await getUpcomingEvents();
 
   const totalAnnouncements = announcements.length;
   const totalCountries = countries.length;
@@ -85,51 +85,72 @@ export default function AnimeEventsPage() {
         </div>
 
         {/* Featured Upcoming Event */}
-        {upcoming.length > 0 && (
-          <section className="mb-12">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-2 h-2 rounded-full bg-green-400" />
-              <h2 className="font-display text-lg font-bold">Next Up</h2>
-            </div>
-            <a href={`/events/${upcoming[0].slug}`}>
-              <div className="group relative rounded-2xl border border-[var(--color-line)] bg-gradient-to-br from-[var(--color-panel)]/80 to-[var(--color-void)]/50 backdrop-blur-sm p-6 sm:p-8 transition-all hover:border-[var(--color-cyan)]/40 hover:shadow-xl hover:shadow-[var(--color-cyan)]/5">
-                <div className="flex flex-col sm:flex-row items-start gap-6">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-3">
-                      <span className="text-xl">🎯</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border text-green-400 border-green-500/40 bg-green-500/10 uppercase">Upcoming</span>
-                      <span className="text-[10px] font-mono text-[var(--color-mute)]/60">
-                        {new Date(upcoming[0].startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })} — {new Date(upcoming[0].endDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </span>
-                    </div>
-                    <h3 className="font-display text-2xl sm:text-3xl font-black group-hover:text-[var(--color-cyan)] transition-colors mb-2">
-                      {upcoming[0].name}
-                    </h3>
-                    <p className="text-sm text-[var(--color-mute)] mb-3">{upcoming[0].location}</p>
-                    <p className="text-sm text-[var(--color-mute)]/80 line-clamp-2 max-w-2xl">
-                      {upcoming[0].description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {upcoming[0].tags.slice(0, 4).map((t) => (
-                        <span key={t} className="text-[9px] text-[var(--color-mute)]/50 bg-[var(--color-void)]/50 px-2 py-0.5 rounded-full border border-[var(--color-line)]/40">{t}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="shrink-0 flex flex-col items-end gap-3">
-                    {upcoming[0].announcements.length > 0 && (
-                      <span className="text-sm font-bold text-[var(--color-magenta)] bg-[var(--color-magenta)]/10 px-3 py-1.5 rounded-full border border-[var(--color-magenta)]/30">
-                        {upcoming[0].announcements.length} announcement{upcoming[0].announcements.length > 1 ? "s" : ""}
-                      </span>
+        {upcoming.length > 0 && (() => {
+          const nextEvent = upcoming[0];
+          const eventPoster = nextEvent.announcements.find((a) => a.posterUrl)?.posterUrl || nextEvent.image;
+          return (
+            <section className="mb-12">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="w-2 h-2 rounded-full bg-green-400" />
+                <h2 className="font-display text-lg font-bold">Next Up</h2>
+              </div>
+              <a href={`/events/${nextEvent.slug}`}>
+                <div className="neon-premium rounded-[22px] group overflow-hidden">
+                  <div className="neon-premium-track" />
+                  <div className="neon-premium-overlay" />
+                  <div className="neon-premium-content rounded-[22px] overflow-hidden">
+                    {/* Poster */}
+                    {eventPoster && (
+                      <div className="relative h-52 sm:h-64 w-full overflow-hidden">
+                        <img
+                          src={eventPoster}
+                          alt={nextEvent.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,1)] via-[rgba(10,10,15,0.5)] to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10" />
+                      </div>
                     )}
-                    <span className="text-xs text-[var(--color-cyan)] font-semibold group-hover:underline">
-                      View Details →
-                    </span>
+                    <div className={`flex flex-col sm:flex-row items-start gap-6 ${eventPoster ? "p-6 sm:p-8 -mt-16 relative z-10" : "p-6 sm:p-8"}`}>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-3">
+                          <span className="text-xl">🎯</span>
+                          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full border text-green-400 border-green-500/40 bg-green-500/10 uppercase backdrop-blur-sm">Upcoming</span>
+                          <span className="text-[10px] font-mono text-[var(--color-mute)]/60">
+                            {new Date(nextEvent.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })} — {new Date(nextEvent.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </span>
+                        </div>
+                        <h3 className="font-display text-2xl sm:text-3xl font-black group-hover:text-[var(--color-cyan)] transition-colors mb-2">
+                          {nextEvent.name}
+                        </h3>
+                        <p className="text-sm text-[var(--color-mute)] mb-3">{nextEvent.location}</p>
+                        <p className="text-sm text-[var(--color-mute)]/80 line-clamp-2 max-w-2xl">
+                          {nextEvent.description}
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-4">
+                          {nextEvent.tags.slice(0, 4).map((t) => (
+                            <span key={t} className="text-[9px] text-white/40 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="shrink-0 flex flex-col items-end gap-3">
+                        {nextEvent.announcements.length > 0 && (
+                          <span className="text-sm font-bold text-[var(--color-magenta)] bg-[var(--color-magenta)]/10 px-3 py-1.5 rounded-full border border-[var(--color-magenta)]/30">
+                            {nextEvent.announcements.length} announcement{nextEvent.announcements.length > 1 ? "s" : ""}
+                          </span>
+                        )}
+                        <span className="text-xs text-[var(--color-cyan)] font-semibold group-hover:underline">
+                          View Details →
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </a>
-          </section>
-        )}
+              </a>
+            </section>
+          );
+        })()}
 
         {/* Announcements Section */}
         {announcements.length > 0 && (

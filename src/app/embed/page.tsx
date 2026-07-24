@@ -3,9 +3,24 @@ import { getAllWidgets } from "@/lib/widget-registry";
 import WidgetGenerator from "@/components/WidgetGenerator";
 
 export const metadata: Metadata = {
-  title: "Embeddable Widgets — Add ZyniVerse to Your Site | ZyniVerse",
+  title: "Free Anime Embed Widgets — Add Filler Guides & Badges to Your Site",
   description:
-    "Add ZyniVerse filler guides, dub status badges, and anime widgets to your website or blog.",
+    "Add ZyniVerse filler guides, dub status badges & anime widgets to your website for free. iframe & script embeds. Works with WordPress, Blogger, Ghost & more.",
+  keywords: ["anime widget", "embed anime badge", "filler guide widget", "hindi dub badge", "anime embed code", "free anime widget"],
+  openGraph: {
+    title: "Free Anime Embed Widgets — Filler Guides & Badges",
+    description: "Add ZyniVerse filler guides, dub status badges & anime widgets to your website for free.",
+    url: "https://zyverse.in/embed",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@GuptaParth2857",
+    title: "Free Anime Embed Widgets — Filler Guides & Badges",
+    description: "Add ZyniVerse filler guides, dub status badges & anime widgets to your website for free.",
+  },
+  alternates: { canonical: "https://zyverse.in/embed" },
+  robots: { index: true, follow: true },
 };
 
 export default function EmbedPage() {

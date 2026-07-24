@@ -12,7 +12,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const event = getAnimeEventBySlug(slug);
+  const event = await getAnimeEventBySlug(slug);
   if (!event) return { title: "Event Not Found" };
   return {
     title: `${event.name} — Anime Events | ZyniVerse`,
@@ -26,10 +26,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AnimeEventDetailPage({ params }: Props) {
   const { slug } = await params;
-  const event = getAnimeEventBySlug(slug);
+  const event = await getAnimeEventBySlug(slug);
   if (!event) notFound();
 
-  const upcoming = getUpcomingEvents().filter((e) => e.id !== event.id).slice(0, 4);
+  const allUpcoming = await getUpcomingEvents();
+  const upcoming = allUpcoming.filter((e) => e.id !== event.id).slice(0, 4);
 
   const start = new Date(event.startDate);
   const end = new Date(event.endDate);
@@ -62,16 +63,31 @@ export default async function AnimeEventDetailPage({ params }: Props) {
   };
 
   const config = TYPE_CONFIG[event.type] || TYPE_CONFIG.convention;
+  const heroImage = event.announcements.find((a) => a.posterUrl)?.posterUrl || event.image;
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className={`relative overflow-hidden border-b border-[var(--color-line)]`}>
-        <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} via-transparent to-transparent`} />
+      <section className="relative overflow-hidden border-b border-[var(--color-line)]">
+        {/* Background image or gradient */}
+        {heroImage ? (
+          <div className="absolute inset-0">
+            <img
+              src={heroImage}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-[rgba(10,10,15,0.85)] to-[rgba(10,10,15,0.6)]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-cyan)]/10 via-transparent to-[var(--color-magenta)]/10" />
+          </div>
+        ) : (
+          <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} via-transparent to-transparent`} />
+        )}
+
         <div className="relative mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
           <Link
             href="/events"
-            className="inline-flex items-center gap-1 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors mb-6"
+            className="inline-flex items-center gap-1 text-xs text-white/60 hover:text-[var(--color-cyan)] transition-colors mb-6 backdrop-blur-sm bg-black/20 px-3 py-1.5 rounded-full"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -93,17 +109,17 @@ export default async function AnimeEventDetailPage({ params }: Props) {
               <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tight leading-tight mb-2">
                 {event.name}
               </h1>
-              <p className="text-sm text-[var(--color-mute)]/80">{event.location}</p>
-              <p className="text-xs font-mono text-[var(--color-cyan)]/70 mt-1">{dateStr}</p>
+              <p className="text-sm text-white/70">{event.location}</p>
+              <p className="text-xs font-mono text-[var(--color-cyan)]/80 mt-1">{dateStr}</p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
               {!isPast && (
-                <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${
+                <span className={`text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm ${
                   event.status === "ongoing"
-                    ? "text-blue-400 bg-blue-500/10"
+                    ? "text-blue-400 bg-blue-500/20 border border-blue-500/30"
                     : daysUntil <= 14
-                      ? "text-amber-400 bg-amber-500/10"
-                      : "text-green-400 bg-green-500/10"
+                      ? "text-amber-400 bg-amber-500/20 border border-amber-500/30"
+                      : "text-green-400 bg-green-500/20 border border-green-500/30"
                 }`}>
                   {countdownText}
                 </span>
@@ -124,27 +140,49 @@ export default async function AnimeEventDetailPage({ params }: Props) {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         {/* Info Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <InfoCard label="Dates" value={dateStr} />
-          <InfoCard label="Location" value={`${event.location}, ${event.country}`} />
-          <InfoCard
-            label="Expected Attendance"
-            value={event.attendance ? `${event.attendance.toLocaleString("en-US")}+` : "TBA"}
-          />
+          <div className="neon-premium rounded-2xl">
+            <div className="neon-premium-track" />
+            <div className="neon-premium-overlay" />
+            <div className="neon-premium-content rounded-2xl p-5">
+              <p className="text-[10px] font-mono text-[var(--color-mute)]/50 uppercase tracking-wider mb-1.5">Dates</p>
+              <p className="text-sm font-medium leading-snug">{dateStr}</p>
+            </div>
+          </div>
+          <div className="neon-premium rounded-2xl">
+            <div className="neon-premium-track" />
+            <div className="neon-premium-overlay" />
+            <div className="neon-premium-content rounded-2xl p-5">
+              <p className="text-[10px] font-mono text-[var(--color-mute)]/50 uppercase tracking-wider mb-1.5">Location</p>
+              <p className="text-sm font-medium leading-snug">{event.location}, {event.country}</p>
+            </div>
+          </div>
+          <div className="neon-premium rounded-2xl">
+            <div className="neon-premium-track" />
+            <div className="neon-premium-overlay" />
+            <div className="neon-premium-content rounded-2xl p-5">
+              <p className="text-[10px] font-mono text-[var(--color-mute)]/50 uppercase tracking-wider mb-1.5">Expected Attendance</p>
+              <p className="text-sm font-medium leading-snug">{event.attendance ? `${event.attendance.toLocaleString("en-US")}+` : "TBA"}</p>
+            </div>
+          </div>
         </div>
 
         {/* About */}
-        <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]/30 p-5 sm:p-6 mb-8">
-          <h3 className="font-display font-bold text-sm mb-3 text-[var(--color-mute)]">About This Event</h3>
-          <p className="text-sm text-[var(--color-mute)]/90 leading-relaxed">{event.description}</p>
-          {event.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {event.tags.map((t) => (
-                <span key={t} className="text-[10px] text-[var(--color-mute)]/50 bg-[var(--color-void)]/50 px-2.5 py-1 rounded-full border border-[var(--color-line)]/50">
-                  {t}
-                </span>
-              ))}
-            </div>
-          )}
+        <div className="neon-premium rounded-2xl mb-8">
+          <div className="neon-premium-track" />
+          <div className="neon-premium-overlay" />
+          <div className="neon-premium-content rounded-2xl p-6 sm:p-8">
+            <h3 className="font-display font-bold text-sm mb-4 text-white/90">About This Event</h3>
+            <p className="text-sm text-white/70 leading-relaxed">{event.description}</p>
+            {event.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-5">
+                {event.tags.map((t) => (
+                  <span key={t} className="text-[10px] text-white/50 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Announcements */}
@@ -160,7 +198,7 @@ export default async function AnimeEventDetailPage({ params }: Props) {
               {event.announcements.length} announcement{event.announcements.length > 1 ? "s" : ""} from{" "}
               {event.name}
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {event.announcements.map((ann) => (
                 <EventAnnouncementCard key={ann.id} announcement={ann} />
               ))}
@@ -179,15 +217,6 @@ export default async function AnimeEventDetailPage({ params }: Props) {
           </section>
         )}
       </div>
-    </div>
-  );
-}
-
-function InfoCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]/30 p-4">
-      <p className="text-[10px] font-mono text-[var(--color-mute)]/50 uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-sm font-medium leading-snug">{value}</p>
     </div>
   );
 }
