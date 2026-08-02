@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 
 interface UserItem {
   id: string;
@@ -115,7 +116,7 @@ export default function AdminUsersPage() {
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         {u.avatar ? (
-                          <img src={u.avatar} alt="" className="w-8 h-8 rounded-full object-cover" />
+                          <Image src={u.avatar} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-[var(--color-line)] flex items-center justify-center text-xs">
                             {u.username[0].toUpperCase()}
@@ -155,7 +156,7 @@ export default function AdminUsersPage() {
               <>
                 <div className="flex items-center gap-4 mb-6">
                   {selectedUser.avatar ? (
-                    <img src={selectedUser.avatar} alt="" className="w-14 h-14 rounded-full object-cover" />
+                    <Image src={selectedUser.avatar} alt="" width={56} height={56} className="w-14 h-14 rounded-full object-cover" />
                   ) : (
                     <div className="w-14 h-14 rounded-full bg-[var(--color-line)] flex items-center justify-center text-xl">
                       {selectedUser.username[0].toUpperCase()}

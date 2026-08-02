@@ -5,12 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { bestTitle } from "@/lib/anilist";
-import { useWatchlist } from "@/components/WatchlistProvider";
 import type { Media } from "@/lib/anilist";
 
 export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
   const [active, setActive] = useState(0);
-  const { toggle } = useWatchlist();
   const total = items.length;
 
   function goNext() { setActive((a) => (a + 1) % total); }

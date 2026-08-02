@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { searchMedia, bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
+import { logError } from "@/lib/logger";
 
 interface ListItem {
   id: string;
@@ -44,9 +45,9 @@ export default function UserListDetail({
   isLiked: boolean;
 }) {
   const router = useRouter();
-  const [list, setList] = useState(initialList);
+  const [list] = useState(initialList);
   const [items, setItems] = useState<ListItem[]>(initialItems);
-  const [isOwner, setIsOwner] = useState(initialOwner);
+  const [isOwner] = useState(initialOwner);
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [likes, setLikes] = useState(initialList.likes);
   const [editMode, setEditMode] = useState(false);
@@ -69,7 +70,7 @@ export default function UserListDetail({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditNote(notes);
     }
-  }, [editMode]);
+  }, [editMode, items]);
 
   function handleSearchChange(q: string) {
     setSearchQuery(q);
@@ -102,14 +103,14 @@ export default function UserListDetail({
       if (!res.ok) return;
       const data = await res.json();
       setItems((prev) => [...prev, data.item]);
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   async function removeItem(mediaId: number) {
     try {
       await fetch(`/api/lists/${list.id}/items?mediaId=${mediaId}`, { method: "DELETE" });
       setItems((prev) => prev.filter((i) => i.mediaId !== mediaId));
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   async function saveReorder(newItems: ListItem[]) {
@@ -134,7 +135,7 @@ export default function UserListDetail({
       setItems(newItems);
       setEditMode(false);
       router.refresh();
-    } catch {}
+    } catch (e) { logError(e); }
     setSaving(false);
   }
 
@@ -157,7 +158,7 @@ export default function UserListDetail({
       const data = await res.json();
       setIsLiked(data.liked);
       setLikes(data.likes);
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   async function togglePublic() {
@@ -168,7 +169,7 @@ export default function UserListDetail({
         body: JSON.stringify({ isPublic: !editPublic }),
       });
       if (res.ok) setEditPublic(!editPublic);
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   async function deleteList() {
@@ -176,7 +177,7 @@ export default function UserListDetail({
     try {
       await fetch(`/api/lists/${list.id}`, { method: "DELETE" });
       router.push("/lists");
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   function shareUrl() {
@@ -216,7 +217,9 @@ export default function UserListDetail({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-3xl font-bold">{list.title}</h1>
+                  <div className="neon-rgb-border rounded-xl px-4 py-2">
+                    <h1 className="text-3xl font-bold">{list.title}</h1>
+                  </div>
                   {list.isFeatured && (
                     <span className="rounded-full bg-yellow-500/20 px-2.5 py-0.5 text-xs font-semibold text-yellow-400">
                       Featured
@@ -259,16 +262,16 @@ export default function UserListDetail({
                 {isOwner && (
                   <button
                     onClick={() => setEditMode(true)}
-className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
+className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
                     >
                       Edit
                   </button>
                 )}
                 <div className="relative group">
-                  <button className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors">
+                  <button className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors">
                     Share ▾
                   </button>
-                  <div className="absolute right-0 top-full mt-1 w-40 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all overflow-hidden z-10">
+                  <div className="absolute right-0 top-full mt-1 w-40 rounded-xl neon-rgb-border bg-[var(--color-panel)] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all overflow-hidden z-10">
                     <button onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareUrl().text)}&url=${encodeURIComponent(shareUrl().url)}`)} className="block w-full px-4 py-2 text-left text-sm hover:bg-white/5">Share on Twitter</button>
                     <button onClick={() => window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(shareUrl().text)}&url=${encodeURIComponent(shareUrl().url)}`)} className="block w-full px-4 py-2 text-left text-sm hover:bg-white/5">Share on Reddit</button>
                     <button onClick={copyLink} className="block w-full px-4 py-2 text-left text-sm hover:bg-white/5">Copy Link</button>
@@ -291,7 +294,7 @@ className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text
           </button>
           <button
             onClick={togglePublic}
-            className="rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm text-[var(--color-mute)]"
+            className="rounded-lg neon-rgb-border px-3 py-2 text-sm text-[var(--color-mute)]"
           >
             {editPublic ? "Set Private" : "Set Public"}
           </button>
@@ -310,7 +313,7 @@ className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text
           </button>
           <button
             onClick={() => { setEditMode(false); setEditTitle(list.title); setEditDescription(list.description || ""); setEditPublic(list.isPublic); }}
-            className="rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm text-[var(--color-mute)]"
+            className="rounded-lg neon-rgb-border px-3 py-2 text-sm text-[var(--color-mute)]"
           >
             Cancel
           </button>
@@ -336,7 +339,7 @@ className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text
               onDragStart={() => editMode && handleDragStart(idx)}
               onDragOver={(e) => { if (editMode) e.preventDefault(); }}
               onDrop={() => editMode && handleDrop(idx)}
-              className={`relative rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden ${
+              className={`relative rounded-xl neon-rgb-border bg-[var(--color-panel)] overflow-hidden ${
                 editMode ? "cursor-grab active:cursor-grabbing hover:border-[var(--color-cyan)]" : ""
               } transition-colors`}
             >
@@ -374,7 +377,7 @@ className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text
                     value={editNote[item.id] || ""}
                     onChange={(e) => setEditNote((prev) => ({ ...prev, [item.id]: e.target.value }))}
                     placeholder="Add a note..."
-                    className="mt-1 w-full rounded border border-[var(--color-line)] bg-[var(--color-void)] px-1.5 py-0.5 text-[10px] outline-none"
+                    className="mt-1 w-full rounded neon-rgb-border bg-[var(--color-void)] px-1.5 py-0.5 text-[10px] outline-none"
                   />
                 )}
               </div>
@@ -386,7 +389,7 @@ className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text
       {/* Search Modal */}
       {showSearch && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-lg rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 max-h-[80vh] flex flex-col">
+          <div className="mx-4 w-full max-w-lg rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold">Add Items</h3>
               <button onClick={() => { setShowSearch(false); setSearchQuery(""); setSearchResults([]); }} className="text-[var(--color-mute)] hover:text-[var(--color-ink)]">
@@ -400,7 +403,7 @@ className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm text
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Search for anime or manga..."
               autoFocus
-              className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] mb-3"
+              className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] mb-3"
             />
             <div className="flex-1 overflow-y-auto space-y-1">
               {searching && <p className="text-sm text-[var(--color-mute)] text-center py-4">Searching...</p>}

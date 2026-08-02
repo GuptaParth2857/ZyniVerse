@@ -19,7 +19,7 @@ interface WikiPageData {
   editor: { id: string; username: string; avatar?: string | null };
 }
 
-export default function WikiEditPageClient({ params }: { params: Promise<{ slug: string }> }) {
+export default function WikiEditPageClient({ params: _params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = useParams();
   const slug = resolvedParams?.slug as string;
   const router = useRouter();
@@ -73,17 +73,19 @@ export default function WikiEditPageClient({ params }: { params: Promise<{ slug:
 
   return (
     <div>
-      <WikiEditor
-        initialData={{
-          title: page.title,
-          content: page.content,
-          summary: page.summary,
-          category: page.category,
-          tags: page.tags,
-        }}
-        onSave={handleSave}
-        isEditing
-      />
+      <div className="neon-rgb-border rounded-xl mx-auto max-w-4xl px-4 py-6">
+        <WikiEditor
+          initialData={{
+            title: page.title,
+            content: page.content,
+            summary: page.summary,
+            category: page.category,
+            tags: page.tags,
+          }}
+          onSave={handleSave}
+          isEditing
+        />
+      </div>
       {saving && (
         <div className="fixed bottom-8 right-8 rounded-xl bg-[var(--color-magenta)] px-4 py-2 text-sm font-bold text-black shadow-lg">
           Saving...

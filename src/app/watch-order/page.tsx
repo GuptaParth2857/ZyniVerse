@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { searchMedia, bestTitle, type Media } from "@/lib/anilist";
 
@@ -120,9 +121,11 @@ export default function WatchOrderPage() {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">
           {/* watch orders */}
         </p>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">
-          Anime Watch Order Guides
-        </h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">
+            Anime Watch Order Guides
+          </h1>
+        </div>
         <p className="mt-2 text-[var(--color-mute)] max-w-2xl">
           Search any anime — find watch order guides or explore the full catalog. Hundreds of anime at your fingertips.
         </p>
@@ -209,10 +212,12 @@ export default function WatchOrderPage() {
                   onMouseLeave={() => setHoveredId(null)}
                 >
                   <div className="relative h-40 sm:h-44 overflow-hidden">
-                    <img
+                    <Image
                       src={`https://img.anili.st/media/${order.anilistId}`}
                       alt={order.title}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-[var(--color-panel)]/30 to-transparent" />
@@ -285,10 +290,12 @@ export default function WatchOrderPage() {
                 style={{ animationDelay: `${idx * 30}ms` }}
               >
                 <div className="relative h-40 sm:h-44 overflow-hidden">
-                  <img
+                  <Image
                     src={media.coverImage?.large || media.coverImage?.medium || ""}
                     alt={bestTitle(media.title)}
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-[var(--color-panel)]/30 to-transparent" />
@@ -342,7 +349,7 @@ export default function WatchOrderPage() {
       {/* Empty State */}
       {query.trim() && !loading && allResults.guides.length === 0 && allResults.anilist.length === 0 && (
         <div className="col-span-full flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 h-16 w-16 rounded-full bg-[var(--color-panel)] border border-[var(--color-line)] flex items-center justify-center">
+          <div className="mb-4 h-16 w-16 rounded-full bg-[var(--color-panel)] neon-rgb-border flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--color-mute)]">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
@@ -355,7 +362,7 @@ export default function WatchOrderPage() {
           </p>
           <button
             onClick={() => setQuery("")}
-            className="mt-4 rounded-full border border-[var(--color-line)] px-4 py-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)]/40 transition-all"
+            className="mt-4 rounded-full neon-rgb-border px-4 py-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)]/40 transition-all"
           >
             Clear search
           </button>

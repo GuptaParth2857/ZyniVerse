@@ -4,12 +4,29 @@ import { useEffect, useState } from "react";
 import BlogPostDetail from "@/components/BlogPostDetail";
 import Loader from "@/components/Loader";
 
+interface BlogPostData {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  excerpt?: string | null;
+  coverImage?: string | null;
+  tags: string;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  isDraft: boolean;
+  publishedAt?: string | null;
+  createdAt: string;
+  user: { id: string; username: string; avatar?: string | null };
+}
+
 interface Props {
   slug: string;
 }
 
 export default function BlogPostDetailView({ slug }: Props) {
-  const [data, setData] = useState<{ post: any; author: any; isLiked: boolean } | null>(null);
+  const [data, setData] = useState<{ post: BlogPostData; author: BlogPostData["user"]; isLiked: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

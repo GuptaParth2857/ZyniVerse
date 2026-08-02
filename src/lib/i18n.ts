@@ -2,6 +2,7 @@ import en from "@/locales/en.json";
 import hi from "@/locales/hi.json";
 import ta from "@/locales/ta.json";
 import te from "@/locales/te.json";
+import { logError } from "@/lib/logger";
 
 export type Language = "en" | "hi" | "ta" | "te";
 
@@ -61,7 +62,7 @@ export function setLocale(locale: Language): void {
   setCookie(COOKIE_KEY, locale);
   try {
     localStorage.setItem(COOKIE_KEY, locale);
-  } catch {}
+  } catch (e) { logError(e); }
   window.location.reload();
 }
 

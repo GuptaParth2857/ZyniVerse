@@ -8,7 +8,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  const { id } = await params;
+  const { id: _id } = await params;
   const sp = await searchParams;
   const title = sp.title || "Manga";
   return {

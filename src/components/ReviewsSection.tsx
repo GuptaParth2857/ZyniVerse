@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { logError } from "@/lib/logger";
 
 interface Review {
   id: string;
@@ -45,7 +46,7 @@ export default function ReviewsSection({ mediaId }: { mediaId: number }) {
         const updated = await fetch(`/api/reviews?mediaId=${mediaId}`).then((r) => r.json());
         setReviews(updated.reviews || []);
       }
-    } catch {}
+    } catch (e) { logError(e); }
     setSubmitting(false);
   }
 

@@ -33,5 +33,25 @@ export async function POST(req: NextRequest) {
   }
 
   const message = await sendMessage(conversationId, session.user.id, content.trim());
+
+  const participants = await prisma.conversationParticipant.findMany({
+    where: { conversationId, userId: { not: session.user.id } },
+    select: { userId: true },
+  });
+
+  const wsBase = process.env.NEXT_PUBLIC_WS_URL;
+  if (wsBase && participants.length > 0) {
+    const token = process.env.DM_BROADCAST_TOKEN;
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers["x-dm-token"] = token;
+    for (const p of participants) {
+      fetch(`${wsBase.replace(/\/$/, "")}/internal/dm-broadcast`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ recipientId: p.userId, message }),
+      }).catch(() => {});
+    }
+  }
+
   return NextResponse.json({ message });
 }

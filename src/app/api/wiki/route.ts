@@ -25,10 +25,20 @@ function buildWikiUrl(q: string, limit: number): string {
   return `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrlimit=${limit}&exlimit=max&prop=pageimages|extracts&exintro&explaintext&pithumbsize=400&format=json&origin=*`;
 }
 
-function parseWikiPages(pagesObj: any, category: string): WikiEntry[] {
+interface WikiApiPage {
+  pageid: number;
+  title: string;
+  index?: number;
+  extract?: string;
+  thumbnail?: { source?: string };
+}
+
+type WikiPagesMap = Record<string, WikiApiPage>;
+
+function parseWikiPages(pagesObj: WikiPagesMap, category: string): WikiEntry[] {
   return Object.values(pagesObj)
-    .sort((a: any, b: any) => (a.index || 0) - (b.index || 0))
-    .map((item: any) => ({
+    .sort((a, b) => (a.index || 0) - (b.index || 0))
+    .map((item) => ({
       id: `wiki-${item.pageid}`,
       title: item.title,
       slug: item.title.replace(/ /g, "_"),
@@ -88,7 +98,12 @@ export async function GET(req: NextRequest) {
   let dbPages: WikiEntry[] = [];
   let total = 0;
 
-  const where: any = { isPublished: true, lastEditorId: { not: "system-bot" } };
+  const where: {
+    isPublished: boolean;
+    lastEditorId: { not: string };
+    category?: string;
+    title?: { contains: string };
+  } = { isPublished: true, lastEditorId: { not: "system-bot" } };
   if (category) where.category = category;
   if (search) where.title = { contains: search };
 
@@ -108,7 +123,7 @@ export async function GET(req: NextRequest) {
     prisma.wikiPage.count({ where }),
   ]);
 
-  dbPages = dbResults.map((p: any) => ({ ...p, updatedAt: p.updatedAt.toISOString() }));
+  dbPages = dbResults.map((p) => ({ ...p, updatedAt: p.updatedAt.toISOString() }));
   total = dbTotal;
 
   let wikiPages: WikiEntry[] = [];

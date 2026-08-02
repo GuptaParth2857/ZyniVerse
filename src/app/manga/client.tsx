@@ -73,7 +73,9 @@ export default function MangaBrowseClient() {
   return (
     <PageTransition><div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-violet)]">{/* Manga */}</p>
-      <h1 className="font-display text-3xl font-bold sm:text-4xl">Manga Tracker</h1>
+      <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+        <h1 className="font-display text-3xl font-bold sm:text-4xl">Manga Tracker</h1>
+      </div>
 
       {/* Search */}
       <div className="mt-6">
@@ -128,7 +130,7 @@ export default function MangaBrowseClient() {
         <div className="mt-4 flex flex-wrap gap-1.5">
           {genres.slice(0, 15).map((g) => (
             <Link key={g} href={`/search?genre=${g}&type=MANGA`}
-              className="rounded-full border border-[var(--color-line)] px-2.5 py-0.5 text-[10px] text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-colors"
+              className="rounded-full px-2.5 py-0.5 text-[10px] text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-colors"
             >{g}</Link>
           ))}
         </div>
@@ -139,8 +141,8 @@ export default function MangaBrowseClient() {
         <AffiliateLink partner="bookwalker" path="https://global.bookwalker.jp"
           className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--color-violet)] to-[var(--color-magenta)] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity"
         >📖 Buy Manga on BookWalker</AffiliateLink>
-        <AffiliateLink partner="amazon" path="https://www.amazon.com/s?k=manga&tag=zyniverse-21"
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+        <AffiliateLink partner="amazon" path="https://www.amazon.in/s?k=manga"
+          className="inline-flex items-center gap-2 rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
         >📦 Buy Manga on Amazon</AffiliateLink>
       </div>
 
@@ -155,14 +157,14 @@ export default function MangaBrowseClient() {
           <p className="text-sm text-[var(--color-magenta)]">{error}</p>
         ) : showMyList ? (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {myEntries.map((entry) => (
-              <MangaCard key={entry.id} manga={entry} entry={entry} showProgress />
+            {myEntries.map((entry, i) => (
+              <MangaCard key={entry.id} manga={entry} entry={entry} showProgress index={i} />
             ))}
             {loading && Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={`s${i}`} />)}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {list.map((m) => <MangaCard key={m.id} manga={m} />)}
+            {list.map((m, i) => <MangaCard key={m.id} manga={m} index={i} />)}
             {loading && Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={`s${i}`} />)}
           </div>
         )}

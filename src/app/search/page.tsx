@@ -10,11 +10,13 @@ import AdBanner from "@/components/AdBanner";
 import NativeBannerAd from "@/components/NativeBannerAd";
 import ExpandingFlexCard from "@/components/ExpandingFlexCard";
 import { CardSkeleton, ErrorState } from "@/components/Loader";
+import { amazonSearchUrl } from "@/lib/affiliate-config";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
 
 import type { Media, Tag, Suggestion } from "@/lib/anilist";
+import { logError } from "@/lib/logger";
 
 const SORT_OPTIONS = [
   { value: "POPULARITY_DESC", label: "Most Popular" },
@@ -163,7 +165,6 @@ function SearchInner() {
 
       const multiGenre = [genre, genre2].filter(Boolean);
       const genreFilter = multiGenre.length > 0 ? multiGenre[0] : (genre || null);
-      const genre2Filter = multiGenre.length > 1 ? multiGenre[1] : null;
 
       try {
         if (type === "ALL") {
@@ -187,13 +188,13 @@ function SearchInner() {
           else { setMangaResults(data.media); setAnimeResults([]); }
           setPageInfo(data.pageInfo);
         }
-      } catch (e: any) {
-        setError(e.message || "Search failed");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Search failed");
       } finally {
         setLoading(false);
       }
     },
-    [query, type, genre, genre2, genreOp, searchOpts, studioName]
+    [query, type, genre, genre2, searchOpts, studioName]
   );
 
   useEffect(() => {
@@ -217,7 +218,7 @@ function SearchInner() {
     router.push(`${pathname}?${next.toString()}`);
   }
 
-  async function loadMore() {
+  const loadMore = useCallback(async () => {
     const next = page + 1;
     setPage(next);
     try {
@@ -234,8 +235,8 @@ function SearchInner() {
         else setMangaResults((prev) => [...prev, ...data.media]);
         setPageInfo(data.pageInfo);
       }
-    } catch {}
-  }
+    } catch (e) { logError(e); }
+  }, [page, type, query, studioName, searchOpts]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -248,7 +249,7 @@ function SearchInner() {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [pageInfo?.hasNextPage, loading, page]);
+  }, [pageInfo?.hasNextPage, loading, page, loadMore]);
 
   const displayAnime = type === "MANGA" ? [] : animeResults;
   const displayManga = type === "ANIME" ? [] : mangaResults;
@@ -262,39 +263,15 @@ function SearchInner() {
           {/* Neon Search Bar */}
           <div className="mb-10 max-w-2xl mx-auto text-center relative" ref={suggestRef}>
             <p className="font-mono text-xs uppercase tracking-[0.25em] text-[var(--color-magenta)] mb-3">{/* Discover Anime */}</p>
-            <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight mb-6">
-              Search Anime
-            </h1>
-            <style>{`
-              @keyframes rgbShift {
-                0% { background-position: 0% 50%; }
-                50% { background-position: 100% 50%; }
-                100% { background-position: 0% 50%; }
-              }
-              .rgb-border {
-                position: relative;
-                border-radius: 0.75rem;
-              }
-              .rgb-border::before {
-                content: "";
-                position: absolute;
-                inset: -2px;
-                border-radius: 0.85rem;
-                background: linear-gradient(60deg, #ff00ff, #00ffff, #ff00ff, #00ffff, #ff00ff);
-                background-size: 300% 300%;
-                animation: rgbShift 3s ease infinite;
-                z-index: -1;
-                transition: opacity 0.4s;
-              }
-              .rgb-border:focus-within::before {
-                opacity: 1;
-                filter: blur(4px);
-              }
-            `}</style>
-            <div className="rgb-border">
-              <div className="flex items-center rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/90 backdrop-blur-sm overflow-hidden transition-all duration-300">
+            <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+              <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight mb-6">
+                Search Anime
+              </h1>
+            </div>
+            <div className="mt-2">
+              <div className="neon-rgb-border rounded-xl flex items-center overflow-hidden transition-all duration-300">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-mute)] shrink-0"
+                  className="ml-4 text-[var(--color-mute)] shrink-0"
                 >
                   <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
                 </svg>
@@ -304,7 +281,7 @@ function SearchInner() {
                   onKeyDown={(e) => { if (e.key === "Enter") { setShowSuggestions(false); updateParam("q", inputVal); } }}
                   onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                   placeholder="Search thousands of anime..."
-                  className="w-full bg-transparent py-4 pl-12 pr-4 text-base text-white placeholder-[var(--color-mute)]/50 outline-none"
+                  className="w-full bg-transparent py-4 px-4 text-base text-white placeholder-[var(--color-mute)]/50 outline-none"
                 />
               </div>
             </div>
@@ -357,13 +334,15 @@ function SearchInner() {
           <div className="flex items-end justify-between gap-2 flex-wrap">
             <div className="min-w-0">
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">{/* Search */}</p>
-              <h1 className="font-display text-3xl font-bold sm:text-4xl truncate">
-                {query ? `"${query}"` : "Browse All"}
-              </h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                <h1 className="font-display text-3xl font-bold sm:text-4xl truncate">
+                  {query ? `"${query}"` : "Browse All"}
+                </h1>
+              </div>
             </div>
             <button
               onClick={() => setShowFilters((o) => !o)}
-              className="flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+              className="flex items-center gap-1.5 rounded-full px-4 py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
@@ -375,7 +354,7 @@ function SearchInner() {
 
           {/* Expanded Filters */}
           {showFilters && (
-            <div className="mt-4 rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 space-y-4">
+            <div className="mt-4 rounded-2xl bg-[var(--color-panel)] p-5 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-[10px] font-mono uppercase tracking-wider text-[var(--color-mute)] mb-1.5">Genre</label>
@@ -494,7 +473,7 @@ function SearchInner() {
                 onKeyDown={(e) => { if (e.key === "Enter") { setShowSuggestions(false); updateParam("q", inputVal); } }}
                 onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                 placeholder="Search by name..."
-                className="w-full rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] py-2 pl-9 pr-4 text-sm outline-none focus:border-[var(--color-cyan)]"
+                className="w-full rounded-full neon-rgb-border bg-[var(--color-panel)] py-2 pl-9 pr-4 text-sm outline-none"
               />
               {showSuggestions && (
                 <div className="absolute top-full left-0 mt-1 w-72 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl overflow-hidden z-50">
@@ -562,7 +541,7 @@ function SearchInner() {
                       <div>
                         {displayAll && <h3 className="font-display text-lg font-bold mb-3">Anime</h3>}
                         <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                          {displayAnime.map((a) => <AnimeCard key={a.id} anime={a} />)}
+                          {displayAnime.map((a) => <AnimeCard key={`anime-${a.id}`} anime={a} />)}
                         </div>
                       </div>
                     )}
@@ -570,7 +549,7 @@ function SearchInner() {
                       <div className={displayAll ? "mt-8" : ""}>
                         {displayAll && <h3 className="font-display text-lg font-bold mb-3">Manga</h3>}
                         <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                          {displayManga.map((m) => <AnimeCard key={m.id} anime={m} />)}
+                          {displayManga.map((m) => <AnimeCard key={`manga-${m.id}`} anime={m} />)}
                         </div>
                       </div>
                     )}
@@ -598,7 +577,7 @@ function SearchInner() {
                 )}
                 {/* Affiliate CTA */}
                 {!loading && (displayAnime.length > 0 || displayManga.length > 0) && (
-                  <div className="mt-8 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+                  <div className="mt-8 flex flex-wrap items-center justify-center gap-3 rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4">
                     <span className="text-xs text-[var(--color-mute)]">Watch legally on:</span>
                     <a href="https://www.crunchyroll.com/search?ref=zyniverse" target="_blank" rel="noopener noreferrer sponsored"
                       className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F47521] to-[#f59e0b] px-5 py-2.5 text-xs font-bold text-black hover:opacity-90 transition-opacity"
@@ -606,8 +585,8 @@ function SearchInner() {
                     <a href="https://www.netflix.com/in/browse/genus/7424?ref=zyniverse" target="_blank" rel="noopener noreferrer sponsored"
                       className="inline-flex items-center gap-1.5 rounded-full bg-[#E50914] px-5 py-2.5 text-xs font-bold text-white hover:opacity-90 transition-opacity"
                     >▶ Netflix</a>
-                    <a href="https://www.amazon.com/s?k=anime&tag=zyniverse-21" target="_blank" rel="noopener noreferrer sponsored"
-                      className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+                    <a href={amazonSearchUrl("anime")} target="_blank" rel="noopener noreferrer sponsored"
+                      className="inline-flex items-center gap-1.5 rounded-full neon-rgb-border px-5 py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
                     >📦 Amazon</a>
                   </div>
                 )}

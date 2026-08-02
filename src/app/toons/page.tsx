@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { TOONS_DATABASE, TOON_STATS } from "@/lib/toons-data";
@@ -40,9 +41,11 @@ export default function ToonsPage() {
         {/* Header */}
         <div className="mb-8">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Cartoons & Toons</p>
-          <h1 className="font-display text-3xl font-black sm:text-4xl md:text-5xl tracking-tight mt-1">
-            Indian & International Toons
-          </h1>
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+            <h1 className="font-display text-3xl font-black sm:text-4xl md:text-5xl tracking-tight mt-1">
+              Indian & International Toons
+            </h1>
+          </div>
           <p className="mt-2 text-sm text-[var(--color-mute)] max-w-2xl">
             From Chhota Bheem to Doraemon — every cartoon popular in India with Hindi dub info, episode counts & where to watch.
           </p>
@@ -56,7 +59,7 @@ export default function ToonsPage() {
             { label: "International", value: TOON_STATS.internationalPopular, color: "#3b82f6" },
             { label: "Currently Airing", value: TOON_STATS.airingShows, color: "#22c55e" },
           ].map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-center">
+            <div key={stat.label} className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 text-center">
               <p className="font-display text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
               <p className="text-[10px] text-[var(--color-mute)] uppercase tracking-wider">{stat.label}</p>
             </div>
@@ -75,7 +78,7 @@ export default function ToonsPage() {
               placeholder="Search toons..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] py-3 pl-11 pr-4 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-mute)] outline-none focus:border-[var(--color-cyan)] transition-colors"
+              className="w-full rounded-xl neon-rgb-border bg-[var(--color-panel)] py-3 pl-11 pr-4 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-mute)] outline-none focus:border-[var(--color-cyan)] transition-colors"
             />
           </div>
         </div>
@@ -92,7 +95,7 @@ export default function ToonsPage() {
                 className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
                   networkFilter === f
                     ? "bg-[var(--color-magenta)] text-black"
-                    : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"
+                    : "neon-rgb-border text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"
                 }`}
               >
                 {f}
@@ -110,7 +113,7 @@ export default function ToonsPage() {
                 className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
                   genreFilter === f
                     ? "bg-[var(--color-cyan)] text-black"
-                    : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"
+                    : "neon-rgb-border text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"
                 }`}
               >
                 {f}
@@ -128,7 +131,7 @@ export default function ToonsPage() {
                 className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
                   statusFilter === f
                     ? "bg-[var(--color-amber)] text-black"
-                    : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"
+                    : "neon-rgb-border text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"
                 }`}
               >
                 {f}
@@ -160,7 +163,7 @@ export default function ToonsPage() {
             <p className="mt-1 text-sm text-[var(--color-mute)] opacity-60">Try adjusting your filters or search terms.</p>
             <button
               onClick={() => { setNetworkFilter("All"); setGenreFilter("All"); setStatusFilter("All"); setSearch(""); }}
-              className="mt-4 rounded-full border border-[var(--color-line)] px-4 py-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)]/40 transition-all"
+              className="mt-4 rounded-full neon-rgb-border px-4 py-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)]/40 transition-all"
             >
               Clear all filters
             </button>
@@ -184,19 +187,37 @@ function ToonCard({ toon, index }: { toon: CartoonEntry; index: number }) {
       <div className="relative z-10 rounded-[10.5px] overflow-hidden bg-[var(--color-panel)]">
         {/* Image */}
         <div className="relative aspect-[16/9] overflow-hidden">
-          <img
-            src={toon.image}
-            alt={toon.displayTitle}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-              const fb = `https://placewaifu.com/image/640/360?text=${encodeURIComponent(toon.displayTitle)}`;
-              if (e.currentTarget.src !== fb) {
-                e.currentTarget.src = fb;
-              }
+          {toon.image ? (
+            <Image
+              src={toon.image}
+              alt={toon.displayTitle}
+              fill
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, 33vw"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                const parent = e.currentTarget.parentElement;
+                if (parent) {
+                  const fallback = parent.querySelector(".toon-fallback");
+                  if (fallback) (fallback as HTMLElement).style.display = "flex";
+                }
+              }}
+            />
+          ) : null}
+          <div className={`toon-fallback ${toon.image ? "hidden" : "flex"} absolute inset-0 items-center justify-center`}
+            style={{
+              background: `linear-gradient(135deg, ${toon.country === "India" ? "#ff6b35, #1a1a2e" : toon.country === "Japan" ? "#e50914, #1a1a2e" : "#00b4d8, #1a1a2e"})`,
             }}
-          />
+          >
+            <div className="text-center">
+              <span className="text-3xl font-black text-white/90 drop-shadow-lg">
+                {toon.displayTitle.split(" ").map((w) => w[0]).join("").slice(0, 3).toUpperCase()}
+              </span>
+              <p className="mt-1 text-[10px] font-semibold text-white/60">{toon.network}</p>
+            </div>
+          </div>
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-transparent to-transparent" />
 
           {/* Badges */}

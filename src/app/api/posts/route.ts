@@ -31,14 +31,15 @@ export async function GET(req: NextRequest) {
     prisma.post.count({ where }),
   ]);
 
-  const items = posts.map((p) => ({
-    ...p,
-    commentCount: p._count.comments,
-    saveCount: p._count.savedBy,
-    isSaved: userId ? (p as any).savedBy?.length > 0 : false,
-    _count: undefined,
-    savedBy: undefined,
-  }));
+  const items = posts.map((p) => {
+    const { savedBy, _count, ...rest } = p as typeof p & { savedBy?: { id: string }[] };
+    return {
+      ...rest,
+      commentCount: _count.comments,
+      saveCount: _count.savedBy,
+      isSaved: (savedBy?.length ?? 0) > 0,
+    };
+  });
 
   return NextResponse.json({ posts: items, total, hasMore: page * limit < total });
 }
@@ -50,8 +51,12 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { title, content, type, mediaId, rating } = await req.json();
+  const { title, content, type, mediaId, rating, image } = await req.json();
   if (!title?.trim() || !content?.trim()) return NextResponse.json({ error: "Missing title or content" }, { status: 400 });
+
+  const imageUrl = typeof image === "string" && image.trim()
+    ? (image.startsWith("/uploads/") || /^https?:\/\//i.test(image) ? image.trim() : null)
+    : null;
 
   const post = await prisma.post.create({
     data: {
@@ -61,6 +66,7 @@ export async function POST(req: NextRequest) {
       type: type || "POST",
       mediaId: mediaId || null,
       rating: rating || null,
+      image: imageUrl,
     },
     include: { author: { select: { id: true, username: true } } },
   });

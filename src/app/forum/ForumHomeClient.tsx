@@ -7,8 +7,23 @@ import ForumSidebar from "@/components/ForumSidebar";
 import AdBanner from "@/components/AdBanner";
 import NativeBannerAd from "@/components/NativeBannerAd";
 
+interface ForumThread {
+  id: string;
+  title: string;
+  slug: string;
+  isPinned: boolean;
+  isLocked: boolean;
+  viewCount: number;
+  postCount: number;
+  createdAt: string;
+  user: { id: string; username: string; avatar: string | null; level?: number };
+  category?: { id: string; name: string; slug: string } | null;
+  _count?: { posts: number };
+  lastActivity?: string;
+}
+
 export default function ForumHomeClient() {
-  const [threads, setThreads] = useState<any[]>([]);
+  const [threads, setThreads] = useState<ForumThread[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("recent");
@@ -38,10 +53,8 @@ export default function ForumHomeClient() {
       <div>
         {/* Sort Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <div className="neon-premium rounded-xl p-0.5">
-            <div className="neon-premium-track rounded-xl" />
-            <div className="neon-premium-overlay rounded-[10.5px]" />
-            <div className="neon-premium-content relative flex items-center gap-0.5 sm:gap-1 p-0.5 sm:p-1">
+          <div className="neon-rgb-border rounded-xl p-0.5 bg-[var(--color-panel)]/60 backdrop-blur-sm">
+            <div className="relative flex items-center gap-0.5 sm:gap-1 p-0.5 sm:p-1">
               {sortOptions.map((s) => (
                 <button 
                   key={s.id} 
@@ -82,10 +95,8 @@ export default function ForumHomeClient() {
             <p className="text-sm text-gray-500">Loading discussions...</p>
           </div>
         ) : threads.length === 0 ? (
-          <div className="neon-premium rounded-xl text-center">
-            <div className="neon-premium-track rounded-xl" />
-            <div className="neon-premium-overlay rounded-[10.5px]" />
-            <div className="neon-premium-content py-20 px-6 relative">
+          <div className="neon-rgb-border rounded-xl text-center bg-[var(--color-panel)]/60 backdrop-blur-sm">
+            <div className="py-20 px-6 relative">
               <div className="h-16 w-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff00ff" strokeWidth="2">
                   <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
@@ -93,10 +104,8 @@ export default function ForumHomeClient() {
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">No discussions yet</h3>
               <p className="text-sm text-gray-500 mb-4">Be the first to start a conversation!</p>
-              <Link href="/forum/create" className="neon-premium rounded-xl inline-flex">
-                <div className="neon-premium-track rounded-xl" />
-                <div className="neon-premium-overlay rounded-[10.5px]" />
-                <span className="neon-premium-content flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#ff00ff] hover:text-white transition-colors rounded-xl">
+              <Link href="/forum/create" className="neon-rgb-border rounded-xl inline-flex bg-[var(--color-panel)]/60 backdrop-blur-sm">
+                <span className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#ff00ff] hover:text-white transition-colors rounded-xl">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 5v14M5 12h14" />
                   </svg>
@@ -122,7 +131,7 @@ export default function ForumHomeClient() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-8">
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
             <button 
               onClick={() => setPage((p) => Math.max(1, p - 1))} 
               disabled={page === 1}

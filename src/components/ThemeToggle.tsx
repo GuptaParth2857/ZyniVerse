@@ -23,7 +23,7 @@ export default function ThemeToggle() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] text-sm hover:border-[var(--color-cyan)] transition-colors"
+        className="flex h-8 w-8 items-center justify-center rounded-lg neon-rgb-border bg-[var(--color-panel)] text-sm transition-colors"
         aria-label="Switch theme"
       >
         {current?.icon || "🌙"}
@@ -35,7 +35,7 @@ export default function ThemeToggle() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-36 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl overflow-hidden z-50"
+            className="absolute right-0 top-full mt-2 w-36 rounded-xl neon-rgb-border bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl overflow-hidden z-50"
           >
             {THEMES.map((t) => (
               <button

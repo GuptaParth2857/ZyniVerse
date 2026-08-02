@@ -136,10 +136,7 @@ export default function CosplayDetailPage({ id, initialData }: { id: string; ini
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="neon-premium rounded-xl overflow-hidden">
-            <div className="neon-premium-track rounded-xl" />
-            <div className="neon-premium-overlay rounded-[10.5px]" />
-            <div className="neon-premium-content">
+          <div className="neon-rgb-border rounded-xl overflow-hidden bg-[var(--color-panel)]/60 backdrop-blur-sm">
               <div className="relative overflow-hidden">
                 <Image
                   src={cosplay.imageUrl}
@@ -152,14 +149,13 @@ export default function CosplayDetailPage({ id, initialData }: { id: string; ini
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 md:opacity-100" />
               </div>
-            </div>
           </div>
 
           {/* Mobile: action buttons below image */}
           <div className="flex flex-wrap items-center gap-3 mt-4 md:hidden">
             <button
               onClick={handleLike}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold border transition-all duration-300 ${
+              className={`neon-rgb-border flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold border transition-all duration-300 ${
                 liked
                   ? "bg-red-500/20 border-red-500/30 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.2)]"
                   : "bg-[var(--color-panel)] border-[var(--color-line)] text-[var(--color-mute)] hover:text-red-400 hover:border-red-500/30"
@@ -208,7 +204,9 @@ export default function CosplayDetailPage({ id, initialData }: { id: string; ini
         >
           {/* Title & User */}
           <div>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold gradient-text">{cosplay.title}</h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+              <h1 className="font-display text-3xl sm:text-4xl font-bold gradient-text">{cosplay.title}</h1>
+            </div>
             <div className="mt-3 flex items-center gap-3">
               <Link href={`/profile?id=${cosplay.user.id}`} className="flex items-center gap-2.5 group">
                 <div className="relative h-9 w-9 overflow-hidden rounded-full bg-[var(--color-void)] ring-2 ring-[var(--color-line)] group-hover:ring-[var(--color-cyan)]/50 transition-all">
@@ -229,7 +227,7 @@ export default function CosplayDetailPage({ id, initialData }: { id: string; ini
           </div>
 
           {/* Character & Anime */}
-          <div className="glass-panel p-4 space-y-3">
+          <div className="glass-panel neon-rgb-border p-4 space-y-3">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-magenta)]/15 text-[var(--color-magenta)]">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -265,7 +263,7 @@ export default function CosplayDetailPage({ id, initialData }: { id: string; ini
 
           {/* Description */}
           {cosplay.description && (
-            <div className="glass-panel p-4">
+            <div className="glass-panel neon-rgb-border p-4">
               <p className="text-[10px] uppercase tracking-wider text-[var(--color-mute)] font-medium mb-2">About</p>
               <p className="text-sm text-[var(--color-mute)] leading-relaxed whitespace-pre-line">{cosplay.description}</p>
             </div>
@@ -273,7 +271,7 @@ export default function CosplayDetailPage({ id, initialData }: { id: string; ini
 
           {/* Tags */}
           {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="neon-rgb-border rounded-xl flex flex-wrap gap-2 p-2">
               {tags.map((tag) => (
                 <span key={tag} className="glass-tag">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-50">
@@ -290,7 +288,7 @@ export default function CosplayDetailPage({ id, initialData }: { id: string; ini
           <div className="hidden md:flex flex-wrap items-center gap-3">
             <button
               onClick={handleLike}
-              className={`btn-magnetic flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold border transition-all duration-300 ${
+              className={`btn-magnetic neon-rgb-border flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold border transition-all duration-300 ${
                 liked
                   ? "bg-red-500/20 border-red-500/30 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
                   : "bg-[var(--color-panel)] border-[var(--color-line)] text-[var(--color-mute)] hover:text-red-400 hover:border-red-500/30 hover:shadow-[0_0_20px_rgba(239,68,68,0.1)]"

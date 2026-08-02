@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BlogPostDetailView from "./client";
+import { logError } from "@/lib/logger";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -12,12 +13,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const res = await fetch(`${BASE_URL}/api/blog/${slug}`, { cache: "no-store" });
 
-    if (!res.ok) return { title: "Blog Post | ZyniVerse" };
+    if (!res.ok) return { title: "Blog Post | ZyniVerse", description: "Read the latest anime blog posts on ZyniVerse — news, reviews, recommendations, and guides for Indian anime fans.", robots: { index: true, follow: true } };
 
     const data = await res.json();
     const post = data.post;
 
-    if (!post || !post.title) return { title: "Blog Post | ZyniVerse" };
+    if (!post || !post.title) return { title: "Blog Post | ZyniVerse", description: "Read the latest anime blog posts on ZyniVerse — news, reviews, recommendations, and guides for Indian anime fans.", robots: { index: true, follow: true } };
 
     return {
       title: `${post.title} | ZyniVerse Blog`,
@@ -34,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch {
-    return { title: "Blog Post | ZyniVerse" };
+    return { title: "Blog Post | ZyniVerse", description: "Read the latest anime blog posts on ZyniVerse — news, reviews, recommendations, and guides for Indian anime fans.", robots: { index: true, follow: true } };
   }
 }
 
@@ -48,7 +49,7 @@ export default async function BlogPostPage({ params }: Props) {
       const data = await res.json();
       post = data.post;
     }
-  } catch {}
+  } catch (e) { logError(e); }
 
   const jsonLd = post?.title
     ? {

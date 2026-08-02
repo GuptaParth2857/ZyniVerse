@@ -1,3 +1,5 @@
+import { logError } from "@/lib/logger";
+
 const ANILIST_SEARCH = "https://graphql.anilist.co";
 
 const SEARCH_QUERY = `
@@ -50,7 +52,13 @@ const SKIP_PATTERNS = [
 
 const imageCache = new Map<string, string | null>();
 const CACHE_TTL = 24 * 60 * 60 * 1000;
+const FAILURE_TTL = 2 * 60 * 1000;
 const cacheTimestamps = new Map<string, number>();
+
+function cacheSet(cacheKey: string, value: string | null, ttl: number) {
+  imageCache.set(cacheKey, value);
+  cacheTimestamps.set(cacheKey, Date.now() + ttl);
+}
 
 function extractAnimeTitle(raw: string): string | null {
   if (SKIP_PATTERNS.some((p) => p.test(raw))) return null;
@@ -105,7 +113,7 @@ export async function resolveImage(title: string, malId?: number, anilistId?: nu
   const cacheKey = `${title}_${malId || ""}_${anilistId || ""}`;
 
   const cachedAt = cacheTimestamps.get(cacheKey);
-  if (cachedAt && Date.now() - cachedAt < CACHE_TTL) {
+  if (cachedAt && Date.now() < cachedAt) {
     return imageCache.get(cacheKey) || null;
   }
 
@@ -120,20 +128,22 @@ export async function resolveImage(title: string, malId?: number, anilistId?: nu
         }),
         signal: AbortSignal.timeout(5000),
       });
-      const data = await res.json();
-      const img = data?.data?.Media?.coverImage?.large;
-      if (img) {
-        imageCache.set(cacheKey, img);
-        cacheTimestamps.set(cacheKey, Date.now());
-        return img;
+      if (res.ok) {
+        const data = await res.json();
+        const img = data?.data?.Media?.coverImage?.large;
+        if (img) {
+          cacheSet(cacheKey, img, CACHE_TTL);
+          return img;
+        }
       }
-    } catch {}
+    } catch (e) {
+      logError(e);
+    }
   }
 
   const searchTerm = extractAnimeTitle(title);
   if (!searchTerm) {
-    imageCache.set(cacheKey, null);
-    cacheTimestamps.set(cacheKey, Date.now());
+    cacheSet(cacheKey, null, CACHE_TTL);
     return null;
   }
 
@@ -144,14 +154,16 @@ export async function resolveImage(title: string, malId?: number, anilistId?: nu
       body: JSON.stringify({ query: SEARCH_QUERY, variables: { search: searchTerm } }),
       signal: AbortSignal.timeout(5000),
     });
+    if (!res.ok) {
+      cacheSet(cacheKey, null, FAILURE_TTL);
+      return null;
+    }
     const data = await res.json();
     const img = data?.data?.Media?.coverImage?.large || null;
-    imageCache.set(cacheKey, img);
-    cacheTimestamps.set(cacheKey, Date.now());
+    cacheSet(cacheKey, img, CACHE_TTL);
     return img;
   } catch {
-    imageCache.set(cacheKey, null);
-    cacheTimestamps.set(cacheKey, Date.now());
+    cacheSet(cacheKey, null, FAILURE_TTL);
     return null;
   }
 }

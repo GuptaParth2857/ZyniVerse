@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAdsForLocation, type AdPlacement } from "@/lib/ads";
+import type { AdPlacement } from "@/lib/ads";
+import { logError } from "@/lib/logger";
 
 const PLACEMENT_TYPES: AdPlacement["type"][] = ["native", "banner", "sidebar", "in-content", "footer"];
 const NETWORKS: AdPlacement["network"][] = ["adsterra", "direct"];
@@ -39,7 +40,7 @@ export default function AdManager() {
       try {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setPlacements(JSON.parse(stored));
-      } catch {}
+      } catch (e) { logError(e); }
     }
   }, []);
 

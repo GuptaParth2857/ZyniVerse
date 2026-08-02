@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import WatchOrderDetail from "./WatchOrderDetail";
@@ -12,7 +13,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const order = WATCH_ORDERS_DATA[id as keyof typeof WATCH_ORDERS_DATA];
-  if (!order) return { title: "Watch Order — ZyniVerse" };
+  if (!order) return { title: "Watch Order — ZyniVerse", description: "Find the correct watch order for popular anime series including Naruto, One Piece, Attack on Titan, Demon Slayer, and more. Watch in the right order with ZyniVerse.", robots: { index: true, follow: true } };
 
   const slugToAnimeName: Record<string, string> = {
     rezero: "Re:Zero", sao: "Sword Art Online", fate: "Fate",
@@ -106,10 +107,12 @@ export default async function WatchOrderDetailPage({ params }: Props) {
       {/* Hero Banner */}
       <div className="relative rounded-2xl overflow-hidden border border-[var(--glass-border)] mb-8">
         <div className="absolute inset-0">
-          <img
+          <Image
             src={`https://img.anili.st/media/${order.anilistId}`}
             alt={order.title}
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-[var(--color-panel)]/70 to-[var(--color-panel)]/30" />
         </div>
@@ -120,9 +123,11 @@ export default async function WatchOrderDetailPage({ params }: Props) {
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">
                 {/* watch order guide */}
               </p>
-              <h1 className="font-display text-2xl sm:text-3xl font-bold mt-1 text-[var(--color-ink)]">
-                {order.title}
-              </h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                <h1 className="font-display text-2xl sm:text-3xl font-bold text-[var(--color-ink)]">
+                  {order.title}
+                </h1>
+              </div>
               <p className="mt-2 text-sm text-[var(--color-mute)] max-w-xl leading-relaxed">
                 {order.description}
               </p>

@@ -8,6 +8,8 @@ interface RecItem {
   mediaId: number;
   count: number;
   avgScore: number;
+  title?: string;
+  coverImage?: string;
 }
 
 interface Props {
@@ -36,9 +38,15 @@ export default function UsersAlsoLiked({ mediaId }: Props) {
           <Link key={r.mediaId} href={`/anime/${r.mediaId}`}
             className="flex items-center gap-3 rounded-lg border border-[var(--color-line)] bg-black/20 p-2.5 hover:border-[var(--color-cyan)]/40 transition-all group"
           >
-            <span className="text-[10px] font-mono text-[var(--color-mute)] w-4 shrink-0">#{r.mediaId}</span>
+            {r.coverImage ? (
+              <div className="h-10 w-7 rounded overflow-hidden border border-[var(--color-line)] shrink-0 bg-[var(--color-panel)]">
+                <Image src={r.coverImage} alt="" width={28} height={40} className="h-full w-full object-cover" />
+              </div>
+            ) : (
+              <span className="text-[10px] font-mono text-[var(--color-cyan)] w-4 shrink-0">#{r.mediaId}</span>
+            )}
             <div className="min-w-0 flex-1">
-              <p className="text-xs truncate group-hover:text-[var(--color-cyan)] transition-colors">Anime #{r.mediaId}</p>
+              <p className="text-xs truncate group-hover:text-[var(--color-cyan)] transition-colors">{r.title || `Anime #${r.mediaId}`}</p>
               <p className="text-[9px] text-[var(--color-mute)]">{r.count} users · Avg {(r.avgScore / 10).toFixed(1)}</p>
             </div>
             <span className="text-[10px] font-mono text-[var(--color-cyan)]">{r.count > 99 ? "99+" : r.count}</span>

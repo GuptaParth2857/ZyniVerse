@@ -5,12 +5,23 @@ import Link from "next/link";
 import Image from "next/image";
 import Loader from "@/components/Loader";
 
+interface BlogPostSummary {
+  id: string;
+  slug: string;
+  title: string;
+  coverImage?: string | null;
+  excerpt?: string | null;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+}
+
 interface Props {
   userId: string;
 }
 
 export default function UserBlogClient({ userId }: Props) {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<BlogPostSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,7 +42,7 @@ export default function UserBlogClient({ userId }: Props) {
         <p className="py-10 text-center text-sm text-[var(--color-mute)]">No posts found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {posts.map((post: any) => (
+          {posts.map((post) => (
             <Link
               key={post.id}
               href={`/blog/${post.slug}`}

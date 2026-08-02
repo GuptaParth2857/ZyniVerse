@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,6 +44,11 @@ function NeonOrbs() {
 }
 
 function Particles() {
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const [pts] = useState(() => {
     const colors = ["#00ffe0", "#ff00e6", "#7000ff"];
     const particles: { x: number; y: number; s: number; d: number; o: number; c: string; ty: number; delay: number }[] = [];
@@ -56,6 +61,9 @@ function Particles() {
     }
     return particles;
   });
+  if (!mounted) {
+    return <div className="absolute inset-0 overflow-hidden pointer-events-none" />;
+  }
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {pts.map((p, i) => (
@@ -371,7 +379,7 @@ export default function CosplayUpload({ initialData, onUpdate }: {
               transition={{ delay: 0.2 }}
             >
               <NeonBorder>
-                <form onSubmit={handleSubmit} className="rounded-[24px] p-8 space-y-5">
+                <form onSubmit={handleSubmit} className="neon-rgb-border rounded-[24px] p-8 space-y-5">
                   {/* Title */}
                   <div>
                     <label className="block font-mono text-[10px] uppercase tracking-[0.15em] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>Title *</label>
@@ -552,8 +560,9 @@ export default function CosplayUpload({ initialData, onUpdate }: {
                           ) : (
                             <div className="relative rounded-[16px] overflow-hidden" style={{ border: "1px solid rgba(0,255,224,0.15)" }}>
                               <div className="relative aspect-video max-h-56">
-                                <img src={form.imageUrl} alt="Preview"
-                                  className="w-full h-full object-contain" style={{ background: "rgba(0,0,0,0.4)" }}
+                                <Image src={form.imageUrl} alt="Preview"
+                                  fill sizes="640px"
+                                  className="object-contain" style={{ background: "rgba(0,0,0,0.4)" }}
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                               </div>
@@ -599,8 +608,9 @@ export default function CosplayUpload({ initialData, onUpdate }: {
                           {form.imageUrl && (
                             <div className="relative rounded-[16px] overflow-hidden" style={{ border: "1px solid rgba(0,255,224,0.1)" }}>
                               <div className="relative aspect-video max-h-48">
-                                <img src={form.imageUrl} alt="Preview"
-                                  className="w-full h-full object-contain" style={{ background: "rgba(0,0,0,0.4)" }}
+                                <Image src={form.imageUrl} alt="Preview"
+                                  fill sizes="640px"
+                                  className="object-contain" style={{ background: "rgba(0,0,0,0.4)" }}
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                               </div>
                             </div>
@@ -672,7 +682,7 @@ export default function CosplayUpload({ initialData, onUpdate }: {
 
                   {/* Submit */}
                   <button type="submit" disabled={submitting || uploading}
-                    className="block w-full rounded-[16px] bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] px-5 py-3.5 text-center text-sm font-bold text-white shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_50px_-6px_rgba(0,255,224,0.5),0_0_80px_-20px_rgba(255,0,230,0.2)] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none uppercase tracking-wide">
+                    className="neon-rgb-border block w-full rounded-[16px] bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] px-5 py-3.5 text-center text-sm font-bold text-white shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_50px_-6px_rgba(0,255,224,0.5),0_0_80px_-20px_rgba(255,0,230,0.2)] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none uppercase tracking-wide">
                     {submitting ? (
                       <span className="inline-flex items-center gap-2">
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">

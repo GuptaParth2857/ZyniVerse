@@ -170,7 +170,7 @@ export default function AchievementClient() {
       .finally(() => setLoading(false));
   }, []);
 
-  const achievements = data?.achievements || [];
+  const achievements = useMemo(() => data?.achievements || [], [data]);
   const progress = data?.nextLevel
     ? Math.min(100, Math.round((data.nextLevel.current / data.nextLevel.needed) * 100))
     : 0;

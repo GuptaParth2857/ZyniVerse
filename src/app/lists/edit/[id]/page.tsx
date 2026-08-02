@@ -37,11 +37,11 @@ export default async function EditListPage({ params }: Props) {
   });
   isLiked = !!like;
 
+  const { _count, ...rest } = list;
   const serialized = {
-    ...list,
+    ...rest,
     createdAt: list.createdAt.toISOString(),
-    itemCount: list._count.items,
-    _count: undefined as any,
+    itemCount: _count.items,
   };
 
   const serializedItems = list.items.map((item) => ({

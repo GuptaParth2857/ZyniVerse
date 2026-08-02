@@ -20,7 +20,7 @@ export async function POST(
   try {
     const poll = await votePoll(id, optionId, session.user.id);
     return NextResponse.json({ poll });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message || "Failed to vote" }, { status: 500 });
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Failed to vote" }, { status: 500 });
   }
 }

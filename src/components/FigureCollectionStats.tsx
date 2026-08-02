@@ -17,12 +17,15 @@ export default function FigureCollectionStats() {
 
   useEffect(() => {
     fetch("/api/figures/stats")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("Not authorized");
+        return r.json();
+      })
       .then(setStats)
       .catch(() => {});
   }, []);
 
-  if (!stats || stats.totalFigures === 0) return null;
+  if (!stats || typeof stats.totalFigures !== "number" || stats.totalFigures === 0) return null;
 
   const currencySymbol = stats.currency === "INR" ? "₹" : stats.currency === "JPY" ? "¥" : "$";
 

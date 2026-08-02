@@ -8,8 +8,6 @@ export async function GET() {
     const userId = await resolveUserId();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    console.log("[/api/profile] userId:", userId);
-
     const [user, userPoints] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
@@ -43,8 +41,6 @@ export async function GET() {
     ]);
 
     if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-    console.log("[/api/profile] user:", user.username, "entries:", user.entries.length, "points:", userPoints?.points);
 
     const [reviews, rawAchievements, activities] = await Promise.all([
       prisma.review.findMany({

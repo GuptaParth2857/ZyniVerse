@@ -1,6 +1,7 @@
 import { getTrending, getAnimeDetailFull, searchMedia, bestTitle, getMediaBatch } from "@/lib/anilist";
 import { prisma } from "./prisma";
 import type { Media } from "@/lib/anilist";
+import { logError } from "@/lib/logger";
 
 export interface Recommendation {
   id: number;
@@ -68,7 +69,7 @@ export async function getGenreBasedRecs(
           : `Popular in ${genre}`;
         results.push(mediaToRec(media, score, reason));
       }
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   return results.sort((a, b) => b.score - a.score).slice(0, 24);
@@ -104,7 +105,7 @@ export async function getSimilarAnime(anilistId: number): Promise<Recommendation
           : `Related to ${bestTitle(detail.title)}`;
         results.push(mediaToRec(media, score, reason, sharedTags.slice(0, 5)));
       }
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   return results.sort((a, b) => b.score - a.score).slice(0, 12);

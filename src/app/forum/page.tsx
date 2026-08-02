@@ -32,20 +32,18 @@ export default function ForumPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="neon-premium rounded-xl h-12 w-12">
-                  <div className="neon-premium-track rounded-xl" />
-                  <div className="neon-premium-overlay rounded-[10.5px]" />
-                  <div className="neon-premium-content" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div className="neon-rgb-border rounded-xl h-12 w-12 flex items-center justify-center bg-[var(--color-panel)]/60 backdrop-blur-sm">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff00ff" strokeWidth="2">
                       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
                     </svg>
-                  </div>
                 </div>
                 <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#ff00ff]" style={{ textShadow: "0 0 10px rgba(255,0,255,0.5)" }}>Community Hub</span>
               </div>
-              <h1 className="font-display text-4xl sm:text-5xl font-bold text-white" style={{ textShadow: "0 0 30px rgba(255,0,255,0.3), 0 0 60px rgba(0,255,255,0.2)" }}>
-                <span className="text-[#ff00ff]">Zyni</span><span className="text-[#00ffff]">Verse</span> Forum
-              </h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                <h1 className="font-display text-4xl sm:text-5xl font-bold text-white" style={{ textShadow: "0 0 30px rgba(255,0,255,0.3), 0 0 60px rgba(0,255,255,0.2)" }}>
+                  <span className="text-[#ff00ff]">Zyni</span><span className="text-[#00ffff]">Verse</span> Forum
+                </h1>
+              </div>
               <p className="mt-3 text-base text-gray-400 max-w-lg">
                 Dive into structured discussions about your favorite anime, share theories, get recommendations, and connect with fellow otaku.
               </p>
@@ -58,10 +56,8 @@ export default function ForumPage() {
             <Link href="/forum/create"
               className="group relative shrink-0"
             >
-              <div className="neon-premium rounded-xl">
-                <div className="neon-premium-track rounded-xl" />
-                <div className="neon-premium-overlay rounded-[10.5px]" />
-                <div className="neon-premium-content" style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 24px", fontSize: 14, fontWeight: 700, color: "#ff00ff" }}>
+              <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+                <div className="flex items-center gap-2 px-6 py-3 text-sm font-bold text-[#ff00ff] transition-colors group-hover:text-white">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M12 5v14M5 12h14" />
                   </svg>

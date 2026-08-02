@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ForumThreadDetail from "@/components/ForumThreadDetail";
+import { logError } from "@/lib/logger";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -11,10 +12,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       return {
         title: `${data.thread.title} — Forum | ZyniVerse`,
         description: data.thread.content?.slice(0, 160) || "View thread discussion",
+        alternates: { canonical: `${baseUrl}/forum/thread/${id}` },
+        robots: { index: true, follow: true },
       };
     }
-  } catch {}
-  return { title: "Thread — Forum | ZyniVerse" };
+  } catch (e) { logError(e); }
+  return { title: "Thread — Forum | ZyniVerse", description: "Join the discussion on ZyniVerse forums — India's anime community for recommendations, reviews, and conversations about your favorite series.", robots: { index: true, follow: true } };
 }
 
 export default async function ForumThreadPage({ params }: { params: Promise<{ id: string }> }) {

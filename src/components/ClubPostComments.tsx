@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { logError } from "@/lib/logger";
 
 interface Comment {
   id: string;
@@ -20,17 +21,17 @@ export default function ClubPostComments({
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const res = await fetch(`/api/clubs/${clubId}/posts/${postId}/comments`);
       const data = await res.json();
       setComments(data.comments || []);
-    } catch {}
+    } catch (e) { logError(e); }
     setLoading(false);
-  };
+  }, [clubId, postId]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { fetchComments(); }, [clubId, postId]);
+  useEffect(() => { fetchComments(); }, [clubId, postId, fetchComments]);
 
   const handleSubmit = async () => {
     if (!newComment.trim()) return;

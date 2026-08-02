@@ -95,7 +95,7 @@ export async function getAiringSchedule(fromSec: number, toSec: number) {
       }
     }`;
   let page = 1, hasNext = true;
-  const all: any[] = [];
+  const all: AiringScheduleEntry[] = [];
   while (hasNext && page <= 6) {
     const data = await gql(q, { from: fromSec, to: toSec, page });
     all.push(...data.Page.airingSchedules);
@@ -103,6 +103,20 @@ export async function getAiringSchedule(fromSec: number, toSec: number) {
     page++;
   }
   return all;
+}
+
+interface AiringScheduleEntry {
+  id: number;
+  episode: number;
+  airingAt: number;
+  media: {
+    id: number;
+    title?: { romaji?: string; english?: string };
+    coverImage?: { large?: string; color?: string };
+    format?: string;
+    genres?: string[];
+    episodes?: number;
+  };
 }
 
 export { bestTitle } from './anilist';

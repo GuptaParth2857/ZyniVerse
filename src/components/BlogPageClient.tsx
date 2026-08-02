@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import BlogCard from "@/components/BlogCard";
 import NativeBannerAd from "@/components/NativeBannerAd";
+import { logError } from "@/lib/logger";
 
 interface Post {
   id: string;
@@ -59,7 +60,7 @@ export default function BlogPageClient() {
         setPosts(data.posts || []);
         setTotal(data.total || 0);
       }
-    } catch {}
+    } catch (e) { logError(e); }
     setLoading(false);
   }, []);
 
@@ -118,7 +119,9 @@ export default function BlogPageClient() {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="mb-10">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Blog</p>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Anime Blog</h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Anime Blog</h1>
+        </div>
         <p className="mt-2 text-[var(--color-mute)] max-w-2xl">
           Read and write anime blog posts. Share your thoughts, reviews, and stories with the community.
         </p>

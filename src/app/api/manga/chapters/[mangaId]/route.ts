@@ -17,10 +17,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ mang
   if (!resp.ok) return NextResponse.json({ chapters: [] });
 
   const data = await resp.json();
+  interface MangaDexChapter {
+    chapter: string;
+    title: string | null;
+    count?: number;
+  }
+  interface MangaDexVolume {
+    chapters: Record<string, MangaDexChapter>;
+  }
+
   const aggregated: { chapterNumber: number; title: string; pages: number }[] = [];
-  if (data.volumes) {
-    for (const vol of Object.values(data.volumes) as any[]) {
-      for (const ch of Object.values(vol.chapters) as any[]) {
+  const volumes = data.volumes as Record<string, MangaDexVolume> | undefined;
+  if (volumes) {
+    for (const vol of Object.values(volumes)) {
+      for (const ch of Object.values(vol.chapters)) {
         aggregated.push({
           chapterNumber: parseFloat(ch.chapter),
           title: ch.title || `Chapter ${ch.chapter}`,

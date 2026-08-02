@@ -78,7 +78,9 @@ export default function BestAnimeSitesPage() {
       <div className="mb-10">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">2026 Guide</p>
         <h1 className="mt-2 font-display text-3xl font-bold sm:text-5xl">
-          Best Anime Sites in 2026
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+            Best Anime Sites in 2026
+          </div>
         </h1>
         <p className="mt-4 max-w-2xl text-[var(--color-mute)] leading-relaxed">
           Looking for the best free anime site? We&apos;ve compared the top anime trackers, streaming platforms, and community sites to help you find the perfect one. Whether you need filler guides, Hindi dubbed tracking, or a comprehensive anime database — here are the best options.
@@ -87,7 +89,7 @@ export default function BestAnimeSitesPage() {
 
       <div className="space-y-8">
         {sites.map((site, i) => (
-          <div key={site.name} className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6 sm:p-8">
+          <div key={site.name} className="rounded-2xl neon-rgb-border bg-[var(--color-panel)] p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-start gap-4">
               <div className="flex items-center gap-3 shrink-0">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl text-lg font-bold text-black" style={{ background: site.color }}>
@@ -130,7 +132,7 @@ export default function BestAnimeSitesPage() {
             { emoji: "📖", title: "Manga Reader", desc: "Read manga directly on ZyniVerse. Large library with regular updates." },
             { emoji: "💬", title: "Community", desc: "Join forums, discussions, challenges & connect with Indian anime fans." },
           ].map((f) => (
-            <div key={f.title} className="rounded-xl border border-[var(--color-line)] bg-black/30 p-5">
+            <div key={f.title} className="rounded-xl neon-rgb-border bg-black/30 p-5">
               <span className="text-2xl block mb-2">{f.emoji}</span>
               <h3 className="font-display text-sm font-bold">{f.title}</h3>
               <p className="mt-1 text-xs text-[var(--color-mute)] leading-relaxed">{f.desc}</p>
@@ -153,7 +155,7 @@ export default function BestAnimeSitesPage() {
             { q: "Does ZyniVerse work in India?", a: "Yes! ZyniVerse is built specifically for Indian anime fans. We track Hindi, Tamil, and Telugu dubs, Indian TV schedules, and local anime conventions." },
             { q: "How often is the filler list updated?", a: "Our filler guides are updated weekly. We track every episode of 200+ anime and mark them as canon, filler, or mixed." },
           ].map((faq) => (
-            <details key={faq.q} className="group rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+            <details key={faq.q} className="group rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
               <summary className="flex cursor-pointer items-center justify-between font-display text-sm font-bold">
                 {faq.q}
                 <span className="ml-2 text-[var(--color-mute)] group-open:rotate-180 transition-transform">▼</span>

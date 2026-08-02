@@ -1,5 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 
+interface JikanNameItem {
+  mal_id: number;
+  type: string;
+  name: string;
+}
+
+interface JikanAnime {
+  genres?: JikanNameItem[];
+  studios?: JikanNameItem[];
+  themes?: JikanNameItem[];
+  source?: string;
+}
+
+interface JikanEntry {
+  mal_id: number;
+  title: string;
+  url: string;
+  source: string;
+  genres?: JikanNameItem[];
+  themes?: JikanNameItem[];
+  studios?: JikanNameItem[];
+  images?: { jpg?: { image_url?: string }; webp?: { image_url?: string } };
+}
+
+interface JikanRec {
+  entry: JikanEntry;
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ mediaId: string }> }) {
   const { mediaId } = await params;
   const id = parseInt(mediaId, 10);
@@ -14,24 +42,24 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ medi
 
   const animeData = await animeResp.json();
   const recsData = await recsResp.json();
-  const anime = animeData.data;
+  const anime = animeData.data as JikanAnime | null;
 
-  const genres = new Set((anime?.genres || []).map((g: any) => g.name));
-  const studios = new Set((anime?.studios || []).map((s: any) => s.name));
+  const genres = new Set((anime?.genres || []).map((g: JikanNameItem) => g.name));
+  const studios = new Set((anime?.studios || []).map((s: JikanNameItem) => s.name));
   const source = anime?.source || "";
-  const themes = new Set((anime?.themes || []).map((t: any) => t.name));
+  const themes = new Set((anime?.themes || []).map((t: JikanNameItem) => t.name));
 
-  const recs = (recsData.data || []).slice(0, 8).map((r: any) => {
+  const recs = (recsData.data || []).slice(0, 8).map((r: JikanRec) => {
     const entry = r.entry;
     const reasons: string[] = [];
-    const entryGenres = new Set((entry.genres || []).map((g: any) => g.name));
-    const entryThemes = new Set((entry.themes || []).map((t: any) => t.name));
+    const entryGenres = new Set((entry.genres || []).map((g: JikanNameItem) => g.name));
+    const entryThemes = new Set((entry.themes || []).map((t: JikanNameItem) => t.name));
 
     const sharedGenres = [...genres].filter((g) => entryGenres.has(g));
     if (sharedGenres.length > 0) reasons.push(`Same ${sharedGenres.slice(0, 2).join(", ")} genre`);
 
     const sharedStudios = [...studios].filter((s) => entryGenres.has(s));
-    if (sharedStudios.length > 0 || entry.studios?.some((s: any) => studios.has(s.name))) {
+    if (sharedStudios.length > 0 || entry.studios?.some((s: JikanNameItem) => studios.has(s.name))) {
       reasons.push("Same studio");
     }
 

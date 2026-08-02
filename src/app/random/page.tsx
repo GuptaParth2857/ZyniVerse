@@ -135,9 +135,11 @@ export default function RandomPage() {
       <div className="relative z-20 flex items-center justify-between px-4 sm:px-8 pt-4 pb-0">
         <div>
           <p className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#C026FF]/40">✦ Discover</p>
-          <h1 className="font-display text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-[#C026FF] to-[#00B7FF] bg-clip-text text-transparent">
-            Random
-          </h1>
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+            <h1 className="font-display text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-[#C026FF] to-[#00B7FF] bg-clip-text text-transparent">
+              Random
+            </h1>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <motion.button

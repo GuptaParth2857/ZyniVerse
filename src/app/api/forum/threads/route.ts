@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { checkAndAwardAchievement } from "@/lib/achievements";
+import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -12,12 +13,12 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "20");
 
-  const where: any = { isDeleted: false };
+  const where: Prisma.ForumThreadWhereInput = { isDeleted: false };
   if (category) where.category = { slug: category };
   if (animeId) where.animeId = parseInt(animeId);
   if (search) where.title = { contains: search };
 
-  const orderBy: any =
+  const orderBy: Prisma.ForumThreadOrderByWithRelationInput =
     sort === "popular" ? { viewCount: "desc" }
     : sort === "top" ? { postCount: "desc" }
     : { createdAt: "desc" };

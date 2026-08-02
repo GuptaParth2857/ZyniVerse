@@ -47,7 +47,6 @@ export default function WatchPartyCard({
   index?: number;
 }) {
   const isMember = userId ? party.members.some((m) => m.userId === userId) : false;
-  const isHost = party.hostId === userId;
   const status = statusConfig[party.status] || statusConfig.ended;
 
   return (
@@ -55,7 +54,7 @@ export default function WatchPartyCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
-      className={`group relative rounded-[20px] border ${status.border} bg-[rgba(18,17,30,0.6)] backdrop-blur-md overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_40px_-12px_rgba(0,255,224,0.12)] ${status.glow}`}
+      className={`group relative rounded-[20px] neon-rgb-border bg-[rgba(18,17,30,0.6)] backdrop-blur-md overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_40px_-12px_rgba(0,255,224,0.12)] ${status.glow}`}
     >
       {/* Cover Image */}
       <div className="relative h-40 w-full overflow-hidden">

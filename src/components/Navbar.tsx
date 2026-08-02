@@ -15,59 +15,12 @@ import SubscriptionBadge from "./SubscriptionBadge";
 
 const PRIMARY_LINKS = [
   { to: "/", label: "Home" },
-  { to: "/schedule", label: "Schedule" },
-  { to: "/seasonal", label: "Seasonal" },
   { to: "/search", label: "Explore" },
-  { to: "/activity", label: "Feed" },
+  { to: "/top-anime", label: "Top Anime" },
+  { to: "/schedule", label: "Schedule" },
   { to: "/leaderboard", label: "Leaderboard" },
-  { to: "/dubbed", label: "Dubs" },
   { to: "/watchlist", label: "My List" },
-];
-
-const SECONDARY_LINKS = [
-  { to: "/news", label: "News" },
-  { to: "/tv-schedule", label: "TV Channels" },
-  { to: "/live-action", label: "Live Action" },
-  { to: "/filler", label: "Filler Guides" },
-  { to: "/watch-order", label: "Watch Orders" },
-  { to: "/docs", label: "API Docs" },
-  { to: "/awards", label: "Awards" },
-  { to: "/tags", label: "Tags" },
-  { to: "/figures", label: "Figures" },
-  { to: "/manga", label: "Manga" },
-  { to: "/light-novels", label: "Light Novels" },
-  { to: "/doujinshi", label: "Doujinshi" },
-  { to: "/achievements", label: "Achievements" },
-  { to: "/characters", label: "Characters" },
-  { to: "/staff", label: "Staff" },
-  { to: "/recommendations", label: "Recommend" },
-  { to: "/quiz", label: "Quiz" },
-  { to: "/forum", label: "Forum" },
-  { to: "/community", label: "Social Feed" },
-  { to: "/random", label: "Random" },
-  { to: "/tierlist", label: "Tier Lists" },
-  { to: "/lists", label: "Lists" },
-  { to: "/ost", label: "OST" },
-  { to: "/events", label: "Anime Events" },
-  { to: "/conventions", label: "India Cons" },
-  { to: "/voice-actors", label: "Voice Actors" },
-  { to: "/voice-actors/indian", label: "Indian VAs" },
-  { to: "/voice-lines", label: "Quotes" },
-  { to: "/watch-party", label: "Watch Party" },
-  { to: "/cosplay", label: "Cosplay" },
-  { to: "/challenges", label: "Challenges" },
-  { to: "/blog", label: "Blog" },
-  { to: "/clubs", label: "Clubs" },
-  { to: "/wiki", label: "Wiki" },
-  { to: "/stats", label: "My Stats" },
-  { to: "/themes", label: "Theme Songs" },
-  { to: "/season/upcoming", label: "Season Preview" },
-  { to: "/compare", label: "Compare" },
-  { to: "/premium", label: "Premium" },
-  { to: "/status", label: "Status" },
-  { to: "/indian-dubs", label: "Indian Dubs" },
-  { to: "/developer", label: "Developer" },
-  { to: "/feedback", label: "Feedback" },
+  { to: "/reels", label: "Reels", accent: true },
 ];
 
 const MORE_CATEGORIES = [
@@ -79,9 +32,14 @@ const MORE_CATEGORIES = [
       { to: "/guides", label: "Guides & Articles" },
       { to: "/live-action", label: "Live Action" },
       { to: "/random", label: "Random" },
+      { to: "/seasonal", label: "Seasonal" },
       { to: "/recommendations", label: "Recommend" },
+      { to: "/streaming-calendar", label: "Streaming Calendar" },
       { to: "/season/upcoming", label: "Upcoming" },
       { to: "/podcast", label: "Podcast" },
+      { to: "/calendar", label: "Calendar" },
+      { to: "/a-z", label: "A–Z Index" },
+      { to: "/moments", label: "Moments" },
     ],
   },
   {
@@ -89,6 +47,7 @@ const MORE_CATEGORIES = [
     icon: "🇮🇳",
     items: [
       { to: "/indian-dubs", label: "Indian Dubs" },
+      { to: "/dub-schedule", label: "Dub Schedule" },
       { to: "/theatrical-releases", label: "Theatrical Releases" },
       { to: "/toons", label: "Toons & Cartoons" },
       { to: "/tv-schedule", label: "TV Channels" },
@@ -100,6 +59,7 @@ const MORE_CATEGORIES = [
     title: "Anime",
     icon: "🎬",
     items: [
+      { to: "/dubbed", label: "Dubs" },
       { to: "/filler", label: "Filler Guides" },
       { to: "/watch-order", label: "Watch Orders" },
       { to: "/themes", label: "Theme Songs" },
@@ -136,8 +96,13 @@ const MORE_CATEGORIES = [
     items: [
       { to: "/forum", label: "Forum" },
       { to: "/community", label: "Social Feed" },
+      { to: "/activity", label: "Activity" },
+      { to: "/friends", label: "Friends" },
       { to: "/clubs", label: "Clubs" },
+      { to: "/earn", label: "Refer & Earn" },
       { to: "/blog", label: "Blog" },
+      { to: "/polls", label: "Polls" },
+      { to: "/critiques", label: "Critiques" },
       { to: "/tierlist", label: "Tier Lists" },
       { to: "/lists", label: "Lists" },
       { to: "/feedback", label: "Feedback" },
@@ -147,9 +112,10 @@ const MORE_CATEGORIES = [
     title: "More",
     icon: "✨",
     items: [
+      { to: "/tools", label: "Tools" },
       { to: "/merch", label: "Merch Store" },
       { to: "/premium", label: "Premium" },
-      { to: "/figures", label: "Figures" },
+      { to: "/figures", label: "My Collection" },
       { to: "/stats", label: "My Stats" },
       { to: "/achievements", label: "Achievements" },
       { to: "/awards", label: "Awards" },
@@ -168,7 +134,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [moreTab, setMoreTab] = useState(MORE_CATEGORIES[0].title);
-  const [mobileTab, setMobileTab] = useState<string | null>(null);
+  const [mobileOpenCats, setMobileOpenCats] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestRef = useRef<HTMLDivElement>(null);
@@ -204,9 +170,7 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const primaryLinks = session
-    ? [...PRIMARY_LINKS, { to: "/profile", label: "Profile" }]
-    : PRIMARY_LINKS;
+  const primaryLinks = PRIMARY_LINKS;
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -218,9 +182,9 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-line)] bg-[var(--color-void)]/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 shrink-0 group">
-          <div className="relative h-7 w-7 overflow-hidden rounded-md border border-[var(--color-magenta)]/30 group-hover:scale-110 transition-transform">
+      <div className="mx-auto flex max-w-7xl items-center gap-2 sm:gap-3 xl:gap-4 px-4 py-3 sm:px-6">
+        <Link href="/" className="flex items-center gap-2 shrink-0 group -ml-2">
+          <div className="relative h-7 w-7 overflow-hidden rounded-md neon-rgb-border group-hover:scale-110 transition-transform">
             <Image src="/logo.png" alt="ZyniVerse" width={28} height={28} className="object-cover" />
           </div>
           <span className="font-display text-lg font-bold tracking-wide logo-text">
@@ -228,20 +192,24 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1 ml-4">
-          {primaryLinks.map((l) => (
+        <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 ml-2 shrink-0">
+          {primaryLinks.map((l, i) => (
             <Link
               key={l.to}
               href={l.to}
-              className={`relative rounded-md px-2 py-2 text-sm font-medium neon-btn ${
+              className={`relative rounded-lg px-2.5 py-1.5 text-[13px] font-semibold transition-all ${
                 pathname === l.to
                   ? "text-[var(--color-cyan)]"
-                  : "text-[var(--color-mute)]"
+                  : "text-[var(--color-mute)] hover:text-[var(--color-cyan)]"
               }`}
+              style={{ animationDelay: `${i * -0.5}s` }}
             >
               {l.label}
+              {l.accent && (
+                <span className="absolute -right-0.5 top-1 flex h-1.5 w-1.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-500" />
+              )}
               {l.to === "/watchlist" && items.length > 0 && (
-                <span className="ml-1.5 rounded-full bg-[var(--color-magenta)] px-1.5 py-0.5 text-[10px] font-mono text-black">
+                <span className="ml-1 rounded-full bg-[var(--color-magenta)] px-1.5 py-0.5 text-[10px] font-mono text-black">
                   {items.length}
                 </span>
               )}
@@ -252,17 +220,17 @@ export default function Navbar() {
           <div className="relative" ref={moreRef}>
             <button
               onClick={() => setMoreOpen((o) => !o)}
-              className={`relative rounded-md px-2 py-2 text-sm font-medium neon-btn ${
-                moreOpen ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)]"
+              className={`relative rounded-lg px-2.5 py-1.5 text-[13px] font-semibold transition-all ${
+                moreOpen ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)] hover:text-[var(--color-cyan)]"
               }`}
             >
               More
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline ml-1 -mt-0.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`inline ml-1 -mt-0.5 transition-transform ${moreOpen ? "rotate-180" : ""}`}>
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {moreOpen && (
-              <div className="absolute top-full right-0 mt-1 w-[95vw] sm:w-[42rem] max-w-[42rem] rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl z-50 overflow-hidden">
+              <div className="absolute top-full right-0 mt-2 w-[92vw] sm:w-[44rem] max-w-[44rem] rounded-2xl neon-rgb-border bg-[var(--color-panel)] shadow-[0_8px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl overflow-hidden">
                 {/* Horizontal category tabs */}
                 <div className="flex overflow-x-auto border-b border-[var(--color-line)] scrollbar-none">
                   {MORE_CATEGORIES.map((cat) => (
@@ -281,14 +249,14 @@ export default function Navbar() {
                   ))}
                 </div>
                 {/* Links for active tab */}
-                <div className="max-h-[50vh] overflow-y-auto">
+                <div className="max-h-[55vh] overflow-y-auto p-3">
                   {MORE_CATEGORIES.filter((cat) => cat.title === moreTab).map((cat) => (
-                    <div key={cat.title} className="p-3">
+                    <div key={cat.title}>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
                         {cat.items.map((l) => (
                           <Link key={l.to} href={l.to}
                             onClick={() => setMoreOpen(false)}
-                            className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                            className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
                               pathname === l.to
                                 ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/10 font-semibold"
                                 : "text-[var(--color-mute)] hover:bg-white/5 hover:text-[var(--color-text)]"
@@ -299,7 +267,7 @@ export default function Navbar() {
                           </Link>
                         ))}
                       </div>
-                      {cat.title === "Platform" && session && (
+                      {cat.title === "More" && session && (
                         <div className="mt-2 pt-2 border-t border-[var(--color-line)]/50">
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
                             <Link href="/messages" onClick={() => setMoreOpen(false)}
@@ -319,6 +287,9 @@ export default function Navbar() {
                                 }`}
                               >Admin Panel</Link>
                             )}
+                            <button onClick={() => signOut({ callbackUrl: "/" })}
+                              className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[var(--color-mute)] hover:bg-white/5 hover:text-red-400 transition-colors text-left"
+                            >Logout</button>
                           </div>
                         </div>
                       )}
@@ -330,25 +301,32 @@ export default function Navbar() {
           </div>
 
           {session ? (
-            <div className="flex items-center gap-2 ml-2 pl-2 border-l border-[var(--color-line)]">
+            <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-[var(--color-line)] shrink-0">
               <SubscriptionBadge />
               <NotificationBell />
-              <span className="text-xs text-[var(--color-magenta)] font-semibold">{session.user?.name}</span>
-              <button onClick={() => signOut({ callbackUrl: "/" })}
-                className="text-sm text-[var(--color-mute)] hover:text-red-400 transition-colors"
-              >Logout</button>
+              <Link href="/profile" title={session.user?.name || "Profile"}
+                className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] hover:border-[var(--color-cyan)] transition-colors"
+              >
+                {session.user?.image ? (
+                  <Image src={session.user.image} alt="" fill className="object-cover" />
+                ) : (
+                  <span className="text-[11px] font-bold text-[var(--color-cyan)]">
+                    {session.user?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </span>
+                )}
+              </Link>
             </div>
           ) : (
             <Link href="/login"
-              className="relative rounded-md px-2 py-2 text-sm font-medium neon-btn text-[var(--color-mute)]"
-            >Login</Link>
+              className="relative rounded-lg px-3 py-1.5 text-[13px] font-bold neon-rgb-border text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 transition-colors"
+            >Sign In</Link>
           )}
         </nav>
 
-        <div className="ml-auto hidden sm:flex items-center" ref={suggestRef}>
+        <div className="ml-auto hidden sm:flex items-center shrink-0" ref={suggestRef}>
           <form onSubmit={handleSearchSubmit}>
             <div className="relative">
-              <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-1.5 focus-within:border-[var(--color-cyan)] transition-colors">
+              <div className="flex items-center gap-2 rounded-lg bg-[var(--color-panel)] px-3 py-1.5 focus-within:shadow-[0_0_16px_var(--color-cyan)] transition-shadow neon-rgb-border">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)]">
                   <circle cx="11" cy="11" r="8" />
                   <path d="M21 21l-4.35-4.35" />
@@ -357,12 +335,12 @@ export default function Navbar() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                  placeholder="Search anime & manga..."
-                  className="w-36 bg-transparent text-sm outline-none placeholder:text-[var(--color-mute)]"
+                  placeholder="Search..."
+                  className="w-28 xl:w-36 bg-transparent text-sm outline-none placeholder:text-[var(--color-mute)]"
                 />
               </div>
               {showSuggestions && (
-                <div className="absolute top-full right-0 mt-1 w-72 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl overflow-hidden z-50">
+                <div className="absolute top-full right-0 mt-1 w-72 rounded-xl bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl overflow-hidden z-50">
                   {suggestions.map((s) => (
                     <Link key={s.id} href={`/anime/${s.id}`}
                       onClick={() => { setShowSuggestions(false); setQuery(""); }}
@@ -390,12 +368,12 @@ export default function Navbar() {
           </form>
         </div>
 
-        <div className="hidden sm:flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-1.5 shrink-0">
           <LanguageSwitcher />
           <ThemeToggle />
         </div>
         <button
-          className="md:hidden text-[var(--color-ink)]"
+          className="lg:hidden ml-auto p-2 -m-2 text-[var(--color-ink)]"
           onClick={() => setOpen((o) => !o)}
           aria-label="Menu"
           aria-expanded={open}
@@ -407,7 +385,7 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-[var(--color-line)] bg-[var(--color-void)] px-4 py-3 max-h-[80vh] overflow-y-auto">
+        <div className="lg:hidden border-t border-[var(--color-line)] bg-[var(--color-void)] px-4 py-3 max-h-[80vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-3 px-3">
             <span className="text-xs font-mono text-[var(--color-mute)] uppercase tracking-wider">Theme</span>
             <div className="flex items-center gap-2">
@@ -415,7 +393,7 @@ export default function Navbar() {
               <ThemeToggle />
             </div>
           </div>
-          <form onSubmit={handleSearchSubmit} className="mb-3 flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2.5">
+          <form onSubmit={handleSearchSubmit} className="mb-3 flex items-center gap-2 rounded-lg bg-[var(--color-panel)] px-3 py-2.5 neon-rgb-border">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)]">
               <circle cx="11" cy="11" r="8" />
               <path d="M21 21l-4.35-4.35" />
@@ -430,11 +408,19 @@ export default function Navbar() {
 
           {session && (
             <div className="flex items-center gap-3 mb-3 px-3 py-2 rounded-lg bg-[var(--color-panel)] border border-[var(--color-line)]">
-              <NotificationBell />
-              <span className="flex-1 text-sm text-[var(--color-magenta)] font-semibold">{session.user?.name}</span>
-              <button onClick={() => { setOpen(false); signOut({ callbackUrl: "/" }); }}
-                className="text-xs text-red-400 font-medium"
-              >Logout</button>
+              <Link
+                href="/notifications"
+                onClick={() => setOpen(false)}
+                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] text-sm hover:border-[var(--color-cyan)] transition-colors"
+                aria-label="Notifications"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)]">
+                  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 01-3.46 0" />
+                </svg>
+              </Link>
+              <span className="flex-1 text-sm text-[var(--color-magenta)] font-semibold truncate">{session.user?.name}</span>
+              <Link href="/profile" onClick={() => setOpen(false)} className="text-xs text-[var(--color-cyan)] font-medium">Profile</Link>
             </div>
           )}
 
@@ -442,53 +428,80 @@ export default function Navbar() {
           <div className="mb-3">
             <p className="px-3 text-[10px] font-mono text-[var(--color-mute)] uppercase tracking-wider mb-1">Main</p>
             <div className="grid grid-cols-2 gap-1">
-              {[...PRIMARY_LINKS, ...(session ? [{ to: "/profile", label: "Profile" }] : [])].map((l) => (
+              {PRIMARY_LINKS.map((l, i) => (
                 <Link key={l.to} href={l.to} onClick={() => setOpen(false)}
-                  className={`block rounded-md px-3 py-3 text-sm font-medium text-center ${
-                    pathname === l.to ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/5" : "text-[var(--color-mute)] hover:bg-white/5"
+                  className={`block rounded-lg px-3 py-3 text-sm font-medium text-center transition-all ${
+                    pathname === l.to ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)] hover:text-[var(--color-cyan)]"
                   }`}
+                  style={{ animationDelay: `${i * -0.5}s` }}
                 >{l.label}</Link>
               ))}
             </div>
           </div>
 
-          {/* Secondary links with horizontal tabs */}
-          <div className="mb-3">
-            <div className="flex overflow-x-auto gap-1 mb-2 scrollbar-none">
-              {MORE_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.title}
-                  onClick={() => setMobileTab(mobileTab === cat.title ? null : cat.title)}
-                  className={`flex items-center gap-1 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all border shrink-0 ${
-                    mobileTab === cat.title
-                      ? "text-[var(--color-cyan)] border-[var(--color-cyan)]/50 bg-[var(--color-cyan)]/10"
-                      : "text-[var(--color-mute)] border-[var(--color-line)] hover:border-[var(--color-mute)]/50"
-                  }`}
-                >
-                  <span>{cat.icon}</span>
-                  {cat.title}
-                </button>
-              ))}
-            </div>
-            {mobileTab && MORE_CATEGORIES.filter((cat) => cat.title === mobileTab).map((cat) => (
-              <div key={cat.title} className="grid grid-cols-2 gap-1">
-                {cat.items.map((l) => (
-                  <Link key={l.to} href={l.to} onClick={() => setOpen(false)}
-                    className={`flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium ${
-                      pathname === l.to ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/5" : "text-[var(--color-mute)] hover:bg-white/5"
-                    }`}
+          {/* Categories (tap to expand) */}
+          <div className="space-y-1 mb-3">
+            {MORE_CATEGORIES.map((cat) => {
+              const isOpen = mobileOpenCats.includes(cat.title);
+              return (
+                <div key={cat.title} className={`rounded-lg overflow-hidden ${isOpen ? "neon-rgb-border bg-[var(--color-panel)]" : "border border-[var(--color-line)] bg-[var(--color-panel)]"}`}>
+                  <button
+                    onClick={() => setMobileOpenCats((prev) =>
+                      isOpen ? prev.filter((t) => t !== cat.title) : [...prev, cat.title]
+                    )}
+                    className="flex items-center justify-between w-full px-4 py-3 text-sm font-semibold text-[var(--color-ink)] hover:bg-white/5 transition-colors"
                   >
-                    {pathname === l.to && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-cyan)] shrink-0" />}
-                    {l.label}
-                  </Link>
-                ))}
+                    <span className="flex items-center gap-2">
+                      <span className="text-base leading-none">{cat.icon}</span>
+                      {cat.title}
+                    </span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                      className={`text-[var(--color-mute)] transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+                  {isOpen && (
+                    <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                      {cat.items.map((l) => (
+                        <Link key={l.to} href={l.to} onClick={() => setOpen(false)}
+                          className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                            pathname === l.to ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/10" : "text-[var(--color-mute)] hover:text-[var(--color-cyan)]"
+                          }`}
+                        >
+                          {pathname === l.to && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-cyan)] shrink-0" />}
+                          {l.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {session && (
+              <div>
+                <p className="px-3 text-[10px] font-mono text-[var(--color-mute)] uppercase tracking-wider mb-1">👤 Account</p>
+                <div className="grid grid-cols-2 gap-1">
+                  <Link href="/messages" onClick={() => setOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all"
+                  >Messages</Link>
+                  {(session.user as Record<string, unknown>)?.email === "gupta.parth2857@gmail.com" && (
+                    <Link href="/admin" onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--color-magenta)] hover:text-[var(--color-magenta)] transition-all"
+                    >Admin Panel</Link>
+                  )}
+                  <button onClick={() => { setOpen(false); signOut({ callbackUrl: "/" }); }}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400 transition-all text-left"
+                  >Logout</button>
+                </div>
               </div>
-            ))}
+            )}
           </div>
 
           {!session && (
             <Link href="/login" onClick={() => setOpen(false)}
-              className="block rounded-md px-3 py-3 text-sm font-semibold text-center text-[var(--color-cyan)] border border-[var(--color-cyan)]/30 mt-1"
+              className="block rounded-lg px-3 py-3 text-sm font-semibold text-center text-[var(--color-cyan)] neon-rgb-border mt-1"
             >Sign In</Link>
           )}
         </div>

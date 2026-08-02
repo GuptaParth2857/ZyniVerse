@@ -54,7 +54,11 @@ export default function LinkToUsPage() {
       {/* Header */}
       <div className="text-center mb-12">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">For Partners</p>
-        <h1 className="font-display text-4xl font-bold sm:text-5xl mt-2">Link to ZyniVerse</h1>
+        <h1 className="font-display text-4xl font-bold sm:text-5xl mt-2">
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+            Link to ZyniVerse
+          </div>
+        </h1>
         <p className="mt-3 text-[var(--color-mute)] max-w-xl mx-auto">
           Help your visitors discover the best anime tools on the web.
           Grab a badge, button, or text link — all free to use.
@@ -68,18 +72,18 @@ export default function LinkToUsPage() {
 
         <div className="grid gap-6 sm:grid-cols-2">
           {BADGES.map((badge) => (
-            <div key={badge.name} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+            <div key={badge.name} className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
               <p className="text-sm font-semibold mb-3">{badge.name}</p>
               <div className="flex items-center justify-center p-4 rounded-lg bg-[var(--color-void)] mb-4 min-h-[60px]">
                 <div dangerouslySetInnerHTML={{ __html: badge.html }} />
               </div>
               <div className="relative">
-                <pre className="text-[10px] text-[var(--color-mute)] bg-[var(--color-void)] rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all border border-[var(--color-line)]">
+                <pre className="text-[10px] text-[var(--color-mute)] bg-[var(--color-void)] rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all neon-rgb-border">
                   {badge.html}
                 </pre>
                 <button
                   onClick={() => navigator.clipboard.writeText(badge.html)}
-                  className="absolute top-2 right-2 rounded-md bg-[var(--color-panel)] border border-[var(--color-line)] px-2 py-1 text-[10px] text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors"
+                  className="absolute top-2 right-2 rounded-md bg-[var(--color-panel)] neon-rgb-border px-2 py-1 text-[10px] text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors"
                 >
                   Copy
                 </button>
@@ -98,7 +102,7 @@ export default function LinkToUsPage() {
 
         <div className="space-y-4">
           {SUGGESTED_LINKS.map((link) => (
-            <div key={link.url} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+            <div key={link.url} className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-[var(--color-cyan)] hover:underline">
@@ -108,7 +112,7 @@ export default function LinkToUsPage() {
                 </div>
                 <button
                   onClick={() => navigator.clipboard.writeText(`<a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.text}</a> — ${link.desc}`)}
-                  className="shrink-0 rounded-md bg-[var(--color-void)] border border-[var(--color-line)] px-2 py-1 text-[10px] text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors"
+                  className="shrink-0 rounded-md bg-[var(--color-void)] neon-rgb-border px-2 py-1 text-[10px] text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors"
                 >
                   Copy link
                 </button>
@@ -120,7 +124,7 @@ export default function LinkToUsPage() {
 
       {/* Embed Widgets CTA */}
       <section className="mb-16">
-        <div className="rounded-2xl border border-[var(--color-line)] bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] p-8 text-center">
+        <div className="rounded-2xl neon-rgb-border bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] p-8 text-center">
           <h2 className="font-display text-2xl font-bold mb-2">Want Interactive Widgets?</h2>
           <p className="text-sm text-[var(--color-mute)] mb-6 max-w-lg mx-auto">
             Embed live filler guides, dub status badges, and watch progress trackers directly on your site.
@@ -134,6 +138,17 @@ export default function LinkToUsPage() {
         </div>
       </section>
 
+      {/* Reciprocal Links Section */}
+      <section className="mb-16">
+        <h2 className="font-display text-2xl font-bold mb-4">Partners & Directories</h2>
+        <p className="text-sm text-[var(--color-mute)] mb-6">We’re listed in these directories. Check them out:</p>
+        <div className="flex flex-wrap gap-3">
+          <a href="https://www.promotebusinessdirectory.com/" target="_blank" rel="noopener noreferrer" className="neon-rgb-border rounded-xl px-4 py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-all bg-[var(--color-panel)]">
+            Promote Business Directory
+          </a>
+        </div>
+      </section>
+
       {/* Why Link Section */}
       <section>
         <h2 className="font-display text-2xl font-bold mb-4">Why Link to ZyniVerse?</h2>
@@ -143,7 +158,7 @@ export default function LinkToUsPage() {
             { icon: "🇮🇳", title: "India-First", desc: "The only platform tracking Hindi, Tamil & Telugu anime dubs." },
             { icon: "🆓", title: "100% Free", desc: "No paywalls. Your visitors can use everything for free." },
           ].map((item) => (
-            <div key={item.title} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+            <div key={item.title} className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
               <span className="text-2xl block mb-2">{item.icon}</span>
               <p className="font-semibold text-sm">{item.title}</p>
               <p className="text-xs text-[var(--color-mute)] mt-1">{item.desc}</p>

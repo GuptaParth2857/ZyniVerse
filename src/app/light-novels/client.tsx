@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { getLightNovelTrending, getLightNovelPopular, getLightNovelTopRated } from "@/lib/anilist";
-import { CardSkeleton } from "@/components/Loader";
 import MangaCard from "@/components/MangaCard";
 import AffiliateLink from "@/components/AffiliateLink";
 import type { Media } from "@/lib/anilist";
@@ -62,7 +61,6 @@ export default function LightNovelBrowseClient() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
   const [myListTotal, setMyListTotal] = useState(0);
   const [myListStats, setMyListStats] = useState({ reading: 0, completed: 0, planning: 0 });
   const abortRef = useRef<AbortController | null>(null);
@@ -108,7 +106,6 @@ export default function LightNovelBrowseClient() {
           let items = d.media || [];
           if (selectedGenre) items = items.filter((m: Media) => m.genres?.includes(selectedGenre));
           setList(items);
-          setHasMore(d.pageInfo?.hasNextPage || false);
         })
         .catch((e: Error) => {
           if (!controller.signal.aborted) setError(e.message);
@@ -122,7 +119,7 @@ export default function LightNovelBrowseClient() {
       t?.fetcher()
         .then((d) => {
           if (!cancelled) {
-            let items = Array.isArray(d) ? d : (d as any).media || [];
+            let items = Array.isArray(d) ? d : (d as { media?: Media[] }).media || [];
             if (selectedGenre) items = items.filter((m: Media) => m.genres?.includes(selectedGenre));
             setList(items);
           }
@@ -165,19 +162,17 @@ export default function LightNovelBrowseClient() {
 
         <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
           <div className="flex flex-col items-center text-center">
-            <div className="neon-premium rounded-xl h-12 w-12 mb-4">
-              <div className="neon-premium-track rounded-xl" />
-              <div className="neon-premium-overlay rounded-[10.5px]" />
-              <div className="neon-premium-content" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span className="text-xl">📖</span>
-              </div>
+            <div className="neon-rgb-border rounded-xl h-12 w-12 mb-4 flex items-center justify-center bg-[var(--color-panel)]/60 backdrop-blur-sm">
+              <span className="text-xl">📖</span>
             </div>
 
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#00ffff] mb-3" style={{ textShadow: "0 0 10px rgba(0,255,255,0.5)" }}>Light Novels</span>
 
-            <h1 className="font-display text-4xl sm:text-5xl font-bold text-white" style={{ textShadow: "0 0 30px rgba(0,255,255,0.3), 0 0 60px rgba(138,43,226,0.2)" }}>
-              Track Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffff] via-[#8a2be2] to-[#ff00ff]">Reading Journey</span>
-            </h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2">
+              <h1 className="font-display text-4xl sm:text-5xl font-bold text-white" style={{ textShadow: "0 0 30px rgba(0,255,255,0.3), 0 0 60px rgba(138,43,226,0.2)" }}>
+                Track Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffff] via-[#8a2be2] to-[#ff00ff]">Reading Journey</span>
+              </h1>
+            </div>
             <p className="mt-3 text-base text-gray-400 max-w-lg">
               Discover trending light novels, track your progress, and find your next favorite series.
             </p>
@@ -207,32 +202,24 @@ export default function LightNovelBrowseClient() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 space-y-6">
         {/* Search */}
         <motion.div {...FADE_UP}>
-          <div className="neon-premium rounded-xl">
-            <div className="neon-premium-track rounded-xl" />
-            <div className="neon-premium-overlay rounded-[10.5px]" />
-            <div className="neon-premium-content">
-              <form onSubmit={(e) => { e.preventDefault(); setShowMyList(false); }} className="flex items-center gap-3 px-4 py-3">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)] shrink-0">
-                  <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
-                </svg>
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search light novels by title..."
-                  className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-[var(--color-mute)]/50"
-                />
-                {query && (
-                  <button type="button" onClick={() => { setQuery(""); setDebouncedQuery(""); }} className="text-[var(--color-mute)] hover:text-white transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
-                  </button>
-                )}
-                <button type="submit" className="neon-premium rounded-xl">
-                  <div className="neon-premium-track rounded-xl" />
-                  <div className="neon-premium-overlay rounded-[10.5px]" />
-                  <div className="neon-premium-content px-6 py-2.5 text-sm font-bold" style={{ color: "#00ffff" }}>Search</div>
+          <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+            <form onSubmit={(e) => { e.preventDefault(); setShowMyList(false); }} className="flex items-center gap-3 px-4 py-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)] shrink-0">
+                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+              </svg>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search light novels by title..."
+                className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-[var(--color-mute)]/50"
+              />
+              {query && (
+                <button type="button" onClick={() => { setQuery(""); setDebouncedQuery(""); }} className="text-[var(--color-mute)] hover:text-white transition-colors">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
                 </button>
-              </form>
-            </div>
+              )}
+              <button type="submit" className="neon-rgb-border rounded-xl px-6 py-2.5 text-sm font-bold" style={{ color: "#00ffff" }}>Search</button>
+            </form>
           </div>
         </motion.div>
 
@@ -259,15 +246,12 @@ export default function LightNovelBrowseClient() {
             <div className="flex flex-wrap items-center gap-2">
               {TABS.map((t) => (
                 <button key={t.key} onClick={() => setTab(t.key)}
-                  className="neon-premium rounded-xl transition-all"
-                >
-                  <div className="neon-premium-track rounded-xl" />
-                  <div className="neon-premium-overlay rounded-[10.5px]" />
-                  <div className="neon-premium-content px-6 py-3 text-sm font-bold" style={{
+                  className="neon-rgb-border rounded-xl px-6 py-3 text-sm font-bold transition-all"
+                  style={{
                     color: tab === t.key ? "#00ffff" : "var(--color-mute)",
                     background: tab === t.key ? "rgba(0,255,255,0.08)" : undefined,
-                  }}>{t.label}</div>
-                </button>
+                  }}
+                >{t.label}</button>
               ))}
             </div>
             <div className="flex flex-wrap gap-2">
@@ -275,15 +259,12 @@ export default function LightNovelBrowseClient() {
                 const isActive = selectedGenre === g.value;
                 return (
                   <button key={g.value} onClick={() => setSelectedGenre(g.value)}
-                    className="neon-premium rounded-xl transition-all"
-                  >
-                    <div className="neon-premium-track rounded-xl" />
-                    <div className="neon-premium-overlay rounded-[10.5px]" />
-                    <div className="neon-premium-content px-4 py-2 text-xs font-bold" style={{
+                    className="neon-rgb-border rounded-xl px-4 py-2 text-xs font-bold transition-all"
+                    style={{
                       color: isActive ? "#00ffff" : "var(--color-mute)",
                       background: isActive ? "rgba(0,255,255,0.08)" : undefined,
-                    }}>{g.label}</div>
-                  </button>
+                    }}
+                  >{g.label}</button>
                 );
               })}
             </div>
@@ -296,15 +277,12 @@ export default function LightNovelBrowseClient() {
             <div className="flex flex-wrap gap-2">
               {STATUS_FILTERS.map((s) => (
                 <button key={s} onClick={() => setListTab(s)}
-                  className="neon-premium rounded-xl transition-all"
-                >
-                  <div className="neon-premium-track rounded-xl" />
-                  <div className="neon-premium-overlay rounded-[10.5px]" />
-                  <div className="neon-premium-content px-5 py-2.5 text-sm font-bold" style={{
+                  className="neon-rgb-border rounded-xl px-5 py-2.5 text-sm font-bold transition-all"
+                  style={{
                     color: listTab === s ? "#00ffff" : "var(--color-mute)",
                     background: listTab === s ? "rgba(0,255,255,0.08)" : undefined,
-                  }}>{s === "ALL" ? "All" : STATUS_LABELS[s] || s}</div>
-                </button>
+                  }}
+                >{s === "ALL" ? "All" : STATUS_LABELS[s] || s}</button>
               ))}
             </div>
           </motion.div>
@@ -315,8 +293,8 @@ export default function LightNovelBrowseClient() {
           <AffiliateLink partner="bookwalker" path="https://global.bookwalker.jp"
             className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#00ffff] to-[#8a2be2] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity"
           >📖 Buy on BookWalker</AffiliateLink>
-          <AffiliateLink partner="amazon" path="https://www.amazon.com/s?k=light+novel&tag=zyniverse-21"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold text-[var(--color-mute)] hover:border-[#00ffff] hover:text-[#00ffff] transition-all"
+          <AffiliateLink partner="amazon" path="https://www.amazon.in/s?k=light+novel"
+            className="inline-flex items-center gap-2 rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold text-[var(--color-mute)] hover:border-[#00ffff] hover:text-[#00ffff] transition-all"
           >📦 Buy on Amazon</AffiliateLink>
         </motion.div>
 
@@ -332,7 +310,7 @@ export default function LightNovelBrowseClient() {
           {loading ? (
             <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
               {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden animate-pulse">
+                <div key={i} className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm overflow-hidden animate-pulse">
                   <div className="aspect-[3/4] bg-[var(--color-void)]" />
                   <div className="p-3 space-y-2">
                     <div className="h-4 w-3/4 bg-[var(--color-void)] rounded" />
@@ -343,13 +321,13 @@ export default function LightNovelBrowseClient() {
             </div>
           ) : showMyList ? (
             <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              {myEntries.map((entry) => (
-                <MangaCard key={entry.id} manga={entry} entry={entry} showProgress />
+              {myEntries.map((entry, i) => (
+                <MangaCard key={entry.id} manga={entry} entry={entry} showProgress index={i} />
               ))}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              {list.map((m) => <MangaCard key={m.id} manga={m} />)}
+              {list.map((m, i) => <MangaCard key={m.id} manga={m} index={i} />)}
             </div>
           )}
 

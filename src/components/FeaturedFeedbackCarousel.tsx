@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface FeaturedFeedback {
   id: string;
@@ -49,7 +50,7 @@ export default function FeaturedFeedbackCarousel() {
           >
             {item.featuredImage && (
               <div className="absolute inset-0 opacity-10">
-                <img src={item.featuredImage} alt="" className="w-full h-full object-cover" />
+                <Image src={item.featuredImage} alt="" fill className="w-full h-full object-cover" sizes="100%" />
               </div>
             )}
             <div className="relative">

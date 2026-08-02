@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   getTrending, getPopular, getUpcoming, getTopRated, getAiringSchedule,
 } from "@/lib/anilist";
-import { auth } from "@/lib/auth";
 import Section from "@/components/Section";
 import MediaCarousel from "@/components/MediaCarousel";
 import OnAirTicker from "@/components/OnAirTicker";
@@ -21,6 +20,7 @@ import FeaturedFeedbackCarousel from "@/components/FeaturedFeedbackCarousel";
 import WhyZyniVerse from "@/components/WhyZyniVerse";
 import NeonBanner from "@/components/NeonBanner";
 import type { Media } from "@/lib/anilist";
+import { logError } from "@/lib/logger";
 
 function AnimatedSection({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
@@ -33,15 +33,13 @@ function AnimatedSection({ children, className = "" }: { children: React.ReactNo
 export const revalidate = 300;
 
 export default async function Home() {
-  const session = await auth();
-
   const [trending, popular, upcoming, topRated] = await Promise.allSettled([
     getTrending(24), getPopular(18), getUpcoming(12), getTopRated(12),
   ]);
 
   const now = Math.floor(Date.now() / 1000);
   let ticker: Awaited<ReturnType<typeof getAiringSchedule>> = [];
-  try { ticker = await getAiringSchedule(now - 3600 * 6, now + 3600 * 18); } catch {}
+  try { ticker = await getAiringSchedule(now - 3600 * 6, now + 3600 * 18); } catch (e) { logError(e); }
 
   const getData = (r: PromiseSettledResult<Media[]>) => r.status === "fulfilled" ? r.value : [];
   const trendingData = getData(trending);
@@ -80,7 +78,7 @@ export default async function Home() {
       <FadeIn>
         <AnimatedSection>
           <div className="mb-6 flex items-end justify-between">
-            <div>
+            <div className="rounded-xl px-4 py-2">
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Right now</p>
               <h2 className="font-display text-3xl font-bold sm:text-4xl">Trending Anime</h2>
             </div>
@@ -111,7 +109,7 @@ export default async function Home() {
 
       <FadeIn delay={0.3}>
         <AnimatedSection>
-          <Section eyebrow="Critics' pick" title="Top Rated" viewAllTo="/search?sort=SCORE_DESC" items={topRatedData} />
+          <Section eyebrow="Critics' pick" title="Top Rated" viewAllTo="/top-anime" items={topRatedData} />
         </AnimatedSection>
       </FadeIn>
 
@@ -119,7 +117,7 @@ export default async function Home() {
       <FadeIn delay={0.35}>
         <AnimatedSection className="!py-8">
           <div className="mb-6 flex items-end justify-between">
-            <div>
+            <div className="rounded-xl px-4 py-2">
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">🇮🇳 Indian Hub</p>
               <h2 className="font-display text-2xl font-bold">Hindi, Tamil &amp; Telugu Dubs</h2>
             </div>
@@ -156,7 +154,7 @@ export default async function Home() {
       <FadeIn delay={0.4}>
         <AnimatedSection className="!py-8">
           <div className="mb-6 flex items-end justify-between">
-            <div>
+            <div className="rounded-xl px-4 py-2">
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Community</p>
               <h2 className="font-display text-2xl font-bold">Challenges, Forums &amp; More</h2>
             </div>
@@ -169,8 +167,8 @@ export default async function Home() {
               { href: "/challenges", emoji: "🏆", title: "Challenges", desc: "Seasonal & yearly", color: "#ff2d78" },
               { href: "/forum", emoji: "💬", title: "Forums", desc: "Discuss anime", color: "#29f2e0" },
               { href: "/quiz", emoji: "🧠", title: "Quiz", desc: "100+ questions", color: "#8a5cff" },
-              { href: "/tierlist", emoji: "📊", title: "Tier Lists", desc: "Make your ranking", color: "#22c55e" },
-              { href: "/achievements", emoji: "🎖️", title: "Achievements", desc: "30 badges to earn", color: "#f59e0b" },
+              { href: "/polls", emoji: "📊", title: "Polls", desc: "Vote & decide", color: "#22c55e" },
+              { href: "/critiques", emoji: "📝", title: "Critiques", desc: "Deep reviews", color: "#f59e0b" },
             ].map((card) => (
               <Link key={card.title} href={card.href} className="overflow-hidden rounded-xl neon-feature-card group text-center">
                 <div className="neon-border rounded-xl" style={{ background: `conic-gradient(from var(--border-angle), ${card.color}, transparent 40%, ${card.color}80, transparent 70%, ${card.color})` }} />
@@ -195,13 +193,12 @@ export default async function Home() {
               { href: "/cosplay", emoji: "📸", label: "Cosplay" },
               { href: "/watch-party", emoji: "🎬", label: "Watch Parties" },
               { href: "/messages", emoji: "💬", label: "Chat" },
-            ].map((link, i, arr) => (
-              <span key={link.href} className="flex items-center gap-2 text-xs">
-                <Link href={link.href} className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors flex items-center gap-1">
-                  <span>{link.emoji}</span>{link.label}
-                </Link>
-                {i < arr.length - 1 && <span className="text-[var(--color-line)]">·</span>}
-              </span>
+            ].map((link) => (
+              <Link key={link.href} href={link.href}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors flex items-center gap-1.5"
+              >
+                <span>{link.emoji}</span>{link.label}
+              </Link>
             ))}
           </div>
         </AnimatedSection>
@@ -230,9 +227,11 @@ export default async function Home() {
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link href="/filler" className="rounded-full bg-[var(--color-magenta)] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity">Skip Filler →</Link>
-              <Link href="/manga" className="rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold hover:border-[var(--color-cyan)] transition-colors">Browse Manga</Link>
-              <Link href="/schedule" className="rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold hover:border-[var(--color-cyan)] transition-colors">View Schedule</Link>
-              <Link href="/watchlist" className="rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold hover:border-[var(--color-cyan)] transition-colors">My Watchlist</Link>
+              <Link href="/tools" className="rounded-full bg-[var(--color-cyan)] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity">Anime Tools →</Link>
+              <Link href="/manga" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold transition-colors">Browse Manga</Link>
+              <Link href="/schedule" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold transition-colors">View Schedule</Link>
+              <Link href="/top-anime" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold transition-colors">Top Anime</Link>
+              <Link href="/watchlist" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold transition-colors">My Watchlist</Link>
               <HomeMomentButton />
             </div>
           </div>

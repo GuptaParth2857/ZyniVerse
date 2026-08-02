@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentProps } from "react";
 import ForumThreadCard from "@/components/ForumThreadCard";
 import ForumSidebar from "@/components/ForumSidebar";
 
+type ThreadData = ComponentProps<typeof ForumThreadCard>["thread"];
+
 export default function ForumCategoryClient({ slug }: { slug: string }) {
-  const [threads, setThreads] = useState<any[]>([]);
+  const [threads, setThreads] = useState<ThreadData[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);

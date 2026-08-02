@@ -28,7 +28,7 @@ export default function DubExpandingCard({ items }: Props) {
           <Link
             key={`${item.mal_id}-${idx}`}
             href={`/search?q=${encodeURIComponent(item.displayTitle || item.title)}`}
-            className="relative w-[140px] shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--color-line)] group bg-[var(--color-panel)]"
+            className="relative w-[140px] shrink-0 snap-start overflow-hidden rounded-2xl group bg-[var(--color-panel)] neon-rgb-border"
           >
             <div className="relative h-[210px] w-full bg-[var(--color-panel)]">
               <Image
@@ -68,13 +68,13 @@ export default function DubExpandingCard({ items }: Props) {
 
           return (
             <motion.div
-              key={item.mal_id}
+              key={`${item.mal_id}-${idx}`}
               layout
               animate={{ flex: isHovered ? 3 : 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               onMouseEnter={() => setHovered(item.mal_id)}
               onMouseLeave={() => setHovered(null)}
-              className="relative overflow-hidden rounded-2xl border border-[var(--color-line)] cursor-pointer group bg-[var(--color-panel)]"
+              className="relative overflow-hidden rounded-2xl cursor-pointer group bg-[var(--color-panel)] neon-rgb-border"
               style={{ minWidth: 0 }}
             >
               <Link

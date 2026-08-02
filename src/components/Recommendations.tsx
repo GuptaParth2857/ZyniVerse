@@ -49,6 +49,9 @@ export default function Recommendations({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const genresKey = genres?.join(",") ?? "";
+  const excludeKey = exclude?.join(",") ?? "";
+
   useEffect(() => {
     let cancelled = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -57,8 +60,8 @@ export default function Recommendations({
 
     const params = new URLSearchParams({ type });
     if (anilistId) params.set("id", String(anilistId));
-    if (genres && genres.length > 0) params.set("genre", genres.join(","));
-    if (exclude && exclude.length > 0) params.set("exclude", exclude.join(","));
+    if (genresKey) params.set("genre", genresKey);
+    if (excludeKey) params.set("exclude", excludeKey);
 
     fetch(`/api/recommendations?${params.toString()}`)
       .then((res) => {
@@ -76,7 +79,7 @@ export default function Recommendations({
       });
 
     return () => { cancelled = true; };
-  }, [type, anilistId, genres?.join(","), exclude?.join(",")]);
+  }, [type, anilistId, genresKey, excludeKey]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);

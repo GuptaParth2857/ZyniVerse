@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 export default function AwardNominationForm({
-  year,
   category,
   categories,
   onSubmit,
@@ -70,7 +70,7 @@ export default function AwardNominationForm({
               onClick={() => handleNominate(r)}
               className="w-full flex items-center gap-2 p-2 rounded-lg bg-white/5 hover:bg-white/[0.07] transition-colors"
             >
-              <img src={r.coverImage?.medium} alt="" className="w-6 h-8 rounded object-cover" />
+              <Image src={r.coverImage?.medium || ""} alt="" width={24} height={32} className="w-6 h-8 rounded object-cover" />
               <span className="text-xs text-white/70 text-left">{r.title.userPreferred}</span>
             </button>
           ))}

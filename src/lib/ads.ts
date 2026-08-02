@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { logError } from "@/lib/logger";
 
 export interface AdPlacement {
   id: string;
@@ -140,7 +141,7 @@ export async function shouldShowAdsForUser(userId?: string | null): Promise<bool
       select: { plan: true, status: true },
     });
     if (sub && sub.plan !== "free" && sub.status === "active") return false;
-  } catch {}
+  } catch (e) { logError(e); }
   return true;
 }
 

@@ -20,7 +20,7 @@ function formatYearsActive(val: unknown): string | null {
   return null;
 }
 
-function stripHtml(str = "") { return str.replace(/<[^>]*>/g, ""); }
+function stripHtml(str: string | null | undefined = "") { return str ? str.replace(/<[^>]*>/g, "") : ""; }
 
 function formatBirthday(dob: { year?: number; month?: number; day?: number } | undefined) {
   if (!dob?.month && !dob?.day) return null;
@@ -108,7 +108,9 @@ export default function StaffPage() {
 
             {/* Info */}
             <div className="min-w-0 flex-1">
-              <h1 className="font-display text-4xl font-bold sm:text-5xl drop-shadow-lg">{staff.name?.full}</h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                <h1 className="font-display text-4xl font-bold sm:text-5xl drop-shadow-lg">{staff.name?.full}</h1>
+              </div>
               {staff.name?.native && <p className="mt-1 text-lg text-[var(--color-mute)]">{staff.name.native}</p>}
 
               {staff.description && (
@@ -170,10 +172,10 @@ export default function StaffPage() {
                       return (
                         <Link key={`${m.id}-${i}`}
                           href={m.type === "MANGA" ? `/manga/${m.id}` : `/anime/${m.id}`}
-                          className="group relative flex items-center gap-4 overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                          className="group relative flex items-center gap-4 overflow-hidden rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 transition-all hover:-translate-y-0.5 hover:shadow-lg"
                         >
                           <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl transition-all group-hover:w-1.5" style={{ background: mediaAccent }} />
-                          <div className="relative shrink-0 h-20 w-14 rounded-lg border border-[var(--color-line)] overflow-hidden">
+                          <div className="relative shrink-0 h-20 w-14 rounded-lg neon-rgb-border overflow-hidden">
                             <Image src={m.coverImage?.large || ""} alt="" fill className="object-cover transition-transform group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -210,7 +212,7 @@ export default function StaffPage() {
 
 function StatCard({ accent, label, value }: { accent: string; label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+    <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] px-4 py-3 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
       <div className="text-sm font-bold font-mono" style={{ color: accent }}>{value}</div>
       <div className="text-[9px] text-[var(--color-mute)] uppercase tracking-widest mt-0.5">{label}</div>
     </div>

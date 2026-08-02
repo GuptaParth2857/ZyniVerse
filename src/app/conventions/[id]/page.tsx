@@ -46,11 +46,13 @@ export default async function ConventionDetailPage({ params }: Props) {
         Back to Conventions
       </Link>
 
-      <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)]/50 backdrop-blur-sm p-6 sm:p-8">
+      <div className="rounded-2xl neon-rgb-border bg-[var(--color-panel)]/50 backdrop-blur-sm p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
           <div>
             <div className="flex items-center gap-2 flex-wrap mb-2">
-              <h1 className="font-display text-2xl font-bold">{c.name}</h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                <h1 className="font-display text-2xl font-bold">{c.name}</h1>
+              </div>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize ${STATUS_COLORS[c.status] || STATUS_COLORS.upcoming}`}>{c.status}</span>
             </div>
             <p className="text-sm text-[var(--color-mute)]">{c.venue}</p>
@@ -58,7 +60,7 @@ export default async function ConventionDetailPage({ params }: Props) {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <a href={googleCalUrl} target="_blank" rel="noopener noreferrer"
-              className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
+              className="rounded-lg neon-rgb-border px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
               Add to Calendar
             </a>
             {c.ticketUrl && (
@@ -70,7 +72,7 @@ export default async function ConventionDetailPage({ params }: Props) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div className="neon-rgb-border rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 p-4">
           <div className="space-y-3">
             <DetailRow label="Dates" value={dateStr} />
             <DetailRow label="Venue" value={c.venue} />

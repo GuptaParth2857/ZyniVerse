@@ -45,7 +45,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       robots: { index: true, follow: true },
     };
   } catch {
-    return { title: "Anime Details — ZyniVerse" };
+    return {
+      title: "Anime Details — ZyniVerse",
+      description: "Browse detailed anime information including episodes, genres, characters, filler guides, watch order, and where to stream. India's #1 free anime platform.",
+      robots: { index: true, follow: true },
+    };
   }
 }
 
@@ -54,7 +58,7 @@ export default async function AnimeLayout({ children, params }: { children: Reac
   try {
     const { id } = await params;
     anime = await getAnimeDetailFull(id);
-  } catch {}
+  } catch { /* invalid or missing mediaId */ }
 
   const title = anime ? bestTitle(anime.title) : "";
   const desc = anime?.description

@@ -43,3 +43,13 @@ export interface SyncState {
   episode: number;
   timestamp: number;
 }
+
+export interface DmMessage {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  isDeleted: boolean;
+  createdAt: string;
+  sender: { id: string; username: string; avatar: string | null };
+}

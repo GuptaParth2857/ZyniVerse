@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useSyncExternalStore } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,6 +9,7 @@ import WatchPartyCard from "@/components/WatchPartyCard";
 import ImageUploader from "@/components/ImageUploader";
 import { PageTransition } from "@/components/PageTransition";
 import type { WatchPartyData } from "@/lib/watch-party";
+import { logError } from "@/lib/logger";
 
 interface AnimeResult {
   id: number;
@@ -45,6 +46,11 @@ function NeonOrbs() {
 }
 
 function Particles() {
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const pts = useRef<{ x: number; y: number; s: number; d: number; o: number; c: string; ty: number; delay: number }[]>([]);
   /* eslint-disable react-hooks/refs, react-hooks/purity */
   if (pts.current.length === 0) {
@@ -56,6 +62,9 @@ function Particles() {
         c: colors[i % 3], ty: -(Math.random() * 30 + 8), delay: Math.random() * 5,
       });
     }
+  }
+  if (!mounted) {
+    return <div className="absolute inset-0 overflow-hidden pointer-events-none" />;
   }
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -103,7 +112,7 @@ export default function WatchPartyClient() {
       ]);
       setActiveParties(active.parties || []);
       setUserParties(user.parties || []);
-    } catch {} finally {
+    } catch (e) { logError(e); } finally {
       setLoading(false);
     }
   }, [session]);
@@ -180,7 +189,7 @@ export default function WatchPartyClient() {
       if (data.party) {
         router.push(`/watch-party/${data.party.id}`);
       }
-    } catch (err) {
+    } catch {
       setCreateError("Network error. Please try again.");
       setCreating(false);
     }
@@ -218,14 +227,18 @@ export default function WatchPartyClient() {
             >
               Watch Together
             </motion.p>
-            <motion.h1
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="font-display text-4xl font-bold sm:text-5xl mt-2 bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent"
+              className="inline-block"
             >
-              Watch Party
-            </motion.h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2">
+                <h1 className="font-display text-4xl font-bold sm:text-5xl bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
+                  Watch Party
+                </h1>
+              </div>
+            </motion.div>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -247,7 +260,7 @@ export default function WatchPartyClient() {
             >
               <button
                 onClick={() => showCreate ? resetCreate() : setShowCreate(true)}
-                className="group relative inline-flex items-center gap-2 rounded-[14px] bg-gradient-to-r from-[rgba(0,255,224,0.1)] to-[rgba(255,0,230,0.08)] border border-[rgba(0,255,224,0.2)] px-6 py-3 text-sm font-bold text-[#00ffe0] transition-all duration-300 hover:border-[rgba(0,255,224,0.4)] hover:shadow-[0_0_30px_-8px_rgba(0,255,224,0.25)]"
+                className="group relative inline-flex items-center gap-2 rounded-[14px] bg-gradient-to-r from-[rgba(0,255,224,0.1)] to-[rgba(255,0,230,0.08)] neon-rgb-border px-6 py-3 text-sm font-bold text-[#00ffe0] transition-all duration-300 hover:border-[rgba(0,255,224,0.4)] hover:shadow-[0_0_30px_-8px_rgba(0,255,224,0.25)]"
               >
                 {showCreate ? (
                   <>
@@ -276,7 +289,7 @@ export default function WatchPartyClient() {
               transition={{ delay: 0.4 }}
               className="text-center mb-10"
             >
-              <a href="/login" className="inline-flex items-center gap-2 rounded-[14px] bg-gradient-to-r from-[rgba(0,255,224,0.1)] to-[rgba(255,0,230,0.08)] border border-[rgba(0,255,224,0.2)] px-6 py-3 text-sm font-bold text-[#00ffe0] transition-all duration-300 hover:border-[rgba(0,255,224,0.4)]">
+              <a href="/login" className="inline-flex items-center gap-2 rounded-[14px] bg-gradient-to-r from-[rgba(0,255,224,0.1)] to-[rgba(255,0,230,0.08)] neon-rgb-border px-6 py-3 text-sm font-bold text-[#00ffe0] transition-all duration-300 hover:border-[rgba(0,255,224,0.4)]">
                 Login to Create a Party
               </a>
             </motion.div>
@@ -292,7 +305,7 @@ export default function WatchPartyClient() {
                 transition={{ duration: 0.3 }}
                 className="mb-10 overflow-hidden"
               >
-                <div className="mx-auto max-w-lg rounded-[20px] border border-[rgba(0,255,224,0.1)] bg-[rgba(18,17,30,0.7)] backdrop-blur-md p-6 space-y-4">
+                <div className="neon-rgb-border mx-auto max-w-lg rounded-[20px] bg-[var(--color-panel)]/60 backdrop-blur-md p-6 space-y-4">
                   <h3 className="font-display text-lg font-bold text-white">Create a Party</h3>
 
                   {/* Anime search */}

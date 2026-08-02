@@ -17,8 +17,8 @@ export async function PUT(
   try {
     const result = await respondToRequest(id, session.user.id, action === "accept");
     return NextResponse.json(result);
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message || "Failed" }, { status: 400 });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Failed" }, { status: 400 });
   }
 }
 

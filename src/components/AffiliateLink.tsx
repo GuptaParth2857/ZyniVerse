@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback } from "react";
+import { logError } from "@/lib/logger";
+import { AMAZON_TAG } from "@/lib/affiliate-config";
 
 interface AffiliateLinkProps {
   partner: string;
@@ -19,7 +21,7 @@ export default function AffiliateLink({ partner, path, children, className, para
     }
   }
   if (partner === "amazon" || partner === "amazon-prime") {
-    url.searchParams.set("tag", "zyniverse-21");
+    url.searchParams.set("tag", AMAZON_TAG);
   }
 
   const handleClick = useCallback(async () => {
@@ -29,7 +31,7 @@ export default function AffiliateLink({ partner, path, children, className, para
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ partner, page: window.location.pathname }),
       });
-    } catch {}
+    } catch (e) { logError(e); }
   }, [partner]);
 
   return (

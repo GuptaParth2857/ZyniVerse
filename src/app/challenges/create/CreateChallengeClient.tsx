@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 
 const TYPES = [
@@ -180,7 +181,9 @@ export default function CreateChallengeClient() {
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <div className="mb-8">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Community</p>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Create a Challenge</h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mt-1">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl">Create a Challenge</h1>
+        </div>
         <p className="mt-2 text-sm text-[var(--color-mute)] max-w-2xl">
           Set up a custom anime/manga challenge. Pick a type, set your goal, and invite others to compete.
         </p>
@@ -211,8 +214,8 @@ export default function CreateChallengeClient() {
                       onClick={() => setType(t.value)}
                       className={`rounded-xl px-3 py-4 text-center transition-all ${
                         type === t.value
-                          ? "bg-gradient-to-b from-[var(--color-cyan)]/15 to-transparent text-[var(--color-cyan)] border border-[var(--color-cyan)]/30 shadow-[0_0_20px_-5px_rgba(0,255,224,0.2)]"
-                          : "border border-white/8 text-[var(--color-mute)] hover:border-white/20 hover:text-[var(--color-ink)]"
+                          ? "bg-gradient-to-b from-[var(--color-cyan)]/15 to-transparent text-[var(--color-cyan)] neon-rgb-border shadow-[0_0_20px_-5px_rgba(0,255,224,0.2)]"
+                          : "neon-rgb-border text-[var(--color-mute)] hover:border-white/20 hover:text-[var(--color-ink)]"
                       }`}
                     >
                       <span className="text-2xl block mb-1">{t.icon}</span>
@@ -237,8 +240,8 @@ export default function CreateChallengeClient() {
                       onClick={() => setPeriod(p.value)}
                       className={`rounded-xl px-3 py-3 text-center transition-all ${
                         period === p.value
-                          ? "bg-[var(--color-magenta)]/15 text-[var(--color-magenta)] border border-[var(--color-magenta)]/30 shadow-[0_0_20px_-5px_rgba(255,45,120,0.2)]"
-                          : "border border-white/8 text-[var(--color-mute)] hover:border-white/20 hover:text-[var(--color-ink)]"
+                          ? "bg-[var(--color-magenta)]/15 text-[var(--color-magenta)] neon-rgb-border shadow-[0_0_20px_-5px_rgba(255,45,120,0.2)]"
+                          : "neon-rgb-border text-[var(--color-mute)] hover:border-white/20 hover:text-[var(--color-ink)]"
                       }`}
                     >
                       <span className="text-lg block mb-0.5">{p.icon}</span>
@@ -256,7 +259,7 @@ export default function CreateChallengeClient() {
                     <select
                       value={year}
                       onChange={(e) => setYear(e.target.value)}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors appearance-none cursor-pointer"
+                      className="w-full rounded-xl neon-rgb-border bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors appearance-none cursor-pointer"
                     >
                       {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 1 + i).map((y) => (
                         <option key={y} value={y} className="bg-[var(--color-panel)]">{y}</option>
@@ -274,8 +277,8 @@ export default function CreateChallengeClient() {
                             onClick={() => setSeason(s.value)}
                             className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
                               season === s.value
-                                ? "bg-[var(--color-violet)]/15 text-[var(--color-violet)] border border-[var(--color-violet)]/30"
-                                : "border border-white/8 text-[var(--color-mute)] hover:border-white/20"
+                                ? "bg-[var(--color-violet)]/15 text-[var(--color-violet)] neon-rgb-border"
+                                : "neon-rgb-border text-[var(--color-mute)] hover:border-white/20"
                             }`}
                           >
                             {s.label}
@@ -301,7 +304,7 @@ export default function CreateChallengeClient() {
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                       required
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors [color-scheme:dark]"
+                      className="w-full rounded-xl neon-rgb-border bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors [color-scheme:dark]"
                     />
                   </div>
                   <div>
@@ -311,7 +314,7 @@ export default function CreateChallengeClient() {
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                       required
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors [color-scheme:dark]"
+                      className="w-full rounded-xl neon-rgb-border bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors [color-scheme:dark]"
                     />
                   </div>
                 </div>
@@ -343,7 +346,7 @@ export default function CreateChallengeClient() {
                       value={goalCount}
                       onChange={(e) => setGoalCount(e.target.value)}
                       required
-                      className="w-32 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors font-mono"
+                      className="w-32 rounded-xl neon-rgb-border bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors font-mono"
                     />
                     <span className="text-xs text-[var(--color-mute)]">entries</span>
                     <div className="flex items-center gap-2 ml-auto">
@@ -354,8 +357,8 @@ export default function CreateChallengeClient() {
                           onClick={() => setGoalCount(n.toString())}
                           className={`rounded-lg px-3 py-1.5 text-xs font-mono font-bold transition-all ${
                             goalCount === n.toString()
-                              ? "bg-[var(--color-cyan)]/15 text-[var(--color-cyan)] border border-[var(--color-cyan)]/30"
-                              : "border border-white/8 text-[var(--color-mute)] hover:border-white/20"
+                              ? "bg-[var(--color-cyan)]/15 text-[var(--color-cyan)] neon-rgb-border"
+                              : "neon-rgb-border text-[var(--color-mute)] hover:border-white/20"
                           }`}
                         >
                           {n}
@@ -381,7 +384,7 @@ export default function CreateChallengeClient() {
                       required
                       maxLength={100}
                       placeholder="e.g. Spring 2026 Anime Marathon"
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors placeholder:text-[var(--color-mute)]/40"
+                      className="w-full rounded-xl neon-rgb-border bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors placeholder:text-[var(--color-mute)]/40"
                     />
                   </div>
 
@@ -393,7 +396,7 @@ export default function CreateChallengeClient() {
                       rows={3}
                       maxLength={500}
                       placeholder="Describe your challenge. What's the theme? Why should people join?"
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors resize-none placeholder:text-[var(--color-mute)]/40"
+                      className="w-full rounded-xl neon-rgb-border bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors resize-none placeholder:text-[var(--color-mute)]/40"
                     />
                     <p className="text-[10px] text-[var(--color-mute)]/40 mt-1">{description.length}/500</p>
                   </div>
@@ -401,7 +404,7 @@ export default function CreateChallengeClient() {
                   <div>
                     <label className="block text-[11px] font-semibold text-[var(--color-mute)] mb-1.5">Cover Image</label>
                     {/* Mode toggle */}
-                    <div className="flex gap-1 mb-2 p-0.5 rounded-lg border border-white/10 bg-white/5 w-fit">
+                    <div className="flex gap-1 mb-2 p-0.5 rounded-lg neon-rgb-border bg-white/5 w-fit">
                       <button type="button" onClick={() => setCoverImageMode("url")}
                         className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all ${coverImageMode === "url" ? "bg-[var(--color-cyan)]/15 text-[var(--color-cyan)]" : "text-[var(--color-mute)] hover:text-white"}`}>
                         <span className="flex items-center gap-1.5">
@@ -423,14 +426,14 @@ export default function CreateChallengeClient() {
                         value={coverImage}
                         onChange={(e) => setCoverImage(e.target.value)}
                         placeholder="https://example.com/cover.jpg (optional)"
-                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors placeholder:text-[var(--color-mute)]/40"
+                        className="w-full rounded-xl neon-rgb-border bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors placeholder:text-[var(--color-mute)]/40"
                       />
                     ) : (
                       <div className="space-y-3">
                         <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif"
                           className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); e.target.value = ""; }} />
                         <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
-                          className="w-full rounded-xl border-2 border-dashed border-white/10 bg-white/3 p-6 text-center hover:border-[var(--color-magenta)]/30 hover:bg-[var(--color-magenta)]/5 transition-all disabled:opacity-50">
+                          className="w-full rounded-xl border-2 border-dashed neon-rgb-border bg-white/3 p-6 text-center hover:border-[var(--color-magenta)]/30 hover:bg-[var(--color-magenta)]/5 transition-all disabled:opacity-50">
                           {uploading ? (
                             <div className="space-y-3">
                               <div className="mx-auto h-10 w-10 rounded-full border-2 border-[var(--color-magenta)]/30 border-t-[var(--color-magenta)] animate-spin" />
@@ -457,7 +460,7 @@ export default function CreateChallengeClient() {
                     {/* Image preview */}
                     {coverImage && (
                       <div className="mt-3 relative group">
-                        <img src={coverImage} alt="Cover preview" className="w-full h-32 object-cover rounded-xl border border-white/10" />
+                        <Image src={coverImage} alt="Cover preview" width={400} height={128} className="w-full h-32 object-cover rounded-xl border border-white/10" />
                         <button type="button" onClick={() => setCoverImage("")}
                           className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/60 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -473,7 +476,7 @@ export default function CreateChallengeClient() {
                       onChange={(e) => setRules(e.target.value)}
                       rows={3}
                       placeholder="e.g. Must complete each entry. No dropping halfway..."
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors resize-none placeholder:text-[var(--color-mute)]/40"
+                      className="w-full rounded-xl neon-rgb-border bg-white/5 px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors resize-none placeholder:text-[var(--color-mute)]/40"
                     />
                   </div>
                 </div>
@@ -485,7 +488,7 @@ export default function CreateChallengeClient() {
                   icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>}
                   label="Visibility"
                 />
-                <div className="flex items-center justify-between p-4 rounded-xl border border-white/8 bg-white/3">
+                <div className="flex items-center justify-between p-4 rounded-xl neon-rgb-border bg-white/3">
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-10 h-6 rounded-full relative cursor-pointer transition-colors ${isPublic ? "bg-[var(--color-cyan)]" : "bg-white/10"}`}
@@ -511,7 +514,7 @@ export default function CreateChallengeClient() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full rounded-xl bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-magenta)] py-3.5 text-sm font-bold text-black shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] hover:shadow-[0_0_50px_-6px_rgba(0,255,224,0.5)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
+                  className="w-full rounded-xl bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-magenta)] py-3.5 text-sm font-bold text-black neon-rgb-border shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] hover:shadow-[0_0_50px_-6px_rgba(0,255,224,0.5)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {submitting ? (
                     <span className="inline-flex items-center gap-2">

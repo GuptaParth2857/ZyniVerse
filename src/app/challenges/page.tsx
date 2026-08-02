@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { getActiveChallenges, getPastChallenges } from "@/lib/challenges";
 import Link from "next/link";
@@ -37,7 +38,15 @@ export default async function ChallengesPage() {
     })
   );
 
-  let userChallenges: any[] = [];
+  type UserChallenge = Prisma.ChallengeParticipantGetPayload<{
+    include: {
+      challenge: {
+        include: { _count: { select: { participants: true; entries: true } } };
+      };
+    };
+  }>;
+
+  let userChallenges: UserChallenge[] = [];
   if (session?.user?.id) {
     const participations = await prisma.challengeParticipant.findMany({
       where: { userId: session.user.id },
@@ -66,9 +75,11 @@ export default async function ChallengesPage() {
           <span className="h-1.5 w-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]" />
           {totalActive} active challenge{totalActive !== 1 ? "s" : ""} &middot; {totalParticipants} participants
         </div>
-        <h1 className="text-4xl font-display font-bold tracking-tight">
-          <span className="gradient-text">Anime Challenges</span>
-        </h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+          <h1 className="text-4xl font-display font-bold tracking-tight">
+            <span className="gradient-text">Anime Challenges</span>
+          </h1>
+        </div>
         <p className="text-sm text-[var(--color-mute)] max-w-lg mx-auto leading-relaxed">
           Set goals, track your watchlist, and compete with the community. Join challenges to earn achievements and climb the leaderboard.
         </p>
@@ -82,11 +93,8 @@ export default async function ChallengesPage() {
       </div>
 
       {yearlyChallenge && (
-        <div className="neon-premium rounded-xl">
-          <div className="neon-premium-track rounded-xl" />
-          <div className="neon-premium-overlay rounded-[10.5px]" />
-          <div className="neon-premium-content">
-            <div className="p-6 flex flex-col sm:flex-row items-center gap-6">
+        <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+          <div className="p-6 flex flex-col sm:flex-row items-center gap-6">
               <div className="shrink-0 h-16 w-16 rounded-2xl bg-gradient-to-br from-[var(--color-cyan)] to-[var(--color-magenta)] flex items-center justify-center text-3xl shadow-lg shadow-[var(--color-cyan)]/20">
                 {'\u{1F3C6}'}
               </div>
@@ -105,7 +113,6 @@ export default async function ChallengesPage() {
               >
                 View Challenge
               </a>
-            </div>
           </div>
         </div>
       )}
@@ -120,13 +127,14 @@ export default async function ChallengesPage() {
             </span>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {userChallenges.map((p) => (
+            {userChallenges.map((p, i) => (
               <ChallengeCard
                 key={p.challenge.id}
-                challenge={p.challenge as any}
+                challenge={p.challenge}
                 joined
                 userProgress={p.progress}
                 userGoal={p.goalCount}
+                index={i}
               />
             ))}
           </div>
@@ -143,20 +151,16 @@ export default async function ChallengesPage() {
         </div>
         {activeWithCounts.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {activeWithCounts.map((c) => (
-              <ChallengeCard key={c.id} challenge={c as any} />
+            {activeWithCounts.map((c, i) => (
+              <ChallengeCard key={c.id} challenge={c} index={i} />
             ))}
           </div>
         ) : (
-          <div className="neon-premium rounded-xl">
-            <div className="neon-premium-track rounded-xl" />
-            <div className="neon-premium-overlay rounded-[10.5px]" />
-            <div className="neon-premium-content">
-              <div className="p-10 text-center">
+          <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+            <div className="p-10 text-center">
                 <div className="text-3xl mb-3">{'\u{1F3AE}'}</div>
                 <p className="text-sm text-[var(--color-mute)]">No active challenges right now. Check back soon!</p>
               </div>
-            </div>
           </div>
         )}
       </section>
@@ -173,8 +177,8 @@ export default async function ChallengesPage() {
         </div>
         {pastWithCounts.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {pastWithCounts.map((c) => (
-              <ChallengeCard key={c.id} challenge={c as any} />
+            {pastWithCounts.map((c, i) => (
+              <ChallengeCard key={c.id} challenge={c} index={i} />
             ))}
           </div>
         ) : (

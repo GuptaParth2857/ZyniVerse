@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useEffect, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
@@ -113,6 +113,11 @@ function NeonOrbs() {
 }
 
 function Particles() {
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const pts = useRef<{ x: number; y: number; s: number; d: number; o: number; c: string; ty: number; delay: number }[]>([]);
   /* eslint-disable react-hooks/refs, react-hooks/purity */
   if (pts.current.length === 0) {
@@ -124,6 +129,9 @@ function Particles() {
         c: colors[i % 3], ty: -(Math.random() * 40 + 8), delay: Math.random() * 5,
       });
     }
+  }
+  if (!mounted) {
+    return <div className="absolute inset-0 overflow-hidden pointer-events-none" />;
   }
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -155,27 +163,6 @@ function NeonBorder({ children }: { children: React.ReactNode; highlighted?: boo
       </div>
       <div className="relative z-10">{children}</div>
     </div>
-  );
-}
-
-function RippleButton({ children, className = "", ...props }: { children: React.ReactNode; className?: string } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const ref = useRef<HTMLButtonElement>(null);
-  const [ripples, setRipples] = useState<{ x: number; y: number; id: number }[]>([]);
-  const click = (e: React.MouseEvent) => {
-    const el = ref.current; if (!el) return;
-    const r = el.getBoundingClientRect();
-    const id = Date.now();
-    setRipples((p) => [...p, { x: e.clientX - r.left, y: e.clientY - r.top, id }]);
-    setTimeout(() => setRipples((p) => p.filter((x) => x.id !== id)), 800);
-    props.onClick?.(e as any);
-  };
-  return (
-    <button ref={ref} onClick={click} className={`relative overflow-hidden ${className}`} {...props}>
-      {ripples.map((r) => (
-        <span key={r.id} className="absolute rounded-full bg-white/20 animate-ripple" style={{ left: r.x - 8, top: r.y - 8, width: 16, height: 16 }} />
-      ))}
-      {children}
-    </button>
   );
 }
 
@@ -240,10 +227,12 @@ export default function PremiumPage() {
               className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">
               Pricing
             </motion.p>
-            <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className="font-display text-4xl font-bold sm:text-5xl mt-2 bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
-              ZyniVerse Premium
-            </motion.h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2">
+              <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                className="font-display text-4xl font-bold sm:text-5xl mt-2 bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
+                ZyniVerse Premium
+              </motion.h1>
+            </div>
             <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
               className="mt-3" style={{ color: "rgba(255,255,255,0.4)" }}>
               From API access for developers to ad-free browsing for fans. Choose what fits you.

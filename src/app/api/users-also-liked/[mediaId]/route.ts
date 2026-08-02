@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getMediaBatch } from "@/lib/anilist";
+import { logError } from "@/lib/logger";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ mediaId: string }> }) {
   const { mediaId } = await params;
@@ -35,7 +37,24 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ medi
       .sort((a, b) => b.count - a.count)
       .slice(0, 20);
 
-    return NextResponse.json({ recommendations: sorted });
+    const mediaIds = sorted.map((r) => r.mediaId);
+    const anilistData: Record<number, { title: string; coverImage: string }> = {};
+    try {
+      const batch = await getMediaBatch(mediaIds);
+      for (const m of batch) {
+        const title = m.title?.romaji || m.title?.english || m.title?.native || "";
+        const coverImage = m.coverImage?.large || m.coverImage?.medium || "";
+        anilistData[m.id] = { title, coverImage };
+      }
+    } catch (e) { logError(e); }
+
+    const enriched = sorted.map((r) => ({
+      ...r,
+      title: anilistData[r.mediaId]?.title || "",
+      coverImage: anilistData[r.mediaId]?.coverImage || "",
+    }));
+
+    return NextResponse.json({ recommendations: enriched });
   } catch {
     return NextResponse.json({ recommendations: [] });
   }

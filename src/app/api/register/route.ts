@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   if (rateCheck) return rateCheck;
 
   try {
-    const { action, email, username, password } = await req.json();
+    const { action, email, username, password, ref } = await req.json();
 
     if (action === "register") {
       if (!email || !username || !password) {
@@ -21,10 +21,28 @@ export async function POST(req: NextRequest) {
       }
       const bcrypt = await import("bcryptjs");
       const hashed = await bcrypt.hash(password, 12);
+      const code = username.toLowerCase() + Math.random().toString(36).slice(2, 6);
+      let referredBy: string | null = null;
+      if (ref) {
+        const referrer = await prisma.user.findUnique({ where: { referralCode: ref } });
+        if (referrer && referrer.id) referredBy = referrer.id;
+      }
       const user = await prisma.user.create({
-        data: { email, username, password: hashed },
+        data: { email, username, password: hashed, referralCode: code, referredBy },
       });
-      await prisma.userPoints.create({ data: { userId: user.id, points: 0, level: 1 } });
+      if (referredBy) {
+        await prisma.user.update({ where: { id: referredBy }, data: { referralCount: { increment: 1 } } });
+        const rp = await prisma.userPoints.findUnique({ where: { userId: referredBy } });
+        if (rp) {
+          await prisma.userPoints.update({ where: { userId: referredBy }, data: { points: { increment: 100 } } });
+        } else {
+          await prisma.userPoints.create({ data: { userId: referredBy, points: 100, level: 1 } });
+        }
+        await prisma.notification.create({
+          data: { userId: referredBy, type: "SYSTEM", title: "New Referral!", body: `${username} joined using your link. You earned 100 XP!`, link: "/earn" },
+        });
+      }
+      await prisma.userPoints.create({ data: { userId: user.id, points: referredBy ? 50 : 0, level: 1 } });
       return NextResponse.json({ id: user.id, email: user.email, username: user.username });
     }
 

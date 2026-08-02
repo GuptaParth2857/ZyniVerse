@@ -1,3 +1,6 @@
+import { logError } from "@/lib/logger";
+import { AMAZON_TAG } from "@/lib/affiliate-config";
+
 export interface AffiliatePartner {
   id: string;
   name: string;
@@ -28,11 +31,11 @@ export const AFFILIATE_PARTNERS: AffiliatePartner[] = [
   {
     id: "amazon",
     name: "Amazon",
-    baseUrl: "https://www.amazon.com",
+    baseUrl: "https://www.amazon.in",
     commissionRate: 4,
     cookieDays: 24,
     programType: "purchase",
-    region: ["US", "UK", "CA", "DE", "FR", "JP"],
+    region: ["IN"],
   },
   {
     id: "cdjapan",
@@ -79,7 +82,7 @@ export function getAffiliateLink(partner: string, path: string, params?: Record<
   }
 
   if (partnerConfig.id === "amazon") {
-    url.searchParams.set("tag", "zyniverse-21");
+    url.searchParams.set("tag", AMAZON_TAG);
   }
 
   return url.toString();
@@ -101,7 +104,7 @@ export async function trackClick(partner: string, page: string, userId?: string)
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ partner, page, userId }),
     });
-  } catch {}
+  } catch (e) { logError(e); }
 }
 
 export async function getAffiliateEarnings(startDate?: Date, endDate?: Date): Promise<{ clicks: number; estimatedRevenue: number }> {

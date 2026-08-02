@@ -83,13 +83,15 @@ export default function DubbedPage() {
     <PageTransition>
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-8">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">Regional Dubbed Hub</p>
-          <h1 className="font-display text-3xl font-black sm:text-4xl md:text-5xl tracking-tight mt-1">
-            Anime Dubs
-          </h1>
-          <p className="mt-2 text-sm text-[var(--color-mute)]">
-            Track English, Hindi, Tamil & Telugu dubbed anime from official sources.
-          </p>
+          <div className="neon-rgb-border rounded-xl px-5 py-3 inline-block">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">Regional Dubbed Hub</p>
+            <h1 className="font-display text-3xl font-black sm:text-4xl md:text-5xl tracking-tight mt-1">
+              Anime Dubs
+            </h1>
+            <p className="mt-2 text-sm text-[var(--color-mute)]">
+              Track English, Hindi, Tamil & Telugu dubbed anime from official sources.
+            </p>
+          </div>
         </motion.div>
 
         {/* Language tabs */}
@@ -99,7 +101,7 @@ export default function DubbedPage() {
               className={`relative rounded-full px-5 py-2 text-sm font-bold transition-all ${
                 language === tab.key
                   ? "text-black shadow-lg"
-                  : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"
+                  : "text-[var(--color-mute)] neon-rgb-border"
               }`}
               style={language === tab.key ? { backgroundColor: tab.accent } : {}}
             >
@@ -111,7 +113,7 @@ export default function DubbedPage() {
 
         {/* Stats */}
         {counts && (
-          <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--color-mute)] mb-8 pb-6 border-b border-[var(--color-line)]">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--color-mute)] mb-8 pb-6 rounded-xl px-4 py-3 neon-rgb-border">
             {currentSeason.length > 0 && (
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-[var(--color-cyan)]" style={{ animation: "pulse 1.5s ease-in-out infinite" }} />
@@ -138,7 +140,7 @@ export default function DubbedPage() {
         {loading ? (
           <div className="space-y-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-20 rounded-xl bg-[var(--color-panel)] border border-[var(--color-line)] animate-pulse" />
+              <div key={i} className="h-20 rounded-xl bg-[var(--color-panel)] animate-pulse neon-rgb-border" />
             ))}
           </div>
         ) : error ? (
@@ -147,7 +149,7 @@ export default function DubbedPage() {
           <div className="space-y-8">
             {currentSeason.length > 0 && (
               <section>
-                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4">
+                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4 rounded-xl px-4 py-2 inline-flex neon-rgb-border">
                   <span className="h-3 w-1 rounded-full bg-[var(--color-cyan)]" />
                   Current Season ({currentSeason.length})
                 </h2>
@@ -156,7 +158,7 @@ export default function DubbedPage() {
                     <DubExpandingCard items={sectionItems(currentSeason, "cs")} />
                     {currentSeason.length > SECTION_LIMIT && (
                       <button onClick={() => toggleExpand("cs")}
-                        className="mt-3 w-full rounded-xl border border-dashed border-[var(--color-line)] py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+                        className="mt-3 w-full rounded-xl py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all"
                       >
                         {expanded.has("cs") ? "Show less ↑" : `View all ${currentSeason.length} →`}
                       </button>
@@ -168,7 +170,7 @@ export default function DubbedPage() {
 
             {recent.length > 0 && (
               <section>
-                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4">
+                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4 rounded-xl px-4 py-2 inline-flex neon-rgb-border">
                   <span className="h-3 w-1 rounded-full bg-[var(--color-magenta)]" />
                   Recently Added ({recent.length})
                 </h2>
@@ -177,7 +179,7 @@ export default function DubbedPage() {
                     <DubExpandingCard items={sectionItems(recent, "re")} />
                     {recent.length > SECTION_LIMIT && (
                       <button onClick={() => toggleExpand("re")}
-                        className="mt-3 w-full rounded-xl border border-dashed border-[var(--color-line)] py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+                        className="mt-3 w-full rounded-xl py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all"
                       >
                         {expanded.has("re") ? "Show less ↑" : `View all ${recent.length} →`}
                       </button>
@@ -189,7 +191,7 @@ export default function DubbedPage() {
 
             {comingSoon.length > 0 && (
               <section>
-                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4">
+                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4 rounded-xl px-4 py-2 inline-flex neon-rgb-border">
                   <span className="h-3 w-1 rounded-full bg-[var(--color-amber)]" />
                   Coming Soon ({comingSoon.length})
                 </h2>
@@ -198,7 +200,7 @@ export default function DubbedPage() {
                     <DubExpandingCard items={sectionItems(comingSoon, "co")} />
                     {comingSoon.length > SECTION_LIMIT && (
                       <button onClick={() => toggleExpand("co")}
-                        className="mt-3 w-full rounded-xl border border-dashed border-[var(--color-line)] py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+                        className="mt-3 w-full rounded-xl py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all"
                       >
                         {expanded.has("co") ? "Show less ↑" : `View all ${comingSoon.length} →`}
                       </button>
@@ -210,7 +212,7 @@ export default function DubbedPage() {
 
             {available.length > 0 && (
               <section>
-                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4">
+                <h2 className="font-display text-lg font-bold flex items-center gap-2 mb-4 rounded-xl px-4 py-2 inline-flex neon-rgb-border">
                   <span className="h-3 w-1 rounded-full bg-[var(--color-cyan)]" />
                   Available Now ({available.length})
                 </h2>
@@ -219,7 +221,7 @@ export default function DubbedPage() {
                     <DubExpandingCard items={sectionItems(available, "av")} />
                     {available.length > SECTION_LIMIT && (
                       <button onClick={() => toggleExpand("av")}
-                        className="mt-3 w-full rounded-xl border border-dashed border-[var(--color-line)] py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+                        className="mt-3 w-full rounded-xl py-2.5 text-xs font-semibold text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all"
                       >
                         {expanded.has("av") ? "Show less ↑" : `View all ${available.length} →`}
                       </button>
@@ -230,7 +232,7 @@ export default function DubbedPage() {
             )}
 
             {currentSeason.length === 0 && available.length === 0 && comingSoon.length === 0 && recent.length === 0 && (
-              <div className="py-16 text-center">
+              <div className="py-16 text-center neon-rgb-border rounded-xl">
                 <p className="text-lg font-display text-[var(--color-mute)]">No dubbed anime found</p>
                 <p className="mt-1 text-sm text-[var(--color-mute)]">Try selecting a different language.</p>
               </div>
@@ -240,7 +242,7 @@ export default function DubbedPage() {
 
         {/* Indian Voice Actors (shown when Indian language is selected) */}
         {(language === "hindi" || language === "tamil" || language === "telugu") && (
-          <div className="mt-10 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6">
+          <div className="mt-10 rounded-xl neon-rgb-border bg-[var(--color-panel)] p-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-display text-lg font-bold">Indian Voice Actors</h3>

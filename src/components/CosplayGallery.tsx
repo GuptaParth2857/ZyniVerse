@@ -185,7 +185,7 @@ export default function CosplayGallery() {
                 value={animeFilter}
                 onChange={(e) => setAnimeFilter(e.target.value)}
                 placeholder="Filter by anime..."
-                className="w-full bg-transparent py-3 pl-3 pr-4 text-sm text-white placeholder-[var(--color-mute)]/50 outline-none"
+                className="cosplay-filter-input w-full bg-transparent py-3 pl-3 pr-4 text-sm text-white placeholder-[var(--color-mute)]/50 outline-none"
               />
             </div>
           </div>
@@ -201,7 +201,7 @@ export default function CosplayGallery() {
                 value={charFilter}
                 onChange={(e) => setCharFilter(e.target.value)}
                 placeholder="Filter by character..."
-                className="w-full bg-transparent py-3 pl-3 pr-4 text-sm text-white placeholder-[var(--color-mute)]/50 outline-none"
+                className="cosplay-filter-input w-full bg-transparent py-3 pl-3 pr-4 text-sm text-white placeholder-[var(--color-mute)]/50 outline-none"
               />
             </div>
           </div>

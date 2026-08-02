@@ -81,9 +81,11 @@ export default function AwardsYearPage({ params }: { params: Promise<{ year: str
     <div className="min-h-screen bg-[var(--color-void)]">
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-display)" }}>
-            🏆 ZyniVerse Awards {year}
-          </h1>
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mb-2">
+            <h1 className="text-4xl font-bold text-white" style={{ fontFamily: "var(--font-display)" }}>
+              🏆 ZyniVerse Awards {year}
+            </h1>
+          </div>
           <p className="text-sm text-white/40">Vote for the best anime of {year}</p>
         </div>
 
@@ -112,7 +114,7 @@ export default function AwardsYearPage({ params }: { params: Promise<{ year: str
               />
               <button
                 onClick={() => setShowNominate(showNominate === a.category ? null : a.category)}
-                className="mt-2 w-full py-1.5 text-xs text-white/40 border border-white/10 rounded-lg hover:bg-white/5"
+                className="mt-2 w-full py-1.5 text-xs text-white/40 neon-rgb-border rounded-lg hover:bg-white/5"
               >
                 + Nominate
               </button>

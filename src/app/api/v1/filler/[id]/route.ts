@@ -17,7 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const filler = await getFillerForAnime(anilistId, title);
   if (!filler) {
-    return NextResponse.json({ found: false, message: "No filler data found for this anime" }, { status: 200 });
+    return NextResponse.json({ found: false, message: "No filler data found for this anime" }, { status: 404 });
   }
 
   // Get community vote stats if available

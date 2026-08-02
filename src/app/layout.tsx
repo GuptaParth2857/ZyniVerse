@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Suspense } from "react";
 import { Rajdhani, Inter as InterFont, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -19,7 +20,6 @@ import SplashScreen from "@/components/SplashScreen";
 import HeartbeatProvider from "@/components/HeartbeatProvider";
 import ActivityTracker from "@/components/ActivityTracker";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
-import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 
 const rajdhani = Rajdhani({
@@ -112,6 +112,18 @@ export default function RootLayout({
   return (
     <html lang="en" className={`h-full antialiased ${rajdhani.variable} ${inter.variable} ${jetbrainsMono.variable}`} data-scroll-behavior="smooth">
       <head>
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-1B5P1BSEB9"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="gtag-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-1B5P1BSEB9');`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -236,7 +248,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col pb-16 md:pb-0">
+      <body className="min-h-full flex flex-col pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">
         <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5241033119281791"
           strategy="afterInteractive"

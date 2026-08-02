@@ -96,7 +96,7 @@ export default function ThemeDetailClient({ mediaId }: { mediaId: number }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: t.sequence * 0.03 }}
           >
-            <div className={`flex items-center gap-3 rounded-xl border p-3 sm:p-4 transition-all ${
+            <div className={`flex items-center gap-3 rounded-xl neon-rgb-border p-3 sm:p-4 transition-all ${
               isPlaying
                 ? "border-white/20 bg-white/5"
                 : "border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04]"
@@ -200,7 +200,9 @@ export default function ThemeDetailClient({ mediaId }: { mediaId: number }) {
                   <span className="text-[10px]">←</span> All Anime
                 </Link>
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-cyan)] mt-1">Theme Songs</p>
-                <h1 className="font-display text-2xl sm:text-3xl font-bold mt-1 text-white">{animeInfo.title}</h1>
+                <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                  <h1 className="font-display text-2xl sm:text-3xl font-bold mt-1 text-white">{animeInfo.title}</h1>
+                </div>
                 <div className="flex items-center gap-3 mt-2 text-xs text-white/40">
                   <span>{themes.length} themes</span>
                   {ops.length > 0 && <span className="text-[var(--color-cyan)]">{ops.length} openings</span>}
@@ -251,7 +253,7 @@ export default function ThemeDetailClient({ mediaId }: { mediaId: number }) {
 
           <div className="mt-16 text-center pb-8">
             <Link href={`/anime/${mediaId}`}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 px-6 py-3 text-sm font-semibold hover:border-[var(--color-cyan)] hover:bg-white/5 transition-all">
+              className="inline-flex items-center gap-2 rounded-full neon-rgb-border px-6 py-3 text-sm font-semibold hover:border-[var(--color-cyan)] hover:bg-white/5 transition-all">
               View Anime Details →
             </Link>
           </div>

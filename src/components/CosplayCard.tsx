@@ -69,10 +69,11 @@ export default function CosplayCard({ cosplay, onLike, liked, index = 0 }: Cospl
       className="break-inside-avoid mb-4 group"
       style={{ transition: "transform 0.2s ease-out" }}
     >
-      <Link href={`/cosplay/${cosplay.id}`} className="block neon-premium rounded-xl no-underline">
-        <div className="neon-premium-track rounded-xl" />
-        <div className="neon-premium-overlay rounded-[10.5px]" />
-        <div className="neon-premium-content">
+      <Link
+        href={`/cosplay/${cosplay.id}`}
+        className="neon-rgb-border block overflow-hidden rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm no-underline transition-all duration-300"
+      >
+        <div>
           {/* Image Section */}
           <div className="relative overflow-hidden rounded-t-xl">
             {cosplay.imageUrl ? (

@@ -29,7 +29,7 @@ export default function TierListCard({ tierList }: { tierList: TierListCardData 
   return (
     <Link
       href={`/tierlist/${tierList.id}`}
-      className="block rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 hover:border-[var(--color-cyan)] transition-colors"
+      className="block rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 hover:border-[var(--color-cyan)] transition-colors"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">

@@ -4,7 +4,7 @@ import { getDashboardMetrics } from "@/lib/analytics";
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user || (session.user as any).email !== "gupta.parth2857@gmail.com") {
+  if (!session?.user || (session.user as { email?: string | null }).email !== "gupta.parth2857@gmail.com") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

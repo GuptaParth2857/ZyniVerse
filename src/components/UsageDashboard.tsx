@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { logError } from "@/lib/logger";
 
 interface UsageData {
   key: string;
@@ -46,13 +47,12 @@ export default function UsageDashboard() {
               const usageData: UsageData = await usageRes.json();
               return { ...k, usage: { today: usageData.today, thisMonth: usageData.thisMonth, total: usageData.total } };
             }
-          } catch {}
+          } catch (e) { logError(e); }
           return { ...k, usage: { today: 0, thisMonth: 0, total: k.requests } };
         })
       );
       setKeys(keysWithUsage);
-    } catch {
-    } finally {
+    } catch (e) { logError(e); } finally {
       setLoading(false);
     }
   }, []);

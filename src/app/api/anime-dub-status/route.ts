@@ -3,6 +3,15 @@ import { NextResponse } from "next/server";
 const ANITALY_BASE = "https://anitally.in/api";
 const MYDUBLIST_URL = "https://raw.githubusercontent.com/Joelis57/MyDubList/main/dubs/confidence/normal/dubbed_english.json";
 
+interface RegionalDubEntry {
+  mal_id: number;
+  has_hindi: boolean;
+  has_tamil: boolean;
+  has_telugu: boolean;
+  is_current_season_dub: number;
+  coming_soon_languages: string | null;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const malId = searchParams.get("malId");
@@ -20,12 +29,12 @@ export async function GET(request: Request) {
       }),
     ]);
 
-    const regionalData = regionalRes.ok ? await regionalRes.json() : null;
+    const regionalData = regionalRes.ok ? (await regionalRes.json()) as { data?: RegionalDubEntry[] } : null;
     const englishData = englishRes.ok ? await englishRes.json() : null;
     const englishDubIds = englishData?.dubbed ? new Set<number>(englishData.dubbed) : new Set<number>();
 
     const malIdNum = parseInt(malId, 10);
-    const match = regionalData?.data?.find((item: any) => item.mal_id === malIdNum);
+    const match = regionalData?.data?.find((item) => item.mal_id === malIdNum);
 
     if (!match) {
       const hasEnglish = englishDubIds.has(malIdNum);
@@ -67,7 +76,7 @@ export async function GET(request: Request) {
         hasTamil,
         hasTelugu,
         isCurrentSeason: match.is_current_season_dub === 1,
-        comingSoonLanguages: comingSoon.filter((l: string) => !match[`has_${l.toLowerCase()}`]),
+        comingSoonLanguages: comingSoon.filter((l: string) => !(match as unknown as Record<string, unknown>)[`has_${l.toLowerCase()}`]),
       },
     });
   } catch {

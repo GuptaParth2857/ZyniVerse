@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { logError } from "@/lib/logger";
 
 interface BlogPostData {
   id: string;
@@ -88,7 +89,7 @@ export default function BlogPostDetail({ post, author, isLiked: initialLiked }: 
       const data = await res.json();
       setComments((prev) => [...prev, data.comment]);
       setCommentText("");
-    } catch {}
+    } catch (e) { logError(e); }
     setPostingComment(false);
   };
 
@@ -115,9 +116,11 @@ export default function BlogPostDetail({ post, author, isLiked: initialLiked }: 
             </p>
           </div>
         </div>
-        <h1 className="font-display text-3xl sm:text-4xl font-bold leading-tight">{post.title}</h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2">
+          <h1 className="font-display text-3xl sm:text-4xl font-bold leading-tight">{post.title}</h1>
+        </div>
         {tags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="neon-rgb-border rounded-xl px-4 py-2 mt-3 flex flex-wrap gap-2">
             {tags.map((tag) => (
               <Link key={tag} href={`/blog?tag=${encodeURIComponent(tag.trim())}`}
                 className="rounded-full bg-[var(--color-cyan)]/10 px-3 py-1 text-[10px] font-medium text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/20 transition-colors"
@@ -178,7 +181,7 @@ export default function BlogPostDetail({ post, author, isLiked: initialLiked }: 
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder="Write a comment..."
-                className="flex-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
+                className="flex-1 rounded-lg neon-rgb-border bg-[var(--color-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
                 onKeyDown={(e) => e.key === "Enter" && handleComment()}
               />
               <button
@@ -196,7 +199,7 @@ export default function BlogPostDetail({ post, author, isLiked: initialLiked }: 
           <div className="space-y-4">
             {comments.length === 0 && <p className="text-sm text-[var(--color-mute)]">No comments yet.</p>}
             {comments.map((c) => (
-              <div key={c.id} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+              <div key={c.id} className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] text-[8px] font-bold text-black">
                     {c.user.username.charAt(0).toUpperCase()}

@@ -32,9 +32,11 @@ export default function EmbedPage() {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">
           Widgets
         </p>
-        <h1 className="font-display text-4xl font-bold sm:text-5xl mt-2">
-          Embeddable Widgets
-        </h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mt-2">
+          <h1 className="font-display text-4xl font-bold sm:text-5xl">
+            Embeddable Widgets
+          </h1>
+        </div>
         <p className="mt-3 text-[var(--color-mute)] max-w-xl mx-auto">
           Add ZyniVerse data directly to your website or blog. Choose from filler guides,
           dub status badges, watch progress widgets, and more.
@@ -42,7 +44,7 @@ export default function EmbedPage() {
       </div>
 
       {/* Quick embed */}
-      <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6 mb-10">
+      <div className="rounded-2xl neon-rgb-border bg-[var(--color-panel)] p-6 mb-10">
         <h2 className="font-display text-xl font-bold mb-2">Quick Start</h2>
         <p className="text-sm text-[var(--color-mute)] mb-4">
           Pick a widget below, configure it, and paste the embed code into your site.
@@ -53,7 +55,7 @@ export default function EmbedPage() {
             <a
               key={w.id}
               href={`#widget-${w.id}`}
-              className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
+              className="rounded-full neon-rgb-border px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
             >
               {w.name}
             </a>

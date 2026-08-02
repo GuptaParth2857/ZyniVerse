@@ -4,8 +4,23 @@ import { useEffect, useState } from "react";
 import ForumThreadCard from "@/components/ForumThreadCard";
 import ForumSidebar from "@/components/ForumSidebar";
 
+interface ForumThread {
+  id: string;
+  title: string;
+  slug: string;
+  isPinned: boolean;
+  isLocked: boolean;
+  viewCount: number;
+  postCount: number;
+  createdAt: string;
+  user: { id: string; username: string; avatar: string | null; level?: number };
+  category?: { id: string; name: string; slug: string } | null;
+  _count?: { posts: number };
+  lastActivity?: string;
+}
+
 export default function ForumAnimeClient({ animeId }: { animeId: number }) {
-  const [threads, setThreads] = useState<any[]>([]);
+  const [threads, setThreads] = useState<ForumThread[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);

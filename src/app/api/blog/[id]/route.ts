@@ -25,17 +25,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     await prisma.blogPost.update({ where: { id: post.id }, data: { viewCount: { increment: 1 } } });
   }
 
+  const isLiked = userId ? ((post as { likes?: { id: string }[] }).likes?.length ?? 0) > 0 : false;
+
   return NextResponse.json({
     post: {
       ...post,
       commentCount: post._count.comments,
       likeCount: post._count.likes,
-      isLiked: userId ? (post as any).likes?.length > 0 : false,
+      isLiked,
       _count: undefined,
       likes: undefined,
     },
     author: post.user,
-    isLiked: userId ? (post as any).likes?.length > 0 : false,
+    isLiked,
   });
 }
 

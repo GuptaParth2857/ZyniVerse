@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getAnimeDetailFull, bestTitle, type MediaAnimeFull } from "@/lib/anilist";
@@ -11,17 +12,18 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const animeId = parseInt(id);
-  if (isNaN(animeId)) return { title: "Watch Order — ZyniVerse" };
+  if (isNaN(animeId)) return { title: "Watch Order — ZyniVerse", description: "Find the correct watch order for any anime series including sequels, prequels, movies, and OVAs. Never watch out of order again.", robots: { index: true, follow: true } };
 
   try {
     const anime = await getAnimeDetailFull(animeId);
     const title = bestTitle(anime.title);
     return {
       title: `${title} Watch Order — Auto-Generated | ZyniVerse`,
-      description: `Watch order guide for ${title} including all sequels, prequels, and side stories.`,
+      description: `Watch order guide for ${title} including all sequels, prequels, and side stories. Never watch out of order again.`,
+      robots: { index: true, follow: true },
     };
   } catch {
-    return { title: "Watch Order — ZyniVerse" };
+    return { title: "Watch Order — ZyniVerse", description: "Find the correct watch order for any anime series including sequels, prequels, movies, and OVAs. Never watch out of order again.", robots: { index: true, follow: true } };
   }
 }
 
@@ -59,27 +61,33 @@ export default async function AnimeWatchOrderPage({ params }: Props) {
       {/* Hero Banner */}
       <div className="relative rounded-2xl overflow-hidden border border-[var(--glass-border)] mb-8">
         <div className="absolute inset-0">
-          <img
+          <Image
             src={anime.bannerImage || anime.coverImage?.extraLarge || anime.coverImage?.large || ""}
             alt={title}
-            className="h-full w-full object-cover"
+            fill
+            priority
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-[var(--color-panel)]/70 to-[var(--color-panel)]/30" />
         </div>
         <div className="relative p-6 sm:p-8">
           <div className="flex items-start gap-4">
-            <img
+            <Image
               src={anime.coverImage?.large || ""}
               alt={title}
+              width={96}
+              height={128}
               className="w-20 h-28 sm:w-24 sm:h-32 object-cover rounded-lg shadow-lg shrink-0"
             />
             <div className="min-w-0">
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">
                 {/* auto-generated watch order */}
               </p>
-              <h1 className="font-display text-2xl sm:text-3xl font-bold mt-1 text-[var(--color-ink)]">
-                {title}
-              </h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                <h1 className="font-display text-2xl sm:text-3xl font-bold text-[var(--color-ink)]">
+                  {title}
+                </h1>
+              </div>
               <p className="mt-2 text-sm text-[var(--color-mute)] max-w-xl leading-relaxed">
                 {anime.genres?.slice(0, 5).join(" · ")}
                 {anime.episodes && ` · ${anime.episodes} episodes`}

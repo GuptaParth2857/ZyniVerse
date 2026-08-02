@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface FeedbackItem {
   id: string;
@@ -114,7 +115,7 @@ export default function FeedbackPage() {
                 <div key={f.id} className="rounded-xl border border-[var(--color-amber)]/20 bg-[var(--color-panel)] p-5 relative overflow-hidden">
                   {f.featuredImage && (
                     <div className="absolute inset-0 opacity-10">
-                      <img src={f.featuredImage} alt="" className="w-full h-full object-cover" />
+                      <Image src={f.featuredImage} alt="" fill className="w-full h-full object-cover" sizes="100%" />
                     </div>
                   )}
                   <div className="relative">
@@ -232,7 +233,7 @@ export default function FeedbackPage() {
                             <div key={c.id} className="rounded-lg border border-[var(--color-line)] bg-black/20 p-3">
                               <div className="flex items-center gap-2 mb-1">
                                 {c.user.avatar ? (
-                                  <img src={c.user.avatar} alt="" className="w-5 h-5 rounded-full" />
+                                  <Image src={c.user.avatar} alt="" width={20} height={20} className="w-5 h-5 rounded-full" />
                                 ) : (
                                   <div className="w-5 h-5 rounded-full bg-[var(--color-line)] flex items-center justify-center text-[8px]">
                                     {c.user.username[0].toUpperCase()}

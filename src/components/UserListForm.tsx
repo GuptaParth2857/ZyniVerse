@@ -37,14 +37,14 @@ export default function UserListForm() {
 
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-6">
-      <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6 space-y-4">
+      <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-6 space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">Title</label>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Top 10 Isekai, Best Anime of 2024..."
-            className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
+            className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
             required
           />
         </div>
@@ -55,7 +55,7 @@ export default function UserListForm() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What's this list about?"
             rows={3}
-            className="w-full resize-none rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
+            className="w-full resize-none rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
           />
         </div>
         <div>
@@ -69,7 +69,7 @@ export default function UserListForm() {
                 className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   type === t
                     ? "bg-[var(--color-cyan)] text-black"
-                    : "border border-[var(--color-line)] text-[var(--color-mute)] hover:text-[var(--color-ink)]"
+                    : "neon-rgb-border text-[var(--color-mute)] hover:text-[var(--color-ink)]"
                 }`}
               >
                 {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -92,7 +92,7 @@ export default function UserListForm() {
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-lg border border-[var(--color-line)] px-4 py-2 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
+          className="rounded-lg neon-rgb-border px-4 py-2 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
         >
           Cancel
         </button>

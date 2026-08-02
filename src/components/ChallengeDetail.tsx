@@ -3,14 +3,38 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
 import ChallengeProgress from "./ChallengeProgress";
+import { logError } from "@/lib/logger";
+import type { Prisma, ChallengeEntry, ChallengeParticipant } from "@prisma/client";
+
+type ChallengeDetailData = Prisma.ChallengeGetPayload<{
+  include: {
+    creator: { select: { id: true; username: true; avatar: true } };
+    _count: { select: { participants: true; entries: true } };
+  };
+}>;
+
+interface LeaderboardRow {
+  user: { id: string; username: string; avatar: string | null };
+  progress: number;
+  goalCount: number;
+  completedAt: Date | null;
+}
+
+interface AniListMedia {
+  id: number;
+  title?: { userPreferred?: string; english?: string; romaji?: string };
+  coverImage?: { large?: string };
+  type?: string;
+  episodes?: number | null;
+  chapters?: number | null;
+}
 
 interface ChallengeDetailProps {
-  challenge: any;
-  initialLeaderboard: any[];
-  initialParticipation: any;
+  challenge: ChallengeDetailData;
+  initialLeaderboard: LeaderboardRow[];
+  initialParticipation: ChallengeParticipant | null;
 }
 
 const typeConfig: Record<string, { label: string; gradient: string; icon: string }> = {
@@ -24,17 +48,16 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
   const { data: session } = useSession();
   const router = useRouter();
   const [participation, setParticipation] = useState(initialParticipation);
-  const [entries, setEntries] = useState<any[]>([]);
+  const [entries, setEntries] = useState<ChallengeEntry[]>([]);
   const [leaderboard, setLeaderboard] = useState(initialLeaderboard);
   const [activeTab, setActiveTab] = useState<"entries" | "leaderboard">("entries");
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<AniListMedia[]>([]);
   const [searching, setSearching] = useState(false);
   const [shareToast, setShareToast] = useState(false);
 
   const isJoined = !!participation;
-  const pct = participation ? Math.min(Math.round((participation.progress / participation.goalCount) * 100), 100) : 0;
   const type = typeConfig[challenge.type] || typeConfig.custom;
 
   const fetchEntries = useCallback(async () => {
@@ -43,7 +66,7 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
       const res = await fetch(`/api/challenges/${challenge.id}/entries`);
       const data = await res.json();
       setEntries(data.entries || []);
-    } catch {}
+    } catch (e) { logError(e); }
   }, [challenge.id, isJoined]);
 
   const fetchLeaderboard = useCallback(async () => {
@@ -51,7 +74,7 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
       const res = await fetch(`/api/challenges/${challenge.id}/leaderboard?limit=50`);
       const data = await res.json();
       setLeaderboard(data.leaderboard || []);
-    } catch {}
+    } catch (e) { logError(e); }
   }, [challenge.id]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -70,7 +93,7 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
       const data = await res.json();
       setParticipation(data.userParticipation);
       router.refresh();
-    } catch {}
+    } catch (e) { logError(e); }
     setLoading(false);
   }
 
@@ -81,11 +104,11 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
       setParticipation(null);
       setEntries([]);
       router.refresh();
-    } catch {}
+    } catch (e) { logError(e); }
     setLoading(false);
   }
 
-  async function handleAddEntry(media: any) {
+  async function handleAddEntry(media: AniListMedia) {
     if (!session) return;
     setLoading(true);
     try {
@@ -103,14 +126,14 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.progress) setParticipation((p: any) => ({ ...p, progress: data.progress.progress }));
+        if (data.progress) setParticipation((p) => (p ? { ...p, progress: data.progress.progress } : p));
         setSearchQuery("");
         setSearchResults([]);
         fetchEntries();
         fetchLeaderboard();
         router.refresh();
       }
-    } catch {}
+    } catch (e) { logError(e); }
     setLoading(false);
   }
 
@@ -125,7 +148,7 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
       fetchEntries();
       fetchLeaderboard();
       router.refresh();
-    } catch {}
+    } catch (e) { logError(e); }
     setLoading(false);
   }
 
@@ -140,7 +163,7 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
           const data = await res.json();
           setSearchResults(data.results || []);
         }
-      } catch {}
+      } catch (e) { logError(e); }
       setSearching(false);
     }, 400);
     return () => clearTimeout(timer);
@@ -153,11 +176,8 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="neon-premium rounded-xl">
-        <div className="neon-premium-track rounded-xl" />
-        <div className="neon-premium-overlay rounded-[10.5px]" />
-        <div className="neon-premium-content">
-          <div className="p-6">
+      <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+        <div className="p-6">
             <div className="flex items-start justify-between gap-4 mb-5">
               <div className="space-y-3">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -175,7 +195,9 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
                     </span>
                   )}
                 </div>
-                <h1 className="text-2xl font-display font-bold leading-tight">{challenge.title}</h1>
+                <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                  <h1 className="text-2xl font-display font-bold leading-tight">{challenge.title}</h1>
+                </div>
                 {challenge.description && (
                   <p className="text-sm text-[var(--color-mute)] leading-relaxed">{challenge.description}</p>
                 )}
@@ -227,13 +249,13 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
               {!isPast && (
                 isJoined ? (
                   <button onClick={handleLeave} disabled={loading}
-                    className="rounded-lg border border-red-500/30 px-5 py-2.5 text-sm font-bold text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-all"
+                    className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm font-bold text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-all"
                   >
                     {loading ? "Loading..." : "Leave Challenge"}
                   </button>
                 ) : (
                   <button onClick={handleJoin} disabled={loading}
-                    className="rounded-lg bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-magenta)] px-6 py-2.5 text-sm font-bold text-black hover:opacity-90 hover:shadow-lg hover:shadow-[var(--color-cyan)]/20 transition-all"
+                    className="rounded-lg bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-magenta)] px-6 py-2.5 text-sm font-bold text-black neon-rgb-border hover:opacity-90 hover:shadow-lg hover:shadow-[var(--color-cyan)]/20 transition-all"
                   >
                     {loading ? "Loading..." : "Join Challenge"}
                   </button>
@@ -247,7 +269,7 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
                     setShareToast(true);
                     setTimeout(() => setShareToast(false), 2000);
                   }}
-                  className="rounded-lg border border-white/10 px-5 py-2.5 text-sm font-medium text-[var(--color-mute)] hover:bg-white/5 hover:text-[var(--color-ink)] transition-all relative"
+                  className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm font-medium text-[var(--color-mute)] hover:bg-white/5 hover:text-[var(--color-ink)] transition-all relative"
                 >
                   {shareToast ? (
                     <span className="flex items-center gap-1.5 text-green-400">
@@ -262,17 +284,13 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
                   )}
                 </button>
               )}
-            </div>
           </div>
         </div>
       </div>
 
       {isJoined && participation && (
-        <div className="neon-premium rounded-xl">
-          <div className="neon-premium-track rounded-xl" />
-          <div className="neon-premium-overlay rounded-[10.5px]" />
-          <div className="neon-premium-content">
-            <div className="p-6">
+        <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+          <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-6 w-1 rounded-full bg-gradient-to-b from-[var(--color-cyan)] to-[var(--color-magenta)]" />
                 <h2 className="text-lg font-display font-bold">Your Progress</h2>
@@ -302,7 +320,7 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
                 )}
                 {searchResults.length > 0 && (
                   <div className="mt-2 glass-panel overflow-hidden">
-                    {searchResults.map((media: any) => (
+                    {searchResults.map((media) => (
                       <button
                         key={media.id}
                         onClick={() => handleAddEntry(media)}
@@ -328,21 +346,17 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
                   </div>
                 )}
               </div>
-            </div>
           </div>
         </div>
       )}
 
-      <div className="neon-premium rounded-xl">
-        <div className="neon-premium-track rounded-xl" />
-        <div className="neon-premium-overlay rounded-[10.5px]" />
-        <div className="neon-premium-content">
-          <div className="flex border-b border-white/5">
+      <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+        <div className="flex border-b border-white/5">
             <button
               onClick={() => setActiveTab("entries")}
               className={`flex-1 px-4 py-3.5 text-sm font-bold transition-all relative ${
                 activeTab === "entries" ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"
-              }`}
+              } neon-rgb-border`}
             >
               <span className="flex items-center justify-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
@@ -361,7 +375,7 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
               onClick={() => setActiveTab("leaderboard")}
               className={`flex-1 px-4 py-3.5 text-sm font-bold transition-all relative ${
                 activeTab === "leaderboard" ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"
-              }`}
+              } neon-rgb-border`}
             >
               <span className="flex items-center justify-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
@@ -384,8 +398,8 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
                 {isJoined ? (
                   entries.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {entries.map((entry: any) => (
-                        <div key={entry.id} className="relative group rounded-xl overflow-hidden bg-white/5 ring-1 ring-white/8 hover:ring-[var(--color-cyan)]/30 transition-all hover:shadow-lg hover:shadow-[var(--color-cyan)]/5">
+                      {entries.map((entry) => (
+                        <div key={entry.id} className="relative group rounded-xl overflow-hidden bg-white/5 neon-rgb-border hover:ring-[var(--color-cyan)]/30 transition-all hover:shadow-lg hover:shadow-[var(--color-cyan)]/5">
                           {entry.mediaImage ? (
                             <div className="relative aspect-[3/4]">
                               <Image src={entry.mediaImage} alt={entry.mediaTitle} fill className="object-cover" sizes="150px" />
@@ -428,7 +442,7 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
               <div>
                 {leaderboard.length > 0 ? (
                   <div className="space-y-2">
-                    {leaderboard.map((entry: any, i: number) => {
+                    {leaderboard.map((entry, i) => {
                       const entryPct = entry.goalCount > 0 ? Math.min(Math.round((entry.progress / entry.goalCount) * 100), 100) : 0;
                       const isTop3 = i < 3;
                       const rankColors = ["from-yellow-400 to-amber-500", "from-gray-300 to-gray-400", "from-amber-600 to-orange-500"];
@@ -438,8 +452,8 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
                           key={entry.user.id}
                           className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all ${
                             isTop3
-                              ? `bg-gradient-to-r ${rankColors[i]}/5 hover:${rankColors[i]}/10 ring-1 ring-white/5`
-                              : "hover:bg-white/5 ring-1 ring-transparent hover:ring-white/5"
+                              ? `bg-gradient-to-r ${rankColors[i]}/5 hover:${rankColors[i]}/10 neon-rgb-border`
+                              : "hover:bg-white/5 neon-rgb-border hover:ring-white/5"
                           }`}
                         >
                           <span className={`w-7 text-center text-sm font-mono font-bold ${i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-300" : i === 2 ? "text-amber-500" : "text-[var(--color-mute)]"}`}>
@@ -495,7 +509,6 @@ export default function ChallengeDetail({ challenge, initialLeaderboard, initial
               </div>
             )}
           </div>
-        </div>
       </div>
     </div>
   );

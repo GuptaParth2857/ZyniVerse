@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import ShareButton from "@/components/ShareButton";
 
 interface EpisodeTrackerProps {

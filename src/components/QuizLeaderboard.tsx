@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface ScoreEntry {
   user: { id: string; username: string; avatar: string | null };
@@ -48,7 +49,7 @@ export default function QuizLeaderboard() {
                 i === 0 ? "text-[var(--color-amber)]" : i === 1 ? "text-[var(--color-mute)]" : i === 2 ? "text-orange-600" : "text-[var(--color-mute)]"
               }`}>{i + 1}</span>
               {s.user.avatar ? (
-                <img src={s.user.avatar} alt="" className="w-5 h-5 rounded-full object-cover" />
+                <Image src={s.user.avatar} alt="" width={20} height={20} className="w-5 h-5 rounded-full object-cover" />
               ) : (
                 <div className="w-5 h-5 rounded-full bg-[var(--color-violet)]/20 flex items-center justify-center text-[9px] font-bold text-[var(--color-violet)]">
                   {s.user.username[0].toUpperCase()}

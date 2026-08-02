@@ -187,7 +187,6 @@ export async function scrapeAnimeCorner(): Promise<ScrapedAward[]> {
     });
     if (!res.ok) return awards;
     const html = await res.text();
-    const $ = cheerio.load(html);
 
     const lines = html.split("\n");
     let currentCategory = "";

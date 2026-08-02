@@ -51,7 +51,9 @@ export default function ThemesBrowsePage() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 animate-page-in">
         <div className="mb-6">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Music</p>
-          <h1 className="font-display text-3xl font-bold mt-1">Theme Songs Database</h1>
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mt-1">
+            <h1 className="font-display text-3xl font-bold">Theme Songs Database</h1>
+          </div>
           <p className="text-sm text-[var(--color-mute)] mt-1">Browse opening and ending themes from popular anime</p>
         </div>
 

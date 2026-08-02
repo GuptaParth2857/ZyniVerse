@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-page-custom-font -- raw HTML embed page cannot use next/font */
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -13,6 +14,13 @@ const LANG_CONFIG: Record<string, { label: string; color: string }> = {
   Telugu: { label: "తెలుగు", color: "#ffd700" },
   English: { label: "English", color: "#29f2e0" },
 };
+
+interface RegionalDubEntry {
+  mal_id: number;
+  has_hindi?: boolean;
+  has_tamil?: boolean;
+  has_telugu?: boolean;
+}
 
 export default async function DubEmbedPage({
   params,
@@ -38,7 +46,7 @@ export default async function DubEmbedPage({
       : new Set<number>();
 
     const match = regionalData?.data?.find(
-      (item: any) => item.mal_id === malIdNum
+      (item: RegionalDubEntry) => item.mal_id === malIdNum
     );
 
     if (match) {

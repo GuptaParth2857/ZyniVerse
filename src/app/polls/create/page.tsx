@@ -65,20 +65,22 @@ export default function CreatePollPage() {
           Back to Polls
         </Link>
 
-        <h1 className="font-display text-2xl font-bold mb-6">Create Poll</h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mb-6">
+          <h1 className="font-display text-2xl font-bold">Create Poll</h1>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-xs font-semibold text-[var(--color-mute)] mb-1.5">Title</label>
             <input value={title} onChange={(e) => setTitle(e.target.value)} required
-              className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-void)] px-4 py-3 text-sm text-white outline-none focus:border-[var(--color-cyan)] transition-colors"
+              className="w-full rounded-xl neon-rgb-border bg-[var(--color-void)] px-4 py-3 text-sm text-white outline-none focus:border-[var(--color-cyan)] transition-colors"
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-[var(--color-mute)] mb-1.5">Description (optional)</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
-              className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-void)] px-4 py-3 text-sm text-white outline-none focus:border-[var(--color-cyan)] transition-colors resize-none"
+              className="w-full rounded-xl neon-rgb-border bg-[var(--color-void)] px-4 py-3 text-sm text-white outline-none focus:border-[var(--color-cyan)] transition-colors resize-none"
             />
           </div>
 
@@ -92,11 +94,11 @@ export default function CreatePollPage() {
                     next[i] = e.target.value;
                     setOptions(next);
                   }} placeholder={`Option ${i + 1}`} required={i < 2}
-                    className="flex-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm text-white outline-none focus:border-[var(--color-cyan)] transition-colors"
+                    className="flex-1 rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-2 text-sm text-white outline-none focus:border-[var(--color-cyan)] transition-colors"
                   />
                   {options.length > 2 && (
                     <button type="button" onClick={() => removeOption(i)}
-                      className="rounded-lg border border-red-500/30 px-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+                      className="rounded-lg neon-rgb-border px-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
                     >✕</button>
                   )}
                 </div>
@@ -110,7 +112,7 @@ export default function CreatePollPage() {
           </div>
 
           <button type="submit" disabled={submitting}
-            className="w-full rounded-xl bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] py-3 text-sm font-bold text-black hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full rounded-xl bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] neon-rgb-border py-3 text-sm font-bold text-black hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {submitting ? "Creating..." : "Create Poll"}
           </button>

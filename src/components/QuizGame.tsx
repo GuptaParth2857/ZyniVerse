@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { logError } from "@/lib/logger";
 
 interface QuizQ {
   id: string;
@@ -39,6 +40,9 @@ const RANKS = [
   { name: "Diamond", xp: 7000, color: "#ff00ff", icon: "👑" },
   { name: "Legend", xp: 15000, color: "#ff3366", icon: "⭐" },
 ];
+
+const CONFETTI_COLORS = ["#ff00ff", "#00ffff", "#ffd700", "#ff3366", "#00ff7f", "#8a2be2", "#ff6b35", "#00bfff"];
+const CONFETTI_SHAPES = ["circle", "square", "triangle"];
 
 function getRank(xp: number) {
   let rank = RANKS[0];
@@ -107,7 +111,7 @@ function loadWallet(): Wallet {
         quizzesPlayed: parsed.quizzesPlayed || 0,
       };
     }
-  } catch {}
+  } catch (e) { logError(e); }
   return {
     xp: 0, totalCorrect: 0, totalPlayed: 0, dailyStreak: 0, lastPlayedDate: "",
     powerUps: { fiftyFifty: 3, skip: 1, doubleXp: 1 },
@@ -156,13 +160,11 @@ function useAudio() {
 }
 
 function Confetti({ show }: { show: boolean }) {
-  const colors = ["#ff00ff", "#00ffff", "#ffd700", "#ff3366", "#00ff7f", "#8a2be2", "#ff6b35", "#00bfff"];
-  const shapes = ["circle", "square", "triangle"];
   /* eslint-disable react-hooks/purity */
   const particles = useMemo(() => Array.from({ length: 80 }).map((_, i) => ({
     left: `${Math.random() * 100}%`,
     width: `${6 + Math.random() * 6}px`,
-    height: shapes[i % 3] === "triangle" ? "0" : `${6 + Math.random() * 6}px`,
+    height: CONFETTI_SHAPES[i % 3] === "triangle" ? "0" : `${6 + Math.random() * 6}px`,
     animationDuration: `${1.5 + Math.random() * 2}s`,
     animationDelay: `${Math.random() * 0.8}s`,
   })), []);
@@ -171,7 +173,7 @@ function Confetti({ show }: { show: boolean }) {
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
       {particles.map((p, i) => {
-        const shape = shapes[i % 3];
+        const shape = CONFETTI_SHAPES[i % 3];
         return (
           <div
             key={i}
@@ -181,11 +183,11 @@ function Confetti({ show }: { show: boolean }) {
               top: `-5%`,
               width: p.width,
               height: shape === "triangle" ? "0" : p.height,
-              backgroundColor: shape !== "triangle" ? colors[i % colors.length] : "transparent",
+              backgroundColor: shape !== "triangle" ? CONFETTI_COLORS[i % CONFETTI_COLORS.length] : "transparent",
               borderRadius: shape === "circle" ? "50%" : shape === "square" ? "2px" : "0",
               borderLeft: shape === "triangle" ? "4px solid transparent" : undefined,
               borderRight: shape === "triangle" ? "4px solid transparent" : undefined,
-              borderBottom: shape === "triangle" ? `8px solid ${colors[i % colors.length]}` : undefined,
+              borderBottom: shape === "triangle" ? `8px solid ${CONFETTI_COLORS[i % CONFETTI_COLORS.length]}` : undefined,
               animation: `confettiFall ${p.animationDuration} ease-in forwards`,
               animationDelay: p.animationDelay,
               opacity: 0.9,
@@ -267,10 +269,8 @@ function RankUpBanner({ newRank, show, onDone }: { newRank: typeof RANKS[0]; sho
   if (!show) return null;
   return (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
-      <div className="neon-premium rounded-3xl max-w-sm mx-4" style={{ animation: "rankUpPop 3.5s ease-out forwards" }}>
-        <div className="neon-premium-track rounded-3xl" />
-        <div className="neon-premium-overlay rounded-[22px]" />
-        <div className="neon-premium-content p-8 text-center">
+      <div className="neon-rgb-border rounded-3xl max-w-sm mx-4 bg-[var(--color-panel)]/60 backdrop-blur-sm" style={{ animation: "rankUpPop 3.5s ease-out forwards" }}>
+        <div className="p-8 text-center">
           <div className="text-sm uppercase tracking-widest text-gray-400 mb-2">New Rank Unlocked!</div>
           <div className="text-7xl mb-3">{newRank.icon}</div>
           <div className="text-3xl font-black" style={{ color: newRank.color, textShadow: `0 0 20px ${newRank.color}66` }}>
@@ -350,7 +350,7 @@ export default function QuizGame() {
       setPhase("result");
       if (startTime) setTotalTime(Math.floor((Date.now() - startTime.getTime()) / 1000));
     }
-  }, [currentIndex, questions.length, startTime, questions]);
+  }, [currentIndex, startTime, questions]);
 
   useEffect(() => {
     if (phase !== "playing" || answerState !== "none") {
@@ -612,10 +612,8 @@ export default function QuizGame() {
 
     return (
       <div className="mx-auto max-w-lg px-4 py-8 text-center">
-        <div className="neon-premium rounded-2xl mb-6">
-          <div className="neon-premium-track rounded-2xl" />
-          <div className="neon-premium-overlay rounded-[14.5px]" />
-          <div className="neon-premium-content p-6">
+        <div className="neon-rgb-border rounded-2xl mb-6 bg-[var(--color-panel)]/60 backdrop-blur-sm">
+          <div className="p-6">
             <div className="flex items-center gap-4 mb-4">
               <div className="text-4xl">{rank.icon}</div>
               <div className="text-left flex-1">
@@ -653,10 +651,8 @@ export default function QuizGame() {
             { key: "skip" as const, label: "Skip", icon: "⏭️", count: wallet.powerUps.skip, desc: "Skip question" },
             { key: "doubleXp" as const, label: "2x XP", icon: "⚡", count: wallet.powerUps.doubleXp, desc: "Double XP" },
           ].map((p) => (
-            <div key={p.key} className="neon-premium rounded-xl flex-1">
-              <div className="neon-premium-track rounded-xl" />
-              <div className="neon-premium-overlay rounded-[10.5px]" />
-              <div className="neon-premium-content p-3 text-center">
+            <div key={p.key} className="neon-rgb-border rounded-xl flex-1 bg-[var(--color-panel)]/60 backdrop-blur-sm">
+              <div className="p-3 text-center">
                 <span className="text-lg">{p.icon}</span>
                 <p className="text-[10px] font-bold text-white mt-1">{p.label}</p>
                 <p className="text-xs font-mono font-bold text-[#ffd700]">×{p.count}</p>
@@ -665,10 +661,8 @@ export default function QuizGame() {
           ))}
         </div>
 
-        <div className="neon-premium rounded-2xl">
-          <div className="neon-premium-track rounded-2xl" />
-          <div className="neon-premium-overlay rounded-[14.5px]" />
-          <div className="neon-premium-content p-6 sm:p-8">
+        <div className="neon-rgb-border rounded-2xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+          <div className="p-6 sm:p-8">
             <span className="text-3xl block mb-3">🎮</span>
             <h2 className="font-display text-2xl font-bold mb-1">Ready to Play?</h2>
             <p className="text-sm text-gray-400 mb-6">Choose your settings and start earning XP</p>
@@ -742,13 +736,6 @@ export default function QuizGame() {
 
     const finalRank = getRank(wallet.xp);
     const isNewBest = score >= wallet.bestScore && score > 0;
-    const totalSpeedBonus = answers.reduce((sum, a) => sum + a.xpEarned, 0);
-
-    const xpBreakdown = answers.filter((a) => a.correct).reduce((acc, a) => {
-      const base = Math.round(a.xpEarned / (doubleXpActive ? 2 : 1));
-      acc.base += base;
-      return acc;
-    }, { base: 0 });
 
     return (
       <div className="mx-auto max-w-lg px-4 py-8">
@@ -756,10 +743,8 @@ export default function QuizGame() {
         <RankUpBanner newRank={newRank} show={showRankUp} onDone={() => setShowRankUp(false)} />
         <FloatingXP value={floatingXPValue} show={showFloatingXP} />
 
-        <div className="neon-premium rounded-2xl">
-          <div className="neon-premium-track rounded-2xl" />
-          <div className="neon-premium-overlay rounded-[14.5px]" />
-          <div className="neon-premium-content p-8 text-center">
+        <div className="neon-rgb-border rounded-2xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+          <div className="p-8 text-center">
             <div className="text-8xl font-black font-mono mb-2" style={{ color: gradeColor, textShadow: `0 0 40px ${gradeColor}66, 0 0 80px ${gradeColor}33` }}>
               {grade}
             </div>
@@ -777,7 +762,7 @@ export default function QuizGame() {
               </div>
             )}
 
-            <div className="grid grid-cols-4 gap-2 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
               <div className="rounded-xl bg-white/5 border border-white/10 p-3">
                 <div className="text-xl font-bold font-mono text-[#00ffff]">
                   <AnimatedNumber value={score} duration={800} suffix={`/${questions.length}`} />
@@ -968,10 +953,8 @@ export default function QuizGame() {
       </div>
 
       <QuestionTransition questionKey={questionKey}>
-        <div className="neon-premium rounded-2xl mb-4">
-          <div className="neon-premium-track rounded-2xl" />
-          <div className="neon-premium-overlay rounded-[14.5px]" />
-          <div className="neon-premium-content p-6">
+        <div className="neon-rgb-border rounded-2xl mb-4 bg-[var(--color-panel)]/60 backdrop-blur-sm">
+          <div className="p-6">
             {currentQ.animeTitle && (
               <p className="text-[10px] uppercase tracking-wider text-[#8a2be2] mb-2 font-mono">{currentQ.animeTitle}</p>
             )}

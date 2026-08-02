@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Loader, { ErrorState } from "@/components/Loader";
+import { ErrorState } from "@/components/Loader";
 import type { UserStats } from "@/lib/stats";
 
 export default function StatsDashboard() {

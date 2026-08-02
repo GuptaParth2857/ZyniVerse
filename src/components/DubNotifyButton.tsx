@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { logError } from "@/lib/logger";
 
 interface DubNotification {
   id: string;
@@ -41,7 +42,7 @@ export default function DubNotifyButton({ malId, language, animeTitle }: { malId
         });
         setSubscribed(true);
       }
-    } catch {}
+    } catch (e) { logError(e); }
     setLoading(false);
   }
 

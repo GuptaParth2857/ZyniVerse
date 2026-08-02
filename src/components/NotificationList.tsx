@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { logError } from "@/lib/logger";
 
 interface Notification {
   id: string;
@@ -21,9 +21,10 @@ const TYPE_ICONS: Record<string, string> = {
   COMMENT: "\uD83D\uDCAC",
   IMPORT: "\uD83D\uDCE5",
   SYSTEM: "\u2699\uFE0F",
+  FRIEND: "\uD83E\uDD1D",
 };
 
-const TYPES = ["ALL", "AIRING", "FOLLOW", "REVIEW", "COMMENT", "IMPORT", "SYSTEM"] as const;
+const TYPES = ["ALL", "AIRING", "FOLLOW", "REVIEW", "COMMENT", "IMPORT", "SYSTEM", "FRIEND"] as const;
 
 function timeAgo(date: string): string {
   const diff = Date.now() - new Date(date).getTime();
@@ -40,7 +41,7 @@ function timeAgo(date: string): string {
 export default function NotificationList() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<string>("ALL");
-  const [offset, setOffset] = useState(0);
+  const offsetRef = useRef(0);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -48,7 +49,7 @@ export default function NotificationList() {
   const fetchNotifications = useCallback(async (reset = false) => {
     setLoading(true);
     try {
-      const currentOffset = reset ? 0 : offset;
+      const currentOffset = reset ? 0 : offsetRef.current;
       const res = await fetch(`/api/notifications?limit=20&offset=${currentOffset}`);
       const data = await res.json();
       if (reset) {
@@ -57,22 +58,22 @@ export default function NotificationList() {
         setNotifications((prev) => [...prev, ...(data.notifications ?? [])]);
       }
       setHasMore(data.notifications?.length === 20);
-      if (!reset) setOffset(currentOffset + 20);
-    } catch {} finally {
+      if (!reset) offsetRef.current = currentOffset + 20;
+    } catch (e) { logError(e); } finally {
       setLoading(false);
     }
-  }, [offset]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setOffset(0);
-    fetchNotifications(true);
   }, []);
 
   useEffect(() => {
+    offsetRef.current = 0;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on mount standard pattern
+    fetchNotifications(true);
+  }, [fetchNotifications]);
+
+  useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchNotifications(true);
-  }, [filter]);
+  }, [filter, fetchNotifications]);
 
   async function handleLoadMore() {
     await fetchNotifications();
@@ -85,7 +86,7 @@ export default function NotificationList() {
         setNotifications((prev) =>
           prev.map((item) => (item.id === n.id ? { ...item, read: true } : item))
         );
-      } catch {}
+      } catch (e) { logError(e); }
     }
     if (n.link) router.push(n.link);
   }

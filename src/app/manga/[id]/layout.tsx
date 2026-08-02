@@ -36,7 +36,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       robots: { index: true, follow: true },
     };
   } catch {
-    return { title: "Manga Details — ZyniVerse" };
+    return {
+      title: "Manga Details — ZyniVerse",
+      description: "Browse detailed manga information including chapters, genres, characters, and recommendations. Read manga online with India's #1 free anime platform.",
+      robots: { index: true, follow: true },
+    };
   }
 }
 

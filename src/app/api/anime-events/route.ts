@@ -3,8 +3,7 @@ import {
   getAnimeEvents,
   getEventTypes,
   getCountries,
-  getAllAnnouncements,
-  getUpcomingEvents,
+  type AnimeEvent,
 } from "@/lib/anime-events";
 
 export const dynamic = "force-dynamic";
@@ -12,8 +11,8 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type") as any;
-    const status = searchParams.get("status") as any;
+    const type = searchParams.get("type") as AnimeEvent["type"] | "all" | undefined;
+    const status = searchParams.get("status") as AnimeEvent["status"] | "all" | undefined;
     const country = searchParams.get("country") || undefined;
     const year = searchParams.get("year") ? Number(searchParams.get("year")) : undefined;
     const search = searchParams.get("search") || undefined;

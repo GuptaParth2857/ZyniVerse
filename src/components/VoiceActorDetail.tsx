@@ -65,7 +65,9 @@ export default function VoiceActorDetail({ id }: { id: string }) {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-3">
-                <h1 className="font-display text-3xl font-bold sm:text-4xl drop-shadow-lg">{actor.name}</h1>
+                <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                  <h1 className="font-display text-3xl font-bold sm:text-4xl drop-shadow-lg">{actor.name}</h1>
+                </div>
                 {actor.isIndian && (
                   <span className="rounded-full bg-[var(--color-magenta)] px-3 py-1 text-xs font-bold text-black">Indian VA</span>
                 )}
@@ -104,10 +106,10 @@ export default function VoiceActorDetail({ id }: { id: string }) {
                 <button
                   key={lang}
                   onClick={() => setLanguageFilter(lang)}
-                  className={`rounded-full px-5 py-2.5 text-xs font-medium border transition-colors ${
+                  className={`rounded-full px-5 py-2.5 text-xs font-medium transition-colors ${
                     languageFilter === lang
-                      ? "border-[var(--color-cyan)] text-[var(--color-cyan)] bg-[var(--color-cyan)]/10"
-                      : "border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]"
+                      ? "neon-rgb-border text-[var(--color-cyan)] bg-[var(--color-cyan)]/10"
+                      : "neon-rgb-border text-[var(--color-mute)] hover:border-[var(--color-cyan)]"
                   }`}
                 >
                   {lang === "all" ? "All" : lang}
@@ -133,7 +135,7 @@ export default function VoiceActorDetail({ id }: { id: string }) {
 
 function StatCard({ accent, label, value }: { accent: string; label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 text-center">
+    <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] px-4 py-3 text-center">
       <div className="text-sm font-bold font-mono" style={{ color: accent }}>{value}</div>
       <div className="text-[9px] text-[var(--color-mute)] uppercase tracking-widest mt-0.5">{label}</div>
     </div>
@@ -143,7 +145,7 @@ function StatCard({ accent, label, value }: { accent: string; label: string; val
 function RoleCard({ role }: { role: VoiceActorRole }) {
   return (
     <Link href={`/anime/${role.animeId}`} className="group block">
-      <div className="relative overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+      <div className="relative overflow-hidden rounded-xl neon-rgb-border bg-[var(--color-panel)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
         <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-void)]">
           {role.animeImage ? (
             <Image src={role.animeImage} alt={role.animeTitle} fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />

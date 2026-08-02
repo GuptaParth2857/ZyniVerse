@@ -1,3 +1,5 @@
+import { logError } from "@/lib/logger";
+
 export interface QuizQuestion {
   id: string;
   question: string;
@@ -145,8 +147,15 @@ function shuffleArray<T>(arr: T[], rng: () => number): T[] {
   return result;
 }
 
-const ANIME_CHARACTERS_CACHE = new Map<number, { name: string; image?: string }[]>();
-const CACHE_TTL_Q = 30 * 60 * 1000;
+interface AniListMedia {
+  id: number;
+  title?: { romaji?: string; english?: string };
+  coverImage?: { large?: string };
+  studios?: { nodes?: { id: number; name?: string; isAnimationStudio?: boolean }[] };
+  characters?: { edges?: { node: { name: { full: string }; image?: { medium?: string } } }[] };
+  episodes?: number;
+  startDate?: { year?: number };
+}
 
 async function fetchCharactersBatch(animeIds: number[]): Promise<Map<number, { name: string; image?: string }[]>> {
   const query = `
@@ -169,10 +178,10 @@ async function fetchCharactersBatch(animeIds: number[]): Promise<Map<number, { n
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({ query, variables: { ids: animeIds } }),
     });
-    const data = await res.json();
+    const data = (await res.json()) as { Page?: { media?: AniListMedia[] } };
     const map = new Map<number, { name: string; image?: string }[]>();
-    for (const m of data?.Page?.media || []) {
-      const chars = (m.characters?.edges || []).map((e: any) => ({ name: e.node.name.full, image: e.node.image?.medium }));
+    for (const m of data.Page?.media || []) {
+      const chars = (m.characters?.edges || []).map((e) => ({ name: e.node.name.full, image: e.node.image?.medium }));
       if (chars.length > 0) map.set(m.id, chars);
     }
     return map;
@@ -189,11 +198,11 @@ async function generateQuestionsFromAnime(count: number): Promise<QuizQuestion[]
         variables: { p: count + 10 },
       }),
     });
-    const data = await res.json();
-    const mediaList: any[] = data?.Page?.media || [];
+    const data = (await res.json()) as { Page?: { media?: AniListMedia[] } };
+    const mediaList = data.Page?.media || [];
     if (mediaList.length < 3) return [];
 
-    const charsMap = await fetchCharactersBatch(mediaList.map((m: any) => m.id));
+    const charsMap = await fetchCharactersBatch(mediaList.map((m) => m.id));
 
     const questions: QuizQuestion[] = [];
     const rng = () => Math.random();
@@ -204,15 +213,15 @@ async function generateQuestionsFromAnime(count: number): Promise<QuizQuestion[]
       const qid = `dyn-${anime.id}`;
 
       const studioNodes = anime.studios?.nodes || [];
-      const studio = studioNodes.find((s: any) => s.isAnimationStudio !== false)?.name || studioNodes[0]?.name;
+      const studio = studioNodes.find((s) => s.isAnimationStudio !== false)?.name || studioNodes[0]?.name;
 
       const characters = charsMap.get(anime.id) || [];
       const mainChar = characters[0]?.name;
 
       const wrongStudios = mediaList
-        .filter((m: any) => { const nodes = m.studios?.nodes || []; return nodes[0]?.name && nodes[0]?.name !== studio; })
-        .map((m: any) => { const nodes = m.studios?.nodes || []; return nodes.find((s: any) => s.isAnimationStudio !== false)?.name || nodes[0]?.name; })
-        .filter(Boolean);
+        .filter((m) => { const nodes = m.studios?.nodes || []; return nodes[0]?.name && nodes[0]?.name !== studio; })
+        .map((m) => { const nodes = m.studios?.nodes || []; return nodes.find((s) => s.isAnimationStudio !== false)?.name || nodes[0]?.name; })
+        .filter((v): v is string => Boolean(v));
       const uniqueWrongStudios = [...new Set<string>(wrongStudios)].filter(Boolean);
 
       // Studio question
@@ -233,8 +242,8 @@ async function generateQuestionsFromAnime(count: number): Promise<QuizQuestion[]
       // Episode count question
       if (anime.episodes && anime.episodes > 0 && questions.length < count) {
         const wrongEps = mediaList
-          .filter((m: any) => m.episodes && m.episodes !== anime.episodes)
-          .map((m: any) => String(m.episodes))
+          .filter((m) => m.episodes && m.episodes !== anime.episodes)
+          .map((m) => String(m.episodes))
           .filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
 
         const wrongEpsSample = shuffleArray(wrongEps, rng).slice(0, 3);
@@ -256,9 +265,9 @@ async function generateQuestionsFromAnime(count: number): Promise<QuizQuestion[]
       if (anime.startDate?.year && questions.length < count) {
         const year = String(anime.startDate.year);
         const wrongYears = mediaList
-          .filter((m: any) => m.startDate?.year && String(m.startDate.year) !== year)
-          .map((m: any) => String(m.startDate.year))
-          .filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
+          .map((m) => (m.startDate?.year ? String(m.startDate.year) : null))
+          .filter((v): v is string => v !== null)
+          .filter((v: string, i: number, a: string[]) => v !== year && a.indexOf(v) === i);
         const wrongSample = shuffleArray(wrongYears, rng).slice(0, 3);
         if (wrongSample.length === 3) {
           questions.push({
@@ -388,7 +397,7 @@ export async function checkAnswer(questionId: string, answer: string): Promise<{
     try {
       const { findQuestion } = await import("./quiz-store");
       question = findQuestion?.(questionId);
-    } catch {}
+    } catch (e) { logError(e); }
   }
   if (!question) return { correct: false, correctAnswer: "Unknown", explanation: "Question not found." };
   return {

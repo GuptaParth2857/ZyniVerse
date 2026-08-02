@@ -22,9 +22,11 @@ export default function TagsPage() {
   return (
     <div className="min-h-screen bg-[var(--color-void)]">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-display)" }}>
-          Community Tags
-        </h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2">
+          <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-display)" }}>
+            Community Tags
+          </h1>
+        </div>
         <p className="text-sm text-white/40 mb-8">
           Browse and discover anime by community-created tags
         </p>

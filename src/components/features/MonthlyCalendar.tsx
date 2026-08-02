@@ -78,6 +78,7 @@ export default function MonthlyCalendar() {
           <div className="flex items-center gap-3">
             <span className="text-lg">📅</span>
             <h3 className="font-display text-lg font-bold">{MONTHS[month]} {year}</h3>
+            <Link href="/calendar" className="text-[10px] font-semibold text-[var(--color-cyan)] hover:underline ml-1">Full Calendar →</Link>
           </div>
           <div className="flex items-center gap-1.5">
             <button onClick={prevMonth}

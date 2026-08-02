@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { LIVE_ACTION_ANIME, LIVE_ACTION_PLATFORMS, type LiveActionAnime } from "@/lib/live-action-anime";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 
-function stripHtml(str = "") { return str.replace(/<[^>]*>/g, ""); }
 function formatScore(score: number) { return score > 0 ? score.toFixed(1) : "—"; }
 
 function PersonAvatar({ name, imageUrl, size = "md" }: { name: string; imageUrl?: string; size?: "sm" | "md" }) {
@@ -16,9 +16,9 @@ function PersonAvatar({ name, imageUrl, size = "md" }: { name: string; imageUrl?
   const text = size === "sm" ? "text-sm" : "text-base";
   const showImg = imageUrl && !imgError;
   return (
-    <div className={`${px} rounded-full overflow-hidden border-2 border-[var(--color-line)] shrink-0 flex items-center justify-center bg-gradient-to-br from-[var(--color-magenta)]/20 to-[var(--color-cyan)]/20`}>
+    <div className={`${px} relative rounded-full overflow-hidden border-2 border-[var(--color-line)] shrink-0 flex items-center justify-center bg-gradient-to-br from-[var(--color-magenta)]/20 to-[var(--color-cyan)]/20`}>
       {showImg ? (
-        <img src={imageUrl} alt={name} className="h-full w-full object-cover" loading="lazy" onError={() => setImgError(true)} />
+        <Image src={imageUrl} alt={name} fill sizes="48px" className="object-cover" loading="lazy" onError={() => setImgError(true)} />
       ) : (
         <span className={`${text} font-bold text-white/40`}>{name.charAt(0)}</span>
       )}
@@ -48,9 +48,9 @@ function PosterCard({ anime }: { anime: LiveActionAnime }) {
   const [imgErr, setImgErr] = useState(false);
   return (
     <Link href={`/live-action/${anime.id}`} className="shrink-0 w-[130px] sm:w-[150px] group/card">
-      <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300 group-hover/card:border-[var(--color-magenta)] group-hover/card:shadow-[0_0_30px_-8px_var(--color-magenta)]">
+      <div className="relative aspect-[2/3] overflow-hidden rounded-xl neon-rgb-border bg-[var(--color-panel)] transition-all duration-300 group-hover/card:border-[var(--color-magenta)] group-hover/card:shadow-[0_0_30px_-8px_var(--color-magenta)]">
         {anime.posterUrl && !imgErr ? (
-          <img src={anime.posterUrl} alt={anime.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110" loading="lazy" onError={() => setImgErr(true)} />
+          <Image src={anime.posterUrl} alt={anime.title} fill sizes="150px" className="object-cover transition-transform duration-500 group-hover/card:scale-110" loading="lazy" onError={() => setImgErr(true)} />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-cyan)]/20 to-[var(--color-magenta)]/20 flex items-center justify-center">
             <span className="text-3xl opacity-30">🎬</span>
@@ -120,7 +120,7 @@ export default function LiveActionDetailPage() {
             {anime.posterUrl && !posterError && (
               <div className="absolute inset-0">
                 <div className="relative h-full w-full">
-                  <img src={anime.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20 blur-sm scale-110" onError={() => setPosterError(true)} />
+                  <Image src={anime.posterUrl} alt="" fill sizes="100vw" className="object-cover opacity-20 blur-sm scale-110" onError={() => setPosterError(true)} />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-[var(--color-void)]/70 to-[var(--color-void)]/20" />
                 <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-void)]/80 via-transparent to-[var(--color-void)]/40" />
@@ -137,10 +137,12 @@ export default function LiveActionDetailPage() {
                 <div className="shrink-0 mx-auto sm:mx-0 -mb-16 sm:-mb-20 z-20">
                   <div className="relative h-64 w-44 sm:h-80 sm:w-56">
                     {anime.posterUrl && !posterError ? (
-                      <img
+                      <Image
                         src={anime.posterUrl}
                         alt={anime.title}
-                        className="absolute inset-0 h-full w-full rounded-xl border-2 border-[var(--color-magenta)]/30 object-cover shadow-2xl shadow-[var(--color-magenta)]/10"
+                        fill
+                        sizes="(min-width: 640px) 224px, 176px"
+                        className="rounded-xl border-2 border-[var(--color-magenta)]/30 object-cover shadow-2xl shadow-[var(--color-magenta)]/10"
                         onError={() => setPosterError(true)}
                       />
                     ) : (
@@ -161,9 +163,11 @@ export default function LiveActionDetailPage() {
                   <div className="mb-2 flex justify-center sm:justify-start">
                     <StatusBadge status={anime.status} />
                   </div>
-                  <h1 className="font-display text-2xl font-bold leading-tight break-words sm:text-4xl lg:text-5xl drop-shadow-lg">
-                    {anime.title}
-                  </h1>
+                  <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                    <h1 className="font-display text-2xl font-bold leading-tight break-words sm:text-4xl lg:text-5xl drop-shadow-lg">
+                      {anime.title}
+                    </h1>
+                  </div>
                   {anime.japaneseTitle && (
                     <p className="mt-1 text-[var(--color-mute)] text-lg">{anime.japaneseTitle}</p>
                   )}
@@ -301,7 +305,7 @@ export default function LiveActionDetailPage() {
                     {(showAllCast ? cast : cast.slice(0, 10)).map((c, i) => (
                       <div
                         key={`${c.name}-${i}`}
-                        className="flex items-center gap-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all group"
+                        className="flex items-center gap-4 rounded-xl neon-rgb-border bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all group"
                       >
                         <PersonAvatar name={c.name} imageUrl={c.imageUrl} />
                         <div className="min-w-0 flex-1">
@@ -335,7 +339,7 @@ export default function LiveActionDetailPage() {
                         {(showAllCrew ? crew : crew.slice(0, 5)).map((c, i) => (
                           <div
                             key={`crew-${c.name}-${i}`}
-                            className="flex items-center gap-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 hover:border-[var(--color-cyan)]/40 transition-all group"
+                            className="flex items-center gap-4 rounded-xl neon-rgb-border bg-[var(--color-panel)] p-3 hover:border-[var(--color-cyan)]/40 transition-all group"
                           >
                             <PersonAvatar name={c.name} imageUrl={c.imageUrl} size="sm" />
                             <div className="min-w-0 flex-1">
@@ -368,7 +372,7 @@ export default function LiveActionDetailPage() {
                   <p className="text-xs text-[var(--color-mute)] mb-3">Voice actors from the original anime</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {voiceActors.map((va, i) => (
-                      <div key={`${va.name}-${i}`} className="flex items-center gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 hover:border-[var(--color-cyan)]/40 transition-all">
+                      <div key={`${va.name}-${i}`} className="flex items-center gap-3 rounded-xl neon-rgb-border bg-[var(--color-panel)] p-3 hover:border-[var(--color-cyan)]/40 transition-all">
                         <PersonAvatar name={va.name} imageUrl={va.imageUrl} size="sm" />
                         <div className="min-w-0">
                           <p className="text-sm font-semibold truncate">{va.name}</p>
@@ -392,7 +396,7 @@ export default function LiveActionDetailPage() {
                   </h2>
                   <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
                     {sameSource.map((a) => (
-                      <PosterCard key={a.id} anime={a} />
+                      <PosterCard key={`same-${a.id}`} anime={a} />
                     ))}
                   </div>
                 </section>
@@ -407,7 +411,7 @@ export default function LiveActionDetailPage() {
                   </h2>
                   <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
                     {related.map((a) => (
-                      <PosterCard key={a.id} anime={a} />
+                      <PosterCard key={`related-${a.id}`} anime={a} />
                     ))}
                   </div>
                 </section>
@@ -417,7 +421,7 @@ export default function LiveActionDetailPage() {
             {/* ── Right Column (Sidebar) ── */}
             <aside className="space-y-6">
               {/* Details */}
-              <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+              <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
                 <h3 className="font-display text-sm font-bold mb-3">Details</h3>
                 <div className="space-y-3 text-sm">
                   {[
@@ -440,7 +444,7 @@ export default function LiveActionDetailPage() {
               </div>
 
               {/* Where to Watch */}
-              <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+              <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
                 <h3 className="font-display text-sm font-bold mb-3">Where to Watch</h3>
                 <div className="space-y-2">
                   {LIVE_ACTION_PLATFORMS.map((p) => {
@@ -479,7 +483,7 @@ export default function LiveActionDetailPage() {
               </div>
 
               {/* Genres */}
-              <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+              <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
                 <h3 className="font-display text-sm font-bold mb-3">Genres</h3>
                 <div className="flex flex-wrap gap-2">
                   {anime.genres.map((g) => (
@@ -492,13 +496,13 @@ export default function LiveActionDetailPage() {
 
               {/* Quick Stats */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-center">
+                <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 text-center">
                   <p className="text-2xl font-black font-mono text-[var(--color-magenta)]">
                     {formatScore(anime.rating)}
                   </p>
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-mute)] mt-1">Rating</p>
                 </div>
-                <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-center">
+                <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 text-center">
                   <p className="text-2xl font-black font-mono text-[var(--color-cyan)]">#{anime.popularity}</p>
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-mute)] mt-1">Popularity</p>
                 </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { AnimeEvent } from "@/lib/anime-events";
 
 const CATEGORIES = [
@@ -144,11 +145,13 @@ export default function AnnouncementsSection({
                   {/* Thumbnail / Poster */}
                   {thumbUrl && (
                     <div className="relative h-40 w-full overflow-hidden shrink-0">
-                      <img
+                      <Image
                         src={thumbUrl}
                         alt={a.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
+                        sizes="(max-width: 768px) 100vw, 500px"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,1)] via-[rgba(10,10,15,0.3)] to-transparent" />
                       {/* Play button for trailers */}

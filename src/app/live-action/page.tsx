@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { motion } from "framer-motion";
 import {
   LIVE_ACTION_ANIME,
   LIVE_ACTION_PLATFORMS,
@@ -17,20 +18,6 @@ const FADE_UP = {
   viewport: { once: true },
   transition: { duration: 0.5 },
 };
-
-function NeonBorder({ children, glowColor }: { children: React.ReactNode; glowColor?: string }) {
-  return (
-    <div className="relative rounded-[24px]">
-      <div className="absolute inset-0 rounded-[24px] overflow-hidden pointer-events-none">
-        <div className="absolute inset-0"
-          style={{ background: `conic-gradient(from 0deg, transparent, ${glowColor || "#00ffe0"}, transparent, #ff00e6, transparent, #7000ff, transparent, ${glowColor || "#00ffe0"})`, animation: "spin 6s linear infinite", willChange: "transform" }}
-        />
-        <div className="absolute inset-[1.5px] rounded-[22.5px]" style={{ background: "rgba(10,10,15,0.92)" }} />
-      </div>
-      <div className="relative z-10">{children}</div>
-    </div>
-  );
-}
 
 function StatusBadge({ status }: { status: LiveActionAnime["status"] }) {
   const config = {
@@ -60,22 +47,20 @@ function RatingBadge({ rating }: { rating: number }) {
   );
 }
 
-function PosterCard({ anime, rank, compact }: { anime: LiveActionAnime; rank?: number; compact?: boolean }) {
+function PosterCard({ anime, rank }: { anime: LiveActionAnime; rank?: number }) {
   return (
     <Link
       href={`/live-action/${anime.id}`}
       className="snap-start shrink-0 group/card w-[150px] sm:w-[170px] md:w-[190px]"
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-400 group-hover/card:border-[var(--color-magenta)] group-hover/card:shadow-[0_0_40px_-8px_var(--color-magenta)]">
-        {/* Animated neon border glow on hover */}
-        <div className="absolute -inset-[1px] rounded-xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{ background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent)", animation: "spin 4s linear infinite", filter: "blur(2px)" }} />
-        <div className="absolute inset-0 rounded-xl bg-[var(--color-panel)] m-[1px]" />
+      <div className="relative aspect-[2/3] overflow-hidden rounded-xl la-neon-card bg-[var(--color-panel)] transition-all duration-400" style={{ ["--i" as string]: rank ? (rank % 5) : 0 }}>
         {anime.posterUrl ? (
-          <img
+          <Image
             src={anime.posterUrl}
             alt={anime.title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
+            fill
+            sizes="190px"
+            className="object-cover transition-transform duration-500 group-hover/card:scale-110"
             loading="lazy"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
@@ -121,7 +106,7 @@ function PosterCard({ anime, rank, compact }: { anime: LiveActionAnime; rank?: n
   );
 }
 
-function HorizontalCarousel({ items, title }: { items: LiveActionAnime[]; title: string }) {
+function HorizontalCarousel({ items }: { items: LiveActionAnime[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (dir: "left" | "right") => {
@@ -188,7 +173,7 @@ function MostPopularSection({ items, allData }: { items?: LiveActionAnime[]; all
             >
               <Link href={`/live-action/${anime.id}`} className="block h-full w-full">
                 {anime.posterUrl ? (
-                  <img src={anime.posterUrl} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <Image src={anime.posterUrl} alt="" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover transition-transform duration-700 group-hover:scale-110" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
                   <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-cyan)]/20 to-[var(--color-magenta)]/20" />
                 )}
@@ -263,7 +248,7 @@ function PlatformSection({ platform, color, allData }: { platform: string; color
           </div>
         </div>
       </div>
-      <HorizontalCarousel items={items} title={platform} />
+      <HorizontalCarousel items={items} />
     </motion.div>
   );
 }
@@ -293,11 +278,12 @@ function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {(["all", "available", "upcoming"] as const).map((s) => (
+        {(["all", "available", "upcoming"] as const).map((s, i) => (
           <button key={s} onClick={() => setStatusFilter(s)}
-            className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all"
+            className="rounded-lg la-neon-filter px-3 py-1.5 text-xs font-semibold transition-all"
             style={{
-              borderColor: statusFilter === s ? "var(--color-cyan)" : "var(--color-line)",
+              ["--fd" as string]: i,
+              borderColor: statusFilter === s ? "var(--color-cyan)" : undefined,
               background: statusFilter === s ? "rgba(0,188,212,0.13)" : "transparent",
               color: statusFilter === s ? "var(--color-cyan)" : "var(--color-mute)",
             }}
@@ -306,11 +292,12 @@ function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
           </button>
         ))}
         <span className="w-px h-6 bg-[var(--color-line)] self-center mx-1" />
-        {(["all", "series", "movie"] as const).map((t) => (
+        {(["all", "series", "movie"] as const).map((t, i) => (
           <button key={t} onClick={() => setSelectedType(t)}
-            className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all"
+            className="rounded-lg la-neon-filter px-3 py-1.5 text-xs font-semibold transition-all"
             style={{
-              borderColor: selectedType === t ? "var(--color-amber)" : "var(--color-line)",
+              ["--fd" as string]: i + 3,
+              borderColor: selectedType === t ? "var(--color-amber)" : undefined,
               background: selectedType === t ? "rgba(245,158,11,0.1)" : "transparent",
               color: selectedType === t ? "#f59e0b" : "var(--color-mute)",
             }}
@@ -319,11 +306,12 @@ function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
           </button>
         ))}
         <span className="w-px h-6 bg-[var(--color-line)] self-center mx-1" />
-        {LIVE_ACTION_PLATFORMS.filter((p) => allData.some((a) => a.platforms.some((pl) => pl.name.toLowerCase() === p.name.toLowerCase()))).map((p) => (
+        {LIVE_ACTION_PLATFORMS.filter((p) => allData.some((a) => a.platforms.some((pl) => pl.name.toLowerCase() === p.name.toLowerCase()))).map((p, i) => (
           <button key={p.name} onClick={() => setSelectedPlatform(selectedPlatform === p.name ? null : p.name)}
-            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all"
+            className="flex items-center gap-1.5 rounded-lg la-neon-filter px-3 py-1.5 text-xs font-semibold transition-all"
             style={{
-              borderColor: selectedPlatform === p.name ? p.logoColor : "var(--color-line)",
+              ["--fd" as string]: i + 6,
+              borderColor: selectedPlatform === p.name ? p.logoColor : undefined,
               background: selectedPlatform === p.name ? `${p.logoColor}22` : "transparent",
               color: selectedPlatform === p.name ? p.logoColor : "var(--color-mute)",
             }}
@@ -354,7 +342,7 @@ function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
 function LiveActionPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [liveData, setLiveData] = useState<LiveActionAnime[]>(LIVE_ACTION_ANIME);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/live-action")
@@ -374,7 +362,7 @@ function LiveActionPage() {
   const upcomingCount = upcoming.length;
   const platformCount = new Set(liveData.flatMap((a) => a.platforms.map((p) => p.name))).size;
 
-  const filterTitles = (titles: LiveActionAnime[]) => {
+  const filterTitles = useCallback((titles: LiveActionAnime[]) => {
     if (!searchQuery) return titles;
     const q = searchQuery.toLowerCase();
     return titles.filter((a) =>
@@ -386,17 +374,70 @@ function LiveActionPage() {
       a.description.toLowerCase().includes(q) ||
       (a.basedOn && a.basedOn.toLowerCase().includes(q))
     );
-  };
+  }, [searchQuery]);
 
-  const filteredAvailable = useMemo(() => filterTitles(available), [searchQuery, available]);
-  const filteredUpcoming = useMemo(() => filterTitles(upcoming), [searchQuery, upcoming]);
+  const filteredAvailable = useMemo(() => filterTitles(available), [filterTitles, available]);
+  const filteredUpcoming = useMemo(() => filterTitles(upcoming), [filterTitles, upcoming]);
   const filteredPopular = useMemo(() => {
     const popular = [...liveData].sort((a, b) => b.popularity - a.popularity).slice(0, 8);
     return filterTitles(popular);
-  }, [searchQuery, liveData]);
+  }, [filterTitles, liveData]);
 
   return (
     <PageTransition>
+      <style>{`
+        @keyframes laNeonBorder {
+          0%   { border-color: #ff00ff; box-shadow: 0 0 8px #ff00ff55, inset 0 0 8px #ff00ff11; }
+          20%  { border-color: #00ffff; box-shadow: 0 0 8px #00ffff55, inset 0 0 8px #00ffff11; }
+          40%  { border-color: #ff3366; box-shadow: 0 0 8px #ff336655, inset 0 0 8px #ff336611; }
+          60%  { border-color: #ffff00; box-shadow: 0 0 8px #ffff0055, inset 0 0 8px #ffff0011; }
+          80%  { border-color: #ff0066; box-shadow: 0 0 8px #ff006655, inset 0 0 8px #ff006611; }
+          100% { border-color: #ff00ff; box-shadow: 0 0 8px #ff00ff55, inset 0 0 8px #ff00ff11; }
+        }
+        .la-neon-card {
+          animation: laNeonBorder 4s linear infinite;
+          animation-delay: calc(var(--i, 0) * -0.4s);
+          border-width: 1px;
+          border-style: solid;
+        }
+        @keyframes laNeonBorderHover {
+          0%   { border-color: #ff00ff; box-shadow: 0 0 14px #ff00ff, 0 0 28px #ff00ff88; }
+          20%  { border-color: #00ffff; box-shadow: 0 0 14px #00ffff, 0 0 28px #00ffff88; }
+          40%  { border-color: #ff3366; box-shadow: 0 0 14px #ff3366, 0 0 28px #ff336688; }
+          60%  { border-color: #ffff00; box-shadow: 0 0 14px #ffff00, 0 0 28px #ffff0088; }
+          80%  { border-color: #ff0066; box-shadow: 0 0 14px #ff0066, 0 0 28px #ff006688; }
+          100% { border-color: #ff00ff; box-shadow: 0 0 14px #ff00ff, 0 0 28px #ff00ff88; }
+        }
+        .la-neon-card:hover {
+          animation: laNeonBorderHover 1.5s linear infinite !important;
+          transform: scale(1.03);
+        }
+        .la-neon-filter {
+          animation: laNeonBorder 4s linear infinite;
+          animation-delay: calc(var(--fd, 0) * -1s);
+          border-width: 1px;
+          border-style: solid;
+        }
+        .la-neon-filter:hover {
+          animation: laNeonBorderHover 1.5s linear infinite !important;
+          transform: scale(1.05);
+        }
+        .la-neon-search {
+          animation: laNeonBorder 4s linear infinite;
+          border-width: 1px;
+          border-style: solid;
+          transition: box-shadow 0.3s, transform 0.3s;
+        }
+        .la-neon-search:focus-within {
+          animation: laNeonBorderHover 1.5s linear infinite !important;
+          transform: scale(1.01);
+        }
+        .la-neon-search input:focus-visible,
+        .la-neon-filter:focus-visible {
+          outline: none !important;
+          box-shadow: none !important;
+        }
+      `}</style>
       <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
         <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
@@ -435,9 +476,8 @@ function LiveActionPage() {
 
           {/* Neon RGB Search Bar */}
           <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.05 }} className="mb-8">
-            <div className="relative group">
-              <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[var(--color-magenta)] via-[var(--color-cyan)] to-[var(--color-violet)] opacity-30 group-focus-within:opacity-100 blur-sm transition-all duration-700 animate-neon-rgb" />
-              <div className="relative flex items-center gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 transition-colors group-focus-within:border-transparent">
+            <div className="la-neon-search rounded-xl bg-[var(--color-panel)] px-4 py-3">
+              <div className="relative flex items-center gap-3">
                 <svg className="shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-mute)" }}>
                   <circle cx="11" cy="11" r="8" />
                   <path d="m21 21-4.35-4.35" />
@@ -475,8 +515,8 @@ function LiveActionPage() {
               { label: "Available Now", value: availableCount, color: "#48BB78" },
               { label: "Coming Soon", value: upcomingCount, color: "#ED8936" },
               { label: "Platforms", value: platformCount, color: "var(--color-amber)" },
-            ].map((stat) => (
-              <div key={stat.label} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]/60 backdrop-blur-sm p-4 text-center">
+            ].map((stat, i) => (
+              <div key={stat.label} className="la-neon-card rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm p-4 text-center" style={{ ["--i" as string]: i }}>
                 <p className="text-2xl font-black" style={{ color: stat.color }}>{stat.value}</p>
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-mute)] mt-1">{stat.label}</p>
               </div>
@@ -499,7 +539,7 @@ function LiveActionPage() {
                   </div>
                 </div>
               </div>
-              <HorizontalCarousel items={filteredAvailable} title="Available Now" />
+              <HorizontalCarousel items={filteredAvailable} />
             </motion.div>
           )}
 
@@ -516,7 +556,7 @@ function LiveActionPage() {
                   </div>
                 </div>
               </div>
-              <HorizontalCarousel items={filteredUpcoming} title="Upcoming" />
+              <HorizontalCarousel items={filteredUpcoming} />
             </motion.div>
           )}
 

@@ -39,7 +39,11 @@ export default function WikiHistoryPageClient() {
           <span>/</span>
           <span className="text-[var(--color-cyan)]">History</span>
         </div>
-        <h1 className="font-display text-2xl font-bold">Revision History</h1>
+        <h1 className="font-display text-2xl font-bold">
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+            Revision History
+          </div>
+        </h1>
       </div>
 
       {loading ? (
@@ -55,7 +59,7 @@ export default function WikiHistoryPageClient() {
       ) : (
         <div className="space-y-2">
           {history.map((entry) => (
-            <div key={entry.id} className="flex items-center justify-between rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+            <div key={entry.id} className="flex items-center justify-between rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-sm font-bold">v{entry.version}</span>

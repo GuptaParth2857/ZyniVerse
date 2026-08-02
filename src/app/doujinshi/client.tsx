@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import type { DoujinshiEntry } from "@/lib/mangadex-api";
 import DoujinshiCard from "@/components/DoujinshiCard";
+import DoujinshiFlexCard from "@/components/DoujinshiFlexCard";
+import { logError } from "@/lib/logger";
 
 const FADE_UP = { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5 } };
 
@@ -172,7 +175,7 @@ export default function DoujinshiBrowseClient() {
           return next;
         });
       }
-    } catch {}
+    } catch (e) { logError(e); }
   }, [session]);
 
   const startBrowse = () => {
@@ -212,25 +215,23 @@ export default function DoujinshiBrowseClient() {
 
         <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
           <div className="flex flex-col items-center text-center">
-            <div className="neon-premium rounded-xl h-12 w-12 mb-4">
-              <div className="neon-premium-track rounded-xl" />
-              <div className="neon-premium-overlay rounded-[10.5px]" />
-              <div className="neon-premium-content" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span className="text-xl">📚</span>
-              </div>
+            <div className="neon-rgb-border rounded-xl h-12 w-12 mb-4 flex items-center justify-center bg-[var(--color-panel)]/60 backdrop-blur-sm">
+              <span className="text-xl">📚</span>
             </div>
 
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#ff00ff] mb-3" style={{ textShadow: "0 0 10px rgba(255,0,255,0.5)" }}>Doujinshi</span>
 
-            <h1 className="font-display text-4xl sm:text-5xl font-bold text-white" style={{ textShadow: "0 0 30px rgba(255,0,255,0.3), 0 0 60px rgba(138,43,226,0.2)" }}>
-              Fan Works & <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff00ff] via-[#8a2be2] to-[#00ffff]">Creations</span>
-            </h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2">
+              <h1 className="font-display text-4xl sm:text-5xl font-bold text-white" style={{ textShadow: "0 0 30px rgba(255,0,255,0.3), 0 0 60px rgba(138,43,226,0.2)" }}>
+                Fan Works & <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff00ff] via-[#8a2be2] to-[#00ffff]">Creations</span>
+              </h1>
+            </div>
             <p className="mt-3 text-base text-gray-400 max-w-lg">
               Discover, track, and explore doujinshi from MangaDex. Fan-made masterpieces from your favorite series.
             </p>
 
             {/* Quick Stats */}
-            <div className="flex gap-6 mt-6">
+            <div className="flex gap-6 mt-6 items-center">
               <div className="text-center">
                 <div className="text-lg font-bold font-mono text-[#ff00ff]">{popular.length}</div>
                 <div className="text-[9px] text-[var(--color-mute)] uppercase tracking-widest">Popular</div>
@@ -239,6 +240,11 @@ export default function DoujinshiBrowseClient() {
                 <div className="text-lg font-bold font-mono text-[#00ffff]">{trending.length}</div>
                 <div className="text-[9px] text-[var(--color-mute)] uppercase tracking-widest">Trending</div>
               </div>
+              {session && (
+                <Link href="/doujinshi/my" className="rounded-full neon-rgb-border px-3 py-1.5 text-xs font-semibold hover:border-[var(--color-cyan)]/40 transition-colors">
+                  My Doujinshi →
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -265,13 +271,7 @@ export default function DoujinshiBrowseClient() {
                 </div>
               </div>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
-              {trending.slice(0, 8).map((entry) => (
-                <div key={entry.id} className="shrink-0 w-[140px] sm:w-[160px] md:w-[180px]">
-                  <DoujinshiCard entry={entry} onTrack={handleTrack} trackedStatus={trackedMap[entry.id] || null} />
-                </div>
-              ))}
-            </div>
+            <DoujinshiFlexCard items={trending.slice(0, 8)} />
           </motion.div>
         )}
 
@@ -288,8 +288,8 @@ export default function DoujinshiBrowseClient() {
               </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {popular.slice(0, 5).map((entry) => (
-                <DoujinshiCard key={entry.id} entry={entry} onTrack={handleTrack} trackedStatus={trackedMap[entry.id] || null} />
+              {popular.slice(0, 5).map((entry, i) => (
+                <DoujinshiCard key={entry.id} entry={entry} onTrack={handleTrack} trackedStatus={trackedMap[entry.id] || null} index={i} />
               ))}
             </div>
           </motion.div>
@@ -300,13 +300,10 @@ export default function DoujinshiBrowseClient() {
           <motion.div {...FADE_UP} className="text-center">
             <button
               onClick={startBrowse}
-              className="neon-premium rounded-xl px-8 py-3 text-sm font-bold transition-all hover:scale-[1.02]"
+              className="neon-rgb-border rounded-xl px-8 py-3 text-sm font-bold transition-all hover:scale-[1.02]"
+              style={{ color: "#ff00ff" }}
             >
-              <div className="neon-premium-track rounded-xl" />
-              <div className="neon-premium-overlay rounded-[10.5px]" />
-              <div className="neon-premium-content px-6 py-3" style={{ color: "#ff00ff" }}>
-                Browse All Doujinshi →
-              </div>
+              Browse All Doujinshi →
             </button>
           </motion.div>
         )}
@@ -335,7 +332,7 @@ export default function DoujinshiBrowseClient() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search doujinshi by title..."
-                    className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/90 backdrop-blur-sm py-3.5 pl-12 pr-10 text-sm text-white placeholder-[var(--color-mute)]/50 outline-none transition-all duration-300 focus:border-[var(--color-magenta)]"
+                    className="w-full rounded-xl neon-rgb-border bg-[var(--color-void)]/90 backdrop-blur-sm py-3.5 pl-12 pr-10 text-sm text-white placeholder-[var(--color-mute)]/50 outline-none transition-all duration-300 focus:border-[var(--color-magenta)]"
                   />
                   {search && (
                     <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-mute)] hover:text-white">
@@ -348,16 +345,13 @@ export default function DoujinshiBrowseClient() {
                     <button
                       key={s}
                       onClick={() => setSort(s)}
-                      className={`neon-premium rounded-xl transition-all ${sort === s ? "scale-[1.02]" : ""}`}
-                    >
-                      <div className="neon-premium-track rounded-xl" />
-                      <div className="neon-premium-overlay rounded-[10.5px]" />
-                      <div className="neon-premium-content px-4 py-2.5 text-xs font-bold capitalize" style={{
+                      className="neon-rgb-border rounded-xl px-4 py-2.5 text-xs font-bold capitalize transition-all"
+                      style={{
                         color: sort === s ? "#ff00ff" : "var(--color-mute)",
                         background: sort === s ? "rgba(255,0,255,0.08)" : undefined,
-                      }}>
-                        {s === "popular" ? "🔥 Popular" : s === "latest" ? "🆕 Latest" : "⭐ Rating"}
-                      </div>
+                      }}
+                    >
+                      {s === "popular" ? "🔥 Popular" : s === "latest" ? "🆕 Latest" : "⭐ Rating"}
                     </button>
                   ))}
                 </div>
@@ -372,16 +366,13 @@ export default function DoujinshiBrowseClient() {
                   <button
                     key={tag.value}
                     onClick={() => setSelectedTag(tag.value)}
-                    className="neon-premium rounded-xl transition-all"
-                  >
-                    <div className="neon-premium-track rounded-xl" />
-                    <div className="neon-premium-overlay rounded-[10.5px]" />
-                    <div className="neon-premium-content px-3 py-1.5 text-[10px] font-bold" style={{
+                    className="neon-rgb-border rounded-xl px-3 py-1.5 text-[10px] font-bold transition-all"
+                    style={{
                       color: isActive ? "#ff00ff" : "var(--color-mute)",
                       background: isActive ? "rgba(255,0,255,0.08)" : undefined,
-                    }}>
-                      {tag.label}
-                    </div>
+                    }}
+                  >
+                    {tag.label}
                   </button>
                 );
               })}
@@ -389,16 +380,13 @@ export default function DoujinshiBrowseClient() {
                 <button
                   key={tag}
                   onClick={() => setSelectedTag(selectedTag === tag ? "" : tag)}
-                  className="neon-premium rounded-xl transition-all"
-                >
-                  <div className="neon-premium-track rounded-xl" />
-                  <div className="neon-premium-overlay rounded-[10.5px]" />
-                  <div className="neon-premium-content px-3 py-1.5 text-[10px] font-bold" style={{
+                  className="neon-rgb-border rounded-xl px-3 py-1.5 text-[10px] font-bold transition-all"
+                  style={{
                     color: selectedTag === tag ? "#00ffff" : "var(--color-mute)",
                     background: selectedTag === tag ? "rgba(0,255,255,0.08)" : undefined,
-                  }}>
-                    #{tag}
-                  </div>
+                  }}
+                >
+                  #{tag}
                 </button>
               ))}
             </div>
@@ -415,7 +403,7 @@ export default function DoujinshiBrowseClient() {
             {browseLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                 {Array.from({ length: 10 }).map((_, i) => (
-                  <div key={i} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden animate-pulse">
+                  <div key={i} className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm overflow-hidden animate-pulse">
                     <div className="aspect-[3/4] bg-[var(--color-void)]" />
                     <div className="p-3 space-y-2">
                       <div className="h-4 w-3/4 bg-[var(--color-void)] rounded" />
@@ -445,8 +433,8 @@ export default function DoujinshiBrowseClient() {
             ) : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {filtered.map((entry) => (
-                    <DoujinshiCard key={entry.id} entry={entry} onTrack={handleTrack} trackedStatus={trackedMap[entry.id] || null} />
+                  {filtered.map((entry, i) => (
+                    <DoujinshiCard key={entry.id} entry={entry} onTrack={handleTrack} trackedStatus={trackedMap[entry.id] || null} index={i} />
                   ))}
                 </div>
 
@@ -456,21 +444,15 @@ export default function DoujinshiBrowseClient() {
                     {page > 1 && (
                       <button
                         onClick={() => setPage((p) => p - 1)}
-                        className="neon-premium rounded-xl px-6 py-2.5 text-xs font-bold"
-                      >
-                        <div className="neon-premium-track rounded-xl" />
-                        <div className="neon-premium-overlay rounded-[10.5px]" />
-                        <div className="neon-premium-content px-4 py-2" style={{ color: "var(--color-mute)" }}>← Previous</div>
-                      </button>
+                        className="neon-rgb-border rounded-xl px-6 py-2.5 text-xs font-bold"
+                        style={{ color: "var(--color-mute)" }}
+                      >← Previous</button>
                     )}
                     <button
                       onClick={() => setPage((p) => p + 1)}
-                      className="neon-premium rounded-xl px-6 py-2.5 text-xs font-bold"
-                    >
-                      <div className="neon-premium-track rounded-xl" />
-                      <div className="neon-premium-overlay rounded-[10.5px]" />
-                      <div className="neon-premium-content px-4 py-2" style={{ color: "#ff00ff" }}>Next →</div>
-                    </button>
+                      className="neon-rgb-border rounded-xl px-6 py-2.5 text-xs font-bold"
+                      style={{ color: "#ff00ff" }}
+                    >Next →</button>
                   </div>
                 )}
               </>

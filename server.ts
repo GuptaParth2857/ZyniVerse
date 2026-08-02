@@ -102,6 +102,32 @@ const httpServer = createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "POST" && req.url === "/internal/dm-broadcast") {
+    let body = "";
+    for await (const chunk of req) body += chunk;
+    try {
+      const { recipientId, message } = JSON.parse(body || "{}");
+      if (!recipientId || !message) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "recipientId and message required" }));
+        return;
+      }
+      const token = process.env.DM_BROADCAST_TOKEN;
+      if (token && req.headers["x-dm-token"] !== token) {
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Forbidden" }));
+        return;
+      }
+      io.to(`dm:${recipientId}`).emit("dm-message", message);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true }));
+    } catch {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid body" }));
+    }
+    return;
+  }
+
   res.writeHead(404);
   res.end("Not found");
 });
@@ -114,6 +140,10 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
   console.log("[Socket] User connected:", socket.id);
+
+  socket.on("dm-join", ({ userId }) => {
+    if (userId) socket.join(`dm:${userId}`);
+  });
 
   socket.on("join-party", ({ partyId, user, isHost }) => {
     socket.join(`party:${partyId}`);

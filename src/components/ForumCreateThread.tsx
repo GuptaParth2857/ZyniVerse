@@ -56,15 +56,15 @@ export default function ForumCreateThread({ initialAnimeId, initialAnimeTitle, i
 
       const data = await res.json();
       router.push(`/forum/thread/${data.thread.id}`);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to create thread");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 neon-rgb-border rounded-xl p-6">
       {error && (
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{error}</div>
       )}
@@ -72,7 +72,7 @@ export default function ForumCreateThread({ initialAnimeId, initialAnimeTitle, i
       <div>
         <label className="block text-sm font-semibold mb-1">Category <span className="text-[var(--color-mute)]">(optional)</span></label>
         <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)]"
+          className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)]"
         >
           <option value="">No category</option>
           {categories.map((c) => (
@@ -85,7 +85,7 @@ export default function ForumCreateThread({ initialAnimeId, initialAnimeTitle, i
         <label className="block text-sm font-semibold mb-1">Title</label>
         <input value={title} onChange={(e) => setTitle(e.target.value)}
           placeholder="What's on your mind?"
-          className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)]"
+          className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)]"
           required
         />
       </div>
@@ -98,31 +98,31 @@ export default function ForumCreateThread({ initialAnimeId, initialAnimeTitle, i
           >{showPreview ? "Edit" : "Preview"}</button>
         </div>
         {showPreview ? (
-          <div className="min-h-[200px] rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 text-sm text-[var(--color-ink)] whitespace-pre-wrap">
+          <div className="min-h-[200px] rounded-lg neon-rgb-border bg-[var(--color-panel)] px-4 py-3 text-sm text-[var(--color-ink)] whitespace-pre-wrap">
             {content || "Nothing to preview"}
           </div>
         ) : (
           <textarea value={content} onChange={(e) => setContent(e.target.value)}
             placeholder="Write your post... (Markdown supported)"
             rows={8}
-            className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)] resize-y"
+            className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)] resize-y"
             required
           />
         )}
       </div>
 
       {initialAnimeTitle && (
-        <div className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 text-sm text-[var(--color-mute)]">
+        <div className="rounded-lg neon-rgb-border bg-[var(--color-panel)] px-4 py-3 text-sm text-[var(--color-mute)]">
           Discussing: <span className="font-semibold text-[var(--color-ink)]">{initialAnimeTitle}</span>
         </div>
       )}
 
       <div className="flex gap-3">
         <button type="submit" disabled={submitting || !title.trim() || !content.trim()}
-          className="rounded-xl bg-[var(--color-magenta)] px-6 py-3 text-sm font-bold text-black disabled:opacity-50 hover:opacity-90 transition"
+          className="rounded-xl bg-[var(--color-magenta)] neon-rgb-border px-6 py-3 text-sm font-bold text-black disabled:opacity-50 hover:opacity-90 transition"
         >{submitting ? "Posting..." : "Create Thread"}</button>
         <button type="button" onClick={() => router.back()}
-          className="rounded-xl border border-[var(--color-line)] px-6 py-3 text-sm font-bold text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
+          className="rounded-xl neon-rgb-border px-6 py-3 text-sm font-bold text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
         >Cancel</button>
       </div>
     </form>

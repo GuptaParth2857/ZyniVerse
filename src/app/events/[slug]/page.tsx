@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import {
@@ -14,13 +15,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const event = await getAnimeEventBySlug(slug);
   if (!event) return { title: "Event Not Found" };
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
   return {
     title: `${event.name} — Anime Events | ZyniVerse`,
     description: `${event.name} at ${event.location}. ${event.startDate} — ${event.endDate}. ${event.description.slice(0, 160)}`,
     openGraph: {
       title: `${event.name} — Anime Events`,
       description: event.description.slice(0, 160),
+      url: `${baseUrl}/events/${slug}`,
     },
+    alternates: { canonical: `${baseUrl}/events/${slug}` },
+    robots: { index: true, follow: true },
   };
 }
 
@@ -36,6 +41,7 @@ export default async function AnimeEventDetailPage({ params }: Props) {
   const end = new Date(event.endDate);
   const dateStr = `${start.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} — ${end.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}`;
 
+  // eslint-disable-next-line react-hooks/purity -- server component: Date.now is per-request dynamic
   const daysUntil = Math.ceil((start.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   const isPast = event.status === "past";
   const countdownText = isPast
@@ -72,10 +78,12 @@ export default async function AnimeEventDetailPage({ params }: Props) {
         {/* Background image or gradient */}
         {heroImage ? (
           <div className="absolute inset-0">
-            <img
+            <Image
               src={heroImage}
               alt=""
-              className="w-full h-full object-cover"
+              fill
+              priority
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-[rgba(10,10,15,0.85)] to-[rgba(10,10,15,0.6)]" />
             <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-cyan)]/10 via-transparent to-[var(--color-magenta)]/10" />
@@ -106,9 +114,11 @@ export default async function AnimeEventDetailPage({ params }: Props) {
                   {event.status}
                 </span>
               </div>
-              <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tight leading-tight mb-2">
-                {event.name}
-              </h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tight leading-tight mb-2">
+                  {event.name}
+                </h1>
+              </div>
               <p className="text-sm text-white/70">{event.location}</p>
               <p className="text-xs font-mono text-[var(--color-cyan)]/80 mt-1">{dateStr}</p>
             </div>
@@ -140,7 +150,7 @@ export default async function AnimeEventDetailPage({ params }: Props) {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         {/* Info Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="neon-premium rounded-2xl">
+          <div className="neon-premium neon-rgb-border rounded-2xl">
             <div className="neon-premium-track" />
             <div className="neon-premium-overlay" />
             <div className="neon-premium-content rounded-2xl p-5">
@@ -148,7 +158,7 @@ export default async function AnimeEventDetailPage({ params }: Props) {
               <p className="text-sm font-medium leading-snug">{dateStr}</p>
             </div>
           </div>
-          <div className="neon-premium rounded-2xl">
+          <div className="neon-premium neon-rgb-border rounded-2xl">
             <div className="neon-premium-track" />
             <div className="neon-premium-overlay" />
             <div className="neon-premium-content rounded-2xl p-5">
@@ -156,7 +166,7 @@ export default async function AnimeEventDetailPage({ params }: Props) {
               <p className="text-sm font-medium leading-snug">{event.location}, {event.country}</p>
             </div>
           </div>
-          <div className="neon-premium rounded-2xl">
+          <div className="neon-premium neon-rgb-border rounded-2xl">
             <div className="neon-premium-track" />
             <div className="neon-premium-overlay" />
             <div className="neon-premium-content rounded-2xl p-5">
@@ -167,7 +177,7 @@ export default async function AnimeEventDetailPage({ params }: Props) {
         </div>
 
         {/* About */}
-        <div className="neon-premium rounded-2xl mb-8">
+        <div className="neon-premium neon-rgb-border rounded-2xl mb-8">
           <div className="neon-premium-track" />
           <div className="neon-premium-overlay" />
           <div className="neon-premium-content rounded-2xl p-6 sm:p-8">

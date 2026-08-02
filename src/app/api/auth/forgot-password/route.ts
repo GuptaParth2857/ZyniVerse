@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
+import { logError } from "@/lib/logger";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "fallback_key");
+const resendKey = process.env.RESEND_API_KEY;
+const resend = resendKey ? new Resend(resendKey) : null;
 
 export async function POST(req: Request) {
   try {
@@ -33,7 +35,7 @@ export async function POST(req: Request) {
       },
     });
 
-    if (process.env.RESEND_API_KEY) {
+    if (resend) {
       await resend.emails.send({
         from: "ZyniVerse <noreply@zyverse.in>",
         to: email,
@@ -51,12 +53,12 @@ export async function POST(req: Request) {
         `,
       });
     } else {
-      console.warn("RESEND_API_KEY is not set. Token generated: " + token);
+      // Email not configured — silently skip
     }
 
     return NextResponse.json({ success: true, message: "If an account exists, an email was sent." });
   } catch (error) {
-    console.error("Forgot password error:", error);
+    logError(error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

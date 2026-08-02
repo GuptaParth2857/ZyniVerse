@@ -24,9 +24,13 @@ export default async function EditProfilePage() {
   return (
     <main className="min-h-screen pt-24 pb-16 px-4">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-2">Edit Profile</h1>
+        <h1 className="text-2xl font-bold mb-2">
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+            Edit Profile
+          </div>
+        </h1>
         <p className="text-white/50 mb-8">Customize your profile appearance and forum signature</p>
-        <div className="bg-white/5 rounded-xl p-6">
+        <div className="bg-white/5 neon-rgb-border rounded-xl p-6">
           <ProfileEditor
             user={{
               id: user.id,

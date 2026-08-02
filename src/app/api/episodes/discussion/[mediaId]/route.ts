@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 const REDDIT_SEARCH = "https://www.reddit.com/search.json";
 
+interface RedditChild {
+  kind?: string;
+  data: {
+    title?: string;
+    permalink?: string;
+    score?: number;
+    num_comments?: number;
+    created_utc?: number;
+  };
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ mediaId: string }> }) {
   const { mediaId } = await params;
   const id = parseInt(mediaId, 10);
@@ -20,13 +31,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ medi
 
   const redditData = await discussionResp.json();
   const discussions = (redditData.data?.children || [])
-    .filter((c: any) => c.kind === "t3")
-    .map((c: any) => ({
+    .filter((c: RedditChild) => c.kind === "t3")
+    .map((c: RedditChild) => ({
       title: c.data.title,
       url: `https://reddit.com${c.data.permalink}`,
       score: c.data.score,
       comments: c.data.num_comments,
-      created: new Date(c.data.created_utc * 1000).toISOString(),
+      created: new Date((c.data.created_utc ?? 0) * 1000).toISOString(),
     }))
     .slice(0, 10);
 

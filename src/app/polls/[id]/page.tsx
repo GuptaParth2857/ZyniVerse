@@ -8,11 +8,28 @@ import { motion } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import Loader from "@/components/Loader";
 
+interface PollOption {
+  id: string;
+  label: string;
+  _count?: { votes?: number };
+}
+
+interface Poll {
+  id: string;
+  title: string;
+  description?: string | null;
+  isActive: boolean;
+  userVote?: string | null;
+  createdById: string;
+  createdBy?: { username: string } | null;
+  options: PollOption[];
+}
+
 export default function PollDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: session } = useSession();
   const router = useRouter();
-  const [poll, setPoll] = useState<any>(null);
+  const [poll, setPoll] = useState<Poll | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,7 +61,7 @@ export default function PollDetailPage() {
     </PageTransition>
   );
 
-  const totalVotes = poll.options.reduce((s: number, o: any) => s + (o._count?.votes || 0), 0);
+  const totalVotes = poll.options.reduce((s, o) => s + (o._count?.votes || 0), 0);
   const isOwner = session?.user?.id === poll.createdById;
 
   return (
@@ -55,17 +72,19 @@ export default function PollDetailPage() {
           Back to Polls
         </Link>
 
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <h1 className="font-display text-2xl font-bold">{poll.title}</h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mb-4">
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="font-display text-2xl font-bold">{poll.title}</h1>
           {!poll.isActive && (
             <span className="shrink-0 rounded bg-red-500/10 px-3 py-1 text-xs font-mono text-red-400">Closed</span>
           )}
+          </div>
         </div>
 
         {poll.description && <p className="text-sm text-[var(--color-mute)] mb-6">{poll.description}</p>}
 
         <div className="space-y-2">
-          {poll.options.map((opt: any) => {
+          {poll.options.map((opt) => {
             const count = opt._count?.votes || 0;
             const pct = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
             const isSelected = poll.userVote === opt.id;
@@ -75,7 +94,7 @@ export default function PollDetailPage() {
                 key={opt.id}
                 onClick={() => handleVote(opt.id)}
                 disabled={!!poll.userVote || !session}
-                className="relative w-full rounded-xl border border-[var(--color-line)] px-4 py-3 text-left transition-all disabled:cursor-default hover:border-[var(--color-cyan)]/30"
+                className="relative w-full rounded-xl neon-rgb-border px-4 py-3 text-left transition-all disabled:cursor-default hover:border-[var(--color-cyan)]/30"
               >
                 <motion.div
                   initial={{ width: 0 }}

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Loader, { ErrorState } from "@/components/Loader";
@@ -11,9 +12,10 @@ import StatsDashboard from "@/components/StatsDashboard";
 import WatchHistory from "@/components/WatchHistory";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import RankBadge, { RankPill } from "@/components/RankBadge";
+import ProfileMoments from "@/components/ProfileMoments";
 import { getRank, getNextRank } from "@/lib/achievements";
 
-type Tab = "overview" | "entries" | "reviews" | "stats" | "history" | "import" | "api" | "lists";
+type Tab = "overview" | "entries" | "reviews" | "stats" | "history" | "import" | "api" | "lists" | "moments";
 
 interface MediaInfo {
   id: number;
@@ -46,6 +48,7 @@ const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: "entries", label: "My List", icon: "☰" },
   { key: "reviews", label: "Reviews", icon: "★" },
   { key: "lists", label: "Lists", icon: "▤" },
+  { key: "moments", label: "Moments", icon: "✦" },
   { key: "stats", label: "Stats", icon: "◐" },
   { key: "history", label: "History", icon: "◷" },
   { key: "import", label: "Import", icon: "⇪" },
@@ -65,7 +68,7 @@ const ACTIVITY_ICONS: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -139,7 +142,6 @@ export default function ProfilePage() {
     : user.entries.filter((e) => e.status === statusFilter);
 
   const completionPercent = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
-  const xpForNextLevel = ((user.level) * (user.level)) * 100;
   const xpProgress = user.points % ((user.level) * (user.level) * 100);
   const xpNeeded = ((user.level) * (user.level) * 100);
   const xpPercent = xpNeeded > 0 ? Math.min((xpProgress / xpNeeded) * 100, 100) : 0;
@@ -164,7 +166,7 @@ export default function ProfilePage() {
       >
         {user.banner ? (
           <>
-            <img src={user.banner} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <Image src={user.banner} alt="" fill className="object-cover" sizes="100vw" priority />
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-[var(--color-void)]/60 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-void)]/40 to-transparent" />
           </>
@@ -184,19 +186,17 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="neon-premium rounded-2xl mb-6"
+          className="neon-rgb-border rounded-2xl mb-6 bg-[var(--color-panel)]/60 backdrop-blur-sm"
           style={{ boxShadow: `0 0 40px ${tc}08, 0 4px 30px rgba(0,0,0,0.3)` }}
         >
-          <div className="neon-premium-track rounded-2xl" />
-          <div className="neon-premium-overlay rounded-[15.5px]" />
-          <div className="neon-premium-content p-6 sm:p-8">
+          <div className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-end gap-5 sm:gap-8">
               {/* Avatar */}
               <div className="relative shrink-0 self-center sm:self-auto">
                 <div className="absolute -inset-1 rounded-2xl animate-pulse" style={{ background: `linear-gradient(135deg, ${tc}40, var(--color-violet)40)`, filter: "blur(8px)" }} />
                 <div className="relative flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-2xl overflow-hidden border-2" style={{ borderColor: tc, background: "var(--color-void)" }}>
                   {user.avatar ? (
-                    <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
+                    <Image src={user.avatar} alt={user.username} fill className="object-cover" sizes="112px" />
                   ) : (
                     <span className="text-4xl font-display font-bold" style={{ color: tc }}>{user.username.charAt(0).toUpperCase()}</span>
                   )}
@@ -210,7 +210,9 @@ export default function ProfilePage() {
               {/* User Info */}
               <div className="min-w-0 flex-1 text-center sm:text-left">
                 <div className="flex items-center gap-3 justify-center sm:justify-start">
-                  <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{user.username}</h1>
+                  <div className="neon-rgb-border rounded-xl px-4 py-2">
+                    <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{user.username}</h1>
+                  </div>
                   <RankBadge rank={rank} size="md" />
                   {user.signature && (
                     <span className="hidden sm:inline-block text-xs px-2 py-0.5 rounded-full border font-mono" style={{ borderColor: `${tc}40`, color: tc }}>{user.signature}</span>
@@ -298,11 +300,9 @@ export default function ProfilePage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: 0.1 * i + 0.3 }}
-              className="neon-premium rounded-xl cursor-default"
+              className="neon-rgb-border rounded-xl cursor-default bg-[var(--color-panel)]/60 backdrop-blur-sm"
             >
-              <div className="neon-premium-track rounded-xl" />
-              <div className="neon-premium-overlay rounded-[10.5px]" />
-              <div className="neon-premium-content p-3 sm:p-4 text-center">
+              <div className="p-3 sm:p-4 text-center">
                 <div className="text-xl sm:text-2xl font-bold font-mono" style={{ color: s.color }}>{s.value.toLocaleString()}</div>
                 <div className="text-[10px] sm:text-xs text-[var(--color-mute)] mt-0.5">{s.label}</div>
               </div>
@@ -317,10 +317,8 @@ export default function ProfilePage() {
           transition={{ duration: 0.4, delay: 0.4 }}
           className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-6"
         >
-          <div className="neon-premium rounded-xl">
-            <div className="neon-premium-track rounded-xl" />
-            <div className="neon-premium-overlay rounded-[10.5px]" />
-            <div className="neon-premium-content p-4 flex items-center gap-3">
+          <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+            <div className="p-4 flex items-center gap-3">
               <div className="relative w-12 h-12 shrink-0">
                 <svg viewBox="0 0 36 36" className="w-12 h-12 -rotate-90">
                   <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--color-line)" strokeWidth="3" />
@@ -341,10 +339,8 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          <div className="neon-premium rounded-xl">
-            <div className="neon-premium-track rounded-xl" />
-            <div className="neon-premium-overlay rounded-[10.5px]" />
-            <div className="neon-premium-content p-4 flex items-center gap-3">
+          <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+            <div className="p-4 flex items-center gap-3">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ background: "#facc1515" }}>
                 <span className="text-xl">⭐</span>
               </div>
@@ -354,10 +350,8 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          <div className="neon-premium rounded-xl">
-            <div className="neon-premium-track rounded-xl" />
-            <div className="neon-premium-overlay rounded-[10.5px]" />
-            <div className="neon-premium-content p-4 flex items-center gap-3">
+          <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+            <div className="p-4 flex items-center gap-3">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--color-cyan)]/10">
                 <span className="text-xl">🔥</span>
               </div>
@@ -367,10 +361,8 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          <div className="neon-premium rounded-xl">
-            <div className="neon-premium-track rounded-xl" />
-            <div className="neon-premium-overlay rounded-[10.5px]" />
-            <div className="neon-premium-content p-4 flex items-center gap-3">
+          <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+            <div className="p-4 flex items-center gap-3">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--color-magenta)]/10">
                 <span className="text-xl">🏆</span>
               </div>
@@ -423,7 +415,7 @@ export default function ProfilePage() {
                     className={`px-3 py-1.5 text-[10px] sm:text-xs font-semibold rounded-full transition-all ${
                       statusFilter === s
                         ? "text-black scale-105"
-                        : "text-[var(--color-mute)] border border-[var(--color-line)] hover:border-current"
+                        : "text-[var(--color-mute)] neon-rgb-border hover:border-current"
                     }`}
                     style={statusFilter === s ? { background: STATUS_COLORS[s] || tc } : {}}
                   >
@@ -472,9 +464,9 @@ export default function ProfilePage() {
                               href={`/anime/${e.mediaId}`}
                               className="shrink-0 w-28 sm:w-32 group"
                             >
-                              <div className="relative aspect-[3/4] rounded-xl overflow-hidden border border-[var(--color-line)] group-hover:border-transparent transition-all">
+                               <div className="relative aspect-[3/4] rounded-xl overflow-hidden group-hover:border-transparent transition-all">
                                 {m?.cover ? (
-                                  <img src={m.cover} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                  <Image src={m.cover} alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="128px" />
                                 ) : (
                                   <div className="w-full h-full bg-[var(--color-line)] animate-pulse" />
                                 )}
@@ -501,7 +493,7 @@ export default function ProfilePage() {
                     </h3>
                     <div className="space-y-2">
                       {user.recentActivity.slice(0, 8).map((a) => (
-                        <div key={a.id} className="flex items-center gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2.5">
+                        <div key={a.id} className="flex items-center gap-3 rounded-xl bg-[var(--color-panel)] px-4 py-2.5">
                           <span className="text-base shrink-0">{ACTIVITY_ICONS[a.type] || "◆"}</span>
                           <div className="min-w-0 flex-1">
                             {a.mediaTitle ? (
@@ -531,12 +523,10 @@ export default function ProfilePage() {
                         <motion.div
                           key={a.code}
                           whileHover={{ scale: 1.03, y: -2 }}
-                          className="neon-premium rounded-xl cursor-default"
+                            className="neon-rgb-border rounded-xl cursor-default bg-[var(--color-panel)]/60 backdrop-blur-sm"
                           style={{ boxShadow: `0 0 15px ${tc}08` }}
                         >
-                          <div className="neon-premium-track rounded-xl" />
-                          <div className="neon-premium-overlay rounded-[10.5px]" />
-                          <div className="neon-premium-content p-3 text-center">
+                          <div className="p-3 text-center">
                             <div className="text-2xl mb-1">{a.icon}</div>
                             <div className="text-[10px] font-bold text-[var(--color-ink)] leading-tight">{a.name}</div>
                             <div className="text-[9px] font-mono mt-1" style={{ color: tc }}>+{a.points} XP</div>
@@ -588,9 +578,9 @@ export default function ProfilePage() {
                       const sc = STATUS_COLORS[e.status] || "var(--color-mute)";
                       return (
                         <Link key={`${e.mediaId}-${e.status}`} href={`/${e.type.toLowerCase()}/${e.mediaId}`} className="group">
-                          <div className="relative aspect-[3/4] rounded-xl overflow-hidden border border-[var(--color-line)] group-hover:border-transparent transition-all duration-300" style={{ ["--tw-shadow-color" as string]: sc }}>
+                                                       <div className="relative aspect-[3/4] rounded-xl overflow-hidden group-hover:border-transparent transition-all duration-300" style={{ ["--tw-shadow-color" as string]: sc }}>
                             {m?.cover ? (
-                              <img src={m.cover} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              <Image src={m.cover} alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="160px" />
                             ) : (
                               <div className="w-full h-full bg-[var(--color-line)] flex items-center justify-center">
                                 <span className="text-xs text-[var(--color-mute)] font-mono">#{e.mediaId}</span>
@@ -626,11 +616,11 @@ export default function ProfilePage() {
                         <Link
                           key={`${e.mediaId}-${e.status}`}
                           href={`/${e.type.toLowerCase()}/${e.mediaId}`}
-                          className="flex items-center gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2.5 hover:border-current/40 transition-all group"
+                           className="flex items-center gap-3 rounded-xl bg-[var(--color-panel)] px-3 py-2.5 hover:border-current/40 transition-all group"
                           style={{ ["--tw-border-opacity" as string]: "1" }}
                         >
-                          <div className="w-10 h-14 rounded-lg overflow-hidden shrink-0 bg-[var(--color-line)]">
-                            {m?.cover && <img src={m.cover} alt="" className="w-full h-full object-cover" />}
+                          <div className="relative w-10 h-14 rounded-lg overflow-hidden shrink-0 bg-[var(--color-line)]">
+                            {m?.cover && <Image src={m.cover} alt="" fill className="object-cover" sizes="40px" />}
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-medium truncate group-hover:text-[var(--color-cyan)] transition-colors">{m?.title || `Anime #${e.mediaId}`}</p>
@@ -661,12 +651,12 @@ export default function ProfilePage() {
                         key={r.id}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 hover:border-[var(--color-line)] transition-colors"
+                        className="rounded-xl bg-[var(--color-panel)] p-4 hover:border-[var(--color-line)] transition-colors"
                       >
                         <div className="flex items-start gap-3">
                           {m?.cover && (
-                            <Link href={`/anime/${r.mediaId}`} className="shrink-0">
-                              <img src={m.cover} alt="" className="w-12 h-16 rounded-lg object-cover" />
+                            <Link href={`/anime/${r.mediaId}`} className="relative shrink-0 block w-12 h-16 rounded-lg overflow-hidden">
+                              <Image src={m.cover} alt="" fill className="object-cover" sizes="48px" />
                             </Link>
                           )}
                           <div className="min-w-0 flex-1">
@@ -696,6 +686,19 @@ export default function ProfilePage() {
               </div>
             )}
 
+            {/* MOMENTS TAB */}
+            {tab === "moments" && (
+              <div className="mt-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-display text-lg font-bold">My Moments</h3>
+                  <Link href="/moments/create" className="text-xs font-semibold px-4 py-2 rounded-xl hover:bg-white/5 transition-colors" style={{ color: tc }}>
+                    ✦ Create Moment
+                  </Link>
+                </div>
+                <ProfileMoments userId={user.id} />
+              </div>
+            )}
+
             {/* STATS TAB */}
             {tab === "stats" && <StatsDashboard />}
 
@@ -704,11 +707,10 @@ export default function ProfilePage() {
 
             {/* IMPORT TAB */}
             {tab === "import" && (
-              <div className="mt-2">
-                <div className="neon-premium rounded-xl">
-                  <div className="neon-premium-track rounded-xl" />
-                  <div className="neon-premium-overlay rounded-[10.5px]" />
-                  <div className="neon-premium-content p-6">
+              <div className="mt-2 space-y-4">
+                {/* AniList Import */}
+                <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+                  <div className="p-6">
                     <h3 className="font-display text-sm font-bold mb-1 flex items-center gap-2">
                       <span className="h-1 w-4 rounded-full" style={{ background: tc }} />
                       Import from AniList
@@ -740,7 +742,7 @@ export default function ProfilePage() {
                             const data = await res.json();
                             if (!res.ok) throw new Error(data.error || "Import failed");
                             setImportResult(data);
-                          } catch (err: any) { setImportError(err.message); }
+                          } catch (err: unknown) { setImportError(err instanceof Error ? err.message : "Import failed"); }
                           finally { setImporting(false); }
                         }}
                         disabled={importing || !anilistUsername.trim()}
@@ -758,6 +760,9 @@ export default function ProfilePage() {
                     {importError && <p className="mt-3 text-sm text-[var(--color-magenta)]">{importError}</p>}
                   </div>
                 </div>
+
+                {/* MAL Import */}
+                <MalImportCard />
               </div>
             )}
 
@@ -808,10 +813,8 @@ function ProfileLists({ userId, themeColor }: { userId: string; themeColor: stri
     <div>
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs text-[var(--color-mute)] font-mono">{lists.length} list{lists.length !== 1 ? "s" : ""}</p>
-        <Link href="/lists/create" className="neon-premium rounded-lg">
-          <div className="neon-premium-track rounded-lg" />
-          <div className="neon-premium-overlay rounded-[6.5px]" />
-          <div className="neon-premium-content px-5 py-2.5 text-sm font-semibold text-black text-center" style={{ background: themeColor }}>Create List</div>
+        <Link href="/lists/create" className="neon-rgb-border rounded-lg px-5 py-2.5 text-sm font-semibold text-black text-center" style={{ background: themeColor }}>
+          Create List
         </Link>
       </div>
       {lists.length === 0 ? (
@@ -820,7 +823,7 @@ function ProfileLists({ userId, themeColor }: { userId: string; themeColor: stri
         <div className="space-y-2">
           {lists.map((l) => (
             <Link key={l.id} href={`/lists/${l.id}`}
-              className="flex items-center justify-between rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 hover:border-current/40 transition-all group"
+               className="flex items-center justify-between rounded-xl bg-[var(--color-panel)] px-4 py-3 hover:border-current/40 transition-all group"
             >
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium truncate group-hover:text-[var(--color-cyan)] transition-colors">{l.title}</p>
@@ -835,6 +838,61 @@ function ProfileLists({ userId, themeColor }: { userId: string; themeColor: stri
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function MalImportCard() {
+  const [importing, setImporting] = useState(false);
+  const [result, setResult] = useState<{ imported: number; total: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true); setResult(null); setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/import/mal", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Import failed");
+      setResult(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Import failed");
+    }
+    setImporting(false);
+  };
+
+  return (
+    <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+      <div className="p-6">
+        <h3 className="font-display text-sm font-bold mb-1 flex items-center gap-2">
+          <span className="h-1 w-4 rounded-full" style={{ background: "var(--color-cyan)" }} />
+          Import from MyAnimeList
+        </h3>
+        <p className="text-xs text-[var(--color-mute)] mb-4">
+          Upload your MAL XML export. Go to <a href="https://myanimelist.net/panel.php?go=export" target="_blank" rel="noopener noreferrer" className="underline text-[var(--color-cyan)] hover:text-[var(--color-magenta)] transition-colors">MAL Export Page</a> to download your list.
+        </p>
+        <label className="flex items-center gap-3 rounded-lg border border-dashed border-[var(--color-line)] bg-[var(--color-void)] p-4 cursor-pointer hover:border-[var(--color-cyan)] transition-all">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)]">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <span className="text-sm text-[var(--color-text)]">
+            {importing ? "Importing..." : "Click to upload MAL XML"}
+          </span>
+          <input type="file" accept=".xml" onChange={handleUpload} className="hidden" disabled={importing} />
+        </label>
+        {result && (
+          <p className="mt-3 text-sm text-green-400">
+            Imported {result.imported} of {result.total} entries.
+          </p>
+        )}
+        {error && <p className="mt-3 text-sm text-[var(--color-magenta)]">{error}</p>}
+      </div>
     </div>
   );
 }

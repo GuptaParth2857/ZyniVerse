@@ -27,7 +27,7 @@ export default function ApiKeyManager() {
   const [creating, setCreating] = useState(false);
   const [showKey, setShowKey] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [showUsage, setShowUsage] = useState(false);
+  const [, setShowUsage] = useState(false);
 
   useEffect(() => { fetchKeys(); }, []);
 
@@ -37,8 +37,8 @@ export default function ApiKeyManager() {
       if (!res.ok) throw new Error("Failed to fetch keys");
       const data = await res.json();
       setKeys(data.keys);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Request failed");
     } finally {
       setLoading(false);
     }
@@ -62,8 +62,8 @@ export default function ApiKeyManager() {
       setNewName("");
       setShowCreate(false);
       await fetchKeys();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Request failed");
     } finally {
       setCreating(false);
     }
@@ -75,8 +75,8 @@ export default function ApiKeyManager() {
       const res = await fetch(`/api/keys/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to revoke key");
       await fetchKeys();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Request failed");
     }
   }
 

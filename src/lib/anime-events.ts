@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export const ANIME_EVENTS_META = {
   disclaimer: "Anime event data is curated from public sources. Dates, announcements, and details may change — verify with official event websites.",
@@ -46,7 +47,9 @@ export interface AnimeEvent {
   announcements: AnimeAnnouncement[];
 }
 
-function mapEvent(e: any): AnimeEvent {
+type AnimeEventRecord = Prisma.AnimeEventGetPayload<{ include: { announcements: true } }>;
+
+function mapEvent(e: AnimeEventRecord): AnimeEvent {
   return {
     id: e.id,
     slug: e.slug,
@@ -63,7 +66,7 @@ function mapEvent(e: any): AnimeEvent {
     status: e.status as AnimeEvent["status"],
     attendance: e.attendance ?? undefined,
     tags: e.tags ?? [],
-    announcements: (e.announcements ?? []).map((a: any) => ({
+    announcements: (e.announcements ?? []).map((a) => ({
       id: a.id,
       title: a.title,
       description: a.description,
@@ -83,7 +86,7 @@ export async function getAnimeEvents(filters?: {
   year?: number;
   search?: string;
 }): Promise<AnimeEvent[]> {
-  const where: any = {};
+  const where: Prisma.AnimeEventWhereInput = {};
 
   if (filters?.type && filters.type !== "all") {
     where.type = filters.type;

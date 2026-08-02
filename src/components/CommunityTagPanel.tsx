@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { logError } from "@/lib/logger";
 
 interface CommunityTag {
   id: string;
@@ -22,7 +23,7 @@ export default function CommunityTagPanel({ mediaId }: { mediaId: number }) {
       const res = await fetch(`/api/community-tags/${mediaId}`);
       const data = await res.json();
       setTags(data.tags || []);
-    } catch {}
+    } catch (e) { logError(e); }
     setLoading(false);
   }, [mediaId]);
 

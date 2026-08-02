@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 interface Nominee {
   id: string;
@@ -15,7 +16,7 @@ export default function AwardVotingCard({
   categoryName,
   emoji,
   nominees,
-  year,
+  year: _year,
   onVote,
   status,
 }: {
@@ -61,7 +62,7 @@ export default function AwardVotingCard({
             >
               <span className="text-xs text-white/40 w-4">#{i + 1}</span>
               {n.image && (
-                <img src={n.image} alt="" className="w-8 h-10 rounded object-cover" />
+                <Image src={n.image} alt="" width={32} height={40} className="rounded object-cover" />
               )}
               <span className="text-xs text-white/80 flex-1 text-left">{n.title}</span>
               <span className="text-[10px] text-white/40">{n.votes} votes</span>

@@ -50,7 +50,6 @@ export default function PersonalizedHero({ userId, fallbackItems = [] }: Persona
   const [activeIdx, setActiveIdx] = useState(0);
   const [genre, setGenre] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
-  const [isPersonalized, setIsPersonalized] = useState(false);
 
   const fetchPersonalized = useCallback(async () => {
     if (!userId) return;
@@ -101,7 +100,6 @@ export default function PersonalizedHero({ userId, fallbackItems = [] }: Persona
       setItems(trending);
       setGenre(topGenre);
       setLoaded(true);
-      setIsPersonalized(true);
     } catch {
       setLoaded(false);
     }

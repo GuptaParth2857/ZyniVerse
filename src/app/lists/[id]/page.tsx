@@ -50,11 +50,11 @@ export default async function ListDetailPage({ params }: Props) {
     isLiked = !!like;
   }
 
+  const { _count, ...listData } = list;
   const serialized = {
-    ...list,
+    ...listData,
     createdAt: list.createdAt.toISOString(),
     itemCount: list._count.items,
-    _count: undefined as any,
   };
 
   const serializedItems = list.items.map((item) => ({

@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import type { Prisma } from "@prisma/client";
 
 export interface ConversationWithDetails {
   id: string;
@@ -60,7 +61,7 @@ export async function sendMessage(conversationId: string, senderId: string, cont
 }
 
 export async function getMessages(conversationId: string, limit = 50, before?: string) {
-  const where: any = { conversationId };
+  const where: Prisma.MessageWhereInput = { conversationId };
   if (before) {
     const cursor = await prisma.message.findUnique({ where: { id: before } });
     if (cursor) where.createdAt = { lt: cursor.createdAt };

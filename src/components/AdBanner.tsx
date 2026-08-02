@@ -92,7 +92,6 @@ function NativeAsyncAd({ containerId }: { containerId: string }) {
 
 export default function AdBanner({
   placement,
-  type = "banner",
   className = "",
 }: AdBannerProps) {
   const { data: session } = useSession();
@@ -103,7 +102,7 @@ export default function AdBanner({
   const containerId = `container-188115be46209eff2403f0d29b32d940-${uniqueId.replace(/:/g, "")}`;
 
   const user = session?.user
-    ? { premium: (session.user as any).premium || false }
+    ? { premium: (session.user as { premium?: boolean }).premium === true }
     : undefined;
 
   const showAds = shouldShowAds(user);

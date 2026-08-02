@@ -43,9 +43,11 @@ export default function GenrePage() {
         <div className="flex flex-col sm:flex-row sm:items-end gap-4 pb-8 border-b border-[var(--color-line)]">
           <div className="min-w-0 flex-1">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">{/* Genre */}</p>
-            <h1 className="font-display text-3xl font-bold sm:text-4xl">{decodedName}</h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+              <h1 className="font-display text-3xl font-bold sm:text-4xl">{decodedName}</h1>
+            </div>
           </div>
-          <div className="flex rounded-xl border border-[var(--color-line)] overflow-hidden">
+          <div className="flex rounded-xl neon-rgb-border overflow-hidden">
             {(["ANIME", "MANGA"] as const).map((t) => (
               <button key={t} onClick={() => setType(t)}
                 className={`px-4 py-2 text-sm font-semibold transition-colors ${
@@ -63,12 +65,12 @@ export default function GenrePage() {
               className={`rounded-full px-5 py-2.5 text-xs font-semibold transition-all ${
                 g.toLowerCase() === decodedName.toLowerCase()
                   ? "bg-[var(--color-magenta)] text-black"
-                  : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)]"
+                  : "neon-rgb-border text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)]"
               }`}
             >{g}</Link>
           ))}
           {allGenres.length > 20 && (
-            <Link href="/search" className="rounded-full border border-dashed border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]">
+            <Link href="/search" className="rounded-full border-dashed neon-rgb-border px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]">
               More →
             </Link>
           )}

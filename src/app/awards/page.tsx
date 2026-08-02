@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { UPCOMING_AWARDS, type UpcomingAward } from "@/lib/awards-data";
@@ -28,15 +29,10 @@ const TYPE_LABELS: Record<string, { label: string; icon: string; color: string }
 const PLATFORM_COLORS: Record<string, string> = {
   Crunchyroll: "bg-orange-500/20 text-orange-300 border-orange-500/30",
   "Anime Trending": "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
-  MyAnimeList: "bg-blue-500/20 text-blue-300 border-blue-500/30",
   "Anime News Network": "bg-green-500/20 text-green-300 border-green-500/30",
   Newtype: "bg-pink-500/20 text-pink-300 border-pink-500/30",
   "Tsugi ni Kuru Manga": "bg-rose-500/20 text-rose-300 border-rose-500/30",
   "Japan Academy Prize": "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-  "Saturn Awards": "bg-violet-500/20 text-violet-300 border-violet-500/30",
-  HIDIVE: "bg-teal-500/20 text-teal-300 border-teal-500/30",
-  "Anime Awards": "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
-  "AniList Community": "bg-sky-500/20 text-sky-300 border-sky-500/30",
 };
 
 const GRADIENTS = [
@@ -198,16 +194,17 @@ function AwardCard({ award, index }: { award: AwardEntry; index: number }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3, delay: index * 0.03 }}
-      className="bg-gray-800/60 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-700/50 hover:border-gray-600 transition-all group"
+      className="neon-rgb-border bg-gray-800/60 backdrop-blur-sm rounded-2xl overflow-hidden transition-all group"
     >
       {/* Poster */}
       <div className="relative h-52 overflow-hidden">
         {award.image ? (
-          <img
+          <Image
             src={award.image}
             alt={award.winner}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 768px) 50vw, 33vw"
           />
         ) : (
           <div className={`w-full h-full bg-gradient-to-br ${getGradient(award.winner)} flex items-center justify-center`}>
@@ -303,7 +300,7 @@ function CommunityPicks({ currentYear }: { currentYear: number }) {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * i, duration: 0.4 }}
-            className="rounded-[16px] bg-gradient-to-br from-[rgba(255,255,255,0.03)] to-[rgba(255,255,255,0.01)] border border-[rgba(255,255,255,0.06)] p-4 hover:border-[rgba(255,255,255,0.12)] transition-all group"
+            className="rounded-[16px] bg-gradient-to-br from-[rgba(255,255,255,0.03)] to-[rgba(255,255,255,0.01)] p-4 transition-all group"
           >
             <div className="flex items-center gap-2 mb-3">
               <span className="text-lg">{pick.emoji}</span>
@@ -357,7 +354,7 @@ const FilterButton = ({ active, onClick, children, className = "" }: { active: b
     className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
       active
         ? "bg-white text-gray-900 shadow-lg shadow-white/10"
-        : `bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700 ${className}`
+        : `bg-gray-800 text-gray-300 hover:bg-gray-700 ${className}`
     }`}
   >
     {children}
@@ -458,9 +455,11 @@ export default function AwardsPage() {
           </nav>
 
           <div className="text-center mb-10">
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight">Anime Awards Hub</h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+              <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight">Anime Awards Hub</h1>
+            </div>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              The ultimate awards tracker — every platform, every category, every year.
+              Real winners from the biggest anime award ceremonies — every platform, every category, every year.
             </p>
             {lastUpdated && (
               <p className="text-gray-500 text-xs mt-2">Last updated: {lastUpdated.toLocaleTimeString()} · Source: {source}</p>
@@ -536,7 +535,7 @@ export default function AwardsPage() {
                       className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
                         selectedType === t
                           ? `bg-gradient-to-r ${info.color} text-white shadow-lg`
-                          : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+                          : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                       }`}
                     >
                       {info.icon} {info.label}
@@ -555,7 +554,7 @@ export default function AwardsPage() {
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
                       selectedPlatform === p
                         ? `${PLATFORM_COLORS[p] || "bg-gray-700 text-white"} border shadow-lg`
-                        : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                     }`}
                   >
                     {p}
@@ -624,14 +623,15 @@ export default function AwardsPage() {
           <div className="mt-20 text-center border-t border-[rgba(255,255,255,0.06)] pt-10">
             <h2 className="text-2xl font-bold text-white mb-4">About ZyniVerse Awards</h2>
             <p className="max-w-2xl mx-auto text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>
-              ZyniVerse tracks awards from every major platform — Crunchyroll, Anime Trending, MyAnimeList, Anime News Network, Newtype, and more.
-              Filter by year, platform, or type to find exactly what you need.
+              ZyniVerse tracks verified winners from real award ceremonies — Crunchyroll Anime Awards, Anime Trending Awards, Anime News Network Readers&apos; Choice, Newtype Anime Awards, Tsugi ni Kuru Manga, and the Japan Academy Prize.
+              Every winner is confirmed against official ceremony records. Filter by year, platform, or type to find exactly what you need.
             </p>
             <div className="mt-6 flex flex-wrap gap-3 justify-center">
-              <a href="https://www.crunchyroll.com/news/latest/2025/3/anime-awards-2025-winners" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-orange-500/15 text-orange-300 rounded-xl text-sm border border-orange-500/20 hover:bg-orange-500/25 hover:border-orange-500/30 transition-all">Crunchyroll Awards 2025</a>
-              <a href="https://www.anime-trending.com" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-cyan-500/15 text-cyan-300 rounded-xl text-sm border border-cyan-500/20 hover:bg-cyan-500/25 hover:border-cyan-500/30 transition-all">Anime Trending</a>
-              <a href="https://myanimelist.net" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-blue-500/15 text-blue-300 rounded-xl text-sm border border-blue-500/20 hover:bg-blue-500/25 hover:border-blue-500/30 transition-all">MyAnimeList</a>
+              <a href="https://www.crunchyroll.com/animeawards/" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-orange-500/15 text-orange-300 rounded-xl text-sm border border-orange-500/20 hover:bg-orange-500/25 hover:border-orange-500/30 transition-all">Crunchyroll Anime Awards</a>
+              <a href="https://www.anitrendz.com/ata" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-cyan-500/15 text-cyan-300 rounded-xl text-sm border border-cyan-500/20 hover:bg-cyan-500/25 hover:border-cyan-500/30 transition-all">Anime Trending Awards</a>
               <a href="https://www.animenewsnetwork.com" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-green-500/15 text-green-300 rounded-xl text-sm border border-green-500/20 hover:bg-green-500/25 hover:border-green-500/30 transition-all">Anime News Network</a>
+              <a href="https://webnewtype.com/" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-pink-500/15 text-pink-300 rounded-xl text-sm border border-pink-500/20 hover:bg-pink-500/25 hover:border-pink-500/30 transition-all">Newtype</a>
+              <a href="https://tsugimanga.jp/" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-rose-500/15 text-rose-300 rounded-xl text-sm border border-rose-500/20 hover:bg-rose-500/25 hover:border-rose-500/30 transition-all">Tsugi ni Kuru Manga</a>
             </div>
           </div>
 

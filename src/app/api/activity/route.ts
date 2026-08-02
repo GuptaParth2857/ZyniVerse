@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-import { getActivityFeed, getUserActivity } from "@/lib/activity";
+import { getActivityFeed, getUserActivity, enrichActivities } from "@/lib/activity";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,10 +11,11 @@ export async function GET(req: NextRequest) {
     const targetUserId = searchParams.get("userId");
 
     if (targetUserId) {
-      const [activities, total] = await Promise.all([
+      const [rawActivities, total] = await Promise.all([
         getUserActivity(targetUserId, limit, offset),
         prisma.activity.count({ where: { userId: targetUserId } }),
       ]);
+      const activities = await enrichActivities(rawActivities);
       return NextResponse.json({ activities, total });
     }
 
@@ -26,7 +27,8 @@ export async function GET(req: NextRequest) {
         skip: offset,
         include: { user: { select: { id: true, username: true, avatar: true } } },
       });
-      const activities = rawActivities.filter((a) => a.user !== null);
+      let activities = rawActivities.filter((a) => a.user !== null);
+      activities = await enrichActivities(activities);
       const total = await prisma.activity.count();
       return NextResponse.json({ activities, total });
     }
@@ -43,7 +45,8 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const activities = await getActivityFeed(session.user.id, limit, offset);
+    let activities = await getActivityFeed(session.user.id, limit, offset);
+    activities = await enrichActivities(activities);
 
     return NextResponse.json({ activities, total });
   } catch (error) {

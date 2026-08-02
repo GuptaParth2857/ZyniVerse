@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getOSTs, getArtist } from "@/lib/ost";
+import { getOSTs, getArtist, getCoverImage } from "@/lib/ost";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -29,60 +29,82 @@ export default async function OSTDetailPage({ params }: Props) {
 
   const artistData = getArtist(ost.artist);
   const animeOSTs = getOSTs(undefined, undefined, undefined, ost.animeId);
+  const coverImage = getCoverImage(ost.animeTitle);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <Link href="/ost" className="inline-flex items-center gap-1 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors mb-6">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      <Link href="/ost" className="inline-flex items-center gap-1.5 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors mb-6 group">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="group-hover:-translate-x-0.5 transition-transform"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
         Back to OST Database
       </Link>
 
-      <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)]/50 backdrop-blur-sm p-6 sm:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
-          <div>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border inline-block ${
-              ost.type === "OP" ? "bg-red-600/20 text-red-400 border-red-600/30" :
-              ost.type === "ED" ? "bg-blue-600/20 text-blue-400 border-blue-600/30" :
-              ost.type === "OST" ? "bg-purple-600/20 text-purple-400 border-purple-600/30" :
-              ost.type === "INSERT" ? "bg-green-600/20 text-green-400 border-green-600/30" :
-              "bg-yellow-600/20 text-yellow-400 border-yellow-600/30"
-            }`}>{ost.type}</span>
-            <h1 className="font-display text-2xl font-bold mt-2">{ost.title}</h1>
-          </div>
-          {ost.videoUrl && (
-            <a href={ost.videoUrl} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 rounded-full bg-[var(--color-cyan)]/10 px-4 py-2 text-sm text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/20 transition-colors">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-              Watch on YouTube
-            </a>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-          <div className="space-y-3">
-            <DetailRow label="Artist" value={ost.artist} />
-            {ost.composer && <DetailRow label="Composer" value={ost.composer} />}
-            {ost.lyrics && <DetailRow label="Lyrics" value={ost.lyrics} />}
-          </div>
-          <div className="space-y-3">
-            <DetailRow label="Anime" value={ost.animeTitle} />
-            <DetailRow label="Year" value={String(ost.year)} />
-            {ost.season && <DetailRow label="Season" value={ost.season} />}
-            {ost.episodeRange && <DetailRow label="Episodes" value={ost.episodeRange} />}
-          </div>
-        </div>
-
-        {ost.videoUrl && (
-          <div className="aspect-video w-full rounded-xl overflow-hidden mb-8">
-            <iframe
-              src={`https://www.youtube.com/embed/${extractYouTubeId(ost.videoUrl)}?autoplay=0`}
-              title={`${ost.title} - ${ost.artist}`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="h-full w-full"
-            />
+      <div className="relative overflow-hidden rounded-2xl neon-rgb-border bg-[var(--color-panel)]/50 backdrop-blur-sm">
+        {coverImage && (
+          <div className="absolute inset-0 opacity-10">
+            <Image src={coverImage} alt="" fill className="object-cover blur-xl scale-110" sizes="100vw" />
           </div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-magenta)]/5 via-transparent to-[var(--color-cyan)]/5" />
+
+        <div className="relative z-10 p-6 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+            <div className="flex items-start gap-4">
+              {coverImage && (
+                <div className="hidden sm:block shrink-0 w-24 h-32 rounded-xl overflow-hidden border-2 border-[var(--color-magenta)]/30 shadow-lg shadow-[var(--color-magenta)]/10">
+                  <Image src={coverImage} alt={ost.animeTitle} width={96} height={128} className="h-full w-full object-cover" />
+                </div>
+              )}
+              <div>
+                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border inline-block ${
+                  ost.type === "OP" ? "bg-red-500/90 text-white border-red-400/50 shadow-[0_0_8px_rgba(239,68,68,0.4)]" :
+                  ost.type === "ED" ? "bg-blue-500/90 text-white border-blue-400/50 shadow-[0_0_8px_rgba(59,130,246,0.4)]" :
+                  ost.type === "OST" ? "bg-purple-500/90 text-white border-purple-400/50 shadow-[0_0_8px_rgba(168,85,247,0.4)]" :
+                  ost.type === "INSERT" ? "bg-emerald-500/90 text-white border-emerald-400/50 shadow-[0_0_8px_rgba(16,185,129,0.4)]" :
+                  "bg-amber-500/90 text-white border-amber-400/50 shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+                }`}>{ost.type}</span>
+                <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mt-3">
+                  <h1 className="font-display text-2xl sm:text-3xl font-bold leading-tight">{ost.title}</h1>
+                </div>
+                <p className="text-sm text-[var(--color-mute)] mt-1">{ost.artist} · {ost.animeTitle}</p>
+              </div>
+            </div>
+            {ost.videoUrl && (
+              <a href={ost.videoUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 rounded-full bg-[var(--color-cyan)]/10 border border-[var(--color-cyan)]/20 px-4 py-2 text-sm text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/20 hover:border-[var(--color-cyan)]/40 transition-all">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                Watch on YouTube
+              </a>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+            <div className="space-y-3">
+              <DetailRow label="Artist" value={ost.artist} />
+              {ost.composer && <DetailRow label="Composer" value={ost.composer} />}
+              {ost.lyrics && <DetailRow label="Lyrics" value={ost.lyrics} />}
+            </div>
+            <div className="space-y-3">
+              <DetailRow label="Anime" value={ost.animeTitle} />
+              <DetailRow label="Year" value={String(ost.year)} />
+              {ost.season && <DetailRow label="Season" value={ost.season} />}
+              {ost.episodeRange && <DetailRow label="Episodes" value={ost.episodeRange} />}
+            </div>
+          </div>
+
+          {ost.videoUrl && extractYouTubeId(ost.videoUrl) && (
+            <div className="relative rounded-xl overflow-hidden mb-2 neon-rgb-border">
+              <div className="aspect-video w-full">
+                <iframe
+                  src={`https://www.youtube.com/embed/${extractYouTubeId(ost.videoUrl)}?autoplay=0`}
+                  title={`${ost.title} - ${ost.artist}`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="h-full w-full"
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {animeOSTs.length > 1 && (
@@ -91,14 +113,16 @@ export default async function OSTDetailPage({ params }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {animeOSTs.filter((e) => e.id !== ost.id).slice(0, 6).map((e) => (
               <Link key={e.id} href={`/ost/${e.id}`}
-                className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]/50 p-3 hover:border-[var(--color-cyan)]/40 transition-all">
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${
-                  e.type === "OP" ? "bg-red-600/20 text-red-400 border-red-600/30" :
-                  e.type === "ED" ? "bg-blue-600/20 text-blue-400 border-blue-600/30" :
-                  "bg-purple-600/20 text-purple-400 border-purple-600/30"
-                }`}>{e.type}</span>
-                <p className="text-sm font-semibold mt-1 truncate">{e.title}</p>
-                <p className="text-xs text-[var(--color-mute)] truncate">{e.artist}</p>
+                className="ost-neon-card group/card">
+                <div className="relative z-10 overflow-hidden rounded-[calc(1rem-2px)] bg-[var(--color-panel)]/80 p-3">
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${
+                    e.type === "OP" ? "bg-red-500/90 text-white border-red-400/50" :
+                    e.type === "ED" ? "bg-blue-500/90 text-white border-blue-400/50" :
+                    "bg-purple-500/90 text-white border-purple-400/50"
+                  }`}>{e.type}</span>
+                  <p className="text-sm font-semibold mt-1.5 truncate group-hover/card:text-[var(--color-cyan)] transition-colors">{e.title}</p>
+                  <p className="text-xs text-[var(--color-mute)] truncate">{e.artist}</p>
+                </div>
               </Link>
             ))}
           </div>
@@ -111,14 +135,16 @@ export default async function OSTDetailPage({ params }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {artistData.songs.filter((e) => e.id !== ost.id).slice(0, 6).map((e) => (
               <Link key={e.id} href={`/ost/${e.id}`}
-                className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]/50 p-3 hover:border-[var(--color-cyan)]/40 transition-all">
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${
-                  e.type === "OP" ? "bg-red-600/20 text-red-400 border-red-600/30" :
-                  e.type === "ED" ? "bg-blue-600/20 text-blue-400 border-blue-600/30" :
-                  "bg-purple-600/20 text-purple-400 border-purple-600/30"
-                }`}>{e.type}</span>
-                <p className="text-sm font-semibold mt-1 truncate">{e.title}</p>
-                <p className="text-xs text-[var(--color-mute)] truncate">{e.animeTitle}</p>
+                className="ost-neon-card group/card">
+                <div className="relative z-10 overflow-hidden rounded-[calc(1rem-2px)] bg-[var(--color-panel)]/80 p-3">
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${
+                    e.type === "OP" ? "bg-red-500/90 text-white border-red-400/50" :
+                    e.type === "ED" ? "bg-blue-500/90 text-white border-blue-400/50" :
+                    "bg-purple-500/90 text-white border-purple-400/50"
+                  }`}>{e.type}</span>
+                  <p className="text-sm font-semibold mt-1.5 truncate group-hover/card:text-[var(--color-cyan)] transition-colors">{e.title}</p>
+                  <p className="text-xs text-[var(--color-mute)] truncate">{e.animeTitle}</p>
+                </div>
               </Link>
             ))}
           </div>
@@ -137,7 +163,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function extractYouTubeId(url: string): string {
+function extractYouTubeId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]+)/,
     /(?:youtu\.be\/)([a-zA-Z0-9_-]+)/,
@@ -147,5 +173,5 @@ function extractYouTubeId(url: string): string {
     const m = url.match(p);
     if (m) return m[1];
   }
-  return "";
+  return null;
 }

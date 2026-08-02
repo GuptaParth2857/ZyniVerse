@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import WikiEditPageClient from "./WikiEditPageClient";
+import { logError } from "@/lib/logger";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       const data = await res.json();
       return { title: `Edit ${data.page.title} — Wiki | ZyniVerse` };
     }
-  } catch {}
+  } catch (e) { logError(e); }
   return { title: "Edit Wiki Page — ZyniVerse" };
 }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface OverviewData {
   totalUsers: number;
@@ -129,7 +130,7 @@ export default function AdminOverviewPage() {
               {data.recentUsers.map((u) => (
                 <div key={u.id} className="flex items-center gap-3 rounded-lg border border-[var(--color-line)] p-3">
                   {u.avatar ? (
-                    <img src={u.avatar} alt={u.username} className="w-8 h-8 rounded-full object-cover" />
+                    <Image src={u.avatar} alt={u.username} width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-[var(--color-line)] flex items-center justify-center text-xs">
                       {u.username[0].toUpperCase()}

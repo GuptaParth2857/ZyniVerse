@@ -1,18 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { PageTransition } from "@/components/PageTransition";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [refCode, setRefCode] = useState("");
+
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (ref) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRefCode(ref);
+    }
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,7 +33,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "register", email, username, password }),
+        body: JSON.stringify({ action: "register", email, username, password, ref: refCode }),
       });
       if (!res.ok) {
         const d = await res.json();
@@ -67,7 +77,9 @@ export default function RegisterPage() {
             </div>
 
             <h1 className="neon-glow-text font-display text-center text-4xl font-bold tracking-wider">
-              JOIN US
+              <div className="rounded-xl px-4 py-2 inline-block">
+                JOIN US
+              </div>
             </h1>
             <p className="mt-2 text-center text-sm text-[var(--color-mute)] tracking-wider uppercase">
               Create your account

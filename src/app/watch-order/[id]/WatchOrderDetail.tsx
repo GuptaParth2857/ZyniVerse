@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 interface Entry {
@@ -16,7 +17,7 @@ interface Props {
   tip?: string;
 }
 
-export default function WatchOrderDetail({ slug, methods, entries, tip }: Props) {
+export default function WatchOrderDetail({ methods, entries, tip }: Props) {
   const [activeMethod, setActiveMethod] = useState(methods[0] || "Release Order");
   const currentEntries = entries[activeMethod] || [];
 
@@ -92,19 +93,21 @@ export default function WatchOrderDetail({ slug, methods, entries, tip }: Props)
 
               {/* Card */}
               <div
-                className={`flex-1 mb-4 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-white/15 hover:shadow-[0_4px_24px_-8px_rgba(0,0,0,0.4)] group ${isLast ? "mb-0" : ""}`}
+                className={`flex-1 mb-4 rounded-xl neon-rgb-border bg-[var(--glass-bg)] backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-white/15 hover:shadow-[0_4px_24px_-8px_rgba(0,0,0,0.4)] group ${isLast ? "mb-0" : ""}`}
               >
                 <div className="flex items-stretch">
                   {/* Cover Image */}
                   {entry.anilistId && (
                     <Link
                       href={`/anime/${entry.anilistId}`}
-                      className="shrink-0 w-16 sm:w-20 overflow-hidden bg-[var(--color-void)]"
+                      className="relative shrink-0 w-16 sm:w-20 overflow-hidden bg-[var(--color-void)]"
                     >
-                      <img
+                      <Image
                         src={`https://img.anili.st/media/${entry.anilistId}`}
                         alt={entry.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        fill
+                        sizes="80px"
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
                         loading="lazy"
                       />
                     </Link>

@@ -29,23 +29,17 @@ const LINK_COLUMNS = [
     title: "Browse",
     links: [
       { href: "/search", label: "Explore Anime", icon: "search" },
+      { href: "/top-anime", label: "Top Anime", icon: "award" },
       { href: "/manga", label: "Manga", icon: "book" },
       { href: "/seasonal", label: "Seasonal", icon: "calendar" },
       { href: "/schedule", label: "Schedule", icon: "clock" },
-      { href: "/live-action", label: "Live Action Anime", icon: "film" },
+      { href: "/live-action", label: "Live Action", icon: "film" },
+      { href: "/streaming-calendar", label: "Streaming Calendar", icon: "tv" },
       { href: "/dubbed", label: "Regional Dubs", icon: "globe" },
-      { href: "/random", label: "Random Anime", icon: "shuffle" },
-    ],
-  },
-  {
-    title: "India",
-    links: [
       { href: "/indian-dubs", label: "Indian Dubs", icon: "globe" },
-      { href: "/theatrical-releases", label: "Theatrical Releases", icon: "film" },
-      { href: "/toons", label: "Toons & Cartoons", icon: "tv" },
-      { href: "/tv-schedule", label: "TV Channels", icon: "globe" },
-      { href: "/conventions", label: "Anime Conventions", icon: "calendar" },
-      { href: "/voice-actors/indian", label: "Indian Voice Actors", icon: "users" },
+      { href: "/random", label: "Random Anime", icon: "shuffle" },
+      { href: "/a-z", label: "A–Z Index", icon: "list" },
+      { href: "/moments", label: "Moments", icon: "image" },
     ],
   },
   {
@@ -56,6 +50,10 @@ const LINK_COLUMNS = [
       { href: "/merch", label: "Merch Store", icon: "shopping-bag" },
       { href: "/filler", label: "Filler Guides", icon: "edit" },
       { href: "/watch-order", label: "Watch Orders", icon: "list" },
+      { href: "/tools", label: "Tools", icon: "bar-chart" },
+      { href: "/toons", label: "Toons & Cartoons", icon: "tv" },
+      { href: "/tv-schedule", label: "TV Channels", icon: "globe" },
+      { href: "/dub-schedule", label: "Dub Schedule", icon: "clock" },
       { href: "/blog", label: "Blog", icon: "edit" },
     ],
   },
@@ -65,8 +63,10 @@ const LINK_COLUMNS = [
       { href: "/forum", label: "Forum", icon: "message-circle" },
       { href: "/community", label: "Social Feed", icon: "message-circle" },
       { href: "/clubs", label: "Clubs", icon: "users" },
+      { href: "/polls", label: "Polls", icon: "bar-chart" },
+      { href: "/critiques", label: "Critiques", icon: "edit" },
       { href: "/activity", label: "Activity Feed", icon: "zap" },
-      { href: "/tags", label: "Community Tags", icon: "tag" },
+      { href: "/conventions", label: "Conventions", icon: "calendar" },
       { href: "/characters", label: "Characters", icon: "users" },
       { href: "/leaderboard", label: "Leaderboard", icon: "bar-chart" },
     ],
@@ -83,6 +83,8 @@ const LINK_COLUMNS = [
       { href: "/docs", label: "API Docs", icon: "code" },
       { href: "/wiki", label: "Wiki", icon: "book" },
       { href: "/status", label: "Status", icon: "bar-chart" },
+      { href: "/best-anime-sites", label: "Best Anime Sites", icon: "globe" },
+      { href: "/link-to-us", label: "Link to Us", icon: "globe" },
     ],
   },
 ];
@@ -119,57 +121,58 @@ export default function Footer() {
   return (
     <footer className="border-t border-[var(--color-line)] bg-[var(--color-void)] relative z-20">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
-          {/* Brand */}
-          <motion.div {...FADE_UP} className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-3 mb-3 group">
-              <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-[var(--color-magenta)]/30 shadow-[0_0_15px_rgba(255,0,255,0.2)] group-hover:shadow-[0_0_20px_rgba(255,0,255,0.4)] transition-shadow">
-                <Image src="/logo.png" alt="ZyniVerse" width={40} height={40} className="object-cover" />
-              </div>
-              <span className="font-display text-xl font-bold logo-text">ZyniVerse</span>
-            </Link>
-            <p className="text-xs leading-relaxed text-[var(--color-mute)] mb-4 max-w-xs">
-              Discover, track, and discuss anime & manga. Your ultimate anime companion.
-            </p>
-            <div className="space-y-1.5 mb-4">
-              <a href="mailto:contact.zenvyx@gmail.com" className="flex items-center gap-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 4l-10 8L2 4" /></svg>
-                contact.zenvyx@gmail.com
+        {/* Top section: Brand + Newsletter-style CTA */}
+        {/* Brand */}
+        <motion.div {...FADE_UP} className="mb-8">
+          <Link href="/" className="inline-flex items-center gap-3 mb-3 group">
+            <div className="relative w-10 h-10 rounded-lg overflow-hidden neon-rgb-border">
+              <Image src="/logo.png" alt="ZyniVerse" width={40} height={40} className="object-cover" />
+            </div>
+            <span className="font-display text-xl font-bold logo-text">ZyniVerse</span>
+          </Link>
+          <p className="text-xs leading-relaxed text-[var(--color-mute)] mb-4 max-w-md">
+            Discover, track, and discuss anime & manga. Your ultimate anime companion for Indian fans.
+          </p>
+          <div className="flex flex-wrap gap-4 items-center mb-4">
+            <a href="mailto:contact.zenvyx@gmail.com" className="flex items-center gap-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 4l-10 8L2 4" /></svg>
+              contact.zenvyx@gmail.com
+            </a>
+            <span className="flex items-center gap-2 text-xs text-[var(--color-mute)]">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+              Delhi, India
+            </span>
+          </div>
+          <div className="flex gap-2.5">
+            {SOCIAL_LINKS.map((s) => (
+              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                className="w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-[var(--color-panel)] flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-cyan)] neon-rgb-border"
+                aria-label={s.label}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={SOCIAL_PATHS[s.icon]} />
+                </svg>
               </a>
-              <span className="flex items-center gap-2 text-xs text-[var(--color-mute)]">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                Delhi, India
-              </span>
-            </div>
-            <div className="flex gap-2.5">
-              {SOCIAL_LINKS.map((s) => (
-                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                  className="w-11 h-11 sm:w-9 sm:h-9 rounded-full bg-[var(--color-panel)] flex items-center justify-center text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 border border-[var(--color-line)] hover:border-[var(--color-cyan)]/30 transition-all"
-                  aria-label={s.label}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d={SOCIAL_PATHS[s.icon]} />
-                  </svg>
-                </a>
-              ))}
-            </div>
-          </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
-          {/* Link Columns */}
+        {/* Link Columns */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {LINK_COLUMNS.map((col, i) => (
             <motion.div key={col.title} {...FADE_UP} transition={{ duration: 0.5, delay: 0.1 * (i + 1) }}
-              className="group rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]/30 p-4 hover:bg-[var(--color-panel)]/50 transition-all duration-300"
+              className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/40 backdrop-blur-sm p-4 hover:bg-[var(--color-panel)]/70 transition-all duration-300"
             >
               <h4 className="font-display text-xs font-bold uppercase tracking-wider text-[var(--color-cyan)] mb-4 flex items-center gap-2 pb-2 border-b border-[var(--color-line)]/50">
                 {col.title}
               </h4>
-              <ul className="space-y-1">
+              <ul className="space-y-0.5">
                 {col.links.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href}
-                      className="flex items-center gap-2.5 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 hover:border-l-2 hover:border-[var(--color-cyan)] pl-2 -ml-2 rounded-r-md py-1.5 transition-all duration-200"
+                      className="flex items-center gap-2 text-[11px] text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 rounded-md px-2 py-1.5 transition-all duration-200 group/link"
                     >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 opacity-50 group-hover/link:opacity-100 transition-opacity">
                         <path d={ICON_PATHS[link.icon]} />
                       </svg>
                       {link.label}
@@ -181,46 +184,49 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Support / Donate */}
-        <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.35 }}
-          className="mt-6 p-5 bg-gradient-to-r from-[var(--color-magenta)]/10 to-[var(--color-violet)]/10 rounded-2xl border border-[var(--color-line)] flex flex-col sm:flex-row items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[var(--color-magenta)]/20 flex items-center justify-center shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-magenta)" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+        {/* CTA Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+          {/* Support CTA */}
+          <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.35 }}
+            className="neon-rgb-border rounded-2xl bg-gradient-to-r from-[var(--color-magenta)]/10 to-[var(--color-violet)]/10 p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-magenta)]/20 flex items-center justify-center shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-magenta)" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[var(--color-ink)]">Support ZyniVerse</p>
+                <p className="text-xs text-[var(--color-mute)]">Help us keep running — no ads, just passion.</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-bold text-[var(--color-ink)]">Support ZyniVerse</p>
-              <p className="text-xs text-[var(--color-mute)]">Help us keep running — no ads, just passion.</p>
+            <div className="flex gap-3 shrink-0">
+              <a href="https://www.buymeacoffee.com/zyniverse" target="_blank" rel="noopener noreferrer"
+                className="px-5 py-2.5 bg-[var(--color-magenta)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-magenta)]/30"
+              >Buy me a coffee</a>
+              <Link href="/premium"
+                className="px-5 py-2.5 bg-[var(--color-cyan)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-cyan)]/30"
+              >Go Premium</Link>
             </div>
-          </div>
-          <div className="flex gap-3 shrink-0">
-            <a href="https://www.buymeacoffee.com/zyniverse" target="_blank" rel="noopener noreferrer"
-              className="px-5 py-3 sm:py-2.5 bg-[var(--color-magenta)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-magenta)]/30"
-            >☕ Buy me a coffee</a>
-            <Link href="/premium"
-              className="px-5 py-3 sm:py-2.5 bg-[var(--color-cyan)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-cyan)]/30"
-            >Go Premium</Link>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* Community CTA */}
-        <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-6 p-5 bg-gradient-to-r from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10 rounded-2xl border border-[var(--color-line)] flex flex-col sm:flex-row items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[var(--color-cyan)]/20 flex items-center justify-center shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-cyan)" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+          {/* Community CTA */}
+          <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.4 }}
+            className="neon-rgb-border rounded-2xl bg-gradient-to-r from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10 p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-cyan)]/20 flex items-center justify-center shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-cyan)" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[var(--color-ink)]">Join the Discussion</p>
+                <p className="text-xs text-[var(--color-mute)]">Share reviews, critiques, and connect with anime fans.</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-bold text-[var(--color-ink)]">Join the Discussion</p>
-              <p className="text-xs text-[var(--color-mute)]">Share reviews, critiques, and connect with anime fans.</p>
-            </div>
-          </div>
-          <Link href="/community"
-            className="px-5 py-3 sm:py-2.5 bg-[var(--color-cyan)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-cyan)]/30 shrink-0"
-          >Explore Community</Link>
-        </motion.div>
+            <Link href="/community"
+              className="px-5 py-2.5 bg-[var(--color-cyan)] text-black text-xs font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--color-cyan)]/30 shrink-0"
+            >Explore Community</Link>
+          </motion.div>
+        </div>
 
         {/* Feedback Form */}
         <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.45 }}
@@ -231,25 +237,50 @@ export default function Footer() {
 
         {/* Bottom links */}
         <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.5 }}
-          className="mt-8 pt-6 border-t border-[var(--color-line)] flex flex-col sm:flex-row justify-between items-center gap-4"
+          className="mt-8 pt-6 border-t border-[var(--color-line)]"
         >
-          <div className="flex flex-wrap gap-4 text-xs">
-            <Link href="/search" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Browse Anime</Link>
-            <Link href="/guides" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Guides</Link>
-            <Link href="/theatrical-releases" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Theatrical</Link>
-            <Link href="/toons" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Toons</Link>
-            <Link href="/podcast" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Podcast</Link>
-            <Link href="/merch" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Merch</Link>
-            <Link href="/forum" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Forum</Link>
-            <Link href="/filler" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Filler Guides</Link>
-            <Link href="/watch-order" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">Watch Orders</Link>
-            <Link href="/docs" className="text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition">API Docs</Link>
-          </div>
-          <div className="flex gap-3 text-xs text-[var(--color-mute)]">
-            <Link href="/privacy" className="hover:text-[var(--color-cyan)] transition">Privacy</Link>
-            <Link href="/terms" className="hover:text-[var(--color-cyan)] transition">Terms</Link>
-            <Link href="/community" className="hover:text-[var(--color-cyan)] transition">Contact</Link>
-            <Link href="/developer" className="hover:text-[var(--color-cyan)] transition">Developer</Link>
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
+            {/* Quick links with neon pills */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "Browse Anime", href: "/search" },
+                { label: "Guides", href: "/guides" },
+                { label: "Theatrical", href: "/theatrical-releases" },
+                { label: "Toons", href: "/toons" },
+                { label: "Podcast", href: "/podcast" },
+                { label: "Merch", href: "/merch" },
+                { label: "Forum", href: "/forum" },
+                { label: "Filler Guides", href: "/filler" },
+                { label: "Watch Orders", href: "/watch-order" },
+                { label: "API Docs", href: "/docs" },
+              ].map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="neon-rgb-border rounded-full px-3 py-1.5 text-[10px] font-semibold text-[var(--color-mute)] hover:text-[var(--color-cyan)] bg-[var(--color-panel)]/40 transition-all hover:scale-105"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* Legal links */}
+            <div className="flex gap-2 shrink-0">
+              {[
+                { label: "Privacy", href: "/privacy" },
+                { label: "Terms", href: "/terms" },
+                { label: "Contact", href: "/community" },
+                { label: "Developer", href: "/developer" },
+              ].map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="neon-rgb-border rounded-lg px-2.5 py-1.5 text-[10px] font-semibold text-[var(--color-mute)] hover:text-[var(--color-cyan)] bg-[var(--color-panel)]/40 transition-all hover:scale-105"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>
@@ -261,7 +292,10 @@ export default function Footer() {
             &copy; {year} ZyniVerse. All rights reserved.
           </p>
           <p className="text-[10px] text-[var(--color-mute)]/50">
-            Made with ❤️ for anime fans. No content is hosted here.
+            Made with care for anime fans. No content is hosted here.
+          </p>
+          <p className="text-[10px] text-[var(--color-mute)]/30">
+            <a href="https://www.promotebusinessdirectory.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-cyan)] transition-colors">Promote Business Directory</a>
           </p>
         </div>
       </div>

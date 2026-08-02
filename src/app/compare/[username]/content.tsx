@@ -27,7 +27,9 @@ export default function CompareContent({ paramsPromise }: { paramsPromise: Promi
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <div className="mb-8">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">Social</p>
-          <h1 className="font-display text-3xl font-bold mt-1">Comparing with @{username}</h1>
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mt-1">
+            <h1 className="font-display text-3xl font-bold">Comparing with @{username}</h1>
+          </div>
         </div>
         <ListComparison username={username} />
       </div>

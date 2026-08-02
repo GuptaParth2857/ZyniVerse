@@ -46,9 +46,11 @@ export default function ConventionsPage() {
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#00ffe0]">
             Events
           </p>
-          <h1 className="font-display text-4xl font-bold sm:text-5xl mt-2 bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
-            Anime Conventions in India
-          </h1>
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+            <h1 className="font-display text-4xl font-bold sm:text-5xl mt-2 bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
+              Anime Conventions in India
+            </h1>
+          </div>
           <p className="mt-3 text-sm max-w-2xl mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
             Find anime conventions, comic cons, and otaku events near you. Upcoming events, ticket info, and community meetups across India.
           </p>

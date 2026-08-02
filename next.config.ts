@@ -37,11 +37,6 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/critiques",
-        destination: "/community?tab=critiques",
-        permanent: true,
-      },
-      {
         source: "/dub-schedule",
         destination: "/dubbed",
         permanent: true,
@@ -70,10 +65,12 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "s4.anilist.co" },
       { protocol: "https", hostname: "cdn.myanimelist.net" },
       { protocol: "https", hostname: "placewaifu.com" },
+      { protocol: "https", hostname: "ui-avatars.com" },
     ],
   },
   experimental: {
     optimizePackageImports: ["framer-motion"],
+    proxyClientMaxBodySize: "250mb",
   },
 };
 

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { logError } from "@/lib/logger";
 
 interface Notification {
   id: string;
@@ -48,7 +49,7 @@ export default function NotificationBell() {
       const res = await fetch("/api/notifications/unread");
       const data = await res.json();
       setUnreadCount(data.count ?? 0);
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   useEffect(() => {
@@ -73,7 +74,7 @@ export default function NotificationBell() {
       const res = await fetch("/api/notifications?limit=10");
       const data = await res.json();
       setNotifications(data.notifications ?? []);
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   async function handleMarkAllRead() {
@@ -81,7 +82,7 @@ export default function NotificationBell() {
       await fetch("/api/notifications", { method: "PUT" });
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   if (!session?.user?.id) return null;

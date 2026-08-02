@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
-import { getStudio, bestTitle } from "@/lib/anilist";
+import { getStudio } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
@@ -41,7 +40,9 @@ export default function StudioPage() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-violet)]">{/* Studio */}</p>
-            <h1 className="font-display text-3xl font-bold sm:text-4xl">{studio.name}</h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+              <h1 className="font-display text-3xl font-bold sm:text-4xl">{studio.name}</h1>
+            </div>
             <div className="mt-1 flex items-center gap-4 text-sm text-[var(--color-mute)]">
               {studio.isAnimationStudio && <span className="text-[var(--color-cyan)]">Animation Studio</span>}
               {studio.favourites != null && <span>♥ {studio.favourites.toLocaleString()} favorites</span>}
