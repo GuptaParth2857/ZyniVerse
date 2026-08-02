@@ -1,14 +1,13 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import Loader from "@/components/Loader";
-import { getMediaBatch } from "@/lib/anilist";
 import EmptyState from "@/components/EmptyState";
+import { logError } from "@/lib/logger";
 
 interface Post {
   id: string;
@@ -18,6 +17,7 @@ interface Post {
   type: string;
   mediaId: number | null;
   rating: number | null;
+  image: string | null;
   createdAt: string;
   author: { id: string; username: string };
   commentCount: number;
@@ -25,15 +25,7 @@ interface Post {
   isSaved: boolean;
 }
 
-interface MediaCover {
-  id: number;
-  cover: string;
-  title: string;
-}
-
-type Tab = "feed" | "critiques";
-
-function PostCard({ post, onSave, sessionUserId }: { post: Post; onSave: (id: string) => void; sessionUserId: string | null }) {
+function PostCard({ post, onSave, sessionUserId, index = 0 }: { post: Post; onSave: (id: string) => void; sessionUserId: string | null; index?: number }) {
   const [expanded, setExpanded] = useState(false);
   const [comments, setComments] = useState<{ id: string; content: string; author: { username: string }; createdAt: string }[]>([]);
   const [showComments, setShowComments] = useState(false);
@@ -62,15 +54,16 @@ function PostCard({ post, onSave, sessionUserId }: { post: Post; onSave: (id: st
         setComments((prev) => [...prev, d.comment]);
         setCommentText("");
       }
-    } catch {}
+    } catch (e) { logError(e); }
     setSubmitting(false);
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 sm:p-5 transition-all hover:border-[var(--color-cyan)]/20"
+      transition={{ duration: 0.45, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
+      className="group neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm p-4 sm:p-5 transition-all duration-300"
     >
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
@@ -92,7 +85,7 @@ function PostCard({ post, onSave, sessionUserId }: { post: Post; onSave: (id: st
       </div>
 
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-display text-base font-bold leading-snug">{post.title}</h3>
+        <h3 className="font-display text-base font-bold leading-snug group-hover:text-[var(--color-cyan)] transition-colors">{post.title}</h3>
         {post.rating != null && (
           <span className="font-mono text-sm font-bold shrink-0" style={{ color: post.rating >= 7 ? "var(--color-cyan)" : post.rating >= 5 ? "var(--color-amber)" : "var(--color-magenta)" }}>
             {post.rating}/10
@@ -110,6 +103,12 @@ function PostCard({ post, onSave, sessionUserId }: { post: Post; onSave: (id: st
           </button>
         )}
       </div>
+
+      {post.image && (
+        <div className="mt-3 overflow-hidden rounded-lg neon-rgb-border">
+          <Image src={post.image} alt={post.title} width={0} height={0} sizes="100vw" className="h-auto max-h-80 w-full object-cover" />
+        </div>
+      )}
 
       <div className="flex items-center gap-3 mt-3 pt-3 border-t border-[var(--color-line)]/50">
         <button onClick={() => onSave(post.id)} className="flex items-center gap-1 text-[10px] text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors">
@@ -143,7 +142,7 @@ function PostCard({ post, onSave, sessionUserId }: { post: Post; onSave: (id: st
                 <div className="flex gap-2 pt-1">
                   <input value={commentText} onChange={(e) => setCommentText(e.target.value)}
                     placeholder="Write a comment..."
-                    className="flex-1 bg-transparent border border-[var(--color-line)] rounded px-2 py-1 text-[10px] outline-none focus:border-[var(--color-cyan)]"
+                    className="flex-1 neon-rgb-border bg-[var(--color-void)] rounded px-2 py-1 text-[10px] outline-none"
                     onKeyDown={(e) => e.key === "Enter" && addComment()}
                   />
                   <button onClick={addComment} disabled={submitting || !commentText.trim()}
@@ -159,117 +158,29 @@ function PostCard({ post, onSave, sessionUserId }: { post: Post; onSave: (id: st
   );
 }
 
-function CritiqueCard({ post, cover, onSave, sessionUserId: _sessionUserId }: { post: Post; cover?: MediaCover; onSave: (id: string) => void; sessionUserId: string | null }) {
-  const getColor = (r: number) => r >= 7 ? "var(--color-cyan)" : r >= 5 ? "var(--color-amber)" : "var(--color-magenta)";
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden hover:border-[var(--color-magenta)]/20 transition-all"
-    >
-      {cover && (
-        <div className="relative h-32 sm:h-40 overflow-hidden">
-          <Image src={cover.cover} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-[var(--color-panel)]/40 to-transparent" />
-          <div className="absolute bottom-3 left-4 right-4">
-            <h2 className="font-display text-lg font-bold text-white drop-shadow-lg">{post.title}</h2>
-            <p className="text-[10px] text-white/70 font-mono">{cover.title}</p>
-          </div>
-          {post.rating != null && (
-            <div className="absolute top-3 right-3 font-mono text-sm font-bold px-2.5 py-1 rounded-lg shadow-lg backdrop-blur-sm border"
-              style={{ color: getColor(post.rating), background: `${getColor(post.rating)}15`, borderColor: `${getColor(post.rating)}30` }}
-            >{post.rating}/10</div>
-          )}
-        </div>
-      )}
-      {!cover && (
-        <div className="p-4 border-b border-[var(--color-line)]/50">
-          <div className="flex items-start justify-between">
-            <h2 className="font-display text-lg font-bold">{post.title}</h2>
-            {post.rating != null && (
-              <span className="font-mono text-sm font-bold" style={{ color: getColor(post.rating) }}>{post.rating}/10</span>
-            )}
-          </div>
-        </div>
-      )}
-      <div className="p-4 pt-3">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="h-5 w-5 rounded-full bg-[var(--color-magenta)]/20 flex items-center justify-center text-[10px] sm:text-[8px] font-bold text-[var(--color-magenta)]">
-            {post.author.username.charAt(0).toUpperCase()}
-          </div>
-          <p className="text-[10px] font-semibold">{post.author.username}</p>
-          <p className="text-[10px] sm:text-[9px] font-mono text-[var(--color-mute)] ml-auto">
-            {new Date(post.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-          </p>
-        </div>
-        <p className="text-xs text-[var(--color-mute)] leading-relaxed line-clamp-3">{post.content}</p>
-        <div className="flex items-center gap-3 mt-3 pt-2 border-t border-[var(--color-line)]/50">
-          <button onClick={() => onSave(post.id)} className="flex items-center gap-1 text-[10px] text-[var(--color-mute)] hover:text-[var(--color-magenta)] transition-colors">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill={post.isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
-            </svg>
-            {post.saveCount}
-          </button>
-          <button onClick={() => {}} className="flex items-center gap-1 text-[10px] text-[var(--color-mute)]">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-            </svg>
-            {post.commentCount}
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 function CommunityContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const [tab, setTab] = useState<Tab>((searchParams.get("tab") as Tab) || "feed");
   const [posts, setPosts] = useState<Post[]>([]);
-  const [covers, setCovers] = useState<Map<number, MediaCover>>(new Map());
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [image, setImage] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [postType, setPostType] = useState<"POST" | "CRITIQUE">("POST");
   const [showCreate, setShowCreate] = useState(false);
   const { data: session } = useSession();
   const sessionUserId = session?.user?.id || null;
   const [submitting, setSubmitting] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    setCovers(new Map());
-    const type = tab === "critiques" ? "CRITIQUE" : "ALL";
-    fetch(`/api/posts?type=${type}`)
+    fetch("/api/posts?type=ALL")
       .then((r) => r.json())
       .then((d) => setPosts(d.posts || []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [tab]);
-
-  useEffect(() => {
-    const mIds = [...new Set(posts.filter((p) => p.mediaId).map((p) => p.mediaId!))];
-    if (mIds.length === 0) return;
-    (async () => {
-      const map = new Map(covers);
-      const needed = mIds.filter((id) => !map.has(id));
-      if (needed.length === 0) return;
-      try {
-        const batch = await getMediaBatch(needed);
-        for (const m of batch) {
-          map.set(m.id, { id: m.id, cover: m.coverImage?.extraLarge || m.coverImage?.large || "", title: m.title?.romaji || "" });
-        }
-      } catch {}
-      setCovers(new Map(map));
-    })();
-  }, [posts]);
-
-  const switchTab = (t: Tab) => {
-    setTab(t);
-    router.replace(`${pathname}?tab=${t}`, { scroll: false });
-  };
+  }, []);
 
   const toggleSave = async (postId: string) => {
     if (!sessionUserId) return;
@@ -282,6 +193,22 @@ function CommunityContent() {
     setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, isSaved: d.saved, saveCount: d.saved ? p.saveCount + 1 : p.saveCount - 1 } : p));
   };
 
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const d = await res.json();
+      if (d.url) setImage(d.url);
+      else logError(new Error(d.error || "Upload failed"));
+    } catch (err) { logError(err); }
+    setUploading(false);
+    e.target.value = "";
+  };
+
   const createPost = async () => {
     if (!title.trim() || !content.trim() || !sessionUserId || submitting) return;
     setSubmitting(true);
@@ -289,119 +216,137 @@ function CommunityContent() {
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim(), content: content.trim(), type: postType }),
+        body: JSON.stringify({ title: title.trim(), content: content.trim(), type: postType, image: image || undefined }),
       });
       const d = await res.json();
       if (d.post) {
         setPosts((prev) => [d.post, ...prev]);
         setTitle("");
         setContent("");
+        setImage("");
         setPostType("POST");
         setShowCreate(false);
       }
-    } catch {}
+    } catch (e) { logError(e); }
     setSubmitting(false);
   };
 
   return (
     <PageTransition>
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <p className="font-mono text-xs uppercase tracking-[0.2em]" style={{ color: tab === "critiques" ? "var(--color-magenta)" : "var(--color-cyan)" }}>
-            {tab === "critiques" ? "Critiques" : "Social Feed"}
-          </p>
-          <h1 className="font-display text-3xl font-black sm:text-4xl tracking-tight mt-1">
-            {tab === "critiques" ? "Anime Critiques" : "Social Feed"}
-          </h1>
-          <p className="mt-2 text-sm text-[var(--color-mute)]">
-            {tab === "critiques" ? "In-depth reviews and critiques from the community." : "Quick posts, thoughts, and reactions. For structured discussions, visit the Forum."}
-          </p>
-          {tab === "feed" && (
-            <a href="/forum" className="mt-2 inline-flex items-center gap-1.5 text-xs text-[var(--color-cyan)] hover:underline">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
-              Looking for structured discussions? Go to Forum →
-            </a>
-          )}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <div className="relative overflow-hidden rounded-2xl neon-rgb-border bg-[var(--color-panel)]/60 backdrop-blur-sm">
+            <div className="absolute -top-20 -left-20 h-48 w-48 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(0,255,255,0.15)" }} />
+            <div className="absolute -bottom-24 -right-16 h-56 w-56 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(255,0,255,0.1)" }} />
+            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255,0,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.05) 1px, transparent 1px)", backgroundSize: "24px 24px", opacity: 0.4 }} />
+            <div className="relative px-6 py-8 sm:px-8 sm:py-10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="neon-rgb-border rounded-xl h-12 w-12 flex items-center justify-center bg-[var(--color-panel)]/60 backdrop-blur-sm">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-cyan)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                  </svg>
+                </div>
+                <span className="font-mono text-xs uppercase tracking-[0.2em]" style={{ color: "var(--color-cyan)", textShadow: "0 0 10px rgba(0,255,255,0.5)" }}>
+                  Social Feed
+                </span>
+              </div>
+              <div className="neon-rgb-border rounded-xl px-5 py-2 inline-block">
+                <h1 className="font-display text-3xl font-black sm:text-4xl tracking-tight">
+                  Social Feed
+                </h1>
+              </div>
+              <p className="mt-3 text-sm text-[var(--color-mute)] max-w-lg">
+                Quick posts, thoughts, and reactions. For structured discussions, visit the Forum. In-depth reviews live in Critiques.
+              </p>
+              <div className="flex flex-wrap items-center gap-4 mt-3">
+                <a href="/forum" className="inline-flex items-center gap-1.5 text-xs text-[var(--color-cyan)] hover:underline">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+                  Go to Forum →
+                </a>
+                <a href="/critiques" className="inline-flex items-center gap-1.5 text-xs text-[var(--color-magenta)] hover:underline">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 19l-6-6M5 13l6-6M19 5l-3-3M20 10l-5 5" /></svg>
+                  View Critiques →
+                </a>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6">
-          {(["feed", "critiques"] as const).map((t) => (
-            <button key={t} onClick={() => switchTab(t)}
-              className={`rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
-                tab === t
-                  ? "text-black shadow-lg"
-                  : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50"
-              }`}
-              style={tab === t ? { backgroundColor: t === "critiques" ? "var(--color-magenta)" : "var(--color-cyan)" } : {}}
-            >
-              {t === "feed" ? "Feed" : "Critiques"}
-            </button>
-          ))}
-        </div>
-
-        {/* Create form (only for Feed tab) */}
-        {sessionUserId && tab === "feed" && (
+        {/* Create form */}
+        {sessionUserId && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
             {showCreate ? (
-              <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 space-y-3">
+              <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm p-4 sm:p-5 space-y-3">
                 <input value={title} onChange={(e) => setTitle(e.target.value)}
                   placeholder="Post title..."
-                  className="w-full bg-transparent border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)]"
+                  className="w-full neon-rgb-border bg-[var(--color-void)] rounded-lg px-3 py-2 text-sm outline-none"
                 />
                 <textarea value={content} onChange={(e) => setContent(e.target.value)}
                   placeholder="What's on your mind?"
                   rows={4}
-                  className="w-full bg-transparent border border-[var(--color-line)] rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] resize-none"
+                  className="w-full neon-rgb-border bg-[var(--color-void)] rounded-lg px-3 py-2 text-sm outline-none resize-none"
                 />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input value={image} onChange={(e) => setImage(e.target.value)}
+                      placeholder="Paste image URL (optional)"
+                      className="flex-1 neon-rgb-border bg-[var(--color-void)] rounded-lg px-3 py-2 text-sm outline-none"
+                    />
+                    <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+                    <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+                      className="neon-rgb-border shrink-0 rounded-lg px-3 py-2 text-xs font-semibold text-[var(--color-cyan)] hover:text-white transition-colors disabled:opacity-50"
+                    >{uploading ? "Uploading..." : "Upload"}</button>
+                  </div>
+                  {image && (
+                    <div className="flex items-center gap-2">
+                      <div className="relative overflow-hidden rounded-lg neon-rgb-border">
+                        <Image src={image} alt="Preview" width={0} height={0} sizes="200px" className="h-20 w-auto max-w-[200px] object-cover" />
+                      </div>
+                      <button type="button" onClick={() => setImage("")}
+                        className="text-[10px] text-[var(--color-magenta)] hover:underline"
+                      >Remove</button>
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-center justify-between">
                   <select value={postType} onChange={(e) => setPostType(e.target.value as "POST" | "CRITIQUE")}
-                    className="bg-transparent border border-[var(--color-line)] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[var(--color-cyan)]"
+                    className="neon-rgb-border bg-[var(--color-void)] rounded-lg px-3 py-1.5 text-xs outline-none"
                   >
                     <option value="POST">Discussion</option>
                     <option value="CRITIQUE">Critique</option>
                   </select>
                   <div className="flex gap-2">
-                    <button onClick={() => { setShowCreate(false); setTitle(""); setContent(""); setPostType("POST"); }}
-                      className="px-5 py-2.5 text-xs font-semibold border border-[var(--color-line)] rounded-lg hover:border-[var(--color-cyan)]/50"
+                    <button onClick={() => { setShowCreate(false); setTitle(""); setContent(""); setImage(""); setPostType("POST"); }}
+                      className="neon-rgb-border px-5 py-2.5 text-xs font-semibold rounded-lg text-[var(--color-mute)] hover:text-white transition-colors"
                     >Cancel</button>
                     <button onClick={createPost} disabled={submitting || !title.trim() || !content.trim()}
-                      className="px-5 py-2.5 text-xs font-bold bg-[var(--color-cyan)] text-black rounded-lg disabled:opacity-30"
+                      className="px-5 py-2.5 text-xs font-bold bg-[var(--color-cyan)] text-black rounded-lg neon-rgb-border disabled:opacity-30"
                     >{submitting ? "Posting..." : "Post"}</button>
                   </div>
                 </div>
               </div>
             ) : (
               <button onClick={() => setShowCreate(true)}
-                className="w-full rounded-xl border border-dashed border-[var(--color-line)] bg-[var(--color-panel)]/50 py-4 text-sm text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50 hover:text-[var(--color-cyan)] transition-all"
+                className="w-full rounded-xl neon-rgb-border bg-[var(--color-panel)]/60 backdrop-blur-sm py-4 text-sm text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all"
               >+ Create a post</button>
             )}
           </motion.div>
         )}
 
-        {loading && <Loader label={`Loading ${tab === "critiques" ? "critiques" : "community"}...`} />}
+        {loading && <Loader label="Loading community..." />}
 
         {!loading && (
           <div className="space-y-4">
             <AnimatePresence mode="wait">
               {posts.length > 0 ? (
-                tab === "critiques" ? (
-                  posts.map((post) => (
-                    <CritiqueCard key={post.id} post={post}
-                      cover={post.mediaId ? covers.get(post.mediaId) : undefined}
-                      onSave={toggleSave} sessionUserId={sessionUserId}
-                    />
-                  ))
-                ) : (
-                  posts.map((post) => (
-                    <PostCard key={post.id} post={post} onSave={toggleSave} sessionUserId={sessionUserId} />
-                  ))
-                )
+                posts.map((post, i) => (
+                  <PostCard key={post.id} post={post} index={i} onSave={toggleSave} sessionUserId={sessionUserId} />
+                ))
               ) : (
                 <EmptyState
                   icon="chat"
-                  title={tab === "critiques" ? "No critiques yet." : "No posts yet."}
-                  description={tab === "critiques" ? "Be the first to share your thoughts on an anime." : "Be the first to start a discussion!"}
+                  title="No posts yet."
+                  description="Be the first to start a discussion!"
                   actionLabel="Explore Anime"
                   actionHref="/search"
                 />

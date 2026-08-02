@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 interface Match {
   matchId: string;
   seed1: number;
@@ -42,7 +44,7 @@ export default function BracketTournament({
                 >
                   <span className="text-[10px] text-white/30 w-4">#{seed}</span>
                   {nominee.image && (
-                    <img src={nominee.image} alt="" className="w-6 h-8 rounded object-cover" />
+                    <Image src={nominee.image} alt="" width={24} height={32} className="w-6 h-8 rounded object-cover" />
                   )}
                   <span className={`text-xs flex-1 ${isWinner ? "text-emerald-400 font-semibold" : "text-white/70"}`}>
                     {nominee.title}

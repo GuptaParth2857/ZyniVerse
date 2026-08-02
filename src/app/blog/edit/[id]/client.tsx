@@ -8,8 +8,18 @@ interface Props {
   id: string;
 }
 
+interface EditPost {
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string | null;
+  coverImage: string | null;
+  tags: string;
+  isDraft: boolean;
+}
+
 export default function EditBlogClient({ id }: Props) {
-  const [post, setPost] = useState<any>(null);
+  const [post, setPost] = useState<EditPost | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

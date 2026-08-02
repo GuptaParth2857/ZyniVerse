@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 
 interface AdminAward {
   id: number;
@@ -266,7 +267,7 @@ export default function AdminAwardsPage() {
                       </td>
                       <td className="px-4 py-3">
                         {award.image ? (
-                          <img src={award.image} alt="" className="w-8 h-11 object-cover rounded" />
+                          <Image src={award.image} alt="" width={32} height={44} className="w-8 h-11 object-cover rounded" />
                         ) : (
                           <span className="text-[var(--color-mute)] text-xs">No image</span>
                         )}

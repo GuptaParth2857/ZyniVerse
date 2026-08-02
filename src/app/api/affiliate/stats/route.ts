@@ -14,8 +14,10 @@ export async function GET(req: NextRequest) {
   const end = searchParams.get("end") ? new Date(searchParams.get("end")!) : undefined;
 
   const where: Prisma.AffiliateClickWhereInput = {};
-  if (start) where.createdAt = { ...where.createdAt as object, gte: start } as any;
-  if (end) where.createdAt = { ...where.createdAt as object, lte: end } as any;
+  const createdAtFilter: Prisma.DateTimeFilter = {};
+  if (start) createdAtFilter.gte = start;
+  if (end) createdAtFilter.lte = end;
+  if (start || end) where.createdAt = createdAtFilter;
 
   const clicks = await prisma.affiliateClick.count({ where });
   const estimatedRevenue = clicks * 0.05;

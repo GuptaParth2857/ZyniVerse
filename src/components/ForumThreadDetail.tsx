@@ -1,20 +1,48 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import ForumSignature from "@/components/ForumSignature";
+import { logError } from "@/lib/logger";
 
 interface ForumThreadDetailProps {
   threadId: string;
 }
 
+interface ForumThreadCategory {
+  slug: string;
+  name: string;
+}
+
+interface ForumThreadUser {
+  username: string;
+  avatar?: string | null;
+}
+
+interface ForumThread {
+  id: string;
+  title: string;
+  isPinned: boolean;
+  isLocked: boolean;
+  createdAt: string;
+  viewCount: number;
+  category?: ForumThreadCategory | null;
+  user: ForumThreadUser;
+}
+
+interface ForumPost {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: ForumThreadUser & { signature?: string | null };
+  _count?: { votes?: number };
+}
+
 export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) {
-  const router = useRouter();
-  const [thread, setThread] = useState<any>(null);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [thread, setThread] = useState<ForumThread | null>(null);
+  const [posts, setPosts] = useState<ForumPost[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [replyContent, setReplyContent] = useState("");
@@ -24,11 +52,7 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
   const sessionUser = session?.user?.id || null;
   const limit = 20;
 
-  useEffect(() => {
-    fetchThread();
-  }, [threadId, page]);
-
-  async function fetchThread() {
+  const fetchThread = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/forum/threads/${threadId}?page=${page}&limit=${limit}`);
@@ -41,7 +65,12 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
     } finally {
       setLoading(false);
     }
-  }
+  }, [threadId, page]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchThread();
+  }, [fetchThread]);
 
   async function handleReply(e: React.FormEvent) {
     e.preventDefault();
@@ -58,8 +87,8 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
       const lastPage = Math.ceil((total + 1) / limit);
       setPage(lastPage);
       await fetchThread();
-    } catch (e: any) {
-      alert(e.message);
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : "Failed to post reply");
     } finally {
       setReplying(false);
     }
@@ -73,7 +102,7 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
         body: JSON.stringify({ postId, vote }),
       });
       await fetchThread();
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   if (loading) {
@@ -95,6 +124,7 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
 
   const totalPages = Math.ceil(total / limit);
   const timeAgo = (date: string) => {
+    // eslint-disable-next-line react-hooks/purity
     const diff = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 60) return `${mins}m ago`;
@@ -112,7 +142,7 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
         Back to Forum
       </Link>
 
-      <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6">
+      <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-6">
         <div className="flex items-center gap-2 mb-2">
           {thread.isPinned && <span className="text-xs text-[var(--color-magenta)]">📌 Pinned</span>}
           {thread.isLocked && <span className="text-xs text-[var(--color-mute)]">🔒 Locked</span>}
@@ -142,12 +172,12 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
 
       <div className="space-y-4">
         {posts.length === 0 ? (
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-8 text-center text-sm text-[var(--color-mute)]">
+          <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-8 text-center text-sm text-[var(--color-mute)]">
             No replies yet. Be the first to respond!
           </div>
         ) : (
           posts.map((post) => (
-            <div key={post.id} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+            <div key={post.id} className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
               <div className="flex items-start gap-4">
                 <div className="relative h-10 w-10 rounded-full overflow-hidden bg-[var(--color-line)] shrink-0">
                   {post.user.avatar ? (
@@ -166,7 +196,7 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
                   <div className="text-sm text-[var(--color-mute)] leading-relaxed whitespace-pre-wrap">
                     {post.content}
                   </div>
-                  <ForumSignature signature={post.user.signature} />
+                  <ForumSignature signature={post.user.signature ?? null} />
                   <div className="flex items-center gap-3 mt-3">
                     {sessionUser && !thread.isLocked && (
                       <>
@@ -194,22 +224,22 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-            className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs disabled:opacity-30"
+            className="rounded-lg neon-rgb-border px-5 py-2.5 text-xs disabled:opacity-30"
           >Prev</button>
           <span className="text-xs text-[var(--color-mute)]">Page {page} of {totalPages}</span>
           <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-            className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs disabled:opacity-30"
+            className="rounded-lg neon-rgb-border px-5 py-2.5 text-xs disabled:opacity-30"
           >Next</button>
         </div>
       )}
 
       {sessionUser && !thread.isLocked && (
-        <form onSubmit={handleReply} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+        <form onSubmit={handleReply} className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
           <h3 className="font-display text-sm font-bold mb-3">Reply</h3>
           <textarea value={replyContent} onChange={(e) => setReplyContent(e.target.value)}
             placeholder="Write your reply..."
             rows={4}
-            className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)] resize-y"
+            className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)] resize-y"
           />
           <div className="flex justify-end mt-3">
             <button type="submit" disabled={replying || !replyContent.trim()}
@@ -220,7 +250,7 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
       )}
 
       {!sessionUser && (
-        <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 text-center text-sm text-[var(--color-mute)]">
+        <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5 text-center text-sm text-[var(--color-mute)]">
           <Link href="/login" className="text-[var(--color-cyan)] hover:underline">Log in</Link> to reply to this thread.
         </div>
       )}

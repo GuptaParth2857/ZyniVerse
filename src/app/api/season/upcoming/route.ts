@@ -2,6 +2,38 @@ import { NextResponse } from "next/server";
 
 const SEASONS = ["winter", "spring", "summer", "fall"];
 
+interface UpcomingAnime {
+  malId: number;
+  title: string;
+  titleEnglish?: string | null;
+  synopsis?: string | null;
+  image?: string | null;
+  trailer?: string | null;
+  episodes?: number | null;
+  status?: string | null;
+  score?: number | null;
+  genres: string[];
+  studio?: string;
+  broadcast?: string | null;
+  airing?: boolean | null;
+}
+
+interface JikanSeasonAnime {
+  mal_id: number;
+  title: string;
+  title_english?: string | null;
+  synopsis?: string | null;
+  images?: { webp?: { image_url?: string }; jpg?: { image_url?: string } };
+  trailer?: { url?: string | null; embed_url?: string | null };
+  episodes?: number | null;
+  status?: string | null;
+  score?: number | null;
+  genres?: { name: string }[];
+  studios?: { name: string }[];
+  broadcast?: { string?: string | null };
+  airing?: boolean | null;
+}
+
 export async function GET() {
   const now = new Date();
   const year = now.getFullYear();
@@ -11,13 +43,13 @@ export async function GET() {
   const nextYear = nextSeason === 0 ? year + 1 : year;
   const season = SEASONS[nextSeason];
 
-  let anime: any[] = [];
+  let anime: UpcomingAnime[] = [];
 
   try {
     const resp = await fetch(`https://api.jikan.moe/v4/seasons/${nextYear}/${season}`, { signal: AbortSignal.timeout(8000) });
     if (resp.ok) {
       const data = await resp.json();
-      anime = (data.data || []).slice(0, 30).map((a: any) => ({
+      anime = (data.data || []).slice(0, 30).map((a: JikanSeasonAnime) => ({
         malId: a.mal_id,
         title: a.title,
         titleEnglish: a.title_english,
@@ -27,8 +59,8 @@ export async function GET() {
         episodes: a.episodes,
         status: a.status,
         score: a.score,
-        genres: (a.genres || []).map((g: any) => g.name),
-        studio: (a.studios || []).map((s: any) => s.name).join(", "),
+        genres: (a.genres || []).map((g: { name: string }) => g.name),
+        studio: (a.studios || []).map((s: { name: string }) => s.name).join(", "),
         broadcast: a.broadcast?.string,
         airing: a.airing,
       }));

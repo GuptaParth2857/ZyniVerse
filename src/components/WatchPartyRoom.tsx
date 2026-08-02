@@ -14,6 +14,7 @@ import ScreenShare from "@/components/ScreenShare";
 import { useWatchPartySocket } from "@/hooks/useWatchPartySocket";
 import type { ChatMessage, SyncState } from "@/lib/socket";
 import type { WatchPartyData } from "@/lib/watch-party";
+import { logError } from "@/lib/logger";
 
 function timeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
@@ -89,7 +90,7 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
         }))
         .reverse();
       setChatMessages(msgs);
-    } catch {}
+    } catch (e) { logError(e); }
   }, [partyId]);
 
   useEffect(() => {
@@ -521,7 +522,9 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
                     <span className={`h-1.5 w-1.5 rounded-full ${status.dot} ${party.status === "live" ? "animate-pulse" : ""}`} />
                     {status.label}
                   </span>
-                  <h1 className="font-display text-lg font-bold text-white">{party.mediaTitle}</h1>
+                  <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                    <h1 className="font-display text-lg font-bold text-white">{party.mediaTitle}</h1>
+                  </div>
                 </div>
                 <span className="text-xs text-white/30">Ep {party.episode}</span>
               </div>
@@ -571,7 +574,7 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
 
           <div className="space-y-5">
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-              className="rounded-[16px] border border-[rgba(255,255,255,0.06)] bg-[rgba(18,17,30,0.5)] backdrop-blur-md p-4"
+              className="rounded-[16px] neon-rgb-border bg-[rgba(18,17,30,0.5)] backdrop-blur-md p-4"
             >
               <h3 className="text-xs font-bold text-white/60 mb-4 uppercase tracking-wider flex items-center gap-2">
                 Members
@@ -631,7 +634,7 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
 
             {isMember && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
-                className="rounded-[16px] border border-[rgba(255,255,255,0.06)] bg-[rgba(18,17,30,0.5)] backdrop-blur-md p-4"
+                className="rounded-[16px] neon-rgb-border bg-[rgba(18,17,30,0.5)] backdrop-blur-md p-4"
               >
                 <PartyChat
                   messages={chatMessages}

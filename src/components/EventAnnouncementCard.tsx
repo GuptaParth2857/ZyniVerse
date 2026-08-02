@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { AnimeAnnouncement } from "@/lib/anime-events";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -52,11 +53,12 @@ export default function EventAnnouncementCard({
         {/* Video / Poster */}
         {ytId ? (
           <div className="relative aspect-video w-full bg-black overflow-hidden">
-            <img
+            <Image
               src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`}
               alt={announcement.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              loading="lazy"
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
             <div className="absolute inset-0 bg-black/20" />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -82,11 +84,12 @@ export default function EventAnnouncementCard({
           </div>
         ) : announcement.posterUrl ? (
           <div className="relative aspect-[16/7] w-full bg-black overflow-hidden">
-            <img
+            <Image
               src={announcement.posterUrl}
               alt={announcement.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              loading="lazy"
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,0.8)] to-transparent" />
             <div className="absolute top-3 left-3">

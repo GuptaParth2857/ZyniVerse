@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import {
   TV_CHANNELS,
   getScheduleForChannel,
@@ -59,6 +60,7 @@ interface LiveScheduleData {
   liveAiringTotal: number;
 }
 import { PageTransition } from "@/components/PageTransition";
+import { logError } from "@/lib/logger";
 
 const FADE_UP = {
   initial: { opacity: 0, y: 20 },
@@ -109,11 +111,13 @@ function ChannelLogo({
   }
 
   return (
-    <img
-      src={channel.logoUrl}
+    <Image
+      src={channel.logoUrl ?? ""}
       alt={channel.name}
+      width={size}
+      height={size}
       className="rounded-xl shrink-0 shadow-lg"
-      style={{ width: size, height: size, border: `1.5px solid ${channel.color}44`, objectFit: "contain", background: "rgba(0,0,0,0.3)" }}
+      style={{ border: `1.5px solid ${channel.color}44`, objectFit: "contain", background: "rgba(0,0,0,0.3)" }}
       onError={() => setImgError(true)}
     />
   );
@@ -164,9 +168,9 @@ function isPast(slot: TimeSlot): boolean {
 }
 
 function NowPlayingBanner({ liveData }: { liveData?: LiveScheduleData | null }) {
-  const [tick, setTick] = useState(0);
+  const [tick, setTick] = useState(() => Date.now());
   useEffect(() => {
-    const interval = setInterval(() => setTick(t => t + 1), 60000);
+    const interval = setInterval(() => setTick(Date.now()), 60000);
     return () => clearInterval(interval);
   }, []);
   const nowPlaying = useMemo(() => {
@@ -174,7 +178,7 @@ function NowPlayingBanner({ liveData }: { liveData?: LiveScheduleData | null }) 
 
     const liveNowPlaying: { channel: TvChannel; slot: TimeSlot }[] = [];
     if (liveData?.channels) {
-      const now = new Date();
+      const now = new Date(tick);
       const curMinutes = now.getHours() * 60 + now.getMinutes();
       const todayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
 
@@ -283,10 +287,12 @@ function NowPlayingBanner({ liveData }: { liveData?: LiveScheduleData | null }) 
                 </div>
 
                 <div className="mt-3 rounded-xl overflow-hidden border border-white/5 relative h-28">
-                  <img
-                    src={channel.logoUrl}
+                  <Image
+                    src={channel.logoUrl ?? ""}
                     alt={channel.name}
-                    className="w-full h-full object-cover opacity-30"
+                    fill
+                    className="object-cover opacity-30"
+                    sizes="(max-width: 640px) 100vw, 300px"
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-[10px] font-bold text-white/60 text-center px-2 leading-tight">{slot.show}</span>
@@ -321,7 +327,7 @@ function LiveAiringSection({ selectedDay }: { selectedDay: string }) {
         if (!res.ok) return;
         const json = await res.json();
         if (!cancelled) setData(json);
-      } catch {}
+      } catch (e) { logError(e); }
       if (!cancelled) setLoading(false);
     }
     fetchLive();
@@ -398,14 +404,16 @@ function LiveAiringSection({ selectedDay }: { selectedDay: string }) {
                 return (
                   <div
                     key={`${entry.id}-${entry.episode}`}
-                    className="flex items-center gap-3 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)]/50 px-3 py-2.5 hover:border-fuchsia-500/30 transition-colors"
+                    className="flex items-center gap-3 rounded-lg neon-rgb-border bg-[var(--color-panel)]/50 px-3 py-2.5 hover:border-fuchsia-500/30 transition-colors"
                   >
                     {poster ? (
-                      <img
+                      <Image
                         src={poster}
                         alt={title}
-                        className="w-10 h-10 rounded-lg object-cover shrink-0 border border-white/5"
-                        loading="lazy"
+                        width={40}
+                        height={40}
+                        className="rounded-lg object-cover shrink-0 border border-white/5"
+                        style={{ width: 40, height: 40 }}
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-lg bg-fuchsia-500/10 flex items-center justify-center shrink-0 border border-fuchsia-500/20">
@@ -501,11 +509,12 @@ function TimeSlotRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           {channelLogoUrl && (airing || (!past && !isAlwaysAvailable)) && (
-            <img
+            <Image
               src={channelLogoUrl}
               alt={slot.show}
-              className="w-8 h-8 rounded-md object-cover shrink-0 border border-white/10"
-              loading="lazy"
+              width={32}
+              height={32}
+              className="rounded-md object-cover shrink-0 border border-white/10"
             />
           )}
           <p
@@ -667,7 +676,7 @@ function ChannelScheduleCard({
                 >
                   {uniqueShows.length} shows
                 </span>
-                <span className="rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] px-2 py-0.5 text-[9px] font-mono font-bold text-[var(--color-mute)]">
+                <span className="rounded-full neon-rgb-border bg-[var(--color-panel)] px-2 py-0.5 text-[9px] font-mono font-bold text-[var(--color-mute)]">
                   {filteredSlots.length} slots
                 </span>
               </div>
@@ -802,7 +811,6 @@ function TvSchedulePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [liveData, setLiveData] = useState<LiveScheduleData | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>("");
-  const [refreshCount, setRefreshCount] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const days = useMemo(() => getNext7Days(), []);
@@ -820,8 +828,7 @@ function TvSchedulePage() {
         minute: "2-digit",
         hour12: true,
       }));
-      setRefreshCount((c) => c + 1);
-    } catch {}
+    } catch (e) { logError(e); }
   }, []);
 
   // Initial fetch + auto-refresh every 30 minutes
@@ -878,9 +885,11 @@ function TvSchedulePage() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <div className="h-8 w-1 rounded-full bg-[var(--color-amber)]" />
-                <h1 className="font-display text-3xl font-bold tracking-tight">
-                  TV Channel Schedule
-                </h1>
+                <div className="neon-rgb-border rounded-xl px-4 py-2">
+                  <h1 className="font-display text-3xl font-bold tracking-tight">
+                    TV Channel Schedule
+                  </h1>
+                </div>
               </div>
               <p className="text-sm text-[var(--color-mute)] ml-4">
                 Daily broadcast schedule for Indian TV &amp; YouTube anime channels with exact show timings
@@ -890,7 +899,7 @@ function TvSchedulePage() {
               </p>
             </div>
             {lastUpdated && (
-              <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)]/50 px-3 py-1.5">
+              <div className="flex items-center gap-2 rounded-lg neon-rgb-border bg-[var(--color-panel)]/50 px-3 py-1.5">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
@@ -957,7 +966,7 @@ function TvSchedulePage() {
               placeholder="Search shows across all channels..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] py-2 pl-9 pr-3 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-mute)] focus:border-[var(--color-cyan)] focus:outline-none transition-colors"
+              className="w-full rounded-lg neon-rgb-border bg-[var(--color-panel)] py-2 pl-9 pr-3 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-mute)] focus:border-[var(--color-cyan)] focus:outline-none transition-colors"
             />
             {searchQuery && (
               <button

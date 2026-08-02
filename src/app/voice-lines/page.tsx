@@ -20,9 +20,11 @@ export default function VoiceLinesPage() {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">
           Voice Lines
         </p>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">
-          Anime Quotes & Dialogues
-        </h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl">
+            Anime Quotes & Dialogues
+          </h1>
+        </div>
         <p className="mt-2 max-w-2xl text-[var(--color-mute)]">
           Search and browse the most iconic anime quotes. From Naruto&apos;s ninja way to
           Luffy&apos;s pirate dreams — including Hindi dub lines.

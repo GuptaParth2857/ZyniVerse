@@ -1,10 +1,12 @@
+/* eslint-disable @next/next/no-page-custom-font -- raw HTML embed page cannot use next/font */
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAiringSchedule, bestTitle } from "@/lib/anilist";
+import Image from "next/image";
+import { getAiringSchedule, bestTitle, type AiringScheduleEntry } from "@/lib/anilist";
 
 export default function ScheduleEmbedPage() {
-  const [schedule, setSchedule] = useState<any[]>([]);
+  const [schedule, setSchedule] = useState<AiringScheduleEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -79,7 +81,7 @@ export default function ScheduleEmbedPage() {
               Nothing airing today
             </div>
           ) : (
-            schedule.slice(0, 15).map((item: any) => (
+            schedule.slice(0, 15).map((item) => (
               <a
                 key={item.id}
                 href={`https://zyverse.in/anime/${item.media.id}`}
@@ -97,12 +99,12 @@ export default function ScheduleEmbedPage() {
                 }}
               >
                 {item.media.coverImage?.large && (
-                  <img
+                  <Image
                     src={item.media.coverImage.large}
                     alt=""
+                    width={28}
+                    height={40}
                     style={{
-                      width: 28,
-                      height: 40,
                       borderRadius: 4,
                       objectFit: "cover",
                       border: "1px solid #1f1d33",

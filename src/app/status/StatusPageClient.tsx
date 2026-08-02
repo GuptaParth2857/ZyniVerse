@@ -45,7 +45,9 @@ export default function StatusPageClient() {
           </span>
         </div>
         <h1 className="font-display text-3xl font-bold sm:text-4xl">
-          {allOperational ? "All Systems Operational" : "Some Systems Degraded"}
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+            {allOperational ? "All Systems Operational" : "Some Systems Degraded"}
+          </div>
         </h1>
         <p className="mt-3 text-[var(--color-mute)]">
           Last checked: {lastChecked.toLocaleTimeString()}
@@ -57,7 +59,7 @@ export default function StatusPageClient() {
         {SERVICES.map((service) => (
           <div
             key={service.name}
-            className="flex items-center justify-between rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4"
+            className="flex items-center justify-between rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4"
           >
             <div>
               <p className="font-display font-bold text-sm">{service.name}</p>
@@ -73,11 +75,11 @@ export default function StatusPageClient() {
 
       {/* Info */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
-        <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+        <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
           <p className="text-[10px] font-mono text-[var(--color-mute)] uppercase tracking-wider mb-1">API Version</p>
           <p className="font-display text-lg font-bold">v1.0.0</p>
         </div>
-        <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+        <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
           <p className="text-[10px] font-mono text-[var(--color-mute)] uppercase tracking-wider mb-1">Last Deploy</p>
           <p className="font-display text-lg font-bold">{new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
         </div>

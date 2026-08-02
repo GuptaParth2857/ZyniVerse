@@ -1,6 +1,7 @@
 import { prisma } from "./prisma";
 import { searchMedia, getTrending, getAnimeDetailFull, bestTitle } from "./anilist";
 import type { Media } from "./anilist";
+import { logError } from "@/lib/logger";
 
 interface ActivityProfile {
   topGenres: { genre: string; weight: number }[];
@@ -142,7 +143,7 @@ async function getGenreBasedAIRecs(profile: ActivityProfile): Promise<AIRecommen
 
         results.push(mediaToAIRec(media, score, reason));
       }
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   return results.sort((a, b) => b.score - a.score).slice(0, 16);
@@ -167,7 +168,7 @@ async function getSearchBasedRecs(profile: ActivityProfile): Promise<AIRecommend
         const score = Math.min(100, Math.round(60 + ((media.averageScore || 0) / 10) * 4));
         results.push(mediaToAIRec(media, score, `Related to your search "${query}"`));
       }
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   return results.sort((a, b) => b.score - a.score).slice(0, 8);
@@ -200,7 +201,7 @@ async function getSimilarToViewedRecs(profile: ActivityProfile): Promise<AIRecom
           results.push(mediaToAIRec(media, score, `Similar to ${bestTitle(detail.title)}`));
         }
       }
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   return results.sort((a, b) => b.score - a.score).slice(0, 12);

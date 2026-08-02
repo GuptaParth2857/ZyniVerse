@@ -48,7 +48,9 @@ export default async function FillerListingPage() {
 
       <div className="mb-6">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Filler Guides</p>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Anime Filler List</h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Anime Filler List</h1>
+        </div>
         <p className="mt-2 text-[var(--color-mute)] max-w-2xl">
           Complete filler guides for popular anime. Search any anime below or browse the list to see exactly which episodes are canon and which are filler.
         </p>
@@ -64,8 +66,8 @@ export default async function FillerListingPage() {
         <AffiliateLink partner="crunchyroll" path="https://www.crunchyroll.com"
           className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#F47521] to-[#f59e0b] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity"
         >▶ Watch on Crunchyroll</AffiliateLink>
-        <AffiliateLink partner="amazon" path="https://www.amazon.com/s?k=anime+blu+ray&tag=zyniverse-21"
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-sm font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+        <AffiliateLink partner="amazon" path="https://www.amazon.in/s?k=anime+blu+ray"
+          className="inline-flex items-center gap-2 rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
         >📦 Buy Anime on Amazon</AffiliateLink>
       </div>
 

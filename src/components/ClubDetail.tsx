@@ -47,7 +47,7 @@ interface Props {
   onRsvp: (eventId: string, status: string) => void;
 }
 
-export default function ClubDetail({ club, isMember, memberRole, onJoin, onLeave, onCreatePost, onEditPost, onDeletePost, onPinPost, onUpdateClub, onCreateEvent, onRsvp }: Props) {
+export default function ClubDetail({ club, isMember, memberRole, onJoin, onLeave, onCreatePost, onEditPost, onDeletePost, onPinPost, onUpdateClub, onRsvp }: Props) {
   const { data: session } = useSession();
   const coverRef = useRef<HTMLInputElement>(null);
   const iconRef = useRef<HTMLInputElement>(null);
@@ -183,7 +183,9 @@ export default function ClubDetail({ club, isMember, memberRole, onJoin, onLeave
         <div className="flex-1 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div>
-              <h1 className="font-display text-2xl sm:text-3xl font-bold">{club.name}</h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2">
+                <h1 className="font-display text-2xl sm:text-3xl font-bold">{club.name}</h1>
+              </div>
               <p className="text-xs sm:text-sm text-[var(--color-mute)] mt-1">
                 by {club.owner.username} · {club.memberCount} members ·{" "}
                 <span className="rounded-full bg-[var(--color-cyan)]/10 px-2 py-0.5 text-[10px] font-medium text-[var(--color-cyan)]">
@@ -198,7 +200,7 @@ export default function ClubDetail({ club, isMember, memberRole, onJoin, onLeave
             </div>
             <div className="flex gap-2 shrink-0">
               {canManage && (
-                <button onClick={() => coverRef.current?.click()} className="rounded-xl border border-[var(--color-line)] px-4 py-2 text-xs font-medium text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
+                <button onClick={() => coverRef.current?.click()} className="rounded-xl neon-rgb-border px-4 py-2 text-xs font-medium text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
                   {uploading === "cover" ? "Uploading..." : "Cover"}
                 </button>
               )}
@@ -251,9 +253,9 @@ export default function ClubDetail({ club, isMember, memberRole, onJoin, onLeave
           <div className="neon-premium-overlay rounded-[10.5px]" />
           <div className="neon-premium-content p-4 space-y-3">
             <h3 className="text-sm font-bold text-[var(--color-cyan)]">Edit Rules</h3>
-            <textarea value={rulesText} onChange={(e) => setRulesText(e.target.value)} rows={4} placeholder="Set club rules and guidelines..." className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] resize-none" />
+            <textarea value={rulesText} onChange={(e) => setRulesText(e.target.value)} rows={4} placeholder="Set club rules and guidelines..." className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] resize-none" />
             <div className="flex gap-2 justify-end">
-              <button onClick={() => setEditingRules(false)} className="rounded-lg border border-[var(--color-line)] px-4 py-1.5 text-xs text-[var(--color-mute)]">Cancel</button>
+              <button onClick={() => setEditingRules(false)} className="rounded-lg neon-rgb-border px-4 py-1.5 text-xs text-[var(--color-mute)]">Cancel</button>
               <button onClick={saveRules} className="rounded-lg bg-[var(--color-cyan)]/20 px-4 py-1.5 text-xs text-[var(--color-cyan)]">Save</button>
             </div>
           </div>
@@ -284,11 +286,11 @@ export default function ClubDetail({ club, isMember, memberRole, onJoin, onLeave
           {isMember && (
             <div className="mb-6">
               {showCreatePost ? (
-                <form onSubmit={handleCreatePost} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 space-y-3">
-                  <input value={postTitle} onChange={(e) => setPostTitle(e.target.value)} placeholder="Post title..." className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)]" />
-                  <textarea value={postContent} onChange={(e) => setPostContent(e.target.value)} rows={4} placeholder="Write something..." className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] resize-none" />
+                <form onSubmit={handleCreatePost} className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 space-y-3">
+                  <input value={postTitle} onChange={(e) => setPostTitle(e.target.value)} placeholder="Post title..." className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)]" />
+                  <textarea value={postContent} onChange={(e) => setPostContent(e.target.value)} rows={4} placeholder="Write something..." className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] resize-none" />
                   <div className="flex gap-2 justify-end">
-                    <button type="button" onClick={() => setShowCreatePost(false)} className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs font-medium text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors">Cancel</button>
+                    <button type="button" onClick={() => setShowCreatePost(false)} className="rounded-lg neon-rgb-border px-5 py-2.5 text-xs font-medium text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors">Cancel</button>
                     <button type="submit" className="rounded-lg bg-[var(--color-magenta)] px-5 py-2.5 text-xs font-bold text-black hover:opacity-90 transition-opacity">Post</button>
                   </div>
                 </form>
@@ -339,10 +341,10 @@ export default function ClubDetail({ club, isMember, memberRole, onJoin, onLeave
                       </div>
                       {editingPostId === post.id ? (
                         <div className="space-y-2">
-                          <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)]" />
-                          <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} rows={3} className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] resize-none" />
+                          <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)]" />
+                          <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} rows={3} className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] resize-none" />
                           <div className="flex gap-2 justify-end">
-                            <button onClick={() => setEditingPostId(null)} className="rounded-lg border border-[var(--color-line)] px-3 py-1 text-xs text-[var(--color-mute)]">Cancel</button>
+                            <button onClick={() => setEditingPostId(null)} className="rounded-lg neon-rgb-border px-3 py-1 text-xs text-[var(--color-mute)]">Cancel</button>
                             <button onClick={saveEditPost} className="rounded-lg bg-[var(--color-cyan)]/20 px-3 py-1 text-xs text-[var(--color-cyan)]">Save</button>
                           </div>
                         </div>

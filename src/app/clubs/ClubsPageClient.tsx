@@ -65,7 +65,9 @@ export default function ClubsPageClient() {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
       <div className="mb-10">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Community</p>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Clubs & Groups</h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Clubs & Groups</h1>
+        </div>
         <p className="mt-2 text-[var(--color-mute)] max-w-2xl">
           Find your people. Join clubs for specific anime, manga, regions, languages, and more.
         </p>
@@ -80,7 +82,7 @@ export default function ClubsPageClient() {
               className={`rounded-full px-5 py-2.5 text-xs font-semibold transition-colors ${
                 category === cat.value
                   ? "bg-[var(--color-magenta)] text-black"
-                  : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)]"
+                   : "text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)]"
               }`}
             >
               {cat.label}
@@ -96,7 +98,7 @@ export default function ClubsPageClient() {
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Search clubs..."
-              className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] pl-9 pr-3 py-2 text-sm outline-none w-full sm:w-56 text-[var(--color-ink)] placeholder-[var(--color-mute)] focus:border-[var(--color-cyan)] transition-colors"
+              className="rounded-lg bg-[var(--color-panel)] pl-9 pr-3 py-2 text-sm outline-none w-full sm:w-56 text-[var(--color-ink)] placeholder-[var(--color-mute)] focus:border-[var(--color-cyan)] transition-colors border border-[var(--color-line)]"
             />
           </div>
           <Link href="/clubs/create" className="neon-premium rounded-xl no-underline">

@@ -1,6 +1,13 @@
 import { prisma } from "./prisma";
 import { getMediaBatch } from "./anilist";
 
+interface MediaMeta {
+  id: number;
+  genres?: string[];
+  format?: string;
+  studios?: { nodes: { id: number; name: string; isAnimationStudio?: boolean }[] };
+}
+
 export interface UserStats {
   totalAnime: number;
   totalEpisodes: number;
@@ -48,9 +55,9 @@ export async function getUserStats(userId: string): Promise<UserStats> {
   const totalDaysWatched = Math.round((totalEpisodes * 24) / 60 / 24 * 10) / 10;
 
   const mediaIds = [...new Set(entries.map((e) => e.mediaId))];
-  let mediaMeta: { id: number; genres?: string[]; format?: string; studios?: { nodes: { id: number; name: string; isAnimationStudio?: boolean }[] } }[] = [];
+  let mediaMeta: MediaMeta[] = [];
   try {
-    mediaMeta = await getMediaBatch(mediaIds) as any;
+    mediaMeta = (await getMediaBatch(mediaIds)) as MediaMeta[];
   } catch {
     // proceed without AniList data
   }

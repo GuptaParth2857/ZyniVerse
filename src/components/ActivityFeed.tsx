@@ -37,6 +37,7 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; icon: string }
   REVIEWED: { label: "Reviewed", color: "var(--color-magenta)", icon: "✍️" },
   RATED: { label: "Rated", color: "var(--color-cyan)", icon: "⭐" },
   IMPORTED: { label: "Imported", color: "#8b5cf6", icon: "📥" },
+  WATCH_PARTY: { label: "Watch Party", color: "#7000ff", icon: "🎬" },
 };
 
 const MAX_PER_USER = 2;
@@ -68,62 +69,92 @@ function groupByUser(activities: Activity[]): { user: ActivityUser; items: Activ
   const userMap = new Map<string, { user: ActivityUser; items: Activity[] }>();
   for (const a of activities) {
     const existing = userMap.get(a.userId);
-    if (existing) {
-      existing.items.push(a);
-    } else {
-      userMap.set(a.userId, { user: a.user, items: [a] });
-    }
+    if (existing) existing.items.push(a);
+    else userMap.set(a.userId, { user: a.user, items: [a] });
   }
   return Array.from(userMap.values());
 }
 
 function ActivityCard({ activity, index }: { activity: Activity; index: number }) {
   const config = TYPE_CONFIG[activity.type] || { label: activity.type, color: "var(--color-mute)", icon: "📌" };
+  const partyMatch = activity.type === "WATCH_PARTY" ? activity.message?.match(/\[PARTY:([^\]]+)\]/) : null;
+  const partyHref = partyMatch ? `/watch-party/${partyMatch[1]}` : null;
+  const linkHref = partyHref || `/anime/${activity.mediaId}`;
   return (
     <motion.div
       key={activity.id}
       initial={{ opacity: 0, x: -16 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: Math.min(index, 10) * 0.03, duration: 0.3 }}
-      className="activity-neon-card group relative rounded-xl p-[1px]"
-      style={{ ["--act-color" as string]: config.color }}
+      className="neon-rgb-border rounded-xl"
     >
-      <div className="activity-neon-border absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
-      <div className="activity-neon-glow absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-50 transition-opacity duration-400 blur-sm" />
-
-      <div className="relative z-10 rounded-xl bg-[var(--color-panel)] p-3.5">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="inline-block rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider"
-            style={{
-              backgroundColor: `${config.color}15`,
-              color: config.color,
-              border: `1px solid ${config.color}30`,
-            }}
-          >
-            {config.icon} {config.label}
-          </span>
-          <span className="text-[10px] font-mono text-[var(--color-mute)] ml-auto">
-            {timeAgo(activity.createdAt)}
-          </span>
-        </div>
-
-        {activity.mediaTitle && (
-          <Link href={`/anime/${activity.mediaId}`} className="mt-2 flex items-center gap-2 group/media">
-            {activity.mediaImage && (
-              <div className="relative h-8 w-6 shrink-0 overflow-hidden rounded border border-[var(--color-line)]">
-                <Image src={activity.mediaImage} alt="" fill className="object-cover" sizes="24px" />
+      <div className="rounded-xl bg-[var(--color-panel)] overflow-hidden">
+        {activity.mediaTitle && activity.mediaImage ? (
+          <div className="flex">
+            {/* Poster */}
+            <Link href={linkHref} className="relative w-16 shrink-0 overflow-hidden">
+              <div className="aspect-[3/4] h-full">
+                <Image src={activity.mediaImage} alt="" fill className="object-cover transition-transform duration-300 group-hover/media:scale-105" sizes="64px" />
               </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--color-panel)]" />
+            </Link>
+            {/* Content */}
+            <div className="flex-1 p-3 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-block rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                  style={{
+                    backgroundColor: `${config.color}15`,
+                    color: config.color,
+                    border: `1px solid ${config.color}30`,
+                  }}
+                >
+                  {config.icon} {config.label}
+                </span>
+                <span className="text-[10px] font-mono text-[var(--color-mute)] ml-auto">
+                  {timeAgo(activity.createdAt)}
+                </span>
+              </div>
+              <Link href={linkHref} className="mt-1.5 block group/media">
+                <span className="text-sm font-bold text-[var(--color-cyan)] group-hover/media:underline leading-tight">
+                  {activity.mediaTitle}
+                </span>
+              </Link>
+              {activity.message && (
+                <p className="mt-1 text-xs text-[var(--color-mute)] leading-relaxed line-clamp-2">
+                  &ldquo;{activity.message.replace(/\[PARTY:[^\]]+\]\s*/, "")}&rdquo;
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="p-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-block rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                style={{
+                  backgroundColor: `${config.color}15`,
+                  color: config.color,
+                  border: `1px solid ${config.color}30`,
+                }}
+              >
+                {config.icon} {config.label}
+              </span>
+              <span className="text-[10px] font-mono text-[var(--color-mute)] ml-auto">
+                {timeAgo(activity.createdAt)}
+              </span>
+            </div>
+            {activity.mediaTitle && (
+              <Link href={linkHref} className="mt-1.5 block group/media">
+                <span className="text-sm font-bold text-[var(--color-cyan)] group-hover/media:underline">
+                  {activity.mediaTitle}
+                </span>
+              </Link>
             )}
-            <span className="text-sm font-medium text-[var(--color-cyan)] group-hover/media:underline">
-              {activity.mediaTitle}
-            </span>
-          </Link>
-        )}
-
-        {activity.message && (
-          <p className="mt-1.5 text-xs text-[var(--color-mute)] leading-relaxed line-clamp-2">
-            &ldquo;{activity.message}&rdquo;
-          </p>
+            {activity.message && (
+              <p className="mt-1 text-xs text-[var(--color-mute)] leading-relaxed line-clamp-2">
+                &ldquo;{activity.message.replace(/\[PARTY:[^\]]+\]\s*/, "")}&rdquo;
+              </p>
+            )}
+          </div>
         )}
       </div>
     </motion.div>
@@ -139,16 +170,13 @@ function UserActivityGroup({ group, index }: { group: { user: ActivityUser; item
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index, 10) * 0.04, duration: 0.3 }}
-      className="activity-user-card group relative rounded-2xl p-[1px]"
+      className="neon-rgb-border rounded-2xl"
     >
-      <div className="activity-user-border absolute inset-0 rounded-2xl" />
-      <div className="activity-user-glow absolute -inset-1 rounded-2xl blur-md pointer-events-none" />
-
-      <div className="relative z-10 rounded-2xl bg-[var(--color-panel)] p-4">
+      <div className="rounded-2xl bg-[var(--color-panel)] p-4">
         {/* User header */}
         <div className="flex items-center gap-3 mb-3">
           <div className="relative">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cyan)]/15 text-sm font-bold text-[var(--color-cyan)] ring-2 ring-[var(--color-line)] group-hover:ring-[var(--color-cyan)]/40 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cyan)]/15 text-sm font-bold text-[var(--color-cyan)] ring-2 ring-[var(--color-line)] transition-all">
               {group.user.avatar ? (
                 <Image src={group.user.avatar} alt="" width={40} height={40} className="rounded-full object-cover" />
               ) : (
@@ -160,12 +188,8 @@ function UserActivityGroup({ group, index }: { group: { user: ActivityUser; item
             </div>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold truncate">
-              {group.user.username}
-            </p>
-            <p className="text-[10px] font-mono text-[var(--color-mute)]">
-              {allItems.length} activities
-            </p>
+            <p className="text-sm font-bold truncate">{group.user.username}</p>
+            <p className="text-[10px] font-mono text-[var(--color-mute)]">{allItems.length} activities</p>
           </div>
         </div>
 
@@ -182,11 +206,7 @@ function UserActivityGroup({ group, index }: { group: { user: ActivityUser; item
             onClick={() => setExpanded(!expanded)}
             className="mt-2.5 w-full flex items-center justify-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-void)]/50 py-1.5 text-[11px] font-mono text-[var(--color-cyan)] hover:border-[var(--color-cyan)]/40 transition-all"
           >
-            {expanded ? (
-              <>Show less</>
-            ) : (
-              <>+{allItems.length - MAX_PER_USER} more activities ↓</>
-            )}
+            {expanded ? "Show less" : `+${allItems.length - MAX_PER_USER} more activities ↓`}
           </button>
         )}
       </div>
@@ -226,9 +246,7 @@ export default function ActivityFeed() {
     if (data.activities?.length) {
       setActivities((prev) => [...prev, ...data.activities]);
       setHasMore(data.activities.length >= LIMIT);
-    } else {
-      setHasMore(false);
-    }
+    } else setHasMore(false);
     setLoadingMore(false);
   };
 
@@ -313,7 +331,7 @@ export default function ActivityFeed() {
             <button
               onClick={loadMore}
               disabled={loadingMore}
-              className="rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-2.5 text-sm font-medium text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50 hover:text-[var(--color-cyan)] transition-all disabled:opacity-50"
+              className="neon-rgb-border rounded-full px-6 py-2.5 text-sm font-medium text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all disabled:opacity-50"
             >
               {loadingMore ? "Loading..." : `Load more (${activities.length}/${total})`}
             </button>

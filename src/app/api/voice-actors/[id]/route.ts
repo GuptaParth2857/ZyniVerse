@@ -9,7 +9,7 @@ export async function GET(
   try {
     const actor = await getVoiceActor(parseInt(id));
     return NextResponse.json({ actor });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Internal server error" }, { status: 500 });
   }
 }

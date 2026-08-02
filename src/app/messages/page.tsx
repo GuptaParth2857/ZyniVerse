@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Messages — Chat with Friends | ZyniVerse",
   description:
     "Send direct messages to other anime fans. Chat about anime, share recommendations, and make friends.",
+  robots: { index: false, follow: false },
 };
 
 export default function MessagesPage() {

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { logError } from "@/lib/logger";
 
 function trackActivity(action: string, data?: Record<string, unknown>) {
   try {
@@ -10,13 +11,13 @@ function trackActivity(action: string, data?: Record<string, unknown>) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action, ...data }),
     });
-  } catch {}
+  } catch (e) { logError(e); }
 }
 
 function checkAchievements() {
   try {
     fetch("/api/achievements/check-activity", { method: "POST" });
-  } catch {}
+  } catch (e) { logError(e); }
 }
 
 function extractMediaId(pathname: string): number | null {

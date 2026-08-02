@@ -1,5 +1,7 @@
+/* eslint-disable @next/next/no-page-custom-font -- raw HTML embed page cannot use next/font */
 import { getAnimeListFromAniList, bestTitle } from "@/lib/anilist";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { robots: "noindex" };
@@ -96,12 +98,12 @@ export default async function ProgressEmbedPage({
                   }}
                 >
                   {entry.media?.coverImage?.large && (
-                    <img
+                    <Image
                       src={entry.media.coverImage.large}
                       alt=""
+                      width={32}
+                      height={44}
                       style={{
-                        width: 32,
-                        height: 44,
                         borderRadius: 4,
                         objectFit: "cover",
                         border: "1px solid #1f1d33",

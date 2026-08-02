@@ -37,7 +37,9 @@ export default function ChangelogPage() {
       {/* Header */}
       <div className="mb-12">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Updates</p>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl mt-2">API Changelog</h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mt-2">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl">API Changelog</h1>
+        </div>
         <p className="mt-3 text-[var(--color-mute)] max-w-lg">
           Track every version, feature, fix, and breaking change to the ZyniVerse Public API.
         </p>
@@ -78,7 +80,7 @@ export default function ChangelogPage() {
       </div>
 
       {/* Sidebar link hint */}
-      <div className="mt-8 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 text-center">
+      <div className="mt-8 rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5 text-center">
         <p className="text-sm text-[var(--color-mute)] mb-3">View the full API documentation</p>
         <Link href="/docs" className="rounded-xl bg-[var(--color-magenta)] px-6 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity">
           API Docs

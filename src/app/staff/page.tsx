@@ -29,8 +29,8 @@ export default function StaffBrowsePage() {
       try {
         const data = await searchStaff(query.trim());
         setResults(data.results);
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Search failed");
       } finally {
         setLoading(false);
       }
@@ -45,7 +45,9 @@ export default function StaffBrowsePage() {
       <div className="mx-auto min-h-[80vh] max-w-7xl px-4 py-10 sm:px-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="font-display text-4xl font-bold">Staff</h1>
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+            <h1 className="font-display text-4xl font-bold">Staff</h1>
+          </div>
           <p className="mt-2 text-[var(--color-mute)] text-sm">Anime &amp; manga staff directory</p>
         </div>
 
@@ -53,7 +55,7 @@ export default function StaffBrowsePage() {
         <div className="mx-auto max-w-lg mb-4">
           <div className="group relative">
             <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[var(--color-magenta)] via-[var(--color-cyan)] to-[var(--color-violet)] opacity-0 group-focus-within:opacity-100 blur-sm transition-all duration-700 animate-neon-rgb" />
-            <div className="relative flex items-center gap-2 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 transition-colors">
+            <div className="relative flex items-center gap-2 rounded-xl neon-rgb-border bg-[var(--color-panel)] px-4 py-3 transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)] shrink-0">
                 <circle cx="11" cy="11" r="8" />
                 <path d="M21 21l-4.35-4.35" />
@@ -105,7 +107,7 @@ export default function StaffBrowsePage() {
                   transition={{ type: "spring", stiffness: 300, damping: 25 }}
                   onMouseEnter={() => setHovered(staff.id)}
                   onMouseLeave={() => setHovered(null)}
-                  className="relative overflow-hidden rounded-2xl border border-[var(--color-line)] cursor-pointer group"
+                  className="relative overflow-hidden rounded-2xl neon-rgb-border cursor-pointer group"
                   style={{ minWidth: 0 }}
                 >
                   <Link

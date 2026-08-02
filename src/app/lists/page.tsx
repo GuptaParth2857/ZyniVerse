@@ -17,7 +17,9 @@ export default function ListsPage() {
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 animate-page-in">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Custom Lists</h1>
+          <div className="neon-rgb-border rounded-xl px-4 py-2">
+            <h1 className="text-3xl font-bold">Custom Lists</h1>
+          </div>
           <p className="mt-1 text-[var(--color-mute)]">Top 10 rankings, themed collections, hidden gems — curated by the community.</p>
         </div>
         <Link

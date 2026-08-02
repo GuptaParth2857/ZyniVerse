@@ -1,6 +1,7 @@
 import { searchMedia, getAnimeDetailFull, type Media } from "./anilist";
 import { UPCOMING_TITLE_CONFIGS, type UpcomingTitleConfig } from "./live-action-config";
 import { prisma } from "./prisma";
+import { logError } from "@/lib/logger";
 
 export interface LiveActionUpdate {
   id: string;
@@ -120,8 +121,6 @@ export async function fetchLiveActionUpdates(): Promise<LiveActionUpdateCache> {
   const existingCache = await getLiveActionUpdateCache();
   const updates: Record<string, LiveActionUpdate> = { ...existingCache.updates };
 
-  console.log(`[live-action-updater] Starting update for ${UPCOMING_TITLE_CONFIGS.length} titles...`);
-
   for (const config of UPCOMING_TITLE_CONFIGS) {
     try {
       const existingUpdate = updates[config.id];
@@ -130,25 +129,17 @@ export async function fetchLiveActionUpdates(): Promise<LiveActionUpdateCache> {
         try {
           const detail = await getAnimeDetailFull(existingUpdate.anilistId);
           updates[config.id] = mediaToUpdate(detail, config.id);
-          console.log(`[live-action-updater] Updated ${config.id} via direct lookup (AniList ID: ${existingUpdate.anilistId})`);
           continue;
-        } catch {
-          console.log(`[live-action-updater] Direct lookup failed for ${config.id}, falling back to search`);
-        }
+        } catch (e) { logError(e); }
       }
 
       const media = await searchForTitle(config);
       if (media) {
         updates[config.id] = mediaToUpdate(media, config.id);
-        console.log(`[live-action-updater] Found ${config.id}: "${media.title.english || media.title.romaji}" (AniList ID: ${media.id})`);
-      } else {
-        console.log(`[live-action-updater] No match found for ${config.id}`);
       }
 
       await new Promise(resolve => setTimeout(resolve, 500));
-    } catch (error) {
-      console.error(`[live-action-updater] Error processing ${config.id}:`, error);
-    }
+    } catch (error) { logError(error); }
   }
 
   const cache: LiveActionUpdateCache = {
@@ -158,7 +149,6 @@ export async function fetchLiveActionUpdates(): Promise<LiveActionUpdateCache> {
   };
 
   await saveCache(cache);
-  console.log(`[live-action-updater] Update complete. ${Object.keys(updates).length} titles in cache.`);
 
   return cache;
 }

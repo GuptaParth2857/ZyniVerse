@@ -17,6 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const anime = await getAnimeDetailFull(id);
     const title = bestTitle(anime.title);
     const filler = await getFillerForAnime(anime.id, title);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
     const total = filler?.total ?? anime.episodes ?? 0;
     const fillerCount = filler?.filler ?? 0;
@@ -31,11 +32,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: `Is ${title} Worth Watching? Filler Episode Guide`,
         description: `${total} episodes, ${fillerCount} filler (${fillerPct}%). Skip to canon with ZyniVerse.`,
         images: anime.coverImage?.extraLarge ? [{ url: anime.coverImage.extraLarge }] : [],
+        url: `${baseUrl}/anime/${id}/filler`,
       },
+      alternates: { canonical: `${baseUrl}/anime/${id}/filler` },
       robots: { index: true, follow: true },
     };
   } catch {
-    return { title: "Filler Episode Guide | ZyniVerse" };
+    return {
+      title: "Filler Episode Guide | ZyniVerse",
+      description: "Complete anime filler guide showing which episodes are canon, filler, or mixed. Skip filler and watch only the essential episodes. Updated weekly.",
+      robots: { index: true, follow: true },
+    };
   }
 }
 
@@ -115,9 +122,11 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
             />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-              Is {title} Worth Watching?
-            </h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2">
+              <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+                Is {title} Worth Watching?
+              </h1>
+            </div>
             <p className="mt-1 font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">
               Filler Episode Guide
             </p>
@@ -135,18 +144,18 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
 
             <div className="mt-4 flex flex-wrap gap-3">
               <Link href={`/anime/${anilistId}`}
-                className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
+                className="rounded-full neon-rgb-border px-4 py-2 text-xs font-semibold hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
                 ← Back to {title}
               </Link>
               {fillerEpisodes.length > 0 && (
                 <a href="#filler-list"
-                  className="rounded-full bg-red-500/10 border border-red-500/30 px-4 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/20 transition-colors">
+                  className="rounded-full bg-red-500/10 neon-rgb-border px-4 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/20 transition-colors">
                   Skip to Filler ({fillerEpisodes.length} eps)
                 </a>
               )}
               {canonEpisodes.length > 0 && (
                 <a href="#canon-list"
-                  className="rounded-full bg-green-500/10 border border-green-500/30 px-4 py-2 text-xs font-semibold text-green-400 hover:bg-green-500/20 transition-colors">
+                  className="rounded-full bg-green-500/10 neon-rgb-border px-4 py-2 text-xs font-semibold text-green-400 hover:bg-green-500/20 transition-colors">
                   Skip to Canon ({canonEpisodes.length} eps)
                 </a>
               )}
@@ -155,7 +164,7 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
         </div>
 
         <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-center">
+          <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 text-center">
             <p className="font-mono text-2xl font-bold text-[var(--color-ink)]">{total}</p>
             <p className="text-xs text-[var(--color-mute)]">Total Episodes</p>
           </div>
@@ -208,7 +217,7 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
               {fillerEpisodes.map((ep) => {
                 const style = TYPE_STYLES[ep.type];
                 return (
-                  <div key={ep.episode} className="flex items-center gap-3 rounded-lg border border-red-500/20 bg-red-500/5 p-3">
+                  <div key={ep.episode} className="flex items-center gap-3 rounded-lg neon-rgb-border bg-red-500/5 p-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/10 font-mono text-xs font-bold text-red-400">
                       {ep.episode}
                     </span>
@@ -237,7 +246,7 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
             {canonEpisodes.map((ep) => {
               const style = TYPE_STYLES[ep.type];
               return (
-                <div key={ep.episode} className="flex items-center gap-3 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-3">
+                <div key={ep.episode} className="flex items-center gap-3 rounded-lg neon-rgb-border bg-[var(--color-panel)] p-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-void)] font-mono text-xs font-bold text-[var(--color-ink)]">
                     {ep.episode}
                   </span>
@@ -253,7 +262,7 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
           </div>
         </section>
 
-        <section className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6 sm:p-8 mb-10">
+        <section className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-6 sm:p-8 mb-10">
           <h2 className="font-display text-lg font-bold mb-3">Quick Skip Guide for {title}</h2>
           <div className="space-y-2 text-sm text-[var(--color-mute)]">
             {filler.quickList.filler && filler.quickList.filler.length > 0 && (

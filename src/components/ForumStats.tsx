@@ -62,12 +62,8 @@ export default function ForumStats() {
     <div className="mt-10 flex flex-wrap gap-6 sm:gap-10">
       {items.map((stat) => (
         <div key={stat.label} className="flex items-center gap-3">
-          <div className="neon-premium rounded-lg" style={{ width: 40, height: 40 }}>
-            <div className="neon-premium-track rounded-lg" />
-            <div className="neon-premium-overlay rounded-[6.5px]" />
-            <div className="neon-premium-content" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {stat.icon}
-            </div>
+          <div className="neon-rgb-border rounded-lg flex items-center justify-center bg-[var(--color-panel)]/60 backdrop-blur-sm" style={{ width: 40, height: 40 }}>
+            {stat.icon}
           </div>
           <div>
             <p className="text-xl font-bold" style={{ color: "#fff", textShadow: `0 0 20px ${stat.shadow}` }}>{stat.value}</p>

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import type { RedisClientType } from "redis";
+import { logError } from "@/lib/logger";
 
 interface RateLimitEntry {
   count: number;
@@ -25,7 +27,7 @@ function cleanup(configName: string) {
   }
 }
 
-let redisClient: any = null;
+let redisClient: RedisClientType | null = null;
 let redisAvailable = false;
 
 async function initRedis() {
@@ -35,15 +37,14 @@ async function initRedis() {
     if (!redisUrl) return;
     const redis = await import("redis");
     redisClient = redis.createClient({ url: redisUrl });
-    redisClient.on("error", (err: any) => {
-      console.warn("[rate-limiter] Redis error, falling back to in-memory:", err.message);
+    redisClient.on("error", (err) => {
+      logError(err);
       redisAvailable = false;
     });
     await redisClient.connect();
     redisAvailable = true;
-    console.log("[rate-limiter] Redis connected");
-  } catch (err: any) {
-    console.warn("[rate-limiter] Redis unavailable, using in-memory store:", err.message);
+  } catch (err) {
+    logError(err);
     redisAvailable = false;
   }
 }
@@ -71,7 +72,7 @@ export function createRateLimiter(name: string, config: Partial<RateLimitConfig>
           const key = makeRedisKey(prefixedName, ip);
           const count = await redisClient.incr(key);
           if (count === 1) {
-            await redisClient.pexpire(key, windowMs);
+            await redisClient.pExpire(key, windowMs);
           }
           if (count > maxRequests) {
             return { allowed: false, remaining: 0 };

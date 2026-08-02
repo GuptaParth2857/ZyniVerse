@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { logError } from "@/lib/logger";
 
 interface ChatButtonProps {
   userId: string;
@@ -22,14 +23,13 @@ export default function ChatButton({ userId, username }: ChatButtonProps) {
       const res = await fetch("/api/chat/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ recipientId: userId }),
       });
       const data = await res.json();
       if (res.ok && data.conversation) {
         router.push(`/messages?conversation=${data.conversation.id}`);
       }
-    } catch {
-    } finally {
+    } catch (e) { logError(e); } finally {
       setLoading(false);
     }
   }
@@ -38,6 +38,7 @@ export default function ChatButton({ userId, username }: ChatButtonProps) {
     <button
       onClick={handleClick}
       disabled={loading}
+      title={`Message ${username}`}
       className="rounded-lg bg-[var(--color-violet)] px-4 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
     >
       {loading ? "..." : "Message"}

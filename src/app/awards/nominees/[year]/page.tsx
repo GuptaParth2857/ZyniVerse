@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 
@@ -48,7 +49,6 @@ function NeonBorder({ children, className = "" }: { children: React.ReactNode; c
 
 function CategoryCard({
   award,
-  year,
   onVote,
   votedId,
 }: {
@@ -107,7 +107,7 @@ function CategoryCard({
                       {i + 1}
                     </span>
                     {n.image ? (
-                      <img src={n.image} alt="" className="w-8 h-10 rounded-lg object-cover flex-shrink-0" />
+                      <Image src={n.image} alt="" width={32} height={40} className="w-8 h-10 rounded-lg object-cover flex-shrink-0" />
                     ) : (
                       <div className="w-8 h-10 rounded-lg bg-gradient-to-br from-purple-600/30 to-indigo-700/30 flex items-center justify-center flex-shrink-0">
                         <span className="text-xs text-white/30">{n.title.charAt(0)}</span>
@@ -160,7 +160,7 @@ function CategoryCard({
                               }`}
                             >
                               {n.image ? (
-                                <img src={n.image} alt="" className="w-8 h-10 rounded-lg object-cover flex-shrink-0" />
+                                <Image src={n.image} alt="" width={32} height={40} className="w-8 h-10 rounded-lg object-cover flex-shrink-0" />
                               ) : (
                                 <div className="w-8 h-10 rounded-lg bg-gradient-to-br from-purple-600/30 to-indigo-700/30 flex items-center justify-center flex-shrink-0">
                                   <span className="text-xs text-white/30">{n.title.charAt(0)}</span>
@@ -196,6 +196,13 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
   const [votedMap, setVotedMap] = useState<Record<string, string>>({});
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
 
+  const fetchAwards = (yr: number) => {
+    fetch(`/api/zyni-awards/${yr}/nominees`)
+      .then((r) => r.json())
+      .then((d) => { setAwards(d.awards || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
   useEffect(() => {
     params.then(({ year: y }) => {
       const yr = Number(y);
@@ -203,13 +210,6 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
       fetchAwards(yr);
     });
   }, [params]);
-
-  const fetchAwards = (yr: number) => {
-    fetch(`/api/zyni-awards/${yr}/nominees`)
-      .then((r) => r.json())
-      .then((d) => { setAwards(d.awards || []); setLoading(false); })
-      .catch(() => setLoading(false));
-  };
 
   const handleImport = async () => {
     setImporting(true);
@@ -292,10 +292,12 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
               className="font-mono text-xs uppercase tracking-[0.2em] text-[#ff00e6] mb-2">
               Community Voting
             </motion.p>
-            <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
-              ZyniVerse Awards {year}
-            </motion.h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mb-2">
+              <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
+                ZyniVerse Awards {year}
+              </motion.h1>
+            </div>
             <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
               className="mt-3" style={{ color: "rgba(255,255,255,0.35)" }}>
               Vote for your favorites. {totalNominees} nominees across {awards.length} categories.
@@ -305,11 +307,11 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
           {/* Stats + Import */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
             <div className="flex gap-4">
-              <div className="px-4 py-2 rounded-[14px] bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
+              <div className="px-4 py-2 rounded-[14px] bg-[rgba(255,255,255,0.03)] neon-rgb-border">
                 <span className="text-white font-bold text-lg">{totalNominees}</span>
                 <span className="text-[rgba(255,255,255,0.25)] text-xs ml-1.5">nominees</span>
               </div>
-              <div className="px-4 py-2 rounded-[14px] bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
+              <div className="px-4 py-2 rounded-[14px] bg-[rgba(255,255,255,0.03)] neon-rgb-border">
                 <span className="text-[#00ffe0] font-bold text-lg">{totalVotes}</span>
                 <span className="text-[rgba(255,255,255,0.25)] text-xs ml-1.5">votes</span>
               </div>
@@ -317,7 +319,7 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
             <button
               onClick={handleImport}
               disabled={importing}
-              className="px-5 py-2.5 rounded-[12px] bg-gradient-to-r from-[#ff00e6] to-[#7000ff] text-white text-xs font-bold shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_-8px_rgba(255,0,230,0.4)] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+              className="px-5 py-2.5 rounded-[12px] bg-gradient-to-r from-[#ff00e6] to-[#7000ff] text-white text-xs font-bold neon-rgb-border shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_-8px_rgba(255,0,230,0.4)] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
             >
               {importing ? (
                 <span className="inline-flex items-center gap-2">
@@ -333,7 +335,7 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
 
           {importResult && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-              className="mb-6 mx-auto max-w-md text-center px-4 py-3 rounded-[14px] bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] text-xs text-[rgba(255,255,255,0.5)]">
+              className="mb-6 mx-auto max-w-md text-center px-4 py-3 rounded-[14px] bg-[rgba(255,255,255,0.03)] neon-rgb-border text-xs text-[rgba(255,255,255,0.5)]">
               {importResult}
             </motion.div>
           )}
@@ -346,7 +348,7 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
                 className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
                   !selectedCat
                     ? "bg-white text-gray-900 shadow-lg shadow-white/10"
-                    : "bg-[rgba(255,255,255,0.03)] text-[rgba(255,255,255,0.4)] border border-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.06)]"
+                    : "bg-[rgba(255,255,255,0.03)] text-[rgba(255,255,255,0.4)] neon-rgb-border hover:bg-[rgba(255,255,255,0.06)]"
                 }`}
               >
                 All Categories
@@ -357,8 +359,8 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
                   onClick={() => setSelectedCat(selectedCat === a.category ? null : a.category)}
                   className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
                     selectedCat === a.category
-                      ? "bg-gradient-to-r from-[#00ffe0]/20 to-[#7000ff]/20 text-white border border-[#00ffe0]/30"
-                      : "bg-[rgba(255,255,255,0.03)] text-[rgba(255,255,255,0.4)] border border-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.06)]"
+                      ? "bg-gradient-to-r from-[#00ffe0]/20 to-[#7000ff]/20 text-white neon-rgb-border"
+                      : "bg-[rgba(255,255,255,0.03)] text-[rgba(255,255,255,0.4)] neon-rgb-border hover:bg-[rgba(255,255,255,0.06)]"
                   }`}
                 >
                   {CATEGORY_EMOJIS[a.category] || "🏆"} {a.title}
@@ -379,7 +381,7 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
               <p className="text-[rgba(255,255,255,0.3)] text-lg mb-4">No nominees found for {year}</p>
               <button
                 onClick={handleImport}
-                className="px-6 py-3 rounded-[14px] bg-gradient-to-r from-[#00ffe0] to-[#7000ff] text-white text-sm font-bold"
+                className="px-6 py-3 rounded-[14px] bg-gradient-to-r from-[#00ffe0] to-[#7000ff] text-white text-sm font-bold neon-rgb-border"
               >
                 Import Nominees Now
               </button>

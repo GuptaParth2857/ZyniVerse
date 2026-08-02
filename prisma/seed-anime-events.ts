@@ -2,6 +2,16 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+interface SeedAnnouncement {
+  title: string;
+  description: string;
+  category: string;
+  trailerUrl?: string;
+  posterUrl?: string;
+  sourceUrl?: string;
+  animeId?: number;
+}
+
 const ANIME_EVENTS_SEED = [
   {
     slug: "anime-expo-2026",
@@ -311,7 +321,7 @@ async function seedAnimeEvents() {
       data: {
         ...eventData,
         announcements: {
-          create: announcements.map((a: any) => ({
+          create: announcements.map((a: SeedAnnouncement) => ({
             title: a.title,
             description: a.description,
             category: a.category,

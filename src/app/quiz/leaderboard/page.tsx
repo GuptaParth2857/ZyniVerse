@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +15,6 @@ interface ScoreRow {
 }
 
 async function getScores(timeFilter: string): Promise<ScoreRow[]> {
-  const session = await auth();
-  const userId = session?.user?.id;
-
   const now = new Date();
   let createdAt: Record<string, Date> | undefined;
   if (timeFilter === "week") {
@@ -119,8 +117,8 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
             <p className="text-sm text-gray-500">No scores yet. Be the first to play!</p>
           </div>
         ) : (
-          <div className="rounded-2xl border border-white/10 bg-[#0a0a0f] overflow-hidden">
-            <div className="grid grid-cols-[48px_1fr_80px_100px_90px_90px] gap-2 px-4 py-3 text-[10px] uppercase tracking-wider text-gray-500 border-b border-white/5">
+          <div className="rounded-2xl border border-white/10 bg-[#0a0a0f] overflow-x-auto">
+            <div className="grid grid-cols-[48px_1fr_80px_100px_90px_90px] min-w-[640px] gap-2 px-4 py-3 text-[10px] uppercase tracking-wider text-gray-500 border-b border-white/5">
               <span>#</span>
               <span>Player</span>
               <span className="text-right">Score</span>
@@ -133,7 +131,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
               return (
                 <div
                   key={s.user.id}
-                  className="grid grid-cols-[48px_1fr_80px_100px_90px_90px] gap-2 px-4 py-3 items-center border-b border-white/5 last:border-0 transition-colors hover:bg-white/[0.02]"
+                  className="grid grid-cols-[48px_1fr_80px_100px_90px_90px] min-w-[640px] gap-2 px-4 py-3 items-center border-b border-white/5 last:border-0 transition-colors hover:bg-white/[0.02]"
                   style={isMe ? { background: "rgba(138,43,226,0.08)" } : undefined}
                 >
                   <span className={`font-mono text-sm font-bold ${i === 0 ? "text-[#ffd700]" : i === 1 ? "text-gray-300" : i === 2 ? "text-[#cd7f32]" : "text-gray-600"}`}>
@@ -141,7 +139,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
                   </span>
                   <div className="flex items-center gap-2 min-w-0">
                     {s.user.avatar ? (
-                      <img src={s.user.avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
+                      <Image src={s.user.avatar} alt="" width={24} height={24} className="w-6 h-6 rounded-full object-cover" />
                     ) : (
                       <div className="w-6 h-6 rounded-full bg-[#8a2be2]/20 flex items-center justify-center text-[10px] font-bold text-[#8a2be2]">
                         {s.user.username[0].toUpperCase()}

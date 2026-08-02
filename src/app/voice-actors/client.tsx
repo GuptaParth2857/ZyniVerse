@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { motion } from "framer-motion";
 import { searchVoiceActors, getIndianVoiceActors } from "@/lib/voice-actors";
 import type { VoiceActor } from "@/lib/voice-actors";
 import VoiceActorCard from "@/components/VoiceActorCard";
@@ -101,7 +99,7 @@ export default function VoiceActorsClient() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {indianVAs.slice(0, 10).map((actor) => (
-                <VoiceActorCard key={actor.id} actor={actor} />
+                <VoiceActorCard key={actor.id} actor={actor} neon />
               ))}
             </div>
           </section>

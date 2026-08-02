@@ -896,6 +896,48 @@ body {
   animation: neonRgb 2s ease-in-out infinite;
 }
 
+/* ═══════════════════════════════════════════════════════
+   GLOBAL NEON RGB BORDER ANIMATION
+   Apply .neon-rgb-border to any element for animated RGB border
+   ═══════════════════════════════════════════════════════ */
+@keyframes globalNeonRgbBorder {
+  0%   { border-color: #ff00ff; box-shadow: 0 0 6px #ff00ff44, inset 0 0 6px #ff00ff0a; }
+  20%  { border-color: #00ffff; box-shadow: 0 0 6px #00ffff44, inset 0 0 6px #00ffff0a; }
+  40%  { border-color: #ff3366; box-shadow: 0 0 6px #ff336644, inset 0 0 6px #ff33660a; }
+  60%  { border-color: #ffff00; box-shadow: 0 0 6px #ffff0044, inset 0 0 6px #ffff000a; }
+  80%  { border-color: #ff0066; box-shadow: 0 0 6px #ff006644, inset 0 0 6px #ff00660a; }
+  100% { border-color: #ff00ff; box-shadow: 0 0 6px #ff00ff44, inset 0 0 6px #ff00ff0a; }
+}
+@keyframes globalNeonRgbBorderHover {
+  0%   { border-color: #ff00ff; box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff88; }
+  20%  { border-color: #00ffff; box-shadow: 0 0 12px #00ffff, 0 0 24px #00ffff88; }
+  40%  { border-color: #ff3366; box-shadow: 0 0 12px #ff3366, 0 0 24px #ff336688; }
+  60%  { border-color: #ffff00; box-shadow: 0 0 12px #ffff00, 0 0 24px #ffff0088; }
+  80%  { border-color: #ff0066; box-shadow: 0 0 12px #ff0066, 0 0 24px #ff006688; }
+  100% { border-color: #ff00ff; box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff88; }
+}
+@layer utilities {
+  .neon-rgb-border {
+    border-width: 1px;
+    border-style: solid;
+    animation: globalNeonRgbBorder 4s linear infinite;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .neon-rgb-border:hover {
+    animation: globalNeonRgbBorderHover 1.5s linear infinite !important;
+  }
+  .neon-rgb-border:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  .neon-rgb-border input:focus-visible,
+  .neon-rgb-border textarea:focus-visible,
+  .neon-rgb-border select:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
 /* Forum Neon RGB Gradient Animation */
 @keyframes gradientMove {
   0% { background-position: 0% 50%; }
@@ -934,6 +976,138 @@ body {
   * {
     scroll-behavior: auto !important;
   }
+}
+
+/* ─────────── OST Neon RGB Card ─────────── */
+
+@keyframes ostBorderSpin {
+  to { transform: rotate(360deg); }
+}
+
+.ost-neon-card {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ost-neon-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    #ff00ff, #00ffff, #ff00ff, #7000ff, #00ffff, #ff00ff
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: ostBorderSpin 4s linear infinite;
+  opacity: 0.3;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ost-neon-card:hover::before {
+  opacity: 1;
+}
+
+.ost-neon-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    #ff00ff40, #00ffff40, #ff00ff40, #7000ff40, #00ffff40, #ff00ff40
+  );
+  filter: blur(12px);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ost-neon-card:hover::after {
+  opacity: 1;
+}
+
+.ost-neon-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow:
+    0 0 20px rgba(255, 0, 255, 0.15),
+    0 0 40px rgba(0, 255, 255, 0.1),
+    0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+.ost-card-image {
+  position: relative;
+  overflow: hidden;
+}
+
+.ost-card-image img {
+  transition: transform 0.5s ease, filter 0.5s ease;
+  object-position: top center;
+}
+
+.ost-neon-card:hover .ost-card-image img {
+  transform: scale(1.08);
+}
+
+.ost-card-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 15, 0.98) 0%,
+    rgba(10, 10, 15, 0.8) 25%,
+    rgba(10, 10, 15, 0.3) 55%,
+    rgba(10, 10, 15, 0.05) 80%,
+    transparent 100%
+  );
+}
+
+.ost-type-fallback {
+  background: linear-gradient(135deg, var(--color-violet), var(--color-magenta));
+}
+
+.ost-type-fallback.op {
+  background: linear-gradient(135deg, #dc2626, #f97316);
+}
+.ost-type-fallback.ed {
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+}
+.ost-type-fallback.ost {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+}
+.ost-type-fallback.insert {
+  background: linear-gradient(135deg, #16a34a, #22d3ee);
+}
+.ost-type-fallback.character {
+  background: linear-gradient(135deg, #eab308, #f59e0b);
+}
+
+@keyframes ostPulseGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(41, 242, 224, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(41, 242, 224, 0.6), 0 0 40px rgba(255, 0, 255, 0.2); }
+}
+
+.ost-play-btn {
+  animation: ostPulseGlow 2s ease-in-out infinite;
+}
+
+.ost-play-btn:hover {
+  animation: none;
+  box-shadow: 0 0 30px rgba(41, 242, 224, 0.8), 0 0 60px rgba(255, 0, 255, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ost-neon-card::before { animation: none; }
+  .ost-neon-card:hover { transform: none; }
+  .ost-neon-card:hover .ost-card-image img { transform: none; }
+  .ost-play-btn { animation: none; }
 }
 
 /* ─────────── Quiz Game Animations ─────────── */
@@ -1038,6 +1212,205 @@ body {
 
 img[src=""] { display: none; }
 
+/* ─────────── Theatrical Release Neon RGB Cards ─────────── */
+
+@property --theatrical-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes rotateTheatricalBorder {
+  to { --theatrical-angle: 360deg; }
+}
+
+.theorem-card {
+  --theatrical-angle: 0deg;
+  position: relative;
+  border-radius: 1rem;
+  padding: 2px;
+  animation: rotateTheatricalBorder 4s linear infinite;
+}
+
+.theorem-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--theatrical-angle),
+    #ff00ff,
+    #00ffff,
+    #ff00ff,
+    #7000ff,
+    #00ffff,
+    #ff00ff
+  );
+  opacity: 0.25;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.theorem-card:hover::before {
+  opacity: 1;
+}
+
+.theorem-card::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: calc(1rem - 2px);
+  background: var(--color-panel);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.theorem-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.theorem-card:hover {
+  transform: translateY(-4px) scale(1.01);
+}
+
+.theorem-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--theatrical-angle),
+    rgba(255, 0, 255, 0.4),
+    rgba(0, 255, 255, 0.4),
+    rgba(112, 0, 255, 0.4)
+  );
+  filter: blur(16px);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.theorem-card:hover .theorem-glow {
+  opacity: 0.6;
+}
+
+.theorem-poster {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.theorem-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 15, 0.95) 0%,
+    rgba(10, 10, 15, 0.4) 40%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.theorem-info {
+  position: relative;
+  z-index: 1;
+}
+
+.theorem-badge-released {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #4ade80;
+  backdrop-filter: blur(8px);
+}
+
+.theorem-badge-upcoming {
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+  backdrop-filter: blur(8px);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.theorem-stat-card {
+  position: relative;
+  border-radius: 1rem;
+  padding: 1px;
+  overflow: hidden;
+}
+
+.theorem-stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    #00ffe0,
+    transparent,
+    #ff00e6,
+    transparent,
+    #7000ff,
+    transparent,
+    #00ffe0
+  );
+  animation: spin 6s linear infinite;
+  opacity: 0.2;
+  transition: opacity 0.4s ease;
+}
+
+.theorem-stat-card:hover::before {
+  opacity: 0.6;
+}
+
+.theorem-stat-card::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: var(--color-panel);
+  z-index: 0;
+}
+
+.theorem-stat-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes shimmerNeon {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.theorem-shimmer-border {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 255, 0.3),
+    rgba(255, 0, 255, 0.3),
+    rgba(112, 0, 255, 0.3),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmerNeon 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theorem-card,
+  .theorem-stat-card::before {
+    animation: none !important;
+  }
+  .theorem-card::before {
+    opacity: 0.5;
+  }
+  .theorem-card:hover::before {
+    opacity: 0.8;
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -1076,6 +1449,12 @@ img[src=""] { display: none; }
 
 .rgb-border-always::before {
   opacity: 1 !important;
+}
+
+.cosplay-filter-input:focus,
+.cosplay-filter-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* ─────────── WhyZyniVerse Neon Cards ─────────── */
@@ -1397,4 +1776,91 @@ img[src=""] { display: none; }
 
 .cookie-btn-secondary:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* ─────────── Voice Actor Neon RGB Border Card ─────────── */
+
+@keyframes va-neon-rgb {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes va-neon-glow-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.va-neon-card {
+  position: relative;
+  border-radius: 0.75rem;
+  background: var(--color-panel);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.va-neon-card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(0.75rem + 2px);
+  background: linear-gradient(
+    90deg,
+    #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #8800ff, #ff00ff, #ff0000
+  );
+  background-size: 300% 100%;
+  animation: va-neon-rgb 4s linear infinite, va-neon-glow-pulse 2s ease-in-out infinite;
+  z-index: 0;
+  filter: blur(2px);
+}
+
+.va-neon-card::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(0.75rem + 2px);
+  background: linear-gradient(
+    90deg,
+    #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #8800ff, #ff00ff, #ff0000
+  );
+  background-size: 300% 100%;
+  animation: va-neon-rgb 4s linear infinite;
+  z-index: 0;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+
+.va-neon-card:hover::after {
+  opacity: 0.8;
+  filter: blur(4px);
+}
+
+.va-neon-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 0 15px rgba(255, 0, 0, 0.15),
+    0 0 30px rgba(0, 255, 255, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.va-neon-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─────────── Voice Actor Neon RGB Search Bar ─────────── */
+
+.va-neon-search-border {
+  background: linear-gradient(
+    90deg,
+    #ff0000, #ff8800, #ffff00, #00ff00, #00ffff, #0000ff, #8800ff, #ff00ff, #ff0000
+  );
+  background-size: 300% 100%;
+  animation: va-neon-rgb 4s linear infinite;
+  filter: blur(3px);
+  opacity: 0.6;
+}
+
+.group:focus-within .va-neon-search-border {
+  opacity: 1;
+  filter: blur(4px);
 }

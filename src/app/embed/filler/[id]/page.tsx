@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-page-custom-font -- raw HTML embed page cannot use next/font */
 import { getFillerForAnime } from "@/lib/filler";
 import { getAnimeDetailFull } from "@/lib/anilist";
 import { notFound } from "next/navigation";

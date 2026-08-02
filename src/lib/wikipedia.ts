@@ -72,7 +72,7 @@ export async function searchWikipediaAnime(query: string): Promise<string[]> {
         );
         if (!res.ok) return [];
         const data = await res.json();
-        return (data.query?.search || []).map((r: any) => r.title).filter(Boolean);
+        return (data.query?.search || []).map((r: { title: string }) => r.title).filter(Boolean);
       } catch {
         return [];
       }

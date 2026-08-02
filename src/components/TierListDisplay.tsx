@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { TIERS, getTierColor } from "@/lib/tierlist";
+import { TIERS } from "@/lib/tierlist";
 
 interface TierListItem {
   id: string;
@@ -75,7 +75,9 @@ export default function TierListDisplay({ tierList: initial }: { tierList: TierL
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">{tierList.title}</h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2">
+              <h1 className="text-2xl font-bold">{tierList.title}</h1>
+            </div>
             {tierList.description && (
               <p className="mt-1 text-sm text-[var(--color-mute)]">{tierList.description}</p>
             )}
@@ -95,7 +97,7 @@ export default function TierListDisplay({ tierList: initial }: { tierList: TierL
             <button
               onClick={() => handleVote(1)}
               disabled={voting}
-              className="flex items-center gap-1 rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm hover:bg-white/5 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 rounded-lg neon-rgb-border px-5 py-2.5 text-sm hover:bg-white/5 transition-colors disabled:opacity-50"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
@@ -105,7 +107,7 @@ export default function TierListDisplay({ tierList: initial }: { tierList: TierL
             <button
               onClick={() => handleVote(-1)}
               disabled={voting}
-              className="rounded-lg border border-[var(--color-line)] px-4 py-2.5 text-sm hover:bg-white/5 transition-colors disabled:opacity-50"
+              className="rounded-lg neon-rgb-border px-4 py-2.5 text-sm hover:bg-white/5 transition-colors disabled:opacity-50"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z" />
@@ -122,7 +124,7 @@ export default function TierListDisplay({ tierList: initial }: { tierList: TierL
           return (
             <div
               key={tierData.tier}
-              className="flex rounded-xl border border-[var(--color-line)] overflow-hidden"
+              className="flex rounded-xl neon-rgb-border overflow-hidden"
             >
               <div
                 className="flex w-16 shrink-0 items-center justify-center"
@@ -140,7 +142,7 @@ export default function TierListDisplay({ tierList: initial }: { tierList: TierL
                     <Link
                       key={item.id}
                       href={`/anime/${item.mediaId}`}
-                      className="group flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] p-1 pr-2 hover:border-[var(--color-cyan)] transition-colors"
+                      className="group flex items-center gap-2 rounded-lg neon-rgb-border bg-[var(--color-void)] p-1 pr-2 hover:border-[var(--color-cyan)] transition-colors"
                     >
                       {item.mediaImage && (
                         <div className="relative h-9 w-6 shrink-0 overflow-hidden rounded">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 
 interface ActiveSession {
   id: string;
@@ -111,7 +112,7 @@ export default function AdminVisitorsPage() {
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           {s.avatar ? (
-                            <img src={s.avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
+                            <Image src={s.avatar} alt="" width={24} height={24} className="w-6 h-6 rounded-full object-cover" />
                           ) : (
                             <div className="w-6 h-6 rounded-full bg-[var(--color-line)] flex items-center justify-center text-[9px]">
                               {s.username[0].toUpperCase()}

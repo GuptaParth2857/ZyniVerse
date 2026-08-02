@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { dedupedFetch } from "@/lib/wiki-cache";
 import { hasValidAnimeTag, getAnimeTagError } from "@/lib/blog-tags";
 import { searchAll } from "@/lib/anilist";
@@ -32,6 +33,22 @@ interface ExternalPost {
   url: string;
 }
 
+interface DevToArticle {
+  id: number;
+  title: string;
+  slug: string;
+  description: string | null;
+  cover_image: string | null;
+  social_image: string | null;
+  tag_list: string[];
+  published_at: string;
+  user?: { username?: string; profile_image?: string | null };
+  page_views_count?: number;
+  positive_reactions_count?: number;
+  comments_count?: number;
+  url: string;
+}
+
 const USER_AGENT = "ZyniVerse/1.0";
 const MAX_LIMIT = 50;
 
@@ -47,7 +64,7 @@ async function enrichPostsWithAnimePosters(posts: ExternalPost[]): Promise<Exter
         tasks.push(
           searchAll(animeName, 1, 3).then(data => {
             const all = [...(data.anime || []), ...(data.manga || [])];
-            const best = all.find((m: any) => m.coverImage?.large) || all[0];
+            const best = all.find((m) => m.coverImage?.large) || all[0];
             return { type: "anilist", url: best?.coverImage?.large || null };
           }).catch(() => ({ type: "anilist", url: null }))
         );
@@ -75,7 +92,7 @@ async function fetchDevToPosts(tag: string): Promise<ExternalPost[]> {
   );
   if (!res.ok) return [];
   const data = await res.json();
-  return data.map((a: any) => ({
+  return data.map((a: DevToArticle) => ({
     id: `devto-${a.id}`,
     title: a.title,
     slug: a.slug + "-devto-" + a.id,
@@ -104,7 +121,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(rawLimit, MAX_LIMIT);
   const sort = searchParams.get("sort") || "recent";
 
-  const where: Record<string, unknown> = { isDraft: false, isDeleted: false };
+  const where: Prisma.BlogPostWhereInput = { isDraft: false, isDeleted: false };
 
   if (slug) where.slug = slug;
   if (userId) where.userId = userId;
@@ -119,7 +136,7 @@ export async function GET(req: NextRequest) {
 
   const [posts, total] = await Promise.all([
     prisma.blogPost.findMany({
-      where: where as any,
+      where,
       orderBy,
       skip: (page - 1) * limit,
       take: limit,
@@ -128,7 +145,7 @@ export async function GET(req: NextRequest) {
         _count: { select: { comments: true, likes: true } },
       },
     }),
-    prisma.blogPost.count({ where: where as any }),
+    prisma.blogPost.count({ where }),
   ]);
 
   const dbItems = posts.map((p) => ({

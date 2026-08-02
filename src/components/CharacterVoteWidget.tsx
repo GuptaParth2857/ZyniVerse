@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { logError } from "@/lib/logger";
 
-export default function CharacterVoteWidget({ characterId, mediaId, characterName, characterImage }: {
-  characterId: number; mediaId: number; characterName: string; characterImage: string;
+export default function CharacterVoteWidget({ characterId, mediaId }: {
+  characterId: number; mediaId: number;
 }) {
   const [total, setTotal] = useState(0);
   const [voters, setVoters] = useState(0);
@@ -28,7 +29,7 @@ export default function CharacterVoteWidget({ characterId, mediaId, characterNam
       setTotal(d.totalVotes || total + 1);
       setVoters(d.voterCount || voters + 1);
       setVoted(true);
-    } catch {}
+    } catch (e) { logError(e); }
   };
 
   if (loading) return null;

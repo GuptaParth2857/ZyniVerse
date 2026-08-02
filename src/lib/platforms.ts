@@ -1,3 +1,5 @@
+import { AMAZON_TAG } from "@/lib/affiliate-config";
+
 export interface Platform {
   id: string;
   name: string;
@@ -9,7 +11,7 @@ export interface Platform {
 const AFFILIATE_TAGS: Record<string, string> = {
   crunchyroll: "?ref=zyniverse",
   netflix: "",
-  prime: "?tag=zyniverse-21",
+  prime: `?tag=${AMAZON_TAG}`,
   hulu: "?ref=zyniverse",
   disney: "",
   funimation: "?ref=zyniverse",

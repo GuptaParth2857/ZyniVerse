@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import {
   getAnimeEvents,
   getEventTypes,
@@ -22,12 +23,25 @@ export const metadata: Metadata = {
 };
 
 export default async function AnimeEventsPage() {
-  const events = await getAnimeEvents();
-  const types = await getEventTypes();
-  const countries = await getCountries();
-  const meta = await getAnimeEventsMeta();
-  const announcements = await getAllAnnouncements();
-  const upcoming = await getUpcomingEvents();
+  let events: Awaited<ReturnType<typeof getAnimeEvents>> = [];
+  let types: Awaited<ReturnType<typeof getEventTypes>> = [];
+  let countries: Awaited<ReturnType<typeof getCountries>> = [];
+  let meta: Awaited<ReturnType<typeof getAnimeEventsMeta>> = { totalEvents: 0, disclaimer: "Anime event data is curated from public sources. Dates, announcements, and details may change — verify with official event websites.", lastUpdated: "N/A", source: "curated" };
+  let announcements: Awaited<ReturnType<typeof getAllAnnouncements>> = [];
+  let upcoming: Awaited<ReturnType<typeof getUpcomingEvents>> = [];
+
+  try {
+    [events, types, countries, meta, announcements, upcoming] = await Promise.all([
+      getAnimeEvents(),
+      getEventTypes(),
+      getCountries(),
+      getAnimeEventsMeta(),
+      getAllAnnouncements(),
+      getUpcomingEvents(),
+    ]);
+  } catch {
+    // Fallback to empty arrays — page renders with zero data
+  }
 
   const totalAnnouncements = announcements.length;
   const totalCountries = countries.length;
@@ -47,12 +61,14 @@ export default async function AnimeEventsPage() {
                   Live Tracking
                 </span>
               </div>
-              <h1 className="font-display text-4xl font-black sm:text-5xl lg:text-6xl tracking-tight leading-[1.1]">
-                Anime{" "}
-                <span className="bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-magenta)] bg-clip-text text-transparent">
-                  Events Hub
-                </span>
-              </h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                <h1 className="font-display text-4xl font-black sm:text-5xl lg:text-6xl tracking-tight leading-[1.1]">
+                  Anime{" "}
+                  <span className="bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-magenta)] bg-clip-text text-transparent">
+                    Events Hub
+                  </span>
+                </h1>
+              </div>
               <p className="mt-4 text-base sm:text-lg text-[var(--color-mute)] max-w-xl leading-relaxed">
                 Track every major anime event worldwide. Conventions, expos, festivals — with
                 all announcements, trailers, reveals, and key visuals in one place.
@@ -102,11 +118,12 @@ export default async function AnimeEventsPage() {
                     {/* Poster */}
                     {eventPoster && (
                       <div className="relative h-52 sm:h-64 w-full overflow-hidden">
-                        <img
+                        <Image
                           src={eventPoster}
                           alt={nextEvent.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                          loading="lazy"
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-700"
+                          sizes="100vw"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,1)] via-[rgba(10,10,15,0.5)] to-transparent" />
                         <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10" />
@@ -180,7 +197,9 @@ export default async function AnimeEventsPage() {
         <section>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-lg">🌐</span>
-            <h2 className="font-display text-xl font-bold">Browse Events</h2>
+            <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+              <h2 className="font-display text-xl font-bold">Browse Events</h2>
+            </div>
           </div>
           <p className="text-sm text-[var(--color-mute)] mb-5">
             Upcoming and past anime events across the globe

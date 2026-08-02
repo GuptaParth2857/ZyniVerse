@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyApiKey } from "@/lib/api-key";
-import { getAiringSchedule } from "@/lib/anilist";
+import { getAiringSchedule, type AiringScheduleEntry } from "@/lib/anilist";
 
 export async function GET(req: NextRequest) {
   const auth = await verifyApiKey(req);
@@ -14,12 +14,12 @@ export async function GET(req: NextRequest) {
   try {
     const schedule = await getAiringSchedule(now - hoursBack * 3600, now + hoursAhead * 3600);
     return NextResponse.json({
-      data: schedule.map((s) => ({
+      data: schedule.map((s: AiringScheduleEntry & { timeUntilAiring?: number | null }) => ({
         mediaId: s.media.id,
         title: s.media.title.english || s.media.title.romaji,
         episode: s.episode,
         airingAt: s.airingAt,
-        timeUntilAiring: (s as any).timeUntilAiring,
+        timeUntilAiring: s.timeUntilAiring,
         coverImage: s.media.coverImage?.large || null,
         format: s.media.format,
         genres: s.media.genres,

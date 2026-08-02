@@ -240,9 +240,20 @@ Yuji Itadori, a high school student with extraordinary physical abilities, swall
   },
 ];
 
+const FORUM_CATEGORIES = [
+  { name: "General", slug: "general", description: "General chit-chat about anything otaku-related.", sortOrder: 1 },
+  { name: "Anime Discussion", slug: "anime-discussion", description: "Discuss all things anime — airing shows, classics, and everything in between.", sortOrder: 2 },
+  { name: "Manga", slug: "manga", description: "Talk about manga, manhwa, and webtoons.", sortOrder: 3 },
+  { name: "Recommendations", slug: "recommendations", description: "Ask for and share anime and manga recommendations.", sortOrder: 4 },
+  { name: "Fan Art", slug: "fan-art", description: "Share your artwork and fan creations.", sortOrder: 5 },
+  { name: "News", slug: "news", description: "Latest anime and manga news and announcements.", sortOrder: 6 },
+  { name: "Theory", slug: "theory", description: "Share and debate fan theories.", sortOrder: 7 },
+  { name: "Review", slug: "review", description: "Post your reviews of anime, manga, and light novels.", sortOrder: 8 },
+];
+
 async function main() {
   const systemUser = await prisma.user.upsert({
-    where: { email: SYSTEM_EMAIL },
+    where: { id: SYSTEM_USER_ID },
     update: {},
     create: {
       id: SYSTEM_USER_ID,
@@ -270,11 +281,24 @@ async function main() {
       },
     });
   }
+
+  for (const cat of FORUM_CATEGORIES) {
+    await prisma.forumCategory.upsert({
+      where: { slug: cat.slug },
+      update: {},
+      create: {
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description,
+        sortOrder: cat.sortOrder,
+      },
+    });
+  }
 }
 
 main()
   .then(() => {
-    console.log(`Seeded ${WIKI_SEED.length} wiki pages`);
+    console.log(`Seeded ${WIKI_SEED.length} wiki pages and ${FORUM_CATEGORIES.length} forum categories`);
   })
   .catch((e) => {
     console.error(e);

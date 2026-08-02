@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   try {
     const result = await searchVoiceActors(query.trim(), page);
     return NextResponse.json(result);
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Failed to search voice actors" }, { status: 500 });
   }
 }

@@ -32,8 +32,8 @@ export async function POST(req: NextRequest) {
   let entries;
   try {
     entries = await getAnimeListFromAniList(username);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Failed to fetch from AniList" }, { status: 502 });
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Failed to fetch from AniList" }, { status: 502 });
   }
 
   if (entries.length === 0) {

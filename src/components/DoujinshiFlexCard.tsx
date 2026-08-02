@@ -1,0 +1,155 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import type { DoujinshiEntry } from "@/lib/mangadex-api";
+
+export default function DoujinshiFlexCard({ items }: { items: DoujinshiEntry[] }) {
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  return (
+    <>
+      {/* Mobile: horizontal scroll */}
+      <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory md:hidden -mx-4 px-4">
+        {items.slice(0, 8).map((item) => (
+          <Link
+            key={item.id}
+            href={`/doujinshi/${item.id}`}
+            className="relative w-[140px] shrink-0 snap-start overflow-hidden rounded-2xl neon-rgb-border group"
+          >
+            <div className="relative h-[210px] w-full">
+              <Image
+                src={item.image || ""}
+                alt={item.title}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes="140px"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 p-3">
+              <p className="font-display text-sm font-bold leading-tight drop-shadow-lg line-clamp-2">
+                {item.title}
+              </p>
+              <div className="mt-1 flex items-center gap-2 text-[10px] text-[var(--color-mute)]">
+                {item.circle && <span>{item.circle}</span>}
+                {item.pages ? <span>{item.pages} pg</span> : null}
+              </div>
+            </div>
+            <div className="absolute left-2 top-2">
+              <span className="font-mono text-[10px] font-bold text-white/40 drop-shadow-lg">
+                {(items.indexOf(item) + 1).toString().padStart(2, "0")}
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* Desktop: expanding flex card */}
+      <div className="hidden md:flex h-[400px] gap-2 w-full">
+        {items.slice(0, 8).map((item) => {
+          const isHovered = hovered === item.id;
+
+          return (
+            <div
+              key={item.id}
+              onMouseEnter={() => setHovered(item.id)}
+              onMouseLeave={() => setHovered(null)}
+              className="relative overflow-hidden rounded-2xl neon-rgb-border cursor-pointer group"
+              style={{
+                flex: isHovered ? 3 : 1,
+                minWidth: 0,
+                transition: "flex 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
+              }}
+            >
+              <Link href={`/doujinshi/${item.id}`} className="block h-full w-full">
+                <Image
+                  src={item.image || ""}
+                  alt={item.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                />
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                {!isHovered && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
+                )}
+
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <p
+                    className="font-display text-xs font-bold leading-tight [writing-mode:vertical-lr] rotate-180 truncate"
+                    style={{
+                      opacity: isHovered ? 0 : 1,
+                      transition: "opacity 0.3s ease",
+                    }}
+                  >
+                    {item.title}
+                  </p>
+                </div>
+
+                <div
+                  className="absolute inset-x-0 bottom-0 p-5"
+                  style={{
+                    opacity: isHovered ? 1 : 0,
+                    transition: "opacity 0.2s ease",
+                  }}
+                >
+                  <p className="font-display text-lg font-bold leading-tight drop-shadow-lg">
+                    {item.title}
+                  </p>
+
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[var(--color-mute)]">
+                    {item.circle && <span className="text-[var(--color-cyan)]">{item.circle}</span>}
+                    {item.artist && <span>{item.artist}</span>}
+                    {item.pages ? <span>{item.pages} pages</span> : null}
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {item.parody && item.parody !== "Original" && (
+                      <span className="rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[9px] backdrop-blur">
+                        {item.parody}
+                      </span>
+                    )}
+                    <span className="rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[9px] uppercase backdrop-blur">
+                      {item.language}
+                    </span>
+                    {item.isTranslated && (
+                      <span className="rounded-full border border-white/20 bg-green-500/20 px-2 py-0.5 text-[9px] backdrop-blur">
+                        Translated
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {item.tags.slice(0, 3).map((tag) => (
+                      <span key={tag} className="text-[9px] text-[var(--color-mute)] opacity-80">#{tag}</span>
+                    ))}
+                  </div>
+
+                  <span
+                    className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-magenta)]"
+                    style={{
+                      opacity: 1,
+                      transform: isHovered ? "translateX(0)" : "translateX(-10px)",
+                      transition: "transform 0.3s ease 0.15s",
+                    }}
+                  >
+                    View Details →
+                  </span>
+                </div>
+
+                <div className="absolute left-3 top-3">
+                  <span className="font-mono text-[10px] font-bold text-white/40">
+                    {(items.indexOf(item) + 1).toString().padStart(2, "0")}
+                  </span>
+                </div>
+              </Link>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}

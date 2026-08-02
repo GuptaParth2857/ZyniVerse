@@ -35,8 +35,8 @@ export function getAnilistCacheStats(): { size: number } {
   return { size: responseCache.size };
 }
 
-const FETCH_TIMEOUT = 15_000;
-const MAX_RETRIES = 1;
+const FETCH_TIMEOUT = 8_000;
+const MAX_RETRIES = 0;
 
 async function gql(query: string, variables: Record<string, unknown> = {}) {
   const cacheKey = getCacheKey(query, variables);
@@ -452,8 +452,8 @@ export async function getStaffMedia(id: number | string, perPage = 50) {
     }`;
   const data = await gql(q, { id: Number(id), pp: perPage });
   type StaffMediaEdges = NonNullable<StaffFull["staffMedia"]>["edges"];
-  const staffEdges: StaffMediaEdges = (data.Staff?.staffMedia?.edges || []) as any;
-  const charEdges: StaffMediaEdges = (data.Staff?.characterMedia?.edges || []) as any;
+  const staffEdges: StaffMediaEdges = (data.Staff?.staffMedia?.edges || []) as StaffMediaEdges;
+  const charEdges: StaffMediaEdges = (data.Staff?.characterMedia?.edges || []) as StaffMediaEdges;
   const seen = new Set<number>();
   const merged = [];
   for (const e of [...staffEdges, ...charEdges]) {
@@ -464,7 +464,7 @@ export async function getStaffMedia(id: number | string, perPage = 50) {
   }
   return {
     pageInfo: { hasNextPage: false, total: merged.length },
-    edges: merged as any,
+    edges: merged,
   } as StaffFull["staffMedia"];
 }
 
@@ -562,7 +562,7 @@ export async function getSchedulePaginated(page = 1, perPage = 20) {
       }
     }`;
   const data = await gql(q, { p: page, pp: perPage });
-  const results = data.Page.airingSchedules.map((item: any) => ({
+  const results = data.Page.airingSchedules.map((item: AiringScheduleEntry) => ({
     ...item.media,
     nextEpisode: item.episode,
     airingAt: item.airingAt,
@@ -707,7 +707,7 @@ export async function getSuggestions(query: string) {
       }
     }`;
   const data = await gql(q, { s: query });
-  return data.Page.media.map((item: any) => ({
+  return data.Page.media.map((item: Media) => ({
     id: item.id,
     title: item.title.english || item.title.romaji,
     titleRomaji: item.title.romaji,
@@ -739,18 +739,6 @@ export async function getAiringAnime(perPage = 50) {
     }`;
   const d = await gql(q, { pp: perPage });
   return d.Page.media as Media[];
-}
-
-export async function getTrendingDaily(page = 1, perPage = 20) {
-  const q = `query ($p: Int, $pp: Int) { Page(page: $p, perPage: $pp) { pageInfo { total hasNextPage } media(sort: TRENDING_DESC, type: ANIME, isAdult: false) { ${MEDIA_FIELDS} } } }`;
-  const data = await gql(q, { p: page, pp: perPage });
-  return { page, perPage, total: data.Page.pageInfo.total, hasNextPage: data.Page.pageInfo.hasNextPage, results: data.Page.media as Media[] };
-}
-
-export async function getTrendingWeekly(page = 1, perPage = 20) {
-  const q = `query ($p: Int, $pp: Int) { Page(page: $p, perPage: $pp) { pageInfo { total hasNextPage } media(sort: TRENDING_DESC, type: ANIME, isAdult: false) { ${MEDIA_FIELDS} } } }`;
-  const data = await gql(q, { p: page, pp: perPage });
-  return { page, perPage, total: data.Page.pageInfo.total, hasNextPage: data.Page.pageInfo.hasNextPage, results: data.Page.media as Media[] };
 }
 
 export async function getSpotlight() {
@@ -983,7 +971,7 @@ export interface AnimeWithCharacters extends Media {
 }
 
 export interface AiringScheduleEntry {
-  id: number; episode: number; airingAt: number;
+  id: number; episode: number; airingAt: number; timeUntilAiring?: number;
   media: {
     id: number; title: { romaji?: string; english?: string };
     coverImage: { large?: string; color?: string }; format?: string; genres?: string[]; episodes?: number;

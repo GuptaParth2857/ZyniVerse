@@ -20,7 +20,9 @@ export default async function ForumCreatePage({ searchParams }: { searchParams: 
         Back to Forum
       </Link>
 
-      <h1 className="font-display text-3xl font-bold mb-6">Create Thread</h1>
+      <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mb-6">
+        <h1 className="font-display text-3xl font-bold">Create Thread</h1>
+      </div>
 
       <ForumCreateThread
         initialAnimeId={animeId}

@@ -38,6 +38,12 @@ interface TrendingItem {
   slug: string;
 }
 
+interface WikiPageEntry {
+  title: string;
+  extract?: string;
+  thumbnail?: { source?: string };
+}
+
 const TRENDING_TOPICS = [
   "Naruto", "Attack_on_Titan", "One_Piece", "Demon_Slayer:_Kimetsu_no_Yaiba",
   "Jujutsu_Kaisen",
@@ -79,12 +85,15 @@ export default function WikiPageClient() {
       .then((data) => {
         if (abort.signal.aborted) return;
         const pages = data.query?.pages || {};
-        const items: TrendingItem[] = Object.values(pages).map((p: any) => ({
-          title: p.title,
-          extract: (p.extract || "").slice(0, 200),
-          thumbnail: p.thumbnail?.source || null,
-          slug: p.title.replace(/ /g, "_"),
-        }));
+        const items: TrendingItem[] = Object.values(pages).map((p) => {
+          const page = p as WikiPageEntry;
+          return {
+            title: page.title,
+            extract: (page.extract || "").slice(0, 200),
+            thumbnail: page.thumbnail?.source || null,
+            slug: page.title.replace(/ /g, "_"),
+          };
+        });
         setTrending(items);
       })
       .catch(() => {});
@@ -96,7 +105,9 @@ export default function WikiPageClient() {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
       <div className="mb-10">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Knowledge Base</p>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Wiki</h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Wiki</h1>
+        </div>
         <p className="mt-2 text-[var(--color-mute)] max-w-2xl">
           Community-driven knowledge base for anime, manga, characters, studios, and more.
         </p>

@@ -154,11 +154,17 @@ export async function sendPartyMessage(
   userId: string,
   message: string
 ): Promise<void> {
+  const party = await prisma.watchParty.findUnique({
+    where: { id: partyId },
+    select: { mediaId: true, mediaTitle: true, mediaImage: true, coverImage: true },
+  });
   await prisma.activity.create({
     data: {
       userId,
       type: "WATCH_PARTY",
-      mediaTitle: message,
+      mediaId: party?.mediaId ?? null,
+      mediaTitle: party?.mediaTitle || message,
+      mediaImage: party?.coverImage || party?.mediaImage || null,
       message: `[PARTY:${partyId}] ${message}`,
     },
   });

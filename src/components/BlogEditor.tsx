@@ -1,9 +1,18 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { hasValidAnimeTag, getAnimeTagError } from "@/lib/blog-tags";
+import { logError } from "@/lib/logger";
+
+interface AnilistSearchResult {
+  id: number;
+  type?: string;
+  title?: { userPreferred?: string; english?: string; romaji?: string };
+  coverImage?: { large?: string; medium?: string };
+}
 
 interface BlogEditorProps {
   post?: {
@@ -58,7 +67,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
   const [uploadError, setUploadError] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [posterSearch, setPosterSearch] = useState("");
-  const [posterResults, setPosterResults] = useState<any[]>([]);
+  const [posterResults, setPosterResults] = useState<AnilistSearchResult[]>([]);
   const [posterSearching, setPosterSearching] = useState(false);
   const [posterOpen, setPosterOpen] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -74,7 +83,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
           const data = await res.json();
           setPosterResults((data.results || []).slice(0, 10));
         }
-      } catch {}
+      } catch (e) { logError(e); }
       setPosterSearching(false);
     }, 400);
     return () => clearTimeout(timer);
@@ -96,7 +105,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
         setExcerpt(d.excerpt || "");
         setCoverImage(d.coverImage || "");
         setTags(d.tags || "");
-      } catch {}
+      } catch (e) { logError(e); }
     }
   }, [isEdit]);
 
@@ -204,8 +213,10 @@ export default function BlogEditor({ post }: BlogEditorProps) {
   if (status === "loading") return <div className="py-16 text-center text-sm text-[var(--color-mute)]">Loading...</div>;
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <h1 className="font-display text-2xl font-bold mb-6">{isEdit ? "Edit Post" : "Create Blog Post"}</h1>
+    <div className="mx-auto max-w-3xl neon-rgb-border rounded-xl p-6">
+      <div className="neon-rgb-border rounded-xl px-4 py-2 mb-6">
+        <h1 className="font-display text-2xl font-bold">{isEdit ? "Edit Post" : "Create Blog Post"}</h1>
+      </div>
 
       <div className="space-y-4">
         {/* Title */}
@@ -213,7 +224,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Post title..."
-          className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 text-lg font-semibold outline-none focus:border-[var(--color-cyan)] transition-colors"
+          className="w-full rounded-xl neon-rgb-border bg-[var(--color-panel)] px-4 py-3 text-lg font-semibold outline-none focus:border-[var(--color-cyan)] transition-colors"
         />
 
         {/* Cover Image — Premium Card */}
@@ -289,7 +300,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
                 value={coverImage}
                 onChange={(e) => setCoverImage(e.target.value)}
                 placeholder="Or paste image URL..."
-                className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2 text-xs outline-none focus:border-[var(--color-cyan)] transition-colors"
+                className="w-full rounded-lg neon-rgb-border bg-[var(--color-panel)] px-3 py-2 text-xs outline-none focus:border-[var(--color-cyan)] transition-colors"
               />
             </div>
 
@@ -311,7 +322,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
                       value={posterSearch}
                       onChange={(e) => setPosterSearch(e.target.value)}
                       placeholder="Search anime or manga title..."
-                      className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2 text-xs outline-none focus:border-[var(--color-magenta)] transition-colors"
+                      className="w-full rounded-lg neon-rgb-border bg-[var(--color-panel)] px-3 py-2 text-xs outline-none focus:border-[var(--color-magenta)] transition-colors"
                       autoFocus
                     />
                     {posterSearching && (
@@ -322,8 +333,8 @@ export default function BlogEditor({ post }: BlogEditorProps) {
                   </div>
 
                   {posterResults.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-2">
-                      {posterResults.map((media: any) => {
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto rounded-lg neon-rgb-border bg-[var(--color-panel)] p-2">
+                      {posterResults.map((media) => {
                         const img = media.coverImage?.large || media.coverImage?.medium;
                         const name = media.title?.userPreferred || media.title?.english || media.title?.romaji || "Unknown";
                         if (!img) return null;
@@ -334,7 +345,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
                             onClick={() => { setCoverImage(img); setPosterSearch(""); setPosterResults([]); setPosterOpen(false); }}
                             className="relative group rounded-lg overflow-hidden ring-1 ring-white/10 hover:ring-[var(--color-magenta)]/50 transition-all aspect-[3/4]"
                           >
-                            <img src={img} alt={name} className="h-full w-full object-cover" />
+                            <Image src={img} alt={name} fill className="object-cover" sizes="25vw" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="absolute bottom-0 left-0 right-0 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                               <p className="text-[9px] font-bold text-white truncate">{name}</p>
@@ -360,7 +371,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
           value={excerpt}
           onChange={(e) => setExcerpt(e.target.value)}
           placeholder="Short excerpt / summary (optional)"
-          className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
+            className="w-full rounded-lg neon-rgb-border bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
         />
 
         {/* Tags */}
@@ -369,7 +380,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
             value={tags}
             onChange={(e) => { setTags(e.target.value); setTagError(""); }}
             placeholder="Tags (comma-separated): anime, review, action"
-            className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
+          className="w-full rounded-lg neon-rgb-border bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
           />
           {tagError && <p className="mt-1 text-xs text-red-400">{tagError}</p>}
         </div>
@@ -381,7 +392,7 @@ export default function BlogEditor({ post }: BlogEditorProps) {
               key={btn.label}
               onClick={() => handleToolbar(btn.action, btn.wrap)}
               title={btn.title}
-              className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-2.5 py-1.5 text-xs font-mono font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+              className="rounded-lg neon-rgb-border bg-[var(--color-panel)] px-2.5 py-1.5 text-xs font-mono font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
             >{btn.label}</button>
           ))}
         </div>
@@ -404,10 +415,10 @@ export default function BlogEditor({ post }: BlogEditorProps) {
             onChange={(e) => setContent(e.target.value)}
             placeholder="Write your post in markdown..."
             rows={16}
-            className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 text-sm font-mono outline-none focus:border-[var(--color-cyan)] transition-colors resize-y"
+            className="w-full rounded-xl neon-rgb-border bg-[var(--color-panel)] px-4 py-3 text-sm font-mono outline-none focus:border-[var(--color-cyan)] transition-colors resize-y"
           />
         ) : (
-          <div className="min-h-[300px] rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 overflow-y-auto">
+          <div className="min-h-[300px] rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 overflow-y-auto">
             {content ? (
               <div dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }} />
             ) : (
@@ -432,12 +443,12 @@ export default function BlogEditor({ post }: BlogEditorProps) {
             <button
               onClick={() => handleSave(true)}
               disabled={saving || !title.trim() || !content.trim()}
-              className="rounded-lg border border-[var(--color-line)] px-5 py-2 text-sm font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all disabled:opacity-50"
+              className="rounded-lg neon-rgb-border px-5 py-2 text-sm font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all disabled:opacity-50"
             >{saving ? "Saving..." : "Save Draft"}</button>
             <button
               onClick={() => handleSave(false)}
               disabled={saving || !title.trim() || !content.trim()}
-              className="rounded-lg bg-[var(--color-magenta)] px-5 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="rounded-lg bg-[var(--color-magenta)] neon-rgb-border px-5 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
             >{saving ? "Publishing..." : "Publish"}</button>
           </div>
         </div>

@@ -43,7 +43,7 @@ export default function LanguageSwitcher() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors border border-[var(--color-line)] hover:border-[var(--color-cyan)]/40"
+        className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors neon-rgb-border"
         aria-label="Switch language"
       >
         <span className="text-sm leading-none">{FLAGS[current]}</span>
@@ -54,7 +54,7 @@ export default function LanguageSwitcher() {
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-1 w-44 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl overflow-hidden z-50">
+        <div className="absolute top-full right-0 mt-1 w-44 rounded-xl neon-rgb-border bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl overflow-hidden z-50">
           {locales.map((l) => (
             <button
               key={l.code}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -21,8 +21,9 @@ import AdBanner from "@/components/AdBanner";
 import AffiliateLink from "@/components/AffiliateLink";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/manga";
 import type { MediaMangaFull } from "@/lib/anilist";
+import { logError } from "@/lib/logger";
 
-function stripHtml(str = "") { return str.replace(/<[^>]*>/g, ""); }
+function stripHtml(str: string | null | undefined = "") { return str ? str.replace(/<[^>]*>/g, "") : ""; }
 function formatScore(score?: number) { return score ? (score / 10).toFixed(1) : "—"; }
 
 interface MangaEntryDB {
@@ -66,18 +67,18 @@ export default function MangaDetailsPage() {
       if (!res.ok) return;
       const data = await res.json();
       setEntry(data.entry);
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
-  async function fetchChapters() {
+  const fetchChapters = useCallback(async () => {
     try {
       const res = await fetch(`/api/manga/chapters?mediaId=${id}`);
       if (!res.ok) return;
       const data = await res.json();
       setChapters(data.chapters || []);
       setShowChapters(true);
-    } catch {}
-  }
+    } catch (e) { logError(e); }
+  }, [id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -101,7 +102,7 @@ export default function MangaDetailsPage() {
       .catch((e: Error) => !cancelled && setError(e.message))
       .finally(() => !cancelled && setLoading(false));
     return () => { cancelled = true; };
-  }, [id]);
+  }, [id, fetchChapters]);
 
   async function addToList(status: string) {
     if (!manga) return;
@@ -240,11 +241,13 @@ export default function MangaDetailsPage() {
                 <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-violet)] pulse-dot" /> Publishing
               </span>
             )}
-            <h1 className="font-display text-3xl font-bold leading-tight sm:text-5xl">{title}</h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2">
+              <h1 className="font-display text-3xl font-bold leading-tight sm:text-5xl">{title}</h1>
+            </div>
             {manga.title.native && <p className="mt-1 text-[var(--color-mute)]">{manga.title.native}</p>}
 
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-[var(--color-mute)]">
-              {manga.format ? <span className="text-[10px] uppercase tracking-wider border border-[var(--color-line)] px-2 py-0.5 rounded">{manga.format}</span> : null}
+              {manga.format ? <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded">{manga.format}</span> : null}
               {manga.source ? <span className="text-[10px] uppercase">{manga.source.replace(/_/g, " ")}</span> : null}
               {manga.countryOfOrigin ? <span>{manga.countryOfOrigin}</span> : null}
               {manga.startDate?.year ? (
@@ -261,7 +264,7 @@ export default function MangaDetailsPage() {
             <div className="mt-3 flex flex-wrap gap-2">
               {manga.genres?.map((g) => (
                 <Link key={g} href={`/search?genre=${g}&type=MANGA`}
-                  className="rounded-full border border-[var(--color-line)] px-3 py-1 text-xs text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-colors"
+                  className="rounded-full px-3 py-1 text-xs text-[var(--color-mute)] hover:border-[var(--color-violet)] hover:text-[var(--color-violet)] transition-colors"
                 >{g}</Link>
               ))}
             </div>
@@ -298,18 +301,18 @@ export default function MangaDetailsPage() {
                     style={{ backgroundColor: STATUS_COLORS[entry.status] || "var(--color-mute)" }}
                   >{STATUS_LABELS[entry.status] || entry.status}</span>
                   <select value={entry.status} onChange={(e) => handleStatusChange(e.target.value)}
-                    className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-1.5 text-xs outline-none focus:border-[var(--color-violet)]"
+                    className="rounded-lg bg-[var(--color-panel)] px-3 py-1.5 text-xs outline-none focus:border-[var(--color-violet)]"
                   >
                     {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABELS[s] || s}</option>)}
                   </select>
                   <button onClick={removeFromList}
-                    className="rounded-lg border border-red-500/30 px-5 py-2.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="rounded-lg px-5 py-2.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
                   >Remove</button>
                 </>
               ) : (
                 <>
                   <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-1.5 text-xs outline-none focus:border-[var(--color-violet)]"
+                    className="rounded-lg bg-[var(--color-panel)] px-3 py-1.5 text-xs outline-none focus:border-[var(--color-violet)]"
                   >
                     {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABELS[s] || s}</option>)}
                   </select>
@@ -365,7 +368,7 @@ export default function MangaDetailsPage() {
                   </div>
                 </div>
               )}
-              <div className="rounded-xl border border-[var(--color-line)] divide-y divide-[var(--color-line)] max-h-96 overflow-y-auto">
+              <div className="rounded-xl divide-y divide-[var(--color-line)] max-h-96 overflow-y-auto">
                 {(showAllChapters ? chapters : chapters.slice(0, 30)).map((ch) => (
                   <button key={ch.id} onClick={() => markChapter(ch.chapter, !ch.read)}
                     className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:bg-white/5 ${
@@ -403,7 +406,7 @@ export default function MangaDetailsPage() {
               <SectionTitle>Rankings</SectionTitle>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {rankings.slice(0, 6).map((r) => (
-                  <div key={r.id} className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-3 text-center">
+                   <div key={r.id} className="rounded-lg bg-[var(--color-panel)] p-3 text-center">
                     <div className="text-xl font-bold font-mono text-[var(--color-magenta)]">#{r.rank}</div>
                     <div className="text-[10px] text-[var(--color-mute)] mt-0.5 uppercase tracking-wider">
                       {r.context}{r.year ? ` (${r.year})` : ""}
@@ -421,7 +424,7 @@ export default function MangaDetailsPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {chars.slice(0, 20).map((edge) => (
                   <Link key={edge.node.id} href={`/character/${edge.node.id}`}
-                    className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-2 hover:border-[var(--color-violet)]/30 transition-colors"
+                    className="flex items-center gap-2 rounded-lg bg-[var(--color-panel)] p-2 hover:border-[var(--color-violet)]/30 transition-colors"
                   >
                     <div className="relative h-8 w-8 rounded-full overflow-hidden border border-[var(--color-line)] shrink-0">
                       <Image src={edge.node.image?.medium || ""} alt={edge.node.name?.full || ""} fill className="object-cover" sizes="32px" />
@@ -450,7 +453,7 @@ export default function MangaDetailsPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {(showAllStaff ? staffEdges : staffEdges.slice(0, 15)).map((s, i) => (
                   <Link key={`${s.node.id}-${i}`} href={`/staff/${s.node.id}`}
-                    className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-2 hover:border-[var(--color-violet)]/30 transition-colors"
+                    className="flex items-center gap-2 rounded-lg bg-[var(--color-panel)] p-2 hover:border-[var(--color-violet)]/30 transition-colors"
                   >
                     <div className="relative h-8 w-8 rounded-full overflow-hidden shrink-0">
                       <Image src={s.node.image?.medium || ""} alt={s.node.name?.full || ""} fill className="object-cover" sizes="32px" />
@@ -538,7 +541,7 @@ export default function MangaDetailsPage() {
 
           {/* External Links */}
           {links.length > 0 && (
-            <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+            <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
               <h3 className="font-display text-sm font-bold mb-3">Official Sites</h3>
               <ul className="space-y-1">
                 {links.map((l) => (
@@ -557,24 +560,24 @@ export default function MangaDetailsPage() {
           )}
 
           {manga.favourites ? (
-            <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 text-center">
+            <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5 text-center">
               <div className="text-2xl font-bold font-mono text-[var(--color-magenta)]">{manga.favourites.toLocaleString()}</div>
               <div className="text-xs text-[var(--color-mute)] mt-0.5">Favorites</div>
             </div>
           ) : null}
 
           {/* Affiliate CTA */}
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+          <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4">
             <h3 className="font-display text-xs font-bold mb-2">Support Us</h3>
             <div className="space-y-2">
-              <AffiliateLink partner="amazon" path={`https://www.amazon.com/s?k=${encodeURIComponent(bestTitle(manga.title) + " manga")}&tag=zyniverse-21`}
-                className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all"
+              <AffiliateLink partner="amazon" path={`https://www.amazon.in/s?k=${encodeURIComponent(bestTitle(manga.title) + " manga")}`}
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all"
               >
                 <span className="text-[10px] font-bold">📦</span>
                 Buy on Amazon
               </AffiliateLink>
               <AffiliateLink partner="bookwalker" path="https://global.bookwalker.jp"
-                className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all"
               >
                 <span className="text-[10px] font-bold">📚</span>
                 BookWalker
@@ -582,7 +585,7 @@ export default function MangaDetailsPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 text-xs text-[var(--color-mute)]">
+          <div className="rounded-xl bg-[var(--color-panel)] p-5 text-xs text-[var(--color-mute)]">
             Data from <a href={manga.siteUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-violet)]">AniList</a>.
             {manga.idMal && <> Also on <a href={`https://myanimelist.net/manga/${manga.idMal}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-violet)]">MyAnimeList</a>.</>}
           </div>

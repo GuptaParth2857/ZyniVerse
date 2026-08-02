@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ClubDetail from "@/components/ClubDetail";
@@ -33,7 +33,7 @@ export default function ClubDetailPageClient({ params: _params }: { params: Prom
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchClub = () => {
+  const fetchClub = useCallback(() => {
     setLoading(true);
     fetch(`/api/clubs/${slug}`)
       .then((r) => r.json())
@@ -43,10 +43,10 @@ export default function ClubDetailPageClient({ params: _params }: { params: Prom
       })
       .catch(() => setError("Failed to load club"))
       .finally(() => setLoading(false));
-  };
+  }, [slug]);
 
   useEffect(() => { if (typeof slug === "string") { // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchClub(); } }, [slug]);
+    fetchClub(); } }, [slug, fetchClub]);
 
   const isMember = club?.members?.some((m: { user: { id: string } }) => m.user.id === (session as { user?: { id: string } })?.user?.id) ?? false;
   const memberRole = club?.members?.find((m: { user: { id: string } }) => m.user.id === (session as { user?: { id: string } })?.user?.id)?.role ?? null;

@@ -1,35 +1,40 @@
-import { getAnimeDetailFull, getTrending, getPopular, getTopRated, getUpcoming, getMangaTrending, getMangaPopular, getMangaTopRated, searchMedia, searchAll, getCharacter, getStaffBasic, getStudio, getSeasonal, getAiringSchedule, getSchedulePaginated, getSpotlight, getGenres, bestTitle } from "@/lib/anilist";
+import { getAnimeDetailFull, getTrending, getPopular, getTopRated, getUpcoming, getMangaTrending, getMangaPopular, getMangaTopRated, searchMedia, searchAll, getCharacter, getStaffBasic, getStudio, getSeasonal, getAiringSchedule, getSchedulePaginated, getSpotlight, getGenres, bestTitle, type AiringScheduleEntry, type MediaAnimeFull } from "@/lib/anilist";
 import { getFillerForAnime } from "@/lib/filler";
 import { getAllDubs } from "@/lib/dub-data";
 import { prisma } from "@/lib/prisma";
-import { getZyniScore, getBatchZyniScores } from "@/lib/zyniscore";
-import { getCommunityTags, getTrendingTags } from "@/lib/community-tags";
+import type { Prisma } from "@prisma/client";
+import { getZyniScore, getBatchZyniScores, type ScoreResult } from "@/lib/zyniscore";
+import { getTrendingTags } from "@/lib/community-tags";
 import { getAwardsForYear } from "@/lib/zyni-awards";
 import { getFigureCollection, getFigureStats } from "@/lib/figure-collection";
 
-function mapAnime(anime: any) {
+type ScheduleEntry = AiringScheduleEntry & { timeUntilAiring?: number | null };
+
+function mapAnime(anime: unknown) {
   if (!anime) return null;
+  const a = anime as MediaAnimeFull;
   return {
-    ...anime,
-    characters: anime.characters?.edges?.slice(0, 25).map((c: any) => ({
+    ...a,
+    characters: a.characters?.edges?.slice(0, 25).map((c) => ({
       role: c.role,
       name: c.name,
       voiceActor: c.voiceActors?.[0] ? { id: c.voiceActors[0].id, name: c.voiceActors[0].name, languageV2: c.voiceActors[0].languageV2, image: c.voiceActors[0].image } : null,
       node: c.node,
     })),
-    staff: anime.staff?.edges?.map((s: any) => ({ role: s.role, node: s.node })),
+    staff: a.staff?.edges?.map((s) => ({ role: s.role, node: s.node })),
   };
 }
 
-function mapPageMedia(page: any) {
+function mapPageMedia(page: unknown) {
   if (!page) return { pageInfo: { hasNextPage: false, total: 0 }, media: [] };
+  const p = page as { pageInfo?: { hasNextPage?: boolean; total?: number }; media?: MediaAnimeFull[] };
   return {
-    pageInfo: page.pageInfo || { hasNextPage: false, total: page.media?.length || 0 },
-    media: (page.media || []).map(mapAnime),
+    pageInfo: p.pageInfo || { hasNextPage: false, total: p.media?.length || 0 },
+    media: (p.media || []).map(mapAnime),
   };
 }
 
-function formatScore(score: any, mediaId: string) {
+function formatScore(score: ScoreResult | null, mediaId: string) {
   if (!score) return { mediaId, averageScore: null, bayesianScore: null, totalRatings: 0, distribution: [], verifiedWeight: 0 };
   const dist = score.distribution || [];
   const total = score.totalVotes || 0;
@@ -73,22 +78,22 @@ export const rootResolver = {
     };
   },
 
-  animeTrending: async ({ page = 1, perPage = 18 }: { page?: number; perPage?: number }) => {
+  animeTrending: async ({ perPage = 18 }: { perPage?: number }) => {
     const data = await getTrending(perPage);
     return mapPageMedia({ pageInfo: { hasNextPage: false, total: data.length }, media: data });
   },
 
-  animePopular: async ({ page = 1, perPage = 18 }: { page?: number; perPage?: number }) => {
+  animePopular: async ({ perPage = 18 }: { perPage?: number }) => {
     const data = await getPopular(perPage);
     return mapPageMedia({ pageInfo: { hasNextPage: false, total: data.length }, media: data });
   },
 
-  animeTopRated: async ({ page = 1, perPage = 12 }: { page?: number; perPage?: number }) => {
+  animeTopRated: async ({ perPage = 12 }: { perPage?: number }) => {
     const data = await getTopRated(perPage);
     return mapPageMedia({ pageInfo: { hasNextPage: false, total: data.length }, media: data });
   },
 
-  animeUpcoming: async ({ page = 1, perPage = 12 }: { page?: number; perPage?: number }) => {
+  animeUpcoming: async ({ perPage = 12 }: { perPage?: number }) => {
     const data = await getUpcoming(perPage);
     return mapPageMedia({ pageInfo: { hasNextPage: false, total: data.length }, media: data });
   },
@@ -98,17 +103,17 @@ export const rootResolver = {
     return mapPageMedia(data);
   },
 
-  mangaTrending: async ({ page = 1, perPage = 18 }: { page?: number; perPage?: number }) => {
+  mangaTrending: async ({ perPage = 18 }: { perPage?: number }) => {
     const data = await getMangaTrending(perPage);
     return mapPageMedia({ pageInfo: { hasNextPage: false, total: data.length }, media: data });
   },
 
-  mangaPopular: async ({ page = 1, perPage = 18 }: { page?: number; perPage?: number }) => {
+  mangaPopular: async ({ perPage = 18 }: { perPage?: number }) => {
     const data = await getMangaPopular(perPage);
     return mapPageMedia({ pageInfo: { hasNextPage: false, total: data.length }, media: data });
   },
 
-  mangaTopRated: async ({ page = 1, perPage = 12 }: { page?: number; perPage?: number }) => {
+  mangaTopRated: async ({ perPage = 12 }: { perPage?: number }) => {
     const data = await getMangaTopRated(perPage);
     return mapPageMedia({ pageInfo: { hasNextPage: false, total: data.length }, media: data });
   },
@@ -118,7 +123,7 @@ export const rootResolver = {
     return {
       pageInfo: { hasNextPage: false, total: (data.anime?.length || 0) + (data.manga?.length || 0) },
       anime: (data.anime || []).map(mapAnime),
-      manga: (data.manga || []).map((m: any) => ({ ...m, characters: undefined, staff: undefined })),
+      manga: (data.manga || []).map((m) => ({ ...m, characters: undefined, staff: undefined })),
     };
   },
 
@@ -143,7 +148,7 @@ export const rootResolver = {
   schedule: async ({ hoursBack = 6, hoursAhead = 72 }: { hoursBack?: number; hoursAhead?: number }) => {
     const now = Math.floor(Date.now() / 1000);
     const data = await getAiringSchedule(now - hoursBack * 3600, now + hoursAhead * 3600);
-    return data.map((s: any) => ({
+    return data.map((s: ScheduleEntry) => ({
       mediaId: s.media.id,
       title: s.media.title.english || s.media.title.romaji,
       episode: s.episode,
@@ -253,7 +258,7 @@ export const rootResolver = {
   },
 
   clubEvents: async ({ clubId, upcoming = true }: { clubId: string; upcoming?: boolean }) => {
-    const where: any = { clubId };
+    const where: Prisma.ClubEventWhereInput = { clubId };
     if (upcoming) where.startTime = { gte: new Date() };
     const events = await prisma.clubEvent.findMany({
       where,

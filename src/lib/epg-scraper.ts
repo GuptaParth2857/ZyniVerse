@@ -1,3 +1,5 @@
+import { logError } from "@/lib/logger";
+
 interface EpgScheduleEntry {
   show: string;
   start: string;
@@ -76,7 +78,7 @@ export async function scrapeChannelSchedule(slug: string): Promise<DaySchedule> 
     for (const day of DAYS_OF_WEEK) {
       result[day].sort((a, b) => a.start.localeCompare(b.start));
     }
-  } catch {}
+  } catch (e) { logError(e); }
 
   return result;
 }

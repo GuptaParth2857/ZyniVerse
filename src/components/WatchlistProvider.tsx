@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
+import { logError } from "@/lib/logger";
 
 export type ListStatus = "CURRENT" | "PLANNING" | "COMPLETED" | "DROPPED" | "PAUSED" | "REWATCHING";
 
@@ -40,7 +41,7 @@ const STORAGE_KEY = "zyniverse_watchlist_v2";
 export function WatchlistProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [items, setItems] = useState<WatchlistItem[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  const [, setHydrated] = useState(false);
   const [entries, setEntries] = useState<ListEntryData[]>([]);
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export function WatchlistProvider({ children }: { children: React.ReactNode }) {
       const raw = localStorage.getItem(STORAGE_KEY);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (raw) setItems(JSON.parse(raw));
-    } catch {}
+    } catch (e) { logError(e); }
     setHydrated(true);
   }, []);
 
@@ -65,7 +66,7 @@ export function WatchlistProvider({ children }: { children: React.ReactNode }) {
   }, [session?.user?.id]);
 
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch (e) { logError(e); }
   }, [items]);
 
   const syncToCloud = useCallback(async (entry: WatchlistItem, status: string) => {
@@ -77,7 +78,7 @@ export function WatchlistProvider({ children }: { children: React.ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "add", mediaId: entry.id, type: mediaType, status }),
       });
-    } catch {}
+    } catch (e) { logError(e); }
   }, [session?.user?.id]);
 
   const isSaved = useCallback((id: number) => {

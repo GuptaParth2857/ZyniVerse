@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { THEMES, type ThemeId } from "@/lib/themes";
+import { logError } from "@/lib/logger";
 
 interface ThemeCtx {
   themeId: ThemeId;
@@ -21,12 +22,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setThemeIdState(saved);
       }
-    } catch {}
+    } catch (e) { logError(e); }
   }, []);
 
   const setThemeId = useCallback((id: ThemeId) => {
     setThemeIdState(id);
-    try { localStorage.setItem(STORAGE_KEY, id); } catch {}
+    try { localStorage.setItem(STORAGE_KEY, id); } catch (e) { logError(e); }
   }, []);
 
   useEffect(() => {

@@ -12,8 +12,9 @@ import { PageTransition } from "@/components/PageTransition";
 import MangaProgress from "@/components/MangaProgress";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/manga";
 import type { MediaMangaFull } from "@/lib/anilist";
+import { logError } from "@/lib/logger";
 
-function stripHtml(str = "") { return str.replace(/<[^>]*>/g, ""); }
+function stripHtml(str: string | null | undefined = "") { return str ? str.replace(/<[^>]*>/g, "") : ""; }
 function formatScore(score?: number) { return score ? (score / 10).toFixed(1) : "—"; }
 
 interface LightNovelEntryDB {
@@ -56,7 +57,7 @@ export default function LightNovelDetailsPage() {
       if (!res.ok) return;
       const data = await res.json();
       setEntry(data.entry);
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   async function fetchChapters() {
@@ -66,7 +67,7 @@ export default function LightNovelDetailsPage() {
       const data = await res.json();
       setChapters(data.chapters || []);
       setShowChapters(true);
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   useEffect(() => {
@@ -91,6 +92,7 @@ export default function LightNovelDetailsPage() {
       .catch((e: Error) => !cancelled && setError(e.message))
       .finally(() => !cancelled && setLoading(false));
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchChapters recreated per render; only depends on id
   }, [id]);
 
   async function addToList(status: string) {

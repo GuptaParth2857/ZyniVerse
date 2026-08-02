@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
+import { logError } from "@/lib/logger";
+import { amazonSearchUrl } from "@/lib/affiliate-config";
 
 interface FillerEpisode {
   episode: number;
@@ -126,7 +128,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
       .catch(() => !cancelled && setData({ found: false } as FillerData))
       .finally(() => !cancelled && setLoading(false));
     return () => { cancelled = true; };
-  }, [cacheKey]);
+  }, [cacheKey, anilistId, animeTitle]);
 
   useEffect(() => {
     let cancelled = false;
@@ -174,7 +176,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
         }));
       }
       setMyVotes((prev) => ({ ...prev, [episode]: vote }));
-    } catch {}
+    } catch (e) { logError(e); }
     setVotingEp(null);
   }, [anilistId, session?.user?.id]);
 
@@ -188,7 +190,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ episode, reason }),
       });
-    } catch {}
+    } catch (e) { logError(e); }
     setReportingEp(null);
   }, [anilistId, session?.user?.id]);
 
@@ -262,7 +264,6 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
     );
   }
 
-  const episodes = data.episodes;
   const filtered = filter
     ? episodesWithConsensus.filter((ep) => {
         if (filter === "overridden") return !!ep.consensusType;
@@ -322,7 +323,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
           className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F47521] to-[#f59e0b] px-5 py-2.5 text-[10px] font-bold text-black hover:opacity-90 transition-opacity"
         >▶ Watch on Crunchyroll</a>
         <a
-          href={`https://www.amazon.com/s?k=${encodeURIComponent((animeTitle || "") + " anime")}&tag=zyniverse-21`}
+          href={amazonSearchUrl((animeTitle || "") + " anime")}
           target="_blank" rel="noopener noreferrer sponsored"
           className="ml-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-5 py-2.5 text-[10px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
         >📦 Buy on Amazon</a>
@@ -351,7 +352,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
       </div>
 
       {/* Stats Bar */}
-      <div className="mx-5 mb-3 grid grid-cols-4 gap-2">
+      <div className="mx-5 mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {(["manga-canon", "anime-canon", "mixed-manga", "filler"] as const).map((type) => {
           const count = statsCount(type);
           const original = type === "mixed-manga" ? data.mixed : data[type === "manga-canon" ? "mangaCanon" : type === "anime-canon" ? "animeCanon" : "filler" as keyof FillerData] as number;

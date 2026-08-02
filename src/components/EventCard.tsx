@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import type { AnimeEvent } from "@/lib/anime-events";
 
 const TYPE_CONFIG: Record<string, { icon: string; color: string; gradient: string }> = {
@@ -49,11 +50,12 @@ export default function EventCard({ event }: { event: AnimeEvent }) {
           {/* Poster Image */}
           {poster ? (
             <div className="relative h-44 w-full overflow-hidden shrink-0">
-              <img
+              <Image
                 src={poster}
                 alt={event.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                loading="lazy"
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,1)] via-[rgba(10,10,15,0.5)] to-transparent" />
               {/* Overlay badges on poster */}

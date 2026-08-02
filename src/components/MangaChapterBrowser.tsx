@@ -12,7 +12,7 @@ interface MangaChapter {
   publishedAt: string | null;
 }
 
-export default function MangaChapterBrowser({ mangaId, mangaTitle }: { mangaId: number; mangaTitle?: string }) {
+export default function MangaChapterBrowser({ mangaId }: { mangaId: number }) {
   const [chapters, setChapters] = useState<MangaChapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

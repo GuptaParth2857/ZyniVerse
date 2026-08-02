@@ -145,7 +145,9 @@ export default function CreateClubClient() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 animate-page-in">
       <div className="mb-8">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Community</p>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Create a Club</h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Create a Club</h1>
+        </div>
         <p className="mt-2 text-sm text-[var(--color-mute)] max-w-2xl">
           Fill in the details below and see a live preview of your club card.
         </p>
@@ -251,7 +253,7 @@ export default function CreateClubClient() {
                       onChange={(e) => setName(e.target.value)}
                       required
                       placeholder="e.g. Naruto Fans India"
-                      className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors placeholder:text-[var(--color-mute)]/50"
+                      className="w-full rounded-xl neon-rgb-border bg-[var(--color-panel)] px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors placeholder:text-[var(--color-mute)]/50"
                     />
                   </div>
 
@@ -262,7 +264,7 @@ export default function CreateClubClient() {
                       onChange={(e) => setDescription(e.target.value)}
                       rows={3}
                       placeholder="What's this club about? Tell potential members why they should join..."
-                      className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors resize-none placeholder:text-[var(--color-mute)]/50"
+                      className="w-full rounded-xl neon-rgb-border bg-[var(--color-panel)] px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors resize-none placeholder:text-[var(--color-mute)]/50"
                     />
                   </div>
 
@@ -273,7 +275,7 @@ export default function CreateClubClient() {
                       onChange={(e) => setRules(e.target.value)}
                       rows={3}
                       placeholder="Be respectful, no spam, no spoilers without tags..."
-                      className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors resize-none placeholder:text-[var(--color-mute)]/50"
+                      className="w-full rounded-xl neon-rgb-border bg-[var(--color-panel)] px-4 py-3 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors resize-none placeholder:text-[var(--color-mute)]/50"
                     />
                     <p className="text-[10px] text-[var(--color-mute)]/50 mt-1">Optional. Rules will be shown on the club page.</p>
                   </div>
@@ -298,7 +300,7 @@ export default function CreateClubClient() {
                           className={`rounded-xl px-3 py-2.5 text-xs font-medium transition-all ${
                             category === c.value
                               ? "bg-[var(--color-cyan)]/15 text-[var(--color-cyan)] border border-[var(--color-cyan)]/30 shadow-[0_0_15px_-5px_rgba(0,255,224,0.2)]"
-                              : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50 hover:text-[var(--color-cyan)]"
+                              : "neon-rgb-border text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50 hover:text-[var(--color-cyan)]"
                           }`}
                         >
                           {c.label}
@@ -307,7 +309,7 @@ export default function CreateClubClient() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]">
+                  <div className="flex items-center justify-between p-4 rounded-xl neon-rgb-border bg-[var(--color-panel)]">
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-6 rounded-full relative cursor-pointer transition-colors ${isPrivate ? "bg-[var(--color-magenta)]" : "bg-[var(--color-line)]"}`} onClick={() => setIsPrivate(!isPrivate)}>
                         <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${isPrivate ? "left-5" : "left-1"}`} />

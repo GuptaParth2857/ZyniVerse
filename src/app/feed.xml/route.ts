@@ -1,5 +1,6 @@
 import { getTrending } from "@/lib/anilist";
 import { bestTitle } from "@/lib/anilist";
+import { logError } from "@/lib/logger";
 
 export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
@@ -19,7 +20,7 @@ export async function GET() {
       <pubDate>${m.startDate?.year ? new Date(m.startDate.year, (m.startDate.month || 1) - 1).toUTCString() : new Date().toUTCString()}</pubDate>
     </item>`;
     }
-  } catch {}
+  } catch (e) { logError(e); }
 
   const feed = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">

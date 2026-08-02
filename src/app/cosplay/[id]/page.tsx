@@ -17,10 +17,13 @@ async function fetchCosplay(id: string) {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const c = await fetchCosplay(id);
-  if (!c) return { title: "Cosplay | ZyniVerse" };
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+  if (!c) return { title: "Cosplay | ZyniVerse", description: "Browse anime cosplay photos, upload your own, and connect with the cosplay community on ZyniVerse.", robots: { index: true, follow: true } };
   return {
     title: `${c.character} from ${c.animeTitle} — Cosplay by ${c.user.username} | ZyniVerse`,
     description: c.description || `Check out this ${c.character} cosplay from ${c.animeTitle}`,
+    alternates: { canonical: `${baseUrl}/cosplay/${id}` },
+    robots: { index: true, follow: true },
   };
 }
 

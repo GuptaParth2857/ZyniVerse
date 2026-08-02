@@ -25,7 +25,9 @@ export default function DeveloperPage() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <div className="mb-10">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">{/* Developers */}</p>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">ZyniVerse API</h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mt-1">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl">ZyniVerse API</h1>
+        </div>
         <p className="mt-2 text-[var(--color-mute)] max-w-3xl">
           Build anime-powered apps with India&apos;s most unique anime API. Access filler guides, Indian dub schedules,
           airing data, and character info. Every endpoint returns clean JSON with minimal latency.
@@ -34,7 +36,7 @@ export default function DeveloperPage() {
 
       <div className="grid gap-8 lg:grid-cols-3 mb-16">
         {Object.entries(API_TIERS).map(([key, tier]) => (
-          <div key={key} className={`rounded-xl border ${key === "pro" ? "border-[var(--color-magenta)] bg-[var(--color-magenta)]/5" : "border-[var(--color-line)] bg-[var(--color-panel)]"} p-6`}>
+          <div key={key} className={`rounded-xl border ${key === "pro" ? "border-[var(--color-magenta)] bg-[var(--color-magenta)]/5" : "neon-rgb-border bg-[var(--color-panel)]"} p-6`}>
             {key === "pro" && <span className="text-xs font-bold text-[var(--color-magenta)] mb-2 block">POPULAR</span>}
             <h3 className="font-display text-xl font-bold">{tier.name}</h3>
             <p className={`text-3xl font-bold mt-2 ${key === "pro" ? "text-[var(--color-magenta)]" : ""}`}>
@@ -56,7 +58,7 @@ export default function DeveloperPage() {
               className={`mt-6 block w-full rounded-lg py-2.5 text-center text-sm font-bold transition-all ${
                 key === "pro"
                   ? "bg-[var(--color-magenta)] text-black hover:opacity-90"
-                  : "border border-[var(--color-line)] text-[var(--color-ink)] hover:border-[var(--color-cyan)]"
+                  : "neon-rgb-border text-[var(--color-ink)] hover:border-[var(--color-cyan)]"
               }`}
             >
               {tier.price === 0 ? "Get Free Key" : "Upgrade"}
@@ -66,7 +68,7 @@ export default function DeveloperPage() {
       </div>
 
       <h2 className="font-display text-2xl font-bold mb-6">API Endpoints</h2>
-      <div className="overflow-x-auto rounded-xl border border-[var(--color-line)] mb-16">
+      <div className="overflow-x-auto rounded-xl neon-rgb-border mb-16">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[var(--color-line)] bg-[var(--color-panel)]">
@@ -97,7 +99,7 @@ export default function DeveloperPage() {
         </div>
         <div>
           <h3 className="font-semibold mb-2">2. Make your first request</h3>
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+          <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4">
             <pre className="text-xs font-mono text-[var(--color-mute)] overflow-x-auto">
               <span className="text-[var(--color-cyan)]">curl</span> https://zyverse.in/api/v1/schedule?hours_ahead=24 \<br />
               &nbsp;&nbsp;-H <span className="text-[var(--color-magenta)]">&quot;Authorization: Bearer zvn_your_api_key_here&quot;</span>
@@ -106,7 +108,7 @@ export default function DeveloperPage() {
         </div>
         <div>
           <h3 className="font-semibold mb-2">3. Try GraphQL</h3>
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+          <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4">
             <pre className="text-xs font-mono text-[var(--color-mute)] overflow-x-auto">
               <span className="text-[var(--color-cyan)]">curl</span> -X POST https://zyverse.in/api/v2/graphql \<br />
               &nbsp;&nbsp;-H <span className="text-[var(--color-magenta)]">&quot;Authorization: Bearer zvn_your_api_key_here&quot;</span> \<br />
@@ -124,7 +126,7 @@ export default function DeveloperPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6">
+      <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-6">
         <h2 className="font-display text-xl font-bold mb-3">Need Help?</h2>
         <p className="text-sm text-[var(--color-mute)] mb-4">
           Check our <Link href="/docs" className="text-[var(--color-cyan)] hover:underline">documentation</Link> for detailed API reference,

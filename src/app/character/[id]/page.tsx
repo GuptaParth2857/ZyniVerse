@@ -8,8 +8,9 @@ import { getCharacter, bestTitle } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CharacterFull } from "@/lib/anilist";
+import { amazonSearchUrl } from "@/lib/affiliate-config";
 
-function stripHtml(str = "") { return str.replace(/<[^>]*>/g, ""); }
+function stripHtml(str: string | null | undefined = "") { return str ? str.replace(/<[^>]*>/g, "") : ""; }
 
 function formatBirthday(dob: { year?: number; month?: number; day?: number } | undefined) {
   if (!dob?.month && !dob?.day) return null;
@@ -89,7 +90,9 @@ export default function CharacterPage() {
 
             {/* Info */}
             <div className="min-w-0 flex-1">
-              <h1 className="font-display text-4xl font-bold sm:text-6xl drop-shadow-lg">{char.name?.full}</h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                <h1 className="font-display text-4xl font-bold sm:text-6xl drop-shadow-lg">{char.name?.full}</h1>
+              </div>
               {char.name?.native && <p className="mt-1 text-lg text-[var(--color-mute)]">{char.name.native}</p>}
               {char.name?.alternative && char.name.alternative.length > 0 && (
                 <p className="mt-0.5 text-sm text-[var(--color-mute)]">aka {char.name.alternative.slice(0, 3).join(", ")}</p>
@@ -164,13 +167,13 @@ export default function CharacterPage() {
               const mediaAccent = m.coverImage?.color || accent;
               return (
                 <Link key={edge.id} href={`/${m.type?.toLowerCase()}/${m.id}`}
-                  className="group relative flex items-center gap-4 overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                  className="group relative flex items-center gap-4 overflow-hidden rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 transition-all hover:-translate-y-0.5 hover:shadow-lg"
                 >
                   {/* Left accent bar */}
                   <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl transition-all group-hover:w-1.5" style={{ background: mediaAccent }} />
 
                   {/* Cover art */}
-                  <div className="relative shrink-0 h-20 w-14 rounded-lg border border-[var(--color-line)] overflow-hidden">
+                  <div className="relative shrink-0 h-20 w-14 rounded-lg neon-rgb-border overflow-hidden">
                     <Image src={m.coverImage?.large || m.coverImage?.medium || ""} alt="" fill className="object-cover transition-transform group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
                   </div>
 
@@ -178,7 +181,7 @@ export default function CharacterPage() {
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold truncate">{bestTitle(m.title)}</p>
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                      <span className="text-[10px] font-medium uppercase tracking-wider rounded border border-[var(--color-line)] px-1.5 py-0.5" style={{ color: mediaAccent, borderColor: `${mediaAccent}44` }}>{edge.characterRole}</span>
+                      <span className="text-[10px] font-medium uppercase tracking-wider rounded neon-rgb-border px-1.5 py-0.5" style={{ color: mediaAccent, borderColor: `${mediaAccent}44` }}>{edge.characterRole}</span>
                       {m.averageScore ? <span className="text-xs">★ {(m.averageScore / 10).toFixed(1)}</span> : null}
                       {m.format && <span className="text-[10px] text-[var(--color-mute)]">{m.format}</span>}
                       {m.type === "ANIME" && m.episodes ? <span className="text-[10px] text-[var(--color-mute)]">{m.episodes} ep</span> : null}
@@ -191,7 +194,7 @@ export default function CharacterPage() {
                   {/* VAs */}
                   <div className="hidden sm:flex items-center gap-3 shrink-0">
                     {jpVA && (
-                      <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-black/30 px-3 py-1.5">
+                      <div className="flex items-center gap-2 rounded-lg neon-rgb-border bg-black/30 px-3 py-1.5">
                         <div className="relative h-8 w-8 rounded-full overflow-hidden shrink-0">
                         <Image src={jpVA.image?.medium || ""} alt={jpVA.name?.full || ""}
                           fill className="object-cover" sizes="32px" />
@@ -203,7 +206,7 @@ export default function CharacterPage() {
                       </div>
                     )}
                     {enVA && (
-                      <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-black/30 px-3 py-1.5">
+                      <div className="flex items-center gap-2 rounded-lg neon-rgb-border bg-black/30 px-3 py-1.5">
                         <div className="relative h-8 w-8 rounded-full overflow-hidden shrink-0">
                         <Image src={enVA.image?.medium || ""} alt={enVA.name?.full || ""}
                           fill className="object-cover" sizes="32px" />
@@ -230,8 +233,8 @@ export default function CharacterPage() {
           <a href="https://www.crunchyroll.com/search?ref=zyniverse" target="_blank" rel="noopener noreferrer sponsored"
             className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F47521] to-[#f59e0b] px-3 py-1.5 text-[9px] font-bold text-black hover:opacity-90 transition-opacity"
           >▶ Watch on Crunchyroll</a>
-          <a href="https://www.amazon.com/s?k=anime&tag=zyniverse-21" target="_blank" rel="noopener noreferrer sponsored"
-            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
+          <a href={amazonSearchUrl("anime")} target="_blank" rel="noopener noreferrer sponsored"
+            className="inline-flex items-center gap-1.5 rounded-full neon-rgb-border px-3 py-1.5 text-[9px] font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-all"
           >📦 Buy Anime on Amazon</a>
         </div>
       </div>
@@ -241,7 +244,7 @@ export default function CharacterPage() {
 
 function StatCard({ accent, label, value }: { accent: string; label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg" style={{ borderColor: "var(--color-line)" }}>
+    <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] px-4 py-3 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg" style={{ borderColor: "var(--color-line)" }}>
       <div className="text-sm font-bold font-mono" style={{ color: accent }}>{value}</div>
       <div className="text-[9px] text-[var(--color-mute)] uppercase tracking-widest mt-0.5">{label}</div>
     </div>

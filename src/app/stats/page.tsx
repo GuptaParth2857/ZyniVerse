@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import Loader, { ErrorState } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import Link from "next/link";
@@ -22,7 +21,6 @@ interface StatsData {
 }
 
 export default function StatsPage() {
-  const { data: session } = useSession();
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +47,9 @@ export default function StatsPage() {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <div className="mb-8">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">Analytics</p>
-          <h1 className="font-display text-3xl font-bold mt-1">Your Watch Statistics</h1>
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mt-1">
+            <h1 className="font-display text-3xl font-bold">Your Watch Statistics</h1>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
@@ -67,7 +67,7 @@ export default function StatsPage() {
         </div>
 
         {stats.statusBreakdown && Object.keys(stats.statusBreakdown).length > 0 && (
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 mb-6">
+          <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5 mb-6">
             <h3 className="font-display text-sm font-bold mb-3">Status Breakdown</h3>
             <div className="space-y-1.5">
               {Object.entries(stats.statusBreakdown).map(([status, count]) => {
@@ -88,7 +88,7 @@ export default function StatsPage() {
         )}
 
         {stats.scoreDistribution.length > 0 && (
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 mb-6">
+          <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5 mb-6">
             <h3 className="font-display text-sm font-bold mb-3">Your Score Distribution</h3>
             <div className="space-y-1">
               {stats.scoreDistribution.map((s) => (
@@ -105,7 +105,7 @@ export default function StatsPage() {
         )}
 
         {stats.yearlyActivity.length > 0 && (
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+          <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
             <h3 className="font-display text-sm font-bold mb-3">Yearly Activity</h3>
             <div className="flex items-end gap-2 h-28">
               {stats.yearlyActivity.map((y) => (
@@ -129,7 +129,7 @@ export default function StatsPage() {
 
 function StatCard({ label, value, icon, suffix }: { label: string; value: number | string; icon: string; suffix?: string }) {
   return (
-    <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+    <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-lg">{icon}</span>
         <span className="text-[10px] text-[var(--color-mute)] font-medium">{label}</span>

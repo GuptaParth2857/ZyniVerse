@@ -1,6 +1,7 @@
 import { getStreamingSources, type StreamingSource } from "@/lib/streaming";
 import { getAnimeStreamingPlatforms, type Platform } from "@/lib/platforms";
 import { getAffiliateLink, trackClick } from "@/lib/affiliate";
+import { AMAZON_TAG } from "@/lib/affiliate-config";
 
 interface WhereToWatchProps {
   streamingLinks: { site: string; url: string }[];
@@ -42,7 +43,7 @@ function getAffiliateUrl(source: StreamingSource): string {
   if (name.includes("amazon") || name.includes("prime")) {
     try {
       const url = new URL(source.url);
-      url.searchParams.set("tag", "zyniverse-21");
+      url.searchParams.set("tag", AMAZON_TAG);
       return url.toString();
     } catch { return source.url; }
   }

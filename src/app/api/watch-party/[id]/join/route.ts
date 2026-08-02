@@ -15,8 +15,8 @@ export async function POST(
   try {
     const member = await joinParty(id, session.user.id);
     return NextResponse.json({ member });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 400 });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Failed" }, { status: 400 });
   }
 }
 
@@ -33,7 +33,7 @@ export async function DELETE(
   try {
     await leaveParty(id, session.user.id);
     return NextResponse.json({ success: true });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 400 });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Failed" }, { status: 400 });
   }
 }

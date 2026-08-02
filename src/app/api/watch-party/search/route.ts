@@ -11,9 +11,9 @@ export async function GET(req: NextRequest) {
     const result = await searchMedia({ search: q, perPage: 8, type: "ANIME" });
     return NextResponse.json({
       results: result.media.map((a) => ({
-        id: a.idMal || a.id,
+        id: a.id,
         title: bestTitle(a.title),
-        image: a.coverImage?.large || a.coverImage?.medium || null,
+        image: a.coverImage?.extraLarge || a.coverImage?.large || a.coverImage?.medium || null,
         episodes: a.episodes || null,
         status: a.status || null,
         year: a.startDate?.year || null,

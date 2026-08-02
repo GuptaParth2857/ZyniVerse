@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ALL_AWARDS, AWARD_YEARS, AWARD_PLATFORMS, AWARD_TYPES, getAwardsByFilters } from "@/lib/awards-data";
 import { resolveImage } from "@/lib/image-resolver";
+import { logError } from "@/lib/logger";
 
 export const revalidate = 3600;
 
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
       });
 
       const awardsWithoutImages = dbAwards.filter((a) => !a.image);
-      if (awardsWithoutImages.length > 0 && awardsWithoutImages.length <= 30) {
+      if (awardsWithoutImages.length > 0) {
         const batchSize = 5;
         for (let i = 0; i < awardsWithoutImages.length; i += batchSize) {
           const batch = awardsWithoutImages.slice(i, i + batchSize);
@@ -73,13 +74,13 @@ export async function GET(req: NextRequest) {
         source: "database",
       });
     }
-  } catch {}
+  } catch (e) { logError(e); }
 
   const staticAwards = getAwardsByFilters(year, platformParam || undefined, typeParam || undefined);
   const fallback = staticAwards.length > 0 ? staticAwards : ALL_AWARDS;
 
   const awardsWithoutImages = fallback.filter((a) => !a.image);
-  if (awardsWithoutImages.length > 0 && awardsWithoutImages.length <= 30) {
+  if (awardsWithoutImages.length > 0) {
     const batchSize = 5;
     for (let i = 0; i < awardsWithoutImages.length; i += batchSize) {
       const batch = awardsWithoutImages.slice(i, i + batchSize);

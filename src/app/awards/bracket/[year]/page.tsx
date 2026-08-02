@@ -55,14 +55,16 @@ export default function BracketPage({
   return (
     <div className="min-h-screen bg-[var(--color-void)]">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-white mb-6" style={{ fontFamily: "var(--font-display)" }}>
-          ⚔️ Bracket Tournament
-        </h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mb-6">
+          <h1 className="text-3xl font-bold text-white" style={{ fontFamily: "var(--font-display)" }}>
+            ⚔️ Bracket Tournament
+          </h1>
+        </div>
         <div className="flex gap-3 mb-6 flex-wrap">
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none"
+            className="px-3 py-2 text-sm bg-white/5 neon-rgb-border rounded-lg text-white focus:outline-none"
           >
             {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -73,10 +75,10 @@ export default function BracketPage({
               <button
                 key={r}
                 onClick={() => setRound(r)}
-                className={`px-3 py-2 text-xs rounded-lg border transition-colors ${
+                className={`px-3 py-2 text-xs rounded-lg transition-colors ${
                   round === r
-                    ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-400"
-                    : "border-white/10 text-white/50 hover:border-white/30"
+                    ? "bg-cyan-500/20 neon-rgb-border text-cyan-400"
+                    : "neon-rgb-border text-white/50 hover:border-white/30"
                 }`}
               >
                 Round {r}

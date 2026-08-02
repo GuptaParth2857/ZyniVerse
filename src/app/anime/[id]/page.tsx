@@ -47,7 +47,7 @@ const _SITE_COLOR: Record<string, string> = {
   "Disney+": "#113cc2", "Apple TV": "#555555", "YouTube": "#ff0000",
 };
 
-function stripHtml(str = "") { return str.replace(/<[^>]*>/g, ""); }
+function stripHtml(str: string | null | undefined = "") { return str ? str.replace(/<[^>]*>/g, "") : ""; }
 function formatScore(score?: number) { return score ? (score / 10).toFixed(1) : "—"; }
 
 export default function AnimeDetailsPage() {
@@ -174,7 +174,7 @@ export default function AnimeDetailsPage() {
                     className="hover:text-[var(--color-cyan)] transition-colors"
                   >{anime.studios.nodes[0].name}</Link>
                 )}
-                {anime.format && <span className="text-[10px] uppercase tracking-wider border border-[var(--color-line)] px-2 py-0.5 rounded">{anime.format}</span>}
+                {anime.format && <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded">{anime.format}</span>}
                 {anime.source && <span className="text-[10px] uppercase">{anime.source.replace(/_/g, " ")}</span>}
                 {anime.duration ? <span>{anime.duration}m</span> : null}
               </div>
@@ -215,28 +215,28 @@ export default function AnimeDetailsPage() {
               {/* CTA */}
               <div className="mt-5 flex flex-wrap gap-3">
                 <button
-                  onClick={() => toggle(anime as any)}
+                  onClick={() => toggle(anime)}
                   className={`rounded-full px-6 py-2.5 text-sm font-bold transition-all ${
                     saved
                       ? "bg-[var(--color-magenta)] text-black shadow-[0_0_20px_-5px_var(--color-magenta)]"
-                      : "border border-white/20 bg-white/10 text-white hover:bg-[var(--color-magenta)] hover:text-black hover:border-[var(--color-magenta)]"
+                      : "neon-rgb-border bg-white/10 text-white hover:bg-[var(--color-magenta)] hover:text-black hover:border-[var(--color-magenta)]"
                   }`}
                 >
                   {saved ? "✓ Saved to List" : "+ Add to List"}
                 </button>
                 {anime.trailer?.site === "youtube" && (
                   <button onClick={() => setTrailerOpen(true)}
-                    className="rounded-full border border-white/20 bg-white/5 px-6 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-cyan)]/10 hover:border-[var(--color-cyan)] transition-all backdrop-blur"
+                    className="rounded-full neon-rgb-border bg-white/5 px-6 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-cyan)]/10 hover:border-[var(--color-cyan)] transition-all backdrop-blur"
                   >▶ Trailer</button>
                 )}
                 <div className="flex items-center gap-2">
                   <ShareButton mediaId={anime.id} title={title} />
                 </div>
                 <button onClick={() => setMomentMakerOpen(true)}
-                  className="rounded-full border border-[var(--color-cyan)]/30 bg-[var(--color-cyan)]/5 px-6 py-2.5 text-sm font-semibold text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 transition-all backdrop-blur"
+                  className="rounded-full neon-rgb-border bg-[var(--color-cyan)]/5 px-6 py-2.5 text-sm font-semibold text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 transition-all backdrop-blur"
                 >✦ Create Moment</button>
                 <Link href={`/search?sort=TRENDING_DESC`}
-                  className="rounded-full border border-white/10 px-6 py-2.5 text-sm text-white/50 hover:text-white transition-all"
+                  className="rounded-full neon-rgb-border px-6 py-2.5 text-sm text-white/50 hover:text-white transition-all"
                 >Discover More →</Link>
               </div>
 
@@ -287,7 +287,7 @@ export default function AnimeDetailsPage() {
             {anime.tags && anime.tags.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-1.5">
                 {anime.tags.filter((t) => t.rank >= 60 && !t.isMediaSpoiler).slice(0, 10).map((t) => (
-                  <span key={t.id} className="rounded-full bg-[var(--color-void)] px-2.5 py-1 text-[10px] text-[var(--color-mute)] border border-[var(--color-line)]">
+                  <span key={t.id} className="rounded-full bg-[var(--color-void)] px-2.5 py-1 text-[10px] text-[var(--color-mute)]">
                     {t.name}
                     {t.isAdult && <span className="ml-1 text-[var(--color-magenta)]">●</span>}
                   </span>
@@ -314,7 +314,7 @@ export default function AnimeDetailsPage() {
                   const enVA = edge.voiceActorRoles?.find((r) => r.dubGroup?.toLowerCase().includes("english"))?.voiceActor;
                   return (
                     <Link key={char.id} href={`/character/${char.id}`}
-                      className="flex items-center gap-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all group"
+                      className="flex flex-wrap items-center gap-4 rounded-xl bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all group"
                     >
                       <div className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-[var(--color-line)] group-hover:border-[var(--color-magenta)]/50 transition-colors shrink-0">
                         <Image src={char.image?.medium || ""} alt={char.name?.full || ""} fill className="object-cover" sizes="56px" />
@@ -323,27 +323,27 @@ export default function AnimeDetailsPage() {
                         <p className="text-sm font-semibold truncate">{char.name?.full}</p>
                         <p className="text-[11px] text-[var(--color-mute)]">{edge.role}</p>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <CharacterVoteWidget characterId={char.id} mediaId={anime.id} characterName={char.name?.full || ""} characterImage={char.image?.medium || ""} />
+                      <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto sm:justify-end">
+                        <CharacterVoteWidget characterId={char.id} mediaId={anime.id} />
                         {jpVA && (
-                          <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-black/30 px-3 py-1.5">
-                            <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0">
-                              <Image src={jpVA.image?.medium || ""} alt={jpVA.name?.full || ""} fill className="object-cover" sizes="28px" />
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs font-medium truncate max-w-[100px]">{jpVA.name?.full}</p>
-                              <p className="text-[9px] text-[var(--color-mute)]">Japanese</p>
+                           <div className="flex items-center gap-2 rounded-lg bg-black/30 px-3 py-1.5">
+                             <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0">
+                               <Image src={jpVA.image?.medium || ""} alt={jpVA.name?.full || ""} fill className="object-cover" sizes="28px" />
+                             </div>
+                             <div className="text-right">
+                               <p className="text-xs font-medium truncate max-w-[100px]">{jpVA.name?.full}</p>
+                               <p className="text-[9px] text-[var(--color-mute)]">Japanese</p>
                             </div>
                           </div>
                         )}
                         {enVA && (
-                          <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-black/30 px-3 py-1.5">
-                            <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0">
-                              <Image src={enVA.image?.medium || ""} alt={enVA.name?.full || ""} fill className="object-cover" sizes="28px" />
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs font-medium truncate max-w-[100px]">{enVA.name?.full}</p>
-                              <p className="text-[9px] text-[var(--color-mute)]">English</p>
+                           <div className="flex items-center gap-2 rounded-lg bg-black/30 px-3 py-1.5">
+                             <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0">
+                               <Image src={enVA.image?.medium || ""} alt={enVA.name?.full || ""} fill className="object-cover" sizes="28px" />
+                             </div>
+                             <div className="text-right">
+                               <p className="text-xs font-medium truncate max-w-[100px]">{enVA.name?.full}</p>
+                               <p className="text-[9px] text-[var(--color-mute)]">English</p>
                             </div>
                           </div>
                         )}
@@ -372,7 +372,7 @@ export default function AnimeDetailsPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {(showAllStaff ? staffEdges : staffEdges.slice(0, 12)).map((s, i) => (
                   <Link key={`${s.node.id}-${i}`} href={`/staff/${s.node.id}`}
-                    className="flex items-center gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all group"
+                    className="flex items-center gap-3 rounded-xl bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all group"
                   >
                     <div className="relative h-10 w-10 rounded-full overflow-hidden border border-[var(--color-line)] group-hover:border-[var(--color-magenta)]/50 transition-colors shrink-0">
                       <Image src={s.node.image?.medium || ""} alt={s.node.name?.full || ""} fill className="object-cover" sizes="40px" />
@@ -445,7 +445,7 @@ export default function AnimeDetailsPage() {
           <ThemeSongsSection mediaId={anime.id} />
 
           {/* Detailed Metadata */}
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+          <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
             <h3 className="font-display text-sm font-bold mb-3">Details</h3>
             <MetadataPanel mediaId={anime.id} />
           </div>
@@ -469,18 +469,18 @@ export default function AnimeDetailsPage() {
           <TvScheduleCard title={title} />
 
           {/* Affiliate Links */}
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+          <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
             <h3 className="font-display text-sm font-bold mb-3">Support Us</h3>
             <div className="space-y-2">
-              <AffiliateLink partner="amazon" path="https://www.amazon.com/s?k=anime" className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all">
+                <AffiliateLink partner="amazon" path="https://www.amazon.in/s?k=anime" className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all">
                 <span className="text-[10px] font-bold">📦</span>
                 Buy on Amazon
               </AffiliateLink>
-              <AffiliateLink partner="cdjapan" path="https://www.cdjapan.co.jp" className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all">
+               <AffiliateLink partner="cdjapan" path="https://www.cdjapan.co.jp" className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all">
                 <span className="text-[10px] font-bold">💿</span>
                 Buy Blu-ray on CDJapan
               </AffiliateLink>
-              <AffiliateLink partner="playasia" path="https://www.play-asia.com" className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all">
+               <AffiliateLink partner="playasia" path="https://www.play-asia.com" className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)]/40 hover:text-[var(--color-cyan)] transition-all">
                 <span className="text-[10px] font-bold">🎮</span>
                 Merch on PlayAsia
               </AffiliateLink>
@@ -489,7 +489,7 @@ export default function AnimeDetailsPage() {
 
           {/* Official Links */}
           {infoLinks.length > 0 && (
-            <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+            <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
               <h3 className="font-display text-sm font-bold mb-2">Official Sites</h3>
               <ul className="space-y-1">
                 {infoLinks.map((l) => (
@@ -509,7 +509,7 @@ export default function AnimeDetailsPage() {
 
           {/* Rankings */}
           {rankings.length > 0 && (
-            <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+            <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
               <h3 className="font-display text-sm font-bold mb-3">Rankings</h3>
               <div className="space-y-2">
                 {rankings.slice(0, 4).map((r) => (
@@ -531,13 +531,13 @@ export default function AnimeDetailsPage() {
           <ScoreDistributionChart scoreDistribution={scoreDist} />
 
           {anime.favourites ? (
-            <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 text-center">
+            <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5 text-center">
               <div className="text-2xl font-bold font-mono text-[var(--color-magenta)]">{anime.favourites.toLocaleString()}</div>
               <div className="text-xs text-[var(--color-mute)] mt-0.5">Favorites</div>
             </div>
           ) : null}
 
-          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 text-xs text-[var(--color-mute)]">
+          <div className="rounded-xl bg-[var(--color-panel)] p-5 text-xs text-[var(--color-mute)]">
             {anime.idMal && <>Also on <a href={`https://myanimelist.net/anime/${anime.idMal}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--color-cyan)]">MyAnimeList</a>.</>}
           </div>
         </aside>
@@ -553,21 +553,28 @@ export default function AnimeDetailsPage() {
       />
 
       {/* ── Trailer Modal ── */}
-      {trailerOpen && anime.trailer?.id && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setTrailerOpen(false)}>
-          <div className="relative w-full max-w-4xl mx-4 aspect-video" onClick={(e) => e.stopPropagation()}>
+      {(() => {
+        const tid = anime?.trailer?.id;
+        if (!trailerOpen || !tid) return null;
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${tid}?autoplay=1&rel=0&playsinline=1`;
+        return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setTrailerOpen(false)}>
+          <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
             <iframe
-              src={`https://www.youtube.com/embed/${anime.trailer.id}?autoplay=1&rel=0`}
-              className="h-full w-full rounded-xl"
-              allow="autoplay; encrypted-media"
+              src={embedUrl}
+              className="w-full aspect-video rounded-xl shadow-2xl"
+              allow="autoplay; encrypted-media; fullscreen"
               allowFullScreen
             />
-            <button onClick={() => setTrailerOpen(false)}
-              className="absolute -top-10 right-0 text-white/70 hover:text-white text-sm"
-            >Close ✕</button>
+            <div className="mt-3 flex items-center justify-end">
+              <button onClick={() => setTrailerOpen(false)}
+                className="text-sm text-white/70 hover:text-white px-3 py-1 rounded-full hover:bg-white/5 transition-all"
+              >Close ✕</button>
+            </div>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div></ErrorBoundary></PageTransition>
   );
 }

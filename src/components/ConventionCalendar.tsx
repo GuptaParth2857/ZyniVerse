@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 interface Convention {
@@ -174,18 +175,26 @@ export default function ConventionCalendar() {
 
 function ConventionCard({ convention: c }: { convention: Convention }) {
   const dateStr = `${new Date(c.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} — ${new Date(c.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`;
-  const daysLeft = Math.max(0, Math.ceil((new Date(c.startDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+  const [daysLeft, setDaysLeft] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDaysLeft(Math.max(0, Math.ceil((new Date(c.startDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))));
+    }, 0);
+    return () => clearTimeout(t);
+  }, [c.startDate]);
 
   return (
     <NeonBorder>
       <div className="rounded-[20px] overflow-hidden">
         {c.image && (
           <div className="relative h-44 sm:h-52 overflow-hidden">
-            <img
+            <Image
               src={c.image}
               alt={c.name}
-              className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+              fill
+              className="object-cover transition-transform duration-700 hover:scale-110"
               loading="lazy"
+              sizes="(max-width: 768px) 100vw, 600px"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,1)] via-[rgba(10,10,15,0.4)] to-transparent" />
             <div className="absolute top-3 left-3 flex items-center gap-2">

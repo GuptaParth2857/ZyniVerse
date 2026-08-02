@@ -22,7 +22,7 @@ export async function POST() {
 
   const portalSession = await getStripe().billingPortal.sessions.create({
     customer: subscription.stripeCustomerId,
-    return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/premium`,
+    return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in"}/premium`,
   });
 
   return NextResponse.json({ url: portalSession.url });

@@ -1,4 +1,5 @@
 import type { AnimeEvent } from "@/lib/anime-events";
+import Image from "next/image";
 
 const TYPE_ICONS: Record<string, string> = {
   expo: "🎯",
@@ -60,9 +61,11 @@ export default function EventTimeline({ events }: { events: AnimeEvent[] }) {
                     {/* Poster thumbnail */}
                     {poster && (
                       <div className="w-16 h-16 shrink-0 overflow-hidden hidden sm:block">
-                        <img
+                        <Image
                           src={poster}
                           alt=""
+                          width={64}
+                          height={64}
                           className="w-full h-full object-cover"
                           loading="lazy"
                         />

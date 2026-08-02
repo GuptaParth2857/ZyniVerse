@@ -1,3 +1,5 @@
+import { logError } from "@/lib/logger";
+
 export interface VoiceLine {
   id: string;
   character: string;
@@ -171,20 +173,6 @@ const allVoiceLines: VoiceLine[] = [
     likes: 0
   },
   {
-    id: "kakashi-2",
-    character: "Kakashi Hatake",
-    characterId: 20,
-    animeTitle: "Naruto",
-    animeId: 20,
-    line: "In the ninja world, those who break the rules are scum. But those who abandon their friends are worse.",
-    lineJapanese: "忍者世界で規則を破る奴はゴミだ。だが、仲間を捨てる奴はもっとゴミだ。",
-    context: "To Team 7",
-    episode: 6,
-    language: "english",
-    type: "inspiring",
-    likes: 0
-  },
-  {
     id: "kakashi-3",
     character: "Kakashi Hatake",
     characterId: 20,
@@ -205,7 +193,7 @@ const allVoiceLines: VoiceLine[] = [
     animeTitle: "Naruto Shippuden",
     animeId: 4565,
     line: "Wake up to reality! Nothing ever goes as planned in this world.",
-    lineJapanese: "現実に目を覚ませ！この世の中で思い通りにならないことなどない。",
+    lineJapanese: "現実に目を覚ませ！この世は思い通りにならないことだらけだ。",
     context: "To the Allied Shinobi Forces",
     episode: 322,
     language: "english",
@@ -848,7 +836,7 @@ const allVoiceLines: VoiceLine[] = [
     character: "Kyojuro Rengoku",
     characterId: 119498,
     animeTitle: "Demon Slayer: Mugen Train",
-    animeId: 110277,
+    animeId: 110476,
     line: "Set your heart ablaze!",
     lineJapanese: "心を燃やせ！",
     context: "His motto to Tanjiro",
@@ -862,7 +850,7 @@ const allVoiceLines: VoiceLine[] = [
     character: "Kyojuro Rengoku",
     characterId: 119498,
     animeTitle: "Demon Slayer: Mugen Train",
-    animeId: 110277,
+    animeId: 110476,
     line: "My mother told me that one born fortunate should help others with that fortune.",
     lineJapanese: "母が言っていた。生まれつき恵まれた者は、その恵みを人のために使うべきだと。",
     context: "Final moments with Tanjiro",
@@ -1133,7 +1121,7 @@ const allVoiceLines: VoiceLine[] = [
     animeTitle: "Dragon Ball Z",
     animeId: 813,
     line: "It's over 9000!",
-    lineJapanese: "9000を超えている！",
+    lineJapanese: "戦闘力が9000超だ！",
     context: "Sensing Vegeta's power level",
     episode: 28,
     language: "english",
@@ -1733,7 +1721,6 @@ const KNOWN_ANIME_MAP: Record<string, number> = {
   "your name": 16664,
 };
 
-const animechanCache: { data: VoiceLine[]; timestamp: number }[] = [];
 const _ANIMECHAN_CACHE_TTL = 60 * 60 * 1000;
 
 const ANIMECHAN_BASE = "https://animechan.xyz/api";
@@ -1775,7 +1762,7 @@ async function fetchFromAnimechanSearch(query: string): Promise<VoiceLine[]> {
     if (!Array.isArray(data)) return [];
     const animeKey = data[0]?.anime?.toLowerCase() || query.toLowerCase();
     const animeId = Object.entries(KNOWN_ANIME_MAP).find(([k]) => animeKey.includes(k))?.[1] || 0;
-    return data.map((q: any, i: number) => ({
+    return data.map((q: { anime?: string; character?: string; quote?: string }, i: number) => ({
       id: `animechan-s-${query.toLowerCase().replace(/\s+/g, "-")}-${i}`,
       character: q.character || "Unknown",
       animeTitle: q.anime || query,
@@ -1822,7 +1809,7 @@ export async function getDynamicVoiceLines(
           seen.add(api.line.toLowerCase());
         }
       }
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   if (animeId) {
@@ -1875,7 +1862,7 @@ export async function getDynamicQuoteOfTheDay(): Promise<VoiceLine> {
       const idx = Math.floor(rng() * Math.min(apiQuotes.length, 3));
       return apiQuotes[idx];
     }
-  } catch {}
+  } catch (e) { logError(e); }
 
   const index = Math.floor(rng() * allVoiceLines.length);
   return allVoiceLines[index];

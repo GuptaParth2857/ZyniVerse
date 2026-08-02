@@ -9,8 +9,13 @@ interface ForumDiscussionWidgetProps {
   animeImage?: string;
 }
 
+interface ForumThreadSummary {
+  id: string;
+  title: string;
+}
+
 export default function ForumDiscussionWidget({ animeId, animeTitle, animeImage }: ForumDiscussionWidgetProps) {
-  const [threads, setThreads] = useState<any[]>([]);
+  const [threads, setThreads] = useState<ForumThreadSummary[]>([]);
 
   useEffect(() => {
     fetch(`/api/forum/threads?animeId=${animeId}&limit=5`)

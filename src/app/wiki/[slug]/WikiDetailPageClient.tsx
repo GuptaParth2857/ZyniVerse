@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import Image from "next/image";
 import WikiPageView from "@/components/WikiPage";
 
 interface WikiPageData {
@@ -27,7 +27,6 @@ interface WikiPageData {
 export default function WikiDetailPageClient() {
   const resolvedParams = useParams();
   const slug = resolvedParams?.slug as string;
-  const { data: session } = useSession();
 
   const [page, setPage] = useState<WikiPageData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,10 +88,12 @@ export default function WikiDetailPageClient() {
             <div className="neon-premium-overlay rounded-[10.5px]" />
             <div className="neon-premium-content">
               <div className="relative w-full h-64 sm:h-80 rounded-xl overflow-hidden">
-                <img
+                <Image
                   src={page.coverImage}
                   alt={page.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 896px"
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-transparent to-transparent" />
               </div>
@@ -104,7 +105,11 @@ export default function WikiDetailPageClient() {
         <div className="mb-8">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="font-display text-3xl font-bold">{page.title}</h1>
+              <h1 className="font-display text-3xl font-bold">
+                <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                  {page.title}
+                </div>
+              </h1>
               {page.summary && (
                 <p className="mt-2 text-sm text-[var(--color-mute)]">{page.summary}</p>
               )}

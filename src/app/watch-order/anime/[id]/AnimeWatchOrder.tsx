@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 interface Entry {
   id: number;
@@ -79,19 +80,21 @@ export default function AnimeWatchOrder({ entries, mainId }: Props) {
 
             {/* Card */}
             <div
-              className={`flex-1 mb-4 rounded-xl border bg-[var(--glass-bg)] backdrop-blur-md overflow-hidden transition-all duration-300 hover:shadow-[0_4px_24px_-8px_rgba(0,0,0,0.4)] group ${isLast ? "mb-0" : ""} ${isMain ? "border-[var(--color-cyan)]/30" : "border-[var(--glass-border)] hover:border-white/15"}`}
+              className={`flex-1 mb-4 rounded-xl neon-rgb-border bg-[var(--glass-bg)] backdrop-blur-md overflow-hidden transition-all duration-300 hover:shadow-[0_4px_24px_-8px_rgba(0,0,0,0.4)] group ${isLast ? "mb-0" : ""} ${isMain ? "border-[var(--color-cyan)]/30" : "hover:border-white/15"}`}
             >
               <div className="flex items-stretch">
                 {/* Cover Image */}
                 {entry.coverImage && (
                   <Link
                     href={`/anime/${entry.id}`}
-                    className="shrink-0 w-16 sm:w-20 overflow-hidden bg-[var(--color-void)]"
+                    className="relative shrink-0 w-16 sm:w-20 overflow-hidden bg-[var(--color-void)]"
                   >
-                    <img
+                    <Image
                       src={entry.coverImage}
                       alt={entry.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      fill
+                      sizes="80px"
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
                       loading="lazy"
                     />
                   </Link>

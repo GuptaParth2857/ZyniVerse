@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 interface Figure {
   id: string;
   name: string;
@@ -32,9 +34,11 @@ export default function FigureCard({
   return (
     <div className="p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/[0.07] transition-colors">
       {figure.image && (
-        <img
+        <Image
           src={figure.image}
           alt={figure.name}
+          width={160}
+          height={160}
           className="w-full h-40 rounded-lg object-cover mb-3"
         />
       )}

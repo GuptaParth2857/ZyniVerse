@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface RecEntry {
   malId: number;
@@ -32,7 +33,7 @@ export default function RecRelationships({ mediaId }: { mediaId: number }) {
         {recs.map((rec, i) => (
           <Link key={i} href={`/anime/${rec.malId}`}
             className="flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
-            <img src={rec.image} alt={rec.title} className="w-10 h-14 object-cover rounded" loading="lazy" />
+            <Image src={rec.image} alt={rec.title} width={40} height={56} className="w-10 h-14 object-cover rounded" loading="lazy" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium truncate">{rec.title}</div>
               <div className="text-xs text-emerald-400 mt-0.5">{rec.reason}</div>

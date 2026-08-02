@@ -9,9 +9,10 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
   const line = getVoiceLine(id);
   if (!line) {
-    return { title: "Quote Not Found | ZyniVerse" };
+    return { title: "Quote Not Found | ZyniVerse", description: "Browse iconic anime quotes and voice lines from your favorite characters. Discover memorable moments from popular anime series.", robots: { index: true, follow: true } };
   }
   return {
     title: `"${line.line}" — ${line.character} | ZyniVerse Quotes`,
@@ -19,7 +20,10 @@ export async function generateMetadata({
     openGraph: {
       title: `"${line.line}" — ${line.character}`,
       description: `Iconic quote from ${line.animeTitle}`,
+      url: `${baseUrl}/voice-lines/${id}`,
     },
+    alternates: { canonical: `${baseUrl}/voice-lines/${id}` },
+    robots: { index: true, follow: true },
   };
 }
 
@@ -57,7 +61,7 @@ export default async function VoiceLineDetail({
         Back to all quotes
       </Link>
       <VoiceLineCard line={line} />
-      <div className="mt-8 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6">
+      <div className="mt-8 rounded-xl neon-rgb-border bg-[var(--color-panel)] p-6">
         <h2 className="font-display text-lg font-bold">About this quote</h2>
         <ul className="mt-3 space-y-2 text-sm text-[var(--color-mute)]">
           <li><strong className="text-[var(--color-ink)]">Character:</strong> {line.character}</li>

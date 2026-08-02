@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const name = char.name?.full || "Unknown Character";
     const animeNames = (char.media?.edges || [])
       .slice(0, 3)
-      .map((e: any) => e.node ? bestTitle(e.node.title) : "")
+      .map((e) => e.node ? bestTitle(e.node.title) : "")
       .filter(Boolean);
     const animeStr = animeNames.length > 0 ? ` from ${animeNames.join(", ")}` : "";
 
@@ -44,7 +44,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       robots: { index: true, follow: true },
     };
   } catch {
-    return { title: "Character Details — ZyniVerse" };
+    return {
+      title: "Character Details — ZyniVerse",
+      description: "Explore detailed anime character information including voice actors, appearances, and trivia. India's #1 free anime platform.",
+      robots: { index: true, follow: true },
+    };
   }
 }
 

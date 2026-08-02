@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,11 @@ import { PageTransition } from "@/components/PageTransition";
 
 /* ─── Particles ─── */
 function Particles() {
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const pts = useRef<{ x: number; y: number; s: number; d: number; o: number; c: string; ty: number; delay: number }[]>([]);
   /* eslint-disable react-hooks/refs, react-hooks/purity */
   if (pts.current.length === 0) {
@@ -26,6 +31,9 @@ function Particles() {
         delay: Math.random() * 5,
       });
     }
+  }
+  if (!mounted) {
+    return <div className="absolute inset-0 overflow-hidden pointer-events-none" />;
   }
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -138,7 +146,7 @@ function GlowInput({ type, value, onChange, placeholder, icon, toggle }: {
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           required
-          className="w-full h-[56px] rounded-[16px] bg-transparent pl-12 pr-12 text-[14px] text-white placeholder-[rgba(255,255,255,0.2)] outline-none transition-all duration-300 border border-[rgba(0,255,224,0.2)] focus:border-[#00ffe0] focus:shadow-[0_0_30px_-10px_rgba(0,255,224,0.4),inset_0_0_20px_-15px_rgba(0,255,224,0.15)]"
+          className="w-full h-[56px] rounded-[16px] bg-transparent pl-12 pr-12 text-[14px] text-white placeholder-[rgba(255,255,255,0.2)] outline-none transition-all duration-300 neon-rgb-border focus:border-[#00ffe0] focus:shadow-[0_0_30px_-10px_rgba(0,255,224,0.4),inset_0_0_20px_-15px_rgba(0,255,224,0.15)]"
         />
         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#00ffe0] opacity-60 group-focus-within:opacity-100 transition-opacity">
           {icon}
@@ -169,14 +177,14 @@ function GlowInput({ type, value, onChange, placeholder, icon, toggle }: {
 function RippleButton({ children, className = "", ...props }: { children: React.ReactNode; className?: string } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const ref = useRef<HTMLButtonElement>(null);
   const [ripples, setRipples] = useState<{ x: number; y: number; id: number }[]>([]);
-  const click = (e: React.MouseEvent) => {
+  const click = (e: React.MouseEvent<HTMLButtonElement>) => {
     const el = ref.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
     const id = Date.now();
     setRipples((p) => [...p, { x: e.clientX - r.left, y: e.clientY - r.top, id }]);
     setTimeout(() => setRipples((p) => p.filter((x) => x.id !== id)), 800);
-    props.onClick?.(e as any);
+    props.onClick?.(e);
   };
   return (
     <button ref={ref} onClick={click} className={`relative overflow-hidden ${className}`} {...props}>
@@ -197,7 +205,7 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [comingSoon, setComingSoon] = useState("");
+  const comingSoon = "";
 
   useEffect(() => {
     const saved = localStorage.getItem("zyniverse_remember_email");
@@ -269,9 +277,11 @@ export default function LoginPage() {
 
               {/* Header */}
               <div className="text-center mb-8">
-                <h2 className="font-display text-[32px] font-bold bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
-                  Login
-                </h2>
+                <div className="rounded-xl px-4 py-2 inline-block">
+                  <h2 className="font-display text-[32px] font-bold bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
+                    Login
+                  </h2>
+                </div>
                 <p className="mt-2 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
                   Enter your credentials to access your account.
                 </p>
@@ -358,7 +368,7 @@ export default function LoginPage() {
                     whileHover={{ y: -2, scale: 1.03 }}
                     whileTap={{ scale: 0.96 }}
                     onClick={() => signIn(s.id, { callbackUrl: "/" })}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-[14px] border border-[rgba(0,255,224,0.1)] bg-[rgba(255,255,255,0.02)] py-3 text-[13px] font-medium text-[rgba(255,255,255,0.4)] transition-all duration-300 hover:border-[#00ffe0]/30 hover:bg-[rgba(0,255,224,0.03)] hover:text-[#00ffe0] hover:shadow-[0_0_25px_-10px_rgba(0,255,224,0.15)]"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-[14px] neon-rgb-border bg-[rgba(255,255,255,0.02)] py-3 text-[13px] font-medium text-[rgba(255,255,255,0.4)] transition-all duration-300 hover:border-[#00ffe0]/30 hover:bg-[rgba(0,255,224,0.03)] hover:text-[#00ffe0] hover:shadow-[0_0_25px_-10px_rgba(0,255,224,0.15)]"
                   >
                     {s.icon}
                     <span className="hidden sm:inline">{s.name}</span>

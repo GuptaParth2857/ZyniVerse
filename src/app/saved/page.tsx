@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import Loader from "@/components/Loader";
@@ -24,8 +22,6 @@ interface Post {
 function SavedPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const { data: session } = useSession();
-  const sessionUserId = session?.user?.id || null;
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
 
   useEffect(() => {
@@ -56,7 +52,9 @@ function SavedPage() {
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">Saved</p>
-          <h1 className="font-display text-3xl font-black sm:text-4xl tracking-tight mt-1">Your Saved Posts</h1>
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mt-1">
+            <h1 className="font-display text-3xl font-black sm:text-4xl tracking-tight">Your Saved Posts</h1>
+          </div>
           <p className="mt-2 text-sm text-[var(--color-mute)]">Bookmark discussions and critiques to read later.</p>
         </motion.div>
 
@@ -82,7 +80,7 @@ function SavedPage() {
               {sorted.length > 0 ? (
                 sorted.map((post) => (
                   <motion.div key={post.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }}
-                    className="group flex items-center justify-between gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-3 transition-all hover:border-[var(--color-cyan)]/30"
+                    className="group flex items-center justify-between gap-3 rounded-xl neon-rgb-border bg-[var(--color-panel)] px-4 py-3 transition-all hover:border-[var(--color-cyan)]/30"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -102,7 +100,7 @@ function SavedPage() {
                       </div>
                     </div>
                     <button onClick={() => unsave(post.id)}
-                      className="shrink-0 text-[10px] font-bold px-2.5 py-1 rounded border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-magenta)]/50 hover:text-[var(--color-magenta)] transition-all opacity-0 group-hover:opacity-100"
+                      className="shrink-0 text-[10px] font-bold px-2.5 py-1 rounded neon-rgb-border text-[var(--color-mute)] hover:border-[var(--color-magenta)]/50 hover:text-[var(--color-magenta)] transition-all opacity-0 group-hover:opacity-100"
                     >Unsave</button>
                   </motion.div>
                 ))

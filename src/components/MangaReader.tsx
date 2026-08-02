@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { searchMangaDex, getMangaDexChapters, getMangaDexChapterPages } from "@/lib/manga-reader";
 import type { MangaChapter, MangaPage, MangaDexManga } from "@/lib/manga-reader";
 import Loader from "./Loader";
@@ -142,7 +141,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
                   }
                 }}
                 placeholder="Search manga on MangaDex..."
-                className="flex-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)]"
+                className="flex-1 rounded-lg neon-rgb-border bg-[var(--color-panel)] px-4 py-2 text-sm outline-none focus:border-[var(--color-cyan)]"
               />
               <button
                 onClick={() => {
@@ -172,7 +171,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
             </div>
             <button
               onClick={() => setShowChapters((o) => !o)}
-              className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
+              className="rounded-lg neon-rgb-border px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
             >
               {showChapters ? "Hide" : "Show"} Chapters
             </button>
@@ -181,7 +180,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
 
         {/* Chapter list */}
         {showChapters && chapters.length > 0 && (
-          <div className="mb-6 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] max-h-80 overflow-y-auto">
+          <div className="mb-6 rounded-xl neon-rgb-border bg-[var(--color-panel)] max-h-80 overflow-y-auto">
             <div className="sticky top-0 bg-[var(--color-panel)] border-b border-[var(--color-line)] px-4 py-2">
               <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-mute)]">
                 Chapters ({chapters.length})
@@ -211,12 +210,12 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
         {currentChapter && (
           <div>
             {/* Chapter header */}
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <button
                   onClick={prevChapter}
                   disabled={chapters.findIndex((c) => c.id === currentChapter.id) >= chapters.length - 1}
-                  className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
+                  className="rounded-lg neon-rgb-border px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
                 >
                   Prev
                 </button>
@@ -226,19 +225,19 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
                 <button
                   onClick={nextChapter}
                   disabled={chapters.findIndex((c) => c.id === currentChapter.id) <= 0}
-                  className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
+                  className="rounded-lg neon-rgb-border px-5 py-2.5 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
                 >
                   Next
                 </button>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setScrollMode((o) => !o)}
-                  className={`rounded-lg border px-5 py-2.5 text-xs transition-colors ${
+                  className={`rounded-lg neon-rgb-border px-5 py-2.5 text-xs transition-colors ${
                     scrollMode
                       ? "border-[var(--color-cyan)] text-[var(--color-cyan)]"
-                      : "border-[var(--color-line)] text-[var(--color-mute)]"
+                      : "text-[var(--color-mute)]"
                   }`}
                 >
                   {scrollMode ? "Single" : "Scroll"}
@@ -309,7 +308,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
                       <button
                         onClick={prevPage}
                         disabled={currentPage === 0}
-                        className="rounded-lg border border-[var(--color-line)] px-4 py-2 text-sm text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
+                        className="rounded-lg neon-rgb-border px-4 py-2 text-sm text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
                       >
                         Previous
                       </button>
@@ -319,7 +318,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
                       <button
                         onClick={nextPage}
                         disabled={currentPage >= pages.length - 1}
-                        className="rounded-lg border border-[var(--color-line)] px-4 py-2 text-sm text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
+                        className="rounded-lg neon-rgb-border px-4 py-2 text-sm text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] disabled:opacity-30 transition-colors"
                       >
                         Next
                       </button>
@@ -330,7 +329,7 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
             )}
 
             {/* Source credit */}
-            <div className="mt-6 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-center">
+            <div className="mt-6 rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 text-center">
               <p className="text-xs text-[var(--color-mute)]">
                 Read via <a href="https://mangadex.org" target="_blank" rel="noopener noreferrer" className="text-[var(--color-cyan)] underline">MangaDex</a>.
                 All content is hosted by MangaDex. We do not host any copyrighted content.

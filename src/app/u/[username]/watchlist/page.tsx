@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { logError } from "@/lib/logger";
 
 interface AniListMedia {
   id: number;
@@ -47,7 +48,7 @@ async function fetchAnimeDetails(mediaIds: number[]): Promise<Map<number, AniLis
       const list: AniListMedia[] = Array.isArray(media) ? media : [media];
       for (const m of list) map.set(m.id, m);
     }
-  } catch {}
+  } catch (e) { logError(e); }
 
   if (map.size < mediaIds.length) {
     const missing = mediaIds.filter((id) => !map.has(id));
@@ -64,7 +65,7 @@ async function fetchAnimeDetails(mediaIds: number[]): Promise<Map<number, AniLis
         });
         const json: AniListResponse = await res.json();
         if (json.data?.Media) map.set(id, json.data.Media);
-      } catch {}
+      } catch (e) { logError(e); }
     }
   }
 
@@ -139,7 +140,9 @@ export default async function PublicWatchlistPage({ params }: { params: Promise<
           )}
         </div>
         <div>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
           <h1 className="font-display text-2xl font-bold">{user.username}&apos;s Watchlist</h1>
+        </div>
           <p className="text-sm text-[var(--color-mute)]">
             {entries.length} {entries.length === 1 ? "anime" : "anime"} in list
           </p>
@@ -182,7 +185,7 @@ export default async function PublicWatchlistPage({ params }: { params: Promise<
                       <Link
                         key={entry.mediaId}
                         href={`/anime/${entry.mediaId}`}
-                        className="group rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden hover:border-[var(--color-magenta)]/40 transition-all"
+                        className="group rounded-xl neon-rgb-border bg-[var(--color-panel)] overflow-hidden hover:border-[var(--color-magenta)]/40 transition-all"
                       >
                         <div className="relative aspect-[3/4] overflow-hidden">
                           <Image

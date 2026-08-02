@@ -5,6 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
+import { logError } from "@/lib/logger";
+import ChatButton from "@/components/ChatButton";
+import AddFriendButton from "@/components/AddFriendButton";
 
 interface UserProfileCardProps {
   userId: string;
@@ -69,7 +72,7 @@ export default function UserProfileCard({
           setFollowerCount((c) => c + 1);
         }
       }
-    } catch {}
+    } catch (e) { logError(e); }
     setLoading(false);
   };
 
@@ -97,22 +100,28 @@ export default function UserProfileCard({
           {bio && <p className="mt-0.5 text-sm text-[var(--color-mute)] line-clamp-2">{bio}</p>}
           <div className="mt-2 flex items-center gap-4 text-xs text-[var(--color-mute)]">
             <span><strong className="text-[var(--color-ink)]">{followerCount}</strong> followers</span>
-            <span><strong className="text-[var(--color-ink)]">{initialFollowing}</strong> following</span>
+            <span><strong className="text-[var(--color-ink)]">{initialFollowingCount}</strong> following</span>
           </div>
         </div>
 
         {!isOwnProfile && session?.user?.id && (
-          <button
-            onClick={toggleFollow}
-            disabled={loading}
-            className={`shrink-0 rounded-full px-5 py-2.5 text-xs font-bold transition-all ${
-              following
-                ? "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-red-400 hover:text-red-400"
-                : "bg-[var(--color-cyan)] text-black hover:opacity-90"
-            }`}
-          >
-            {loading ? "..." : following ? "Following" : "Follow"}
-          </button>
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            <button
+              onClick={toggleFollow}
+              disabled={loading}
+              className={`shrink-0 rounded-full px-5 py-2.5 text-xs font-bold transition-all ${
+                following
+                  ? "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-red-400 hover:text-red-400"
+                  : "bg-[var(--color-cyan)] text-black hover:opacity-90"
+              }`}
+            >
+              {loading ? "..." : following ? "Following" : "Follow"}
+            </button>
+            <div className="flex items-center gap-1.5">
+              <ChatButton userId={userId} username={username} />
+              <AddFriendButton userId={userId} username={username} />
+            </div>
+          </div>
         )}
       </div>
     </motion.div>

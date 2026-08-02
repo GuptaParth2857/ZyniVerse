@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface UpcomingAnime {
   malId: number;
@@ -42,7 +43,7 @@ export default function SeasonPreview() {
         {anime.slice(0, 10).map((a) => (
           <Link key={a.malId} href={`/anime/${a.malId}`} className="group">
             <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white/5">
-              <img src={a.image} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+              <Image src={a.image} alt={a.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 50vw, 20vw" />
               {a.trailer && (
                 <a href={a.trailer} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
                   className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">

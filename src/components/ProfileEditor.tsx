@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import Image from "next/image";
 
 const THEME_COLORS = ["emerald", "blue", "purple", "pink", "amber", "teal", "rose", "indigo"];
 
@@ -84,7 +85,7 @@ function ImageUpload({
         } ${aspect === "square" ? "aspect-square" : "aspect-[3/1]"} overflow-hidden group`}
       >
         {displayUrl ? (
-          <img src={displayUrl} alt={label} className={`w-full h-full object-cover ${previewClass}`} />
+          <Image src={displayUrl} alt={label} fill className={`object-cover ${previewClass}`} sizes="(max-width: 768px) 100vw, 800px" />
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-white/30 gap-2">
             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -228,7 +229,7 @@ export default function ProfileEditor({ user: initial }: ProfileEditorProps) {
           defaultValue={user.username}
           onBlur={(e) => save("username", e.target.value)}
           placeholder="Choose a username"
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white/80 placeholder:text-white/30 outline-none focus:border-emerald-500/50 transition-colors"
+          className="w-full px-4 py-3 bg-white/5 neon-rgb-border rounded-lg text-sm text-white/80 placeholder:text-white/30 outline-none focus:border-emerald-500/50 transition-colors"
         />
         {usernameError && (
           <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
@@ -243,7 +244,7 @@ export default function ProfileEditor({ user: initial }: ProfileEditorProps) {
         <label className="block text-sm text-white/60 mb-2">Bio</label>
         <textarea defaultValue={user.bio || ""} onBlur={(e) => save("bio", e.target.value)} rows={3}
           placeholder="Tell us about yourself..."
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white/80 placeholder:text-white/30 outline-none focus:border-emerald-500/50 resize-none transition-colors" />
+          className="w-full px-4 py-3 bg-white/5 neon-rgb-border rounded-lg text-sm text-white/80 placeholder:text-white/30 outline-none focus:border-emerald-500/50 resize-none transition-colors" />
       </div>
 
       <div>
@@ -263,7 +264,7 @@ export default function ProfileEditor({ user: initial }: ProfileEditorProps) {
         <label className="block text-sm text-white/60 mb-2">Forum Signature</label>
         <textarea defaultValue={user.signature || ""} onBlur={(e) => save("signature", e.target.value)} rows={2}
           placeholder="Your forum signature (displayed below forum posts)"
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white/80 placeholder:text-white/30 outline-none focus:border-emerald-500/50 resize-none transition-colors" />
+          className="w-full px-4 py-3 bg-white/5 neon-rgb-border rounded-lg text-sm text-white/80 placeholder:text-white/30 outline-none focus:border-emerald-500/50 resize-none transition-colors" />
       </div>
 
       {saving && (
@@ -287,7 +288,7 @@ export default function ProfileEditor({ user: initial }: ProfileEditorProps) {
                   type={showCurrentPassword ? "text" : "password"}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-10 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 outline-none focus:border-emerald-500/50 transition-colors"
+                  className="w-full px-4 py-3 pr-10 bg-white/5 neon-rgb-border rounded-lg text-sm text-white placeholder:text-white/30 outline-none focus:border-emerald-500/50 transition-colors"
                   placeholder="Enter current password"
                 />
                 <button
@@ -311,7 +312,7 @@ export default function ProfileEditor({ user: initial }: ProfileEditorProps) {
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-10 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 outline-none focus:border-emerald-500/50 transition-colors"
+                  className="w-full px-4 py-3 pr-10 bg-white/5 neon-rgb-border rounded-lg text-sm text-white placeholder:text-white/30 outline-none focus:border-emerald-500/50 transition-colors"
                   placeholder="Enter new password (min 8 characters)"
                 />
                 <button
@@ -334,7 +335,7 @@ export default function ProfileEditor({ user: initial }: ProfileEditorProps) {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 outline-none focus:border-emerald-500/50 transition-colors"
+                className="w-full px-4 py-3 bg-white/5 neon-rgb-border rounded-lg text-sm text-white placeholder:text-white/30 outline-none focus:border-emerald-500/50 transition-colors"
                 placeholder="Confirm new password"
               />
             </div>
@@ -355,7 +356,7 @@ export default function ProfileEditor({ user: initial }: ProfileEditorProps) {
             <button
               onClick={handlePasswordChange}
               disabled={isSavingPassword}
-              className="w-full p-3 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full p-3 rounded-lg neon-rgb-border bg-white/10 hover:bg-white/20 text-white font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSavingPassword ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

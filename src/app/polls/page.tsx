@@ -7,10 +7,11 @@ import { PageTransition } from "@/components/PageTransition";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import PollCard from "@/components/PollCard";
 import Loader from "@/components/Loader";
+import type { PollData } from "@/lib/polls";
 
 export default function PollsPage() {
   const { data: session } = useSession();
-  const [polls, setPolls] = useState<any[]>([]);
+  const [polls, setPolls] = useState<PollData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,7 +36,9 @@ export default function PollsPage() {
         <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="font-display text-3xl font-bold">Polls</h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                <h1 className="font-display text-3xl font-bold">Polls</h1>
+              </div>
               <p className="text-sm text-[var(--color-mute)] mt-1">Vote on community polls</p>
             </div>
             {session && (

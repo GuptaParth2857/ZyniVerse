@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { bestTitle } from "@/lib/anilist";
@@ -25,7 +25,7 @@ export default function Carousel3D({
   accent?: "magenta" | "violet";
   hrefFn: (item: CarouselItem) => string;
 }) {
-  const safeItems = items.filter((item): item is CarouselItem => item != null && item.type != null);
+  const safeItems = useMemo(() => items.filter((item): item is CarouselItem => item != null && item.type != null), [items]);
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [itemWidth, setItemWidth] = useState(220);
@@ -60,13 +60,7 @@ export default function Carousel3D({
     return () => el.removeEventListener("scroll", onScroll);
   }, [safeItems]);
 
-  useEffect(() => {
-    if (isPaused || safeItems.length <= 1) return;
-    const interval = setInterval(() => scroll(1), 4000);
-    return () => clearInterval(interval);
-  }, [isPaused, safeItems.length, itemWidth]);
-
-  function scroll(dir: number) {
+  const scroll = useCallback((dir: number) => {
     const el = trackRef.current;
     if (!el) return;
     const maxScroll = el.scrollWidth - el.clientWidth;
@@ -76,7 +70,13 @@ export default function Carousel3D({
     } else {
       el.scrollBy({ left: dir * (itemWidth + 16) * 2, behavior: "smooth" });
     }
-  }
+  }, [itemWidth]);
+
+  useEffect(() => {
+    if (isPaused || safeItems.length <= 1) return;
+    const interval = setInterval(() => scroll(1), 4000);
+    return () => clearInterval(interval);
+  }, [isPaused, safeItems.length, scroll]);
 
   return (
     <div ref={containerRef} className="relative group/carousel" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
@@ -102,7 +102,7 @@ export default function Carousel3D({
         className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4"
         style={{ perspective: "1200px", scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {safeItems.map((item, i) => {
+        {safeItems.map((item) => {
           const href = hrefFn(item);
           const score = item.averageScore ? (item.averageScore / 10).toFixed(1) : null;
           const sub = item.episodes ? `${item.episodes} ep` : item.chapters ? `${item.chapters} ch` : null;
@@ -114,8 +114,6 @@ export default function Carousel3D({
               href={href}
               score={score}
               sub={sub}
-              index={i}
-              total={items.length}
               scrollPct={scrollPct}
               accentColor={accentColor}
             />
@@ -127,10 +125,10 @@ export default function Carousel3D({
 }
 
 function CarouselCard({
-  item, href, score, sub, index, total, scrollPct, accentColor,
+  item, href, score, sub, scrollPct, accentColor,
 }: {
   item: CarouselItem; href: string; score: string | null; sub: string | null;
-  index: number; total: number; scrollPct: number; accentColor: string;
+  scrollPct: number; accentColor: string;
 }) {
   return (
     <div

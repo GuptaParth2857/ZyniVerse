@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageTransition } from "@/components/PageTransition";
 import ChatBubble from "@/components/ChatBubble";
+import { logError } from "@/lib/logger";
+import { useDmSocket } from "@/hooks/useDmSocket";
 
 interface ConversationSummary {
   id: string;
@@ -44,6 +46,9 @@ export default function MessagesClient() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loadingConvos, setLoadingConvos] = useState(true);
+  const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<{ id: string; username: string; avatar: string | null }[]>([]);
+  const [searching, setSearching] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const fetchConversations = useCallback(async () => {
@@ -52,7 +57,7 @@ export default function MessagesClient() {
       const res = await fetch("/api/chat/conversations");
       const data = await res.json();
       setConversations(data.conversations ?? []);
-    } catch {}
+    } catch (e) { logError(e); }
     setLoadingConvos(false);
   }, []);
 
@@ -61,7 +66,7 @@ export default function MessagesClient() {
       const res = await fetch(`/api/chat/messages?conversationId=${conversationId}&limit=50`);
       const data = await res.json();
       setMessages(data.messages ?? []);
-    } catch {}
+    } catch (e) { logError(e); }
   }, []);
 
   useEffect(() => {
@@ -83,13 +88,31 @@ export default function MessagesClient() {
     if (!activeConvoId) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMessages(activeConvoId);
-    const interval = setInterval(() => fetchMessages(activeConvoId), 10000);
+    fetch("/api/chat/conversations", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversationId: activeConvoId }),
+    }).catch(() => {});
+    const interval = setInterval(() => fetchMessages(activeConvoId), 3000);
     return () => clearInterval(interval);
   }, [activeConvoId, fetchMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useDmSocket(session?.user?.id, (msg) => {
+    if (activeConvoId === msg.conversationId) {
+      setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
+      fetch("/api/chat/conversations", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId: msg.conversationId }),
+      }).catch(() => {});
+    } else {
+      fetchConversations();
+    }
+  });
 
   async function handleSend() {
     if (!input.trim() || !activeConvoId) return;
@@ -111,6 +134,43 @@ export default function MessagesClient() {
     }
   }
 
+  useEffect(() => {
+    if (search.trim().length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/users/search?q=${encodeURIComponent(search.trim())}`);
+        const data = await res.json();
+        setSearchResults(data.users ?? []);
+      } catch (e) { logError(e); }
+      setSearching(false);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  async function handleNewConversation(recipientId: string) {
+    try {
+      const res = await fetch("/api/chat/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipientId }),
+      });
+      const data = await res.json();
+      if (res.ok && data.conversation) {
+        setSearch("");
+        setSearchResults([]);
+        await fetchConversations();
+        setActiveConvoId(data.conversation.id);
+        router.replace(`/messages?conversation=${data.conversation.id}`);
+      }
+    } catch (e) { logError(e); }
+  }
+
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -125,16 +185,48 @@ export default function MessagesClient() {
   return (
     <PageTransition>
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-        <h1 className="font-display text-2xl font-bold mb-6">Messages</h1>
-        <div className="flex rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-hidden" style={{ minHeight: "70vh" }}>
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mb-6">
+          <h1 className="font-display text-2xl font-bold">Messages</h1>
+        </div>
+        <div className="flex rounded-2xl neon-rgb-border bg-[var(--color-panel)] overflow-hidden" style={{ minHeight: "70vh" }}>
           {/* Sidebar */}
           <div className={`${activeConvo ? "hidden" : "flex"} sm:flex w-72 sm:w-80 border-r border-[var(--color-line)] flex-col shrink-0`}>
             <div className="p-3 border-b border-[var(--color-line)]">
-              <input
-                type="text"
-                placeholder="Search conversations..."
-                className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
-              />
+              <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)] shrink-0">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="M21 21l-4.35-4.35" />
+                </svg>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search users to message..."
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-mute)]"
+                />
+              </div>
+              {search.trim().length >= 2 && (
+                <div className="mt-2 overflow-hidden rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)]">
+                  {searching ? (
+                    <div className="px-3 py-2.5 text-xs text-[var(--color-mute)]">Searching...</div>
+                  ) : searchResults.length === 0 ? (
+                    <div className="px-3 py-2.5 text-xs text-[var(--color-mute)]">No users found.</div>
+                  ) : (
+                    searchResults.map((u) => (
+                      <button
+                        key={u.id}
+                        onClick={() => handleNewConversation(u.id)}
+                        className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm hover:bg-white/5 transition-colors"
+                      >
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-violet)] to-[var(--color-magenta)] text-[10px] font-bold text-black shrink-0 overflow-hidden">
+                          {u.username.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="truncate text-[var(--color-ink)]">{u.username}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex-1 overflow-y-auto">
               {loadingConvos ? (

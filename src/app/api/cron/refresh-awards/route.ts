@@ -23,7 +23,7 @@ const NOMINEE_CATEGORY_MAP: Record<string, string> = {
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -79,9 +79,6 @@ export async function GET(req: NextRequest) {
 
     const { nominees, errors: nomineeErrors } = await scrapeAllNominees(currentYear);
     results.errors.push(...nomineeErrors);
-
-    const { AWARD_CATEGORIES } = await import("@/lib/zyni-awards");
-    const allCats = [...AWARD_CATEGORIES];
 
     for (const n of nominees) {
       try {

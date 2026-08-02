@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { bestTitle, searchCharacters } from "@/lib/anilist";
-import type { CharacterBasic, Media } from "@/lib/anilist";
+import type { CharacterBasic, Media, CharacterEdge } from "@/lib/anilist";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ExpandingFlexCard from "@/components/ExpandingFlexCard";
 
@@ -90,7 +90,7 @@ function AnimeGridCard({ media, active, onClick }: { media: Media; active: boole
 
 /* ─── Character row (expandable) ─── */
 function AnimeCharacterRow({ mediaId, visible }: { mediaId: number; visible: boolean }) {
-  const [chars, setChars] = useState<any[] | null>(null);
+  const [chars, setChars] = useState<CharacterEdge[] | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -130,10 +130,10 @@ function AnimeCharacterRow({ mediaId, visible }: { mediaId: number; visible: boo
               <p className="text-xs text-white/20 text-center py-4">No characters found.</p>
             ) : (
               <div className="flex gap-2.5 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
-                {chars?.map((e: any) => (
+                {chars?.map((e) => (
                   <Link key={e.node.id} href={`/character/${e.node.id}`} className="flex-shrink-0 w-[110px] group">
                     <div className="relative aspect-[3/4] rounded-[10px] overflow-hidden bg-[#0a0a14] border border-white/[0.06]">
-                      <Image src={e.node.image?.large || e.node.image?.medium} alt={e.node.name?.full || ""} fill className="object-cover transition-all duration-300 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
+                      <Image src={e.node.image?.large || e.node.image?.medium || ""} alt={e.node.name?.full || ""} fill className="object-cover transition-all duration-300 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
                     </div>
                     <p className="mt-1.5 text-[10px] font-medium text-white/70 leading-tight truncate">{e.node.name?.full}</p>
                     <p className="text-[8px] text-white/30 uppercase tracking-wider">{e.role}</p>
@@ -324,7 +324,9 @@ export default function CharactersBrowsePage() {
                 <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: featColor }} />
                 TOP 10 MOST POPULAR
               </div>
-              <h1 className="font-display text-3xl font-bold sm:text-5xl text-white drop-shadow-lg">{featured.name?.full}</h1>
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                <h1 className="font-display text-3xl font-bold sm:text-5xl text-white drop-shadow-lg">{featured.name?.full}</h1>
+              </div>
               {featured.name?.native && <p className="mt-1 text-base text-white/40">{featured.name.native}</p>}
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {featured.media?.edges?.slice(0, 2).map((e) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useId } from "react";
+import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { shouldShowAds } from "@/lib/ads";
 
@@ -13,11 +13,9 @@ export default function NativeBannerAd({ className = "" }: { className?: string 
   const { data: session, status } = useSession();
   const containerRef = useRef<HTMLDivElement>(null);
   const injectedRef = useRef(false);
-  const uniqueId = useId().replace(/:/g, "");
-  const containerId = `adsterra-native-${uniqueId}`;
 
   const user = session?.user
-    ? { premium: (session.user as any).premium || false }
+    ? { premium: (session.user as { premium?: boolean }).premium === true }
     : undefined;
 
   const showAds = shouldShowAds(user);

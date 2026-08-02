@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { THEME_SONGS } from "@/lib/data/themes";
+import { logError } from "@/lib/logger";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ mediaId: string }> }) {
   const { mediaId } = await params;
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ medi
         } else {
           await prisma.themeSong.create({ data: t });
         }
-      } catch {}
+      } catch (e) { logError(e); }
     }
   }
 

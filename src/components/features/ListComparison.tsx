@@ -79,7 +79,7 @@ export default function ListComparison({ username }: { username: string }) {
           <div className="space-y-1.5">
             {data.sharedMedia.map((item) => (
               <Link key={item.mediaId} href={`/anime/${item.mediaId}`}
-                className="flex items-center gap-3 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all"
+                className="flex items-center gap-3 rounded-lg neon-rgb-border bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all"
               >
                 <span className="font-mono text-xs text-[var(--color-mute)]">#{item.mediaId}</span>
                 <div className="flex items-center gap-2 ml-auto text-xs">
@@ -102,7 +102,7 @@ export default function ListComparison({ username }: { username: string }) {
 
 function StatBox({ label, value, color }: { label: string; value: number; color?: string }) {
   return (
-    <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 text-center">
+    <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-3 text-center">
       <div className="text-xl font-bold font-mono" style={{ color: color || "var(--color-ink)" }}>{value}</div>
       <div className="text-[9px] text-[var(--color-mute)] mt-0.5">{label}</div>
     </div>

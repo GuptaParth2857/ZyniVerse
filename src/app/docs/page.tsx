@@ -33,7 +33,7 @@ const SECTIONS = [
         <p className="text-sm text-[var(--color-mute)] leading-relaxed">
           All API requests require a valid API key sent via the <code className="rounded bg-[var(--color-panel)] px-2 py-0.5 text-[var(--color-cyan)]">Authorization</code> header.
         </p>
-        <div className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 mt-4">
+        <div className="rounded-lg neon-rgb-border bg-[var(--color-panel)] p-4 mt-4">
           <p className="text-xs font-semibold mb-2">Request Header</p>
           <pre className="text-xs text-[var(--color-cyan)] overflow-x-auto">Authorization: Bearer zvn_abc123def456...</pre>
         </div>
@@ -46,7 +46,7 @@ const SECTIONS = [
             <li>Use it in the <code className="rounded bg-[var(--color-panel)] px-1 text-[var(--color-cyan)]">Authorization</code> header of every request</li>
           </ol>
         </div>
-        <div className="mt-4 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
+        <div className="mt-4 rounded-lg neon-rgb-border bg-[var(--color-panel)] p-4">
           <p className="text-xs font-semibold mb-2">Error Response (401 — Missing Key)</p>
           <pre className="text-xs text-[var(--color-mute)] overflow-x-auto">{JSON.stringify({ error: "Missing or invalid API key. Use header: Authorization: Bearer <key>" }, null, 2)}</pre>
         </div>
@@ -106,7 +106,7 @@ const SECTIONS = [
             { name: "Enterprise", price: "₹4,999/mo", requests: "100,000/day", features: ["SLA guarantee", "Dedicated support", "Custom integrations"] },
           ].map((tier) => (
             <motion.div key={tier.name} whileHover={{ y: -4, scale: 1.02 }}
-              className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-center transition-shadow hover:shadow-lg hover:border-[var(--color-cyan)]/30"
+              className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 text-center transition-shadow hover:shadow-lg hover:border-[var(--color-cyan)]/30"
             >
               <h4 className="font-bold text-sm">{tier.name}</h4>
               <p className="text-lg font-bold font-mono text-[var(--color-magenta)] mt-1">{tier.price}</p>
@@ -184,12 +184,12 @@ const SECTIONS = [
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Request</span></p>
-          <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
+          <pre className="rounded-lg neon-rgb-border bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
   https://zyverse.in/api/v1/filler/21</pre>
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Response</span></p>
-          <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">{JSON.stringify({
+          <pre className="rounded-lg neon-rgb-border bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">{JSON.stringify({
             found: true,
             data: {
               title: "One Piece",
@@ -254,12 +254,12 @@ const SECTIONS = [
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Request</span></p>
-          <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
+          <pre className="rounded-lg neon-rgb-border bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
   &quot;https://zyverse.in/api/v1/schedule?hours_back=12&hours_ahead=48&quot;</pre>
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Response</span></p>
-          <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">{JSON.stringify({
+          <pre className="rounded-lg neon-rgb-border bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">{JSON.stringify({
             data: [
               {
                 mediaId: 21,
@@ -316,12 +316,12 @@ const SECTIONS = [
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Request</span></p>
-          <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
+          <pre className="rounded-lg neon-rgb-border bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
   https://zyverse.in/api/v1/dub-status/21</pre>
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Response</span></p>
-          <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">{JSON.stringify({
+          <pre className="rounded-lg neon-rgb-border bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">{JSON.stringify({
             malId: 21,
             available: ["Hindi", "Tamil", "Telugu", "English"],
             total_dub_requests: 42,
@@ -368,12 +368,12 @@ const SECTIONS = [
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Request</span></p>
-          <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
+          <pre className="rounded-lg neon-rgb-border bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">curl -H &quot;Authorization: Bearer zvn_your_key_here&quot; \
   https://zyverse.in/api/v1/anime/21</pre>
         </div>
         <div className="mt-4 space-y-1 text-sm">
           <p><span className="font-semibold text-[var(--color-ink)]">Example Response</span></p>
-          <pre className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">{JSON.stringify({
+          <pre className="rounded-lg neon-rgb-border bg-[var(--color-panel)] p-4 text-xs overflow-x-auto mt-2">{JSON.stringify({
             data: {
               id: 21,
               idMal: 21,
@@ -477,7 +477,9 @@ export default function DocsPage() {
             <motion.h1 initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
               className="font-display text-5xl sm:text-7xl font-black tracking-tight mt-2"
             >
-              Developer Docs
+              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
+                Developer Docs
+              </div>
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
               className="mt-4 text-[var(--color-mute)] max-w-lg mx-auto"
@@ -495,7 +497,7 @@ export default function DocsPage() {
                 className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
                   activeSection === s.id
                     ? "bg-[var(--color-magenta)] text-black shadow-lg"
-                    : "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)]"
+                    : "neon-rgb-border text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)]"
                 }`}
                 onClick={() => setActiveSection(s.id)}
               >
@@ -503,12 +505,12 @@ export default function DocsPage() {
               </a>
             ))}
             <Link href="/docs/changelog"
-              className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
+              className="rounded-full neon-rgb-border px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
             >
               Changelog
             </Link>
             <Link href="/status"
-              className="rounded-full border border-[var(--color-line)] px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
+              className="rounded-full neon-rgb-border px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
             >
               Status
             </Link>
@@ -524,7 +526,7 @@ export default function DocsPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ duration: 0.4, delay: idx * 0.05 }}
-                className="scroll-mt-24 rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6 sm:p-8 hover:border-[var(--color-cyan)]/20 transition-colors"
+                className="scroll-mt-24 rounded-2xl neon-rgb-border bg-[var(--color-panel)] p-6 sm:p-8 hover:border-[var(--color-cyan)]/20 transition-colors"
                 onViewportEnter={() => setActiveSection(section.id)}
               >
                 <div className="flex items-center gap-3 mb-6">
@@ -578,7 +580,7 @@ export default function DocsPage() {
       print(data)` },
               ].map((ex, i) => (
                 <motion.div key={ex.lang} whileHover={{ y: -2 }}
-                  className="group relative rounded-xl border border-[var(--color-line)] bg-[var(--color-void)] overflow-hidden transition-shadow hover:shadow-lg hover:border-[var(--color-cyan)]/30"
+                  className="group relative rounded-xl neon-rgb-border bg-[var(--color-void)] overflow-hidden transition-shadow hover:shadow-lg hover:border-[var(--color-cyan)]/30"
                 >
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--color-line)] bg-[var(--color-panel)]">
                     <p className="text-xs font-semibold flex items-center gap-2">
@@ -598,7 +600,7 @@ export default function DocsPage() {
 
           {/* CTA */}
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="mt-16 text-center rounded-2xl border border-[var(--color-line)] bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] p-8 relative overflow-hidden"
+            className="mt-16 text-center rounded-2xl neon-rgb-border bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] p-8 relative overflow-hidden"
           >
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full pointer-events-none"
               style={{ background: "radial-gradient(circle, rgba(255,45,120,0.06) 0%, transparent 60%)" }}
@@ -612,7 +614,7 @@ export default function DocsPage() {
                 <Link href="/register" className="rounded-xl bg-[var(--color-magenta)] px-6 py-3 text-sm font-bold text-black hover:opacity-90 transition">
                   Create Account
                 </Link>
-                <Link href="/profile" className="rounded-xl border border-[var(--color-line)] px-6 py-3 text-sm font-bold text-[var(--color-ink)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
+                <Link href="/profile" className="rounded-xl neon-rgb-border px-6 py-3 text-sm font-bold text-[var(--color-ink)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors">
                   API Keys
                 </Link>
               </div>

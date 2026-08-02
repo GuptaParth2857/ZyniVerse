@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { sendFriendRequest, getPendingRequests, getFriends } from "@/lib/friend-requests";
+import { sendFriendRequest, getPendingRequests, getSentRequests, getFriends } from "@/lib/friend-requests";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -14,6 +14,10 @@ export async function GET(req: NextRequest) {
   try {
     if (type === "pending") {
       const requests = await getPendingRequests(session.user.id);
+      return NextResponse.json({ requests });
+    }
+    if (type === "sent") {
+      const requests = await getSentRequests(session.user.id);
       return NextResponse.json({ requests });
     }
     const friends = await getFriends(session.user.id);
@@ -37,7 +41,7 @@ export async function POST(req: NextRequest) {
   try {
     const result = await sendFriendRequest(session.user.id, receiverId);
     return NextResponse.json(result);
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message || "Failed" }, { status: 400 });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Failed" }, { status: 400 });
   }
 }

@@ -29,8 +29,6 @@ export async function GET() {
   const hoursWatched = Math.round(totalEpisodes * 0.42 * 10) / 10;
   const avgEpisodesPerDay = totalDays > 0 ? Math.round((totalEpisodes / totalDays) * 10) / 10 : 0;
 
-  const genreBreakdown: Record<string, number> = {};
-  const formatBreakdown: Record<string, number> = {};
   const statusBreakdown: Record<string, number> = {};
 
   for (const e of entries) {
@@ -71,7 +69,7 @@ export async function GET() {
   return NextResponse.json({
     totalAnime, completed, totalEpisodes, hoursWatched, avgEpisodesPerDay,
     currentStreak, totalDays,
-    genreBreakdown, formatBreakdown, statusBreakdown,
+    statusBreakdown,
     scoreDistribution: scoreDist,
     yearlyActivity: Object.entries(yearlyActivity).map(([year, count]) => ({ year: parseInt(year), count })),
   });

@@ -9,7 +9,7 @@ import type { Media } from "@/lib/anilist";
 
 export default function Hero3D({ items }: { items: Media[] }) {
   const [active, setActive] = useState(0);
-  const [direction, setDirection] = useState(1);
+  const [, setDirection] = useState(1);
   const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
   const total = Math.min(items.length, 8);
 

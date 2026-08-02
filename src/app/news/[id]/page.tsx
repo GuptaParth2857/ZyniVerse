@@ -114,9 +114,11 @@ export default function NewsDetailPage() {
           ))}
         </div>
 
-        <h1 className="font-display text-2xl sm:text-3xl font-bold leading-tight text-white mb-3">
-          {item.title}
-        </h1>
+        <div className="neon-rgb-border rounded-xl px-4 py-2">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold leading-tight text-white">
+            {item.title}
+          </h1>
+        </div>
 
         <p className="text-sm text-[var(--color-mute)] leading-relaxed max-w-3xl mb-4">
           {item.summary}
@@ -141,7 +143,7 @@ export default function NewsDetailPage() {
         </div>
       )}
 
-      <div className="mt-12 rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6 text-center">
+      <div className="mt-12 rounded-2xl neon-rgb-border bg-[var(--color-panel)] p-6 text-center">
         <p className="text-xs text-[var(--color-mute)] mb-3">
           Originally published on {item.source === "News" ? "Anime News Network" : "MyAnimeList"}
         </p>
@@ -149,7 +151,7 @@ export default function NewsDetailPage() {
           href={item.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--color-cyan)]/20 px-5 py-2 text-xs font-bold text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 transition-all"
+          className="inline-flex items-center gap-2 rounded-full neon-rgb-border px-5 py-2 text-xs font-bold text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 transition-all"
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
           View Original Article

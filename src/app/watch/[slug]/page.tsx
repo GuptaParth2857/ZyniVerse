@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
 import { getStreamingSources } from "@/lib/streaming";
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const media = await getAnimeDetailFull(mediaId);
     const title = bestTitle(media.title);
     
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
     return {
       title: `Where to Watch ${title} in India — Streaming, Hindi Dub & More | ZyniVerse`,
       description: `Complete guide to watch ${title} in India. Find streaming platforms, Hindi dub availability, and where to watch legally.`,
@@ -27,11 +29,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: `Where to Watch ${title} in India | ZyniVerse`,
         description: `Stream ${title} on Crunchyroll, Netflix, JioHotstar and more. Hindi dub info included.`,
         images: [media.coverImage?.extraLarge || media.coverImage?.large || ""],
+        url: `${baseUrl}/watch/${slug}`,
       },
+      alternates: { canonical: `${baseUrl}/watch/${slug}` },
       twitter: {
         title: `Where to Watch ${title} in India | ZyniVerse`,
         description: `Stream ${title} on Crunchyroll, Netflix, JioHotstar and more. Hindi dub info included.`,
       },
+      robots: { index: true, follow: true },
     };
   } catch {
     return {};
@@ -67,28 +72,32 @@ export default async function WatchGuidePage({ params }: Props) {
         </nav>
 
         {/* Header */}
-        <div className="mb-8 flex gap-6">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:gap-6">
           {media.coverImage?.extraLarge && (
-            <img
+            <Image
               src={media.coverImage.extraLarge}
               alt={title}
-              className="h-48 w-32 flex-shrink-0 rounded-xl object-cover shadow-lg"
+              width={128}
+              height={192}
+              className="mx-auto h-48 w-32 flex-shrink-0 rounded-xl object-cover shadow-lg sm:mx-0"
             />
           )}
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">
               Watch Guide — India
             </p>
-            <h1 className="font-display text-2xl font-black sm:text-3xl tracking-tight mt-1">
-              Where to Watch {title} in India
-            </h1>
+            <div className="neon-rgb-border rounded-xl px-4 py-2">
+              <h1 className="font-display text-2xl font-black sm:text-3xl tracking-tight">
+                Where to Watch {title} in India
+              </h1>
+            </div>
             <p className="mt-2 text-sm text-[var(--color-mute)]">
               Complete guide to streaming platforms, Hindi dub availability, and legal viewing options.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {media.genres?.slice(0, 4).map((g: any) => (
-                <span key={g.name} className="rounded-full bg-[var(--color-surface2)] px-2.5 py-0.5 text-[10px] text-[var(--color-mute)]">
-                  {g.name}
+              {media.genres?.slice(0, 4).map((g) => (
+                <span key={g} className="rounded-full bg-[var(--color-surface2)] px-2.5 py-0.5 text-[10px] text-[var(--color-mute)]">
+                  {g}
                 </span>
               ))}
             </div>
@@ -131,7 +140,7 @@ export default async function WatchGuidePage({ params }: Props) {
                   href={source.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-4 rounded-xl border border-[var(--color-surface2)] bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)] hover:shadow-lg hover:shadow-[var(--color-cyan)]/5"
+                  className="flex items-center gap-4 rounded-xl neon-rgb-border bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)] hover:shadow-lg hover:shadow-[var(--color-cyan)]/5"
                 >
                   <div className="flex-1">
                     <h3 className="text-sm font-bold">{source.name}</h3>
@@ -150,7 +159,7 @@ export default async function WatchGuidePage({ params }: Props) {
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-[var(--color-surface2)] bg-[var(--color-surface1)] p-6 text-center">
+            <div className="rounded-xl neon-rgb-border bg-[var(--color-surface1)] p-6 text-center">
               <p className="text-sm text-[var(--color-mute)]">No streaming sources found for this anime in India.</p>
               <p className="mt-2 text-xs text-[var(--color-mute)]">
                 Check back later or request us to add this anime to our database.
@@ -165,28 +174,28 @@ export default async function WatchGuidePage({ params }: Props) {
           <div className="grid gap-3 sm:grid-cols-2">
             <Link
               href={`/anime/${mediaId}`}
-              className="rounded-xl border border-[var(--color-surface2)] bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)]"
+              className="rounded-xl neon-rgb-border bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)]"
             >
               <h3 className="text-sm font-bold">Anime Details</h3>
               <p className="text-xs text-[var(--color-mute)]">View full anime information</p>
             </Link>
             <Link
               href={`/filler/${mediaId}`}
-              className="rounded-xl border border-[var(--color-surface2)] bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)]"
+              className="rounded-xl neon-rgb-border bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)]"
             >
               <h3 className="text-sm font-bold">Filler Guide</h3>
               <p className="text-xs text-[var(--color-mute)]">Check which episodes to skip</p>
             </Link>
             <Link
               href={`/watch-order/${mediaId}`}
-              className="rounded-xl border border-[var(--color-surface2)] bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)]"
+              className="rounded-xl neon-rgb-border bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)]"
             >
               <h3 className="text-sm font-bold">Watch Order</h3>
               <p className="text-xs text-[var(--color-mute)]">Recommended viewing order</p>
             </Link>
             <Link
               href={`/recommendations`}
-              className="rounded-xl border border-[var(--color-surface2)] bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)]"
+              className="rounded-xl neon-rgb-border bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)]"
             >
               <h3 className="text-sm font-bold">Similar Anime</h3>
               <p className="text-xs text-[var(--color-mute)]">Get recommendations</p>

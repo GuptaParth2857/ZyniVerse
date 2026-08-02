@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRef, useCallback } from "react";
 import { bestTitle } from "@/lib/anilist";
+import { getDubLanguages } from "@/lib/dub-languages";
 import { useWatchlist } from "./WatchlistProvider";
 import CountdownChip from "./CountdownChip";
 import type { Media } from "@/lib/anilist";
@@ -39,6 +40,7 @@ export default function AnimeCard({ anime }: { anime: Media }) {
     el.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) scale(1)";
   }, []);
 
+  const dubLangs = anime.idMal ? getDubLanguages(anime.idMal) : null;
   const href = anime.type === "MANGA" ? `/manga/${anime.id}` : `/anime/${anime.id}`;
 
   return (
@@ -79,6 +81,20 @@ export default function AnimeCard({ anime }: { anime: Media }) {
               </span>
             ) : null}
 
+            {dubLangs && (
+              <div className="absolute right-2 bottom-14 flex flex-col gap-1 items-end">
+                {dubLangs.hasHindi && (
+                  <span className="bg-orange-500/80 text-white text-[8px] font-bold px-1.5 py-0.5 rounded backdrop-blur-sm">HI</span>
+                )}
+                {dubLangs.hasTamil && (
+                  <span className="bg-blue-500/80 text-white text-[8px] font-bold px-1.5 py-0.5 rounded backdrop-blur-sm">TA</span>
+                )}
+                {dubLangs.hasTelugu && (
+                  <span className="bg-green-500/80 text-white text-[8px] font-bold px-1.5 py-0.5 rounded backdrop-blur-sm">TE</span>
+                )}
+              </div>
+            )}
+
             <div className="absolute inset-x-0 bottom-0 p-3">
               <h3 className="font-display text-sm font-semibold leading-tight text-white line-clamp-2 drop-shadow-lg">
                 {title}
@@ -114,7 +130,7 @@ export default function AnimeCard({ anime }: { anime: Media }) {
         onClick={() => toggle(anime)}
         aria-label={saved ? "Remove from watchlist" : "Add to watchlist"}
         aria-pressed={saved}
-        className={`absolute right-2 top-2 z-20 flex h-9 w-9 sm:h-7 sm:w-7 items-center justify-center rounded-full ${
+        className={`absolute right-2 top-12 z-20 flex h-9 w-9 sm:h-7 sm:w-7 items-center justify-center rounded-full ${
           saved ? "glass-bookmark active" : "glass-bookmark text-white/70"
         }`}
       >

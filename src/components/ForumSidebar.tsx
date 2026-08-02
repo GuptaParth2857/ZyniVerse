@@ -11,9 +11,17 @@ interface Category {
   threadCount: number;
 }
 
+interface RecentThread {
+  id: string;
+  title: string;
+  postCount: number;
+  viewCount: number;
+  _count?: { posts: number };
+}
+
 export default function ForumSidebar() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [recentThreads, setRecentThreads] = useState<any[]>([]);
+  const [recentThreads, setRecentThreads] = useState<RecentThread[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<number | null>(null);
 
   useEffect(() => {
@@ -57,10 +65,8 @@ export default function ForumSidebar() {
   return (
     <div className="space-y-5">
       {/* Online Status */}
-      <div className="neon-premium rounded-xl">
-        <div className="neon-premium-track rounded-xl" />
-        <div className="neon-premium-overlay rounded-[10.5px]" />
-        <div className="neon-premium-content p-5 relative">
+      <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+        <div className="p-5 relative">
           <div className="flex items-center gap-2 mb-3">
             <div className="relative">
               <div className="h-2.5 w-2.5 rounded-full bg-[#00ff7f]" style={{ boxShadow: "0 0 10px #00ff7f" }} />
@@ -73,10 +79,8 @@ export default function ForumSidebar() {
       </div>
 
       {/* Categories */}
-      <div className="neon-premium rounded-xl">
-        <div className="neon-premium-track rounded-xl" />
-        <div className="neon-premium-overlay rounded-[10.5px]" />
-        <div className="neon-premium-content p-5 relative">
+      <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+        <div className="p-5 relative">
           <h3 className="font-display text-xs font-bold uppercase tracking-wider text-[#ff00ff] mb-4 flex items-center gap-2" style={{ textShadow: "0 0 10px rgba(255,0,255,0.3)" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M4 6h16M4 12h16M4 18h16" />
@@ -106,10 +110,8 @@ export default function ForumSidebar() {
 
       {/* Trending Threads */}
       {recentThreads.length > 0 && (
-        <div className="neon-premium rounded-xl">
-          <div className="neon-premium-track rounded-xl" />
-          <div className="neon-premium-overlay rounded-[10.5px]" />
-          <div className="neon-premium-content p-5 relative">
+        <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+          <div className="p-5 relative">
             <h3 className="font-display text-xs font-bold uppercase tracking-wider text-[#ff00ff] mb-4 flex items-center gap-2" style={{ textShadow: "0 0 10px rgba(255,0,255,0.3)" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
@@ -117,7 +119,7 @@ export default function ForumSidebar() {
               Trending Now
             </h3>
             <div className="space-y-2">
-              {recentThreads.slice(0, 5).map((t: any, i: number) => (
+              {recentThreads.slice(0, 5).map((t: RecentThread, i: number) => (
                 <Link key={t.id} href={`/forum/thread/${t.id}`}
                   className="group flex items-start gap-3 rounded-xl px-3 py-2.5 hover:bg-white/5 transition-all"
                 >
@@ -150,10 +152,8 @@ export default function ForumSidebar() {
       )}
 
       {/* Quick Links */}
-      <div className="neon-premium rounded-xl">
-        <div className="neon-premium-track rounded-xl" />
-        <div className="neon-premium-overlay rounded-[10.5px]" />
-        <div className="neon-premium-content p-5 relative">
+      <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+        <div className="p-5 relative">
           <h3 className="font-display text-xs font-bold uppercase tracking-wider text-[#00ffff] mb-4" style={{ textShadow: "0 0 10px rgba(0,255,255,0.3)" }}>Quick Links</h3>
           <div className="space-y-2">
             {[
@@ -179,10 +179,8 @@ export default function ForumSidebar() {
       </div>
 
       {/* Forum Rules */}
-      <div className="neon-premium rounded-xl">
-        <div className="neon-premium-track rounded-xl" />
-        <div className="neon-premium-overlay rounded-[10.5px]" />
-        <div className="neon-premium-content p-5 relative">
+      <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
+        <div className="p-5 relative">
           <h3 className="font-display text-xs font-bold uppercase tracking-wider text-[#ffd700] mb-3 flex items-center gap-2" style={{ textShadow: "0 0 10px rgba(255,215,0,0.3)" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />

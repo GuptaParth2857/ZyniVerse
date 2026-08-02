@@ -5,15 +5,15 @@ interface InflightPromise<T> {
   timestamp: number;
 }
 
-const cache = new Map<string, CacheEntry<any>>();
-const inflight = new Map<string, InflightPromise<any>>();
+const cache = new Map<string, CacheEntry<unknown>>();
+const inflight = new Map<string, InflightPromise<unknown>>();
 
 const CACHE_TTL = 5 * 60 * 1000;
 const INFLIGHT_TTL = 15_000;
 
 export function getCached<T>(key: string): T | null {
   const entry = cache.get(key);
-  if (entry && Date.now() < entry.expiresAt) return entry.data;
+  if (entry && Date.now() < entry.expiresAt) return entry.data as T;
   cache.delete(key);
   return null;
 }
@@ -28,7 +28,7 @@ export async function dedupedFetch<T>(key: string, fetcher: () => Promise<T>, tt
 
   const existing = inflight.get(key);
   if (existing && Date.now() - existing.timestamp < INFLIGHT_TTL) {
-    return existing.promise;
+    return existing.promise as Promise<T>;
   }
 
   const promise = fetcher().then((data) => {

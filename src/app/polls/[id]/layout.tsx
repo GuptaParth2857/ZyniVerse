@@ -5,7 +5,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
+  const { id: _id } = await params;
 
   return {
     title: `Anime Poll — Vote Now | ZyniVerse`,

@@ -804,7 +804,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     releaseYear: 2017,
     episodes: 1,
     platforms: [
-      { name: "Prime Video", logoColor: "#00A8E1", available: true, url: "https://www.amazon.com/Immortal-English-Subtitled-Takuya-Kimura/dp/B07774DPDQ", subtitle: "Japanese Audio + Hindi Sub" },
+      { name: "Prime Video", logoColor: "#00A8E1", available: true, url: "https://www.amazon.in/Immortal-English-Subtitled-Takuya-Kimura/dp/B07774DPDQ", subtitle: "Japanese Audio + Hindi Sub" },
     ],
     languages: ["Japanese", "Hindi"],
     genres: ["Action", "Historical", "Samurai"],

@@ -179,7 +179,7 @@ export async function getDoujinshiTags(): Promise<string[]> {
   if (!res.ok) return [];
   const json = await res.json();
   return (json.data || [])
-    .map((tag: any) => Object.values(tag.attributes?.name || {})[0])
-    .filter(Boolean)
+    .map((tag: { attributes?: { name?: Record<string, string> } }) => Object.values(tag.attributes?.name || {})[0])
+    .filter((v: unknown): v is string => typeof v === "string")
     .sort();
 }

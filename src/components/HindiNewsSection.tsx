@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 interface HindiNewsItem {
   id: string;
@@ -85,9 +86,11 @@ export default function HindiNewsSection() {
           className="overflow-hidden rounded-xl border border-[var(--color-surface2)] bg-[var(--color-surface1)] transition-all hover:border-[var(--color-cyan)]"
         >
           <div className="flex gap-3 p-3">
-            <img
+            <Image
               src={item.image}
               alt={item.title}
+              width={64}
+              height={64}
               className="h-16 w-16 flex-shrink-0 rounded-lg object-cover"
             />
             <div className="flex-1 min-w-0">

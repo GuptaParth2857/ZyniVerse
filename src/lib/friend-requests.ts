@@ -1,11 +1,15 @@
 import { prisma } from "./prisma";
+import { createNotification } from "./notifications";
 
 export async function sendFriendRequest(senderId: string, receiverId: string) {
   if (senderId === receiverId) throw new Error("Cannot send request to yourself");
 
-  const existing = await prisma.friendRequest.findUnique({
-    where: { senderId_receiverId: { senderId, receiverId } },
-  });
+  const [sender, existing] = await Promise.all([
+    prisma.user.findUnique({ where: { id: senderId }, select: { username: true } }),
+    prisma.friendRequest.findUnique({
+      where: { senderId_receiverId: { senderId, receiverId } },
+    }),
+  ]);
   if (existing) throw new Error("Request already sent");
 
   const reverse = await prisma.friendRequest.findUnique({
@@ -17,11 +21,33 @@ export async function sendFriendRequest(senderId: string, receiverId: string) {
       where: { senderId_receiverId: { senderId: receiverId, receiverId: senderId } },
       data: { status: "accepted" },
     });
+    const receiver = await prisma.user.findUnique({ where: { id: receiverId }, select: { username: true } });
+    await Promise.all([
+      createNotification({
+        userId: senderId,
+        type: "FRIEND",
+        title: `You and @${receiver?.username ?? "them"} are now friends`,
+        link: "/friends",
+      }),
+      createNotification({
+        userId: receiverId,
+        type: "FRIEND",
+        title: `You and @${sender?.username ?? "them"} are now friends`,
+        link: "/friends",
+      }),
+    ]);
     return { status: "accepted" };
   }
 
   await prisma.friendRequest.create({
     data: { senderId, receiverId, status: "pending" },
+  });
+  await createNotification({
+    userId: receiverId,
+    type: "FRIEND",
+    title: `@${sender?.username ?? "Someone"} sent you a friend request`,
+    body: "Accept or decline it from the Friends page.",
+    link: "/friends",
   });
   return { status: "pending" };
 }
@@ -33,13 +59,61 @@ export async function respondToRequest(requestId: string, userId: string, accept
 
   const status = accept ? "accepted" : "rejected";
   await prisma.friendRequest.update({ where: { id: requestId }, data: { status } });
+
+  if (accept) {
+    const receiver = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
+    await createNotification({
+      userId: req.senderId,
+      type: "FRIEND",
+      title: `@${receiver?.username ?? "Someone"} accepted your friend request`,
+      link: "/friends",
+    });
+  }
   return { status };
+}
+
+export async function getFriendStatus(userId: string, otherId: string) {
+  if (userId === otherId) return { status: "self" as const };
+
+  const [mine, theirs] = await Promise.all([
+    prisma.friendRequest.findUnique({
+      where: { senderId_receiverId: { senderId: userId, receiverId: otherId } },
+    }),
+    prisma.friendRequest.findUnique({
+      where: { senderId_receiverId: { senderId: otherId, receiverId: userId } },
+    }),
+  ]);
+
+  if (mine?.status === "accepted" || theirs?.status === "accepted") {
+    return { status: "friends" as const };
+  }
+  if (mine?.status === "pending") {
+    return { status: "pending-sent" as const, requestId: mine.id };
+  }
+  if (theirs?.status === "pending") {
+    const sender = await prisma.user.findUnique({ where: { id: otherId }, select: { username: true } });
+    return {
+      status: "pending-received" as const,
+      requestId: theirs.id,
+      senderName: sender?.username ?? null,
+    };
+  }
+  return { status: "none" as const };
 }
 
 export async function getPendingRequests(userId: string) {
   const requests = await prisma.friendRequest.findMany({
     where: { receiverId: userId, status: "pending" },
     include: { sender: { select: { id: true, username: true, avatar: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+  return requests;
+}
+
+export async function getSentRequests(userId: string) {
+  const requests = await prisma.friendRequest.findMany({
+    where: { senderId: userId, status: "pending" },
+    include: { receiver: { select: { id: true, username: true, avatar: true } } },
     orderBy: { createdAt: "desc" },
   });
   return requests;

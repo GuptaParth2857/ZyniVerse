@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { logError } from "@/lib/logger";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
@@ -72,7 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.6,
     }));
-  } catch {}
+  } catch (e) { logError(e); }
 
   // Dynamic: Wiki pages
   let wikiPages: MetadataRoute.Sitemap = [];
@@ -89,7 +90,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.5,
     }));
-  } catch {}
+  } catch (e) { logError(e); }
 
   // Dynamic: Cosplay entries
   let cosplayPages: MetadataRoute.Sitemap = [];
@@ -106,7 +107,56 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.3,
     }));
-  } catch {}
+  } catch (e) { logError(e); }
+
+  // Dynamic: Forum threads
+  let forumPages: MetadataRoute.Sitemap = [];
+  try {
+    const threads = await prisma.forumThread.findMany({
+      where: { isDeleted: false },
+      select: { id: true, updatedAt: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+      take: 500,
+    });
+    forumPages = threads.map((t) => ({
+      url: `${BASE_URL}/forum/thread/${t.id}`,
+      lastModified: t.updatedAt || t.createdAt || now,
+      changeFrequency: "weekly" as const,
+      priority: 0.5,
+    }));
+  } catch (e) { logError(e); }
+
+  // Dynamic: Events
+  let eventPages: MetadataRoute.Sitemap = [];
+  try {
+    const events = await prisma.animeEvent.findMany({
+      where: {},
+      select: { slug: true, updatedAt: true, startDate: true },
+      orderBy: { startDate: "desc" },
+      take: 100,
+    });
+    eventPages = events.map((e) => ({
+      url: `${BASE_URL}/events/${e.slug}`,
+      lastModified: e.updatedAt || now,
+      changeFrequency: "monthly" as const,
+      priority: 0.4,
+    }));
+  } catch (e) { logError(e); }
+
+  // Dynamic: Anime filler pages (high SEO value)
+  const fillerAnimeIds = [
+    20, 21, 30, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
+    1100, 1200, 1300, 1400, 1500, 1535, 1544, 1575, 1600, 1649, 1700,
+    1735, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2472, 2600, 2700,
+    2900, 3000, 3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900,
+    4000, 4100, 4200, 4300, 4400, 4500, 4600, 4700, 4800, 4900, 5000,
+  ];
+  const fillerPages: MetadataRoute.Sitemap = fillerAnimeIds.map((id) => ({
+    url: `${BASE_URL}/anime/${id}/filler`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
 
   // Dynamic: Wiki seed data (from seed.ts)
   const wikiSeedSlugs = [
@@ -148,5 +198,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...wikiSeedPages,
     ...watchOrderPages,
     ...cosplayPages,
+    ...forumPages,
+    ...eventPages,
+    ...fillerPages,
   ];
 }

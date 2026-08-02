@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatBubble from "./ChatBubble";
+import { logError } from "@/lib/logger";
+import { useDmSocket } from "@/hooks/useDmSocket";
 
 interface ConversationSummary {
   id: string;
@@ -53,7 +55,7 @@ export default function ChatWidget() {
       const res = await fetch("/api/chat/unread");
       const data = await res.json();
       setUnreadTotal(data.count ?? 0);
-    } catch {}
+    } catch (e) { logError(e); }
   }, []);
 
   const fetchConversations = useCallback(async () => {
@@ -62,7 +64,7 @@ export default function ChatWidget() {
       const res = await fetch("/api/chat/conversations");
       const data = await res.json();
       setConversations(data.conversations ?? []);
-    } catch {}
+    } catch (e) { logError(e); }
     setLoadingConvos(false);
   }, []);
 
@@ -71,16 +73,27 @@ export default function ChatWidget() {
       const res = await fetch(`/api/chat/messages?conversationId=${conversationId}&limit=50`);
       const data = await res.json();
       setMessages(data.messages ?? []);
-    } catch {}
+    } catch (e) { logError(e); }
   }, []);
 
   useEffect(() => {
     if (!session?.user?.id) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUnreadTotal();
-    const interval = setInterval(fetchUnreadTotal, 10000);
+    const interval = setInterval(fetchUnreadTotal, 5000);
     return () => clearInterval(interval);
   }, [session, fetchUnreadTotal]);
+
+  useDmSocket(session?.user?.id, (msg) => {
+    if (open && view === "messages" && activeConvo === msg.conversationId) {
+      setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
+      markAsRead(msg.conversationId);
+      fetchUnreadTotal();
+    } else {
+      setUnreadTotal((t) => t + 1);
+      if (open && view === "list") fetchConversations();
+    }
+  });
 
   useEffect(() => {
     if (!open || !session?.user?.id) return;
@@ -95,7 +108,7 @@ export default function ChatWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversationId }),
       });
-    } catch {}
+    } catch (e) { logError(e); }
   }
 
   useEffect(() => {
@@ -106,7 +119,7 @@ export default function ChatWidget() {
 
     const interval = setInterval(() => {
       fetchMessages(activeConvo);
-    }, 10000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [activeConvo, open, fetchMessages]);
 

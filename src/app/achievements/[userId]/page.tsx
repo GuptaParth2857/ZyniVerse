@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { PageTransition } from "@/components/PageTransition";
 import AchievementGrid from "@/components/AchievementGrid";
 import Loader from "@/components/Loader";
@@ -41,7 +42,7 @@ export default function UserAchievementsPage() {
         <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
           <div className="flex items-center gap-4">
             {user?.avatar && (
-              <img src={user.avatar} alt={user.username} className="h-16 w-16 rounded-full border-2 border-[#8a2be2]" style={{ boxShadow: "0 0 20px rgba(138,43,226,0.4)" }} />
+              <Image src={user.avatar} alt={user.username} width={64} height={64} className="h-16 w-16 rounded-full border-2 border-[#8a2be2]" style={{ boxShadow: "0 0 20px rgba(138,43,226,0.4)" }} />
             )}
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#8a2be2]" style={{ textShadow: "0 0 10px rgba(138,43,226,0.5)" }}>{/* Achievements */}</p>

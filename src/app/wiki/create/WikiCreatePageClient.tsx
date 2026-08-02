@@ -44,12 +44,12 @@ export default function WikiCreatePageClient() {
 
   return (
     <div>
-      {error && (
-        <div className="mx-auto max-w-4xl px-4 pt-4">
-          <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-400">{error}</div>
-        </div>
-      )}
-      <WikiEditor onSave={handleSave} />
+      <div className="neon-rgb-border rounded-xl mx-auto max-w-4xl px-4 py-6">
+        {error && (
+          <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-400">{error}</div>
+        )}
+        <WikiEditor onSave={handleSave} />
+      </div>
       {saving && (
         <div className="fixed bottom-8 right-8 rounded-xl bg-[var(--color-magenta)] px-4 py-2 text-sm font-bold text-black shadow-lg">
           Creating...

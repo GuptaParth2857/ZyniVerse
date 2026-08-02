@@ -55,7 +55,7 @@ export default function TierListGrid() {
             className={`rounded-lg px-5 py-2.5 text-sm font-medium transition-colors ${
               sort === opt.value
                 ? "bg-[var(--color-cyan)] text-black"
-                : "border border-[var(--color-line)] text-[var(--color-mute)] hover:text-[var(--color-ink)]"
+                : "neon-rgb-border text-[var(--color-mute)] hover:text-[var(--color-ink)]"
             }`}
           >
             {opt.label}
@@ -86,7 +86,7 @@ export default function TierListGrid() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm disabled:opacity-30"
+            className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm disabled:opacity-30"
           >
             Previous
           </button>
@@ -96,7 +96,7 @@ export default function TierListGrid() {
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="rounded-lg border border-[var(--color-line)] px-5 py-2.5 text-sm disabled:opacity-30"
+            className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm disabled:opacity-30"
           >
             Next
           </button>
