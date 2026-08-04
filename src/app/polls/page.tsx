@@ -23,11 +23,15 @@ export default function PollsPage() {
   }, []);
 
   async function handleVote(pollId: string, optionId: string) {
-    await fetch(`/api/polls/${pollId}/vote`, {
+    const res = await fetch(`/api/polls/${pollId}/vote`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ optionId }),
     });
+    if (res.ok) {
+      const data = await res.json();
+      setPolls((prev) => prev.map((p) => (p.id === pollId ? data.poll : p)));
+    }
   }
 
   return (
@@ -59,12 +63,13 @@ export default function PollsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {polls.map((poll) => (
+              {polls.map((poll, i) => (
                 <PollCard
                   key={poll.id}
                   poll={poll}
                   onVote={(optionId) => handleVote(poll.id, optionId)}
                   userId={session?.user?.id}
+                  index={i}
                 />
               ))}
             </div>

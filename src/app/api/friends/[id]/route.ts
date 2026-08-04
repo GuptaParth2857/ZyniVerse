@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { respondToRequest, removeFriend } from "@/lib/friend-requests";
+import { respondToRequest, removeFriend, cancelFriendRequest } from "@/lib/friend-requests";
 
 export async function PUT(
   req: NextRequest,
@@ -33,8 +33,9 @@ export async function DELETE(
 
   const { id } = await params;
   try {
-    await removeFriend(session.user.id, id);
-    return NextResponse.json({ ok: true });
+    const cancelled = await cancelFriendRequest(session.user.id, id);
+    if (!cancelled) await removeFriend(session.user.id, id);
+    return NextResponse.json({ ok: true, cancelled });
   } catch {
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }

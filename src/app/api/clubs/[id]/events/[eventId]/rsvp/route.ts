@@ -9,7 +9,7 @@ export async function POST(
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { eventId } = await params;
+  const { id: clubId, eventId } = await params;
   const { status } = await req.json();
   if (!["going", "maybe", "cant_go"].includes(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
@@ -20,6 +20,11 @@ export async function POST(
     update: { status },
     create: { eventId, userId: session.user.id, status },
   });
+
+  await prisma.clubMember.update({
+    where: { clubId_userId: { clubId, userId: session.user.id } },
+    data: { points: { increment: 3 } },
+  }).catch(() => {});
 
   return NextResponse.json({ rsvp });
 }

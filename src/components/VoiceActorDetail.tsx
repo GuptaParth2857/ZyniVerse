@@ -59,7 +59,7 @@ export default function VoiceActorDetail({ id }: { id: string }) {
               <div className="relative">
                 <div className="absolute -inset-3 rounded-full opacity-40 blur-2xl" style={{ background: accent }} />
                 <div className="relative h-40 w-40 sm:h-48 sm:w-48 overflow-hidden rounded-full border-4" style={{ borderColor: accent }}>
-                  <Image src={actor.image || ""} alt={actor.name} fill className="object-cover" sizes="(max-width: 640px) 160px, 192px" />
+                  <Image src={actor.image || ""} alt={actor.name} fill referrerPolicy="no-referrer" className="object-cover" sizes="(max-width: 640px) 160px, 192px" />
                 </div>
               </div>
             </div>
@@ -143,33 +143,36 @@ function StatCard({ accent, label, value }: { accent: string; label: string; val
 }
 
 function RoleCard({ role }: { role: VoiceActorRole }) {
-  return (
-    <Link href={`/anime/${role.animeId}`} className="group block">
-      <div className="relative overflow-hidden rounded-xl neon-rgb-border bg-[var(--color-panel)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-        <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-void)]">
-          {role.animeImage ? (
-            <Image src={role.animeImage} alt={role.animeTitle} fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
-          ) : (
-            <div className="flex h-full items-center justify-center p-4 text-center text-xs text-[var(--color-mute)]">
-              {role.animeTitle}
-            </div>
-          )}
-          <div className="absolute top-2 left-2">
-            <span className="rounded-full bg-black/70 px-2 py-0.5 text-[9px] font-semibold capitalize backdrop-blur">
-              {role.roleType}
-            </span>
+  const content = (
+    <div className="relative overflow-hidden rounded-xl neon-rgb-border bg-[var(--color-panel)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+      <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-void)]">
+        {role.animeImage ? (
+          <Image src={role.animeImage} alt={role.animeTitle} fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
+        ) : (
+          <div className="flex h-full items-center justify-center p-4 text-center text-xs text-[var(--color-mute)]">
+            {role.animeTitle}
           </div>
-          <div className="absolute top-2 right-2">
-            <span className="rounded-full bg-[var(--color-magenta)]/80 px-2 py-0.5 text-[9px] font-semibold text-black backdrop-blur">
-              {role.language}
-            </span>
-          </div>
+        )}
+        <div className="absolute top-2 left-2">
+          <span className="rounded-full bg-black/70 px-2 py-0.5 text-[9px] font-semibold capitalize backdrop-blur">
+            {role.roleType}
+          </span>
         </div>
-        <div className="p-2.5 space-y-1">
-          <p className="text-xs font-bold truncate">{role.characterName}</p>
-          <p className="text-[10px] text-[var(--color-mute)] truncate">{role.animeTitle}</p>
+        <div className="absolute top-2 right-2">
+          <span className="rounded-full bg-[var(--color-magenta)]/80 px-2 py-0.5 text-[9px] font-semibold text-black backdrop-blur">
+            {role.language}
+          </span>
         </div>
       </div>
-    </Link>
+      <div className="p-2.5 space-y-1">
+        <p className="text-xs font-bold truncate">{role.characterName}</p>
+        <p className="text-[10px] text-[var(--color-mute)] truncate">{role.animeTitle}</p>
+      </div>
+    </div>
+  );
+  return role.animeId > 0 ? (
+    <Link href={`/anime/${role.animeId}`} className="group block">{content}</Link>
+  ) : (
+    <div className="group block">{content}</div>
   );
 }

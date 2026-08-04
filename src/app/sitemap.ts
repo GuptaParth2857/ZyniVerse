@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
+import { getPopular, getMangaPopular, getPopularCharacters } from "@/lib/anilist";
+import { SHUT_DOWN_SITES } from "@/lib/data/dead-site-alternatives";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
@@ -173,6 +175,53 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
+  // Dynamic: Popular anime detail pages (high SEO value)
+  let popularAnimePages: MetadataRoute.Sitemap = [];
+  try {
+    const popular = await getPopular(100);
+    popularAnimePages = popular.map((m) => ({
+      url: `${BASE_URL}/anime/${m.id}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }));
+  } catch (e) { logError(e); }
+
+  // Dynamic: Popular manga detail pages
+  let popularMangaPages: MetadataRoute.Sitemap = [];
+  try {
+    const manga = await getMangaPopular(100);
+    popularMangaPages = manga.map((m) => ({
+      url: `${BASE_URL}/manga/${m.id}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+  } catch (e) { logError(e); }
+
+  // Dynamic: Popular character pages
+  let popularCharacterPages: MetadataRoute.Sitemap = [];
+  try {
+    const { characters } = await getPopularCharacters(1, 50);
+    popularCharacterPages = characters.map((c) => ({
+      url: `${BASE_URL}/character/${c.id}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }));
+  } catch (e) { logError(e); }
+
+  // Dynamic: Shut-down anime site alternatives (high SEO value)
+  const alternativePages: MetadataRoute.Sitemap = [
+    { url: `${BASE_URL}/alternatives`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.8 },
+    ...SHUT_DOWN_SITES.map((s) => ({
+      url: `${BASE_URL}/alternatives/${s.slug}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
+  ];
+
   // Dynamic: Watch order detail pages (high SEO value)
   const watchOrderSlugs = [
     "rezero", "sao", "fate", "monogatari", "naruto", "dragon-ball",
@@ -201,5 +250,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...forumPages,
     ...eventPages,
     ...fillerPages,
+    ...alternativePages,
+    ...popularAnimePages,
+    ...popularMangaPages,
+    ...popularCharacterPages,
   ];
 }

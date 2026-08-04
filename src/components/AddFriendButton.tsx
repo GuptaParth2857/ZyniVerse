@@ -8,6 +8,7 @@ interface AddFriendButtonProps {
   userId: string;
   username: string;
   className?: string;
+  onChange?: () => void;
 }
 
 type FriendStatus =
@@ -17,10 +18,11 @@ type FriendStatus =
   | { status: "pending-received"; requestId: string; senderName?: string | null }
   | { status: "friends" };
 
-export default function AddFriendButton({ userId, username, className = "" }: AddFriendButtonProps) {
+export default function AddFriendButton({ userId, username, className = "", onChange }: AddFriendButtonProps) {
   const { data: session } = useSession();
   const [status, setStatus] = useState<FriendStatus | null>(null);
   const [loading, setLoading] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -56,6 +58,7 @@ export default function AddFriendButton({ userId, username, className = "" }: Ad
       const data = await res.json();
       if (res.ok) {
         setStatus(data.status === "accepted" ? { status: "friends" } : { status: "pending-sent", requestId: "" });
+        onChange?.();
       }
     } catch (e) { logError(e); }
     setLoading(false);
@@ -72,6 +75,7 @@ export default function AddFriendButton({ userId, username, className = "" }: Ad
       });
       if (res.ok) {
         setStatus(action === "accept" ? { status: "friends" } : { status: "none" });
+        onChange?.();
       }
     } catch (e) { logError(e); }
     setLoading(false);
@@ -81,7 +85,22 @@ export default function AddFriendButton({ userId, username, className = "" }: Ad
     setLoading(true);
     try {
       const res = await fetch(`/api/friends/${userId}`, { method: "DELETE" });
-      if (res.ok) setStatus({ status: "none" });
+      if (res.ok) {
+        setStatus({ status: "none" });
+        onChange?.();
+      }
+    } catch (e) { logError(e); }
+    setLoading(false);
+  }
+
+  async function cancelRequest() {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/friends/${userId}`, { method: "DELETE" });
+      if (res.ok) {
+        setStatus({ status: "none" });
+        onChange?.();
+      }
     } catch (e) { logError(e); }
     setLoading(false);
   }
@@ -91,12 +110,20 @@ export default function AddFriendButton({ userId, username, className = "" }: Ad
   if (status.status === "friends") {
     return (
       <button
-        onClick={remove}
+        onClick={() => {
+          if (confirming) {
+            setConfirming(false);
+            remove();
+          } else {
+            setConfirming(true);
+            setTimeout(() => setConfirming(false), 3000);
+          }
+        }}
         disabled={loading}
         title="Remove friend"
         className={`${base} border border-[var(--color-line)] text-[var(--color-mute)] hover:border-red-400 hover:text-red-400`}
       >
-        {loading ? "..." : "Friends ✓"}
+        {loading ? "..." : confirming ? "Confirm?" : "Friends ✓"}
       </button>
     );
   }
@@ -104,10 +131,12 @@ export default function AddFriendButton({ userId, username, className = "" }: Ad
   if (status.status === "pending-sent") {
     return (
       <button
-        disabled
-        className={`${base} border border-[var(--color-line)] text-[var(--color-mute)]`}
+        onClick={cancelRequest}
+        disabled={loading}
+        title="Cancel friend request"
+        className={`${base} border border-[var(--color-line)] text-[var(--color-mute)] hover:border-red-400 hover:text-red-400`}
       >
-        Requested
+        {loading ? "..." : "Requested · Cancel"}
       </button>
     );
   }

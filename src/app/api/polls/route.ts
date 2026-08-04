@@ -9,7 +9,8 @@ export async function GET(req: NextRequest) {
   const perPage = Math.min(50, Math.max(1, Number(searchParams.get("perPage")) || 20));
 
   try {
-    const result = await getPolls(activeOnly, page, perPage);
+    const session = await auth();
+    const result = await getPolls(activeOnly, page, perPage, session?.user?.id);
     return NextResponse.json(result);
   } catch {
     return NextResponse.json({ error: "Failed to fetch polls" }, { status: 500 });

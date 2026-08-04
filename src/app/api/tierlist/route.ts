@@ -29,6 +29,11 @@ export async function GET(req: NextRequest) {
       take: limit,
       include: {
         user: { select: { id: true, username: true, avatar: true } },
+        items: {
+          take: 4,
+          orderBy: { order: "asc" },
+          select: { tier: true, mediaTitle: true, mediaImage: true },
+        },
         _count: { select: { items: true, votes: true } },
       },
     }),
@@ -41,12 +46,10 @@ export async function GET(req: NextRequest) {
     result = tierLists.sort((a, b) => b._count.votes - a._count.votes);
   }
 
-  const items = result.map((tl) => ({
-    ...tl,
-    itemCount: tl._count.items,
-    voteCount: tl._count.votes,
-    _count: undefined,
-  }));
+  const items = result.map((tl) => {
+    const { items: preview, ...rest } = tl;
+    return { ...rest, previewItems: preview, itemCount: tl._count.items, voteCount: tl._count.votes, _count: undefined };
+  });
 
   return NextResponse.json({ tierLists: items, total, hasMore: page * limit < total });
 }

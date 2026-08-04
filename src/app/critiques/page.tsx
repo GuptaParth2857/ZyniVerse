@@ -9,6 +9,7 @@ import Loader from "@/components/Loader";
 import { getMediaBatch } from "@/lib/anilist";
 import EmptyState from "@/components/EmptyState";
 import { logError } from "@/lib/logger";
+import TiltCard from "@/components/TiltCard";
 
 interface Post {
   id: string;
@@ -206,10 +207,10 @@ function CritiquesPage() {
           <div className="space-y-4">
             <AnimatePresence mode="wait">
               {posts.length > 0 ? (
-                posts.map((post) => {
+                posts.map((post, i) => {
                   const mc = post.mediaId ? covers.get(post.mediaId) : null;
                   return (
-                    <motion.div key={post.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                    <TiltCard key={post.id} index={i}
                       className="rounded-xl neon-rgb-border bg-[var(--color-panel)] overflow-hidden hover:border-[var(--color-magenta)]/20 transition-all"
                     >
                       {mc && (
@@ -268,7 +269,7 @@ function CritiquesPage() {
                           </span>
                         </div>
                       </div>
-                    </motion.div>
+                    </TiltCard>
                   );
                 })
               ) : (

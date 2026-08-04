@@ -8,101 +8,87 @@ import { bestTitle, searchCharacters } from "@/lib/anilist";
 import type { CharacterBasic, Media, CharacterEdge } from "@/lib/anilist";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ExpandingFlexCard from "@/components/ExpandingFlexCard";
+import { CharCard, hashColor } from "@/components/CharCard";
 
-function hashColor(name = "") {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-  return `hsl(${Math.abs(h) % 360}, 60%, 50%)`;
-}
+const QUICK_SEARCH = ["Naruto Uzumaki", "Monkey D. Luffy", "Goku", "Saitama", "Light Yagami", "Eren Yeager"];
 
-/* ─── Character Card ─── */
-function CharCard({ c, rank }: { c: CharacterBasic; rank?: number }) {
-  const color = hashColor(c.name?.full);
-  const anime = c.media?.edges?.[0];
-  return (
-    <Link href={`/character/${c.id}`} className="group block">
-      <div className="relative overflow-hidden rounded-[16px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_0_30px_-10px_rgba(192,38,255,0.15)] hover:border-white/[0.12]">
-        <div className="relative aspect-[3/4] overflow-hidden bg-[#0a0a14]">
-          <Image src={c.image?.large || c.image?.medium || ""} alt={c.name?.full || ""} fill className="object-cover transition-all duration-500 group-hover:scale-110" sizes="(max-width: 768px) 50vw, 25vw" />
-          {rank != null && (
-            <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full bg-black/70 backdrop-blur px-2 py-0.5 text-[9px] font-bold border border-white/[0.08]"
-              style={{ color, borderColor: color }}
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-              <span>{rank}</span>
-            </div>
-          )}
-          {anime && (
-            <div className="absolute top-2 right-2 z-10 rounded-full bg-black/70 backdrop-blur px-2 py-0.5">
-              <span className="text-[8px] font-semibold uppercase tracking-wider text-white/70">{anime.characterRole}</span>
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        </div>
-        <div className="p-3 space-y-1.5">
-          <p className="text-[13px] font-bold text-white/90 truncate leading-tight">{c.name?.full}</p>
-          {anime && (
-            <div className="flex items-center gap-1.5">
-              <div className="relative h-4 w-3 rounded overflow-hidden shrink-0 ring-1 ring-white/10">
-                <Image src={anime.node.coverImage?.medium || ""} alt="" fill className="object-cover" sizes="12px" />
-              </div>
-              <p className="text-[10px] text-white/40 truncate leading-tight">{bestTitle(anime.node.title)}</p>
-            </div>
-          )}
-          <div className="flex items-center gap-2 text-[10px] text-white/30 pt-0.5">
-            {c.favourites != null && (
-              <span className="flex items-center gap-1" style={{ color }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
-                {c.favourites.toLocaleString()}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="absolute inset-0 rounded-[16px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-          style={{ background: `linear-gradient(135deg, ${color}15, transparent 60%)` }}
-        />
-      </div>
-    </Link>
-  );
-}
+const CARD_EASE = [0.22, 1, 0.36, 1] as const;
 
 /* ─── Anime Card (for grid) ─── */
-function AnimeGridCard({ media, active, onClick }: { media: Media; active: boolean; onClick: () => void }) {
+function AnimeGridCard({ media, active, onClick, index = 0 }: { media: Media; active: boolean; onClick: () => void; index?: number }) {
+  const color = media.coverImage?.color || "#C026FF";
   return (
-    <button onClick={onClick} className="group text-left w-full">
-      <div className={`relative overflow-hidden rounded-[12px] border transition-all duration-300 ${
-        active ? "border-[#C026FF]/50 shadow-[0_0_20px_-8px_rgba(192,38,255,0.2)]" : "border-white/[0.06] hover:border-white/[0.12]"
-      }`}>
+    <motion.button
+      onClick={onClick}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.4, delay: (index % 16) * 0.04, ease: CARD_EASE }}
+      className="group text-left w-full"
+    >
+      <div
+        className={`relative overflow-hidden rounded-[12px] border transition-all duration-300 ${
+          active ? "border-[#C026FF]/60 shadow-[0_0_24px_-6px_rgba(192,38,255,0.45)]" : "border-white/[0.06] hover:border-white/[0.14] hover:shadow-[0_0_18px_-8px_rgba(192,38,255,0.25)]"
+        }`}
+        style={active ? { borderColor: color, boxShadow: `0 0 24px -6px ${color}66` } : undefined}
+      >
         <div className="relative aspect-[3/4] overflow-hidden bg-[#0a0a14]">
-                    <Image src={media.coverImage?.large || media.coverImage?.medium || ""} alt="" fill className="object-cover transition-all duration-500 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
+          <Image src={media.coverImage?.large || media.coverImage?.medium || ""} alt="" fill className="object-cover transition-all duration-500 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
         <div className="p-2">
-          <p className="text-[11px] font-semibold text-white/80 leading-tight line-clamp-1">{bestTitle(media.title)}</p>
+          <p className="text-[11px] font-semibold text-white/80 leading-tight line-clamp-1 group-hover:text-white transition-colors">{bestTitle(media.title)}</p>
           <div className="flex items-center gap-2 mt-0.5 text-[9px] text-white/30">
             {media.averageScore && <span>★{(media.averageScore / 10).toFixed(1)}</span>}
             {media.format && <span className="uppercase tracking-wider">{media.format}</span>}
-            </div>
           </div>
         </div>
-    </button>
+      </div>
+    </motion.button>
   );
 }
 
-/* ─── Character row (expandable) ─── */
+/* ─── Character row (expandable, lazy paginated — no character missed) ─── */
 function AnimeCharacterRow({ mediaId, visible }: { mediaId: number; visible: boolean }) {
-  const [chars, setChars] = useState<CharacterEdge[] | null>(null);
+  const [edges, setEdges] = useState<CharacterEdge[] | null>(null);
+  const [pageInfo, setPageInfo] = useState<{ hasNextPage: boolean; total: number }>({ hasNextPage: false, total: 0 });
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     if (!visible) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    fetch(`/api/anilist/characters/${mediaId}?perPage=30`)
+    setEdges(null);
+    setPageInfo({ hasNextPage: false, total: 0 });
+    setPage(1);
+    fetch(`/api/anilist/characters/${mediaId}?page=1&perPage=25`)
       .then((r) => r.json())
-      .then((d) => setChars(d.characters?.edges || []))
-      .catch(() => setChars([]))
+      .then((d) => {
+        setEdges(d.edges || []);
+        setPageInfo(d.pageInfo || { hasNextPage: false, total: 0 });
+      })
+      .catch(() => setEdges([]))
       .finally(() => setLoading(false));
   }, [mediaId, visible]);
+
+  async function loadMore() {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const d = await fetch(`/api/anilist/characters/${mediaId}?page=${page + 1}&perPage=25`).then((r) => r.json());
+      setEdges((prev) => {
+        const seen = new Set((prev || []).map((e) => e.node.id));
+        return [...(prev || []), ...((d.edges || []) as CharacterEdge[]).filter((e) => !seen.has(e.node.id))];
+      });
+      setPageInfo(d.pageInfo || { hasNextPage: false, total: 0 });
+      setPage((p) => p + 1);
+    } catch {
+      // ignore — user can retry with the button
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   if (!visible) return null;
 
@@ -126,20 +112,56 @@ function AnimeCharacterRow({ mediaId, visible }: { mediaId: number; visible: boo
                   </div>
                 ))}
               </div>
-            ) : chars && chars.length === 0 ? (
+            ) : edges && edges.length === 0 ? (
               <p className="text-xs text-white/20 text-center py-4">No characters found.</p>
             ) : (
-              <div className="flex gap-2.5 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
-                {chars?.map((e) => (
-                  <Link key={e.node.id} href={`/character/${e.node.id}`} className="flex-shrink-0 w-[110px] group">
-                    <div className="relative aspect-[3/4] rounded-[10px] overflow-hidden bg-[#0a0a14] border border-white/[0.06]">
-                      <Image src={e.node.image?.large || e.node.image?.medium || ""} alt={e.node.name?.full || ""} fill className="object-cover transition-all duration-300 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
-                    </div>
-                    <p className="mt-1.5 text-[10px] font-medium text-white/70 leading-tight truncate">{e.node.name?.full}</p>
-                    <p className="text-[8px] text-white/30 uppercase tracking-wider">{e.role}</p>
-                  </Link>
-                ))}
-              </div>
+              <>
+                <div className="flex gap-2.5 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+                  {edges?.map((e, i) => (
+                    <motion.div
+                      key={e.node.id}
+                      initial={{ opacity: 0, y: 14, scale: 0.92 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 0.3, delay: (i % 10) * 0.04, ease: CARD_EASE }}
+                      className="flex-shrink-0 w-[110px]"
+                    >
+                      <Link href={`/character/${e.node.id}`} className="block group">
+                        <div className="relative aspect-[3/4] rounded-[10px] overflow-hidden bg-[#0a0a14] border border-white/[0.06] transition-all duration-300 group-hover:border-[var(--color-magenta)]/50 group-hover:shadow-[0_0_16px_-6px_rgba(192,38,255,0.4)]">
+                          <Image src={e.node.image?.large || e.node.image?.medium || ""} alt={e.node.name?.full || ""} fill className="object-cover transition-all duration-300 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 25vw" />
+                        </div>
+                        <p className="mt-1.5 text-[10px] font-medium text-white/70 leading-tight truncate group-hover:text-white transition-colors">{e.node.name?.full}</p>
+                        <p className="text-[8px] text-white/30 uppercase tracking-wider">{e.role}</p>
+                      </Link>
+                    </motion.div>
+                  ))}
+                  {pageInfo.hasNextPage && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.92 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, ease: CARD_EASE }}
+                      className="flex-shrink-0 w-[110px]"
+                    >
+                      <button onClick={loadMore} disabled={loadingMore}
+                        className="group flex h-full w-full flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-white/[0.12] bg-white/[0.02] text-white/40 transition-all duration-300 hover:border-[var(--color-magenta)]/40 hover:bg-[var(--color-magenta)]/5 hover:text-white disabled:opacity-50"
+                      >
+                        {loadingMore ? (
+                          <motion.div className="h-5 w-5 rounded-full border-2 border-[#C026FF] border-t-transparent" animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }} />
+                        ) : (
+                          <span className="text-2xl leading-none">+</span>
+                        )}
+                        <span className="px-2 text-[9px] font-semibold uppercase tracking-wider text-center">
+                          {loadingMore ? "Loading" : "Load more"}
+                        </span>
+                      </button>
+                    </motion.div>
+                  )}
+                </div>
+                {(edges?.length ?? 0) > 0 && (
+                  <p className="mt-1 text-center text-[9px] font-mono text-white/15">
+                    {edges?.length} character{(edges?.length ?? 0) === 1 ? "" : "s"}{pageInfo.hasNextPage ? " · Load more for all" : ""}
+                  </p>
+                )}
+              </>
             )}
           </div>
         </motion.div>
@@ -252,7 +274,7 @@ export default function CharactersBrowsePage() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
           {rest.map((c, i) => (
-            <CharCard key={c.id} c={c} rank={i + 11} />
+            <CharCard key={c.id} c={c} rank={i + 11} index={i} />
           ))}
         </div>
       </section>
@@ -264,14 +286,15 @@ export default function CharactersBrowsePage() {
             <span className="h-4 w-1 rounded-full bg-[#7000ff]" />
             Browse Characters by Anime
           </h2>
-          <span className="text-[10px] text-white/20 font-mono">Click to expand</span>
+          <span className="text-[10px] text-white/20 font-mono">Click to expand · All characters</span>
         </div>
 
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
-          {popularAnime.map((media) => (
+          {popularAnime.map((media, i) => (
             <div key={media.id}>
               <AnimeGridCard
                 media={media}
+                index={i}
                 active={activeAnimeId === media.id}
                 onClick={() => setActiveAnimeId(activeAnimeId === media.id ? null : media.id)}
               />
@@ -307,17 +330,24 @@ export default function CharactersBrowsePage() {
         {/* hero content */}
         <div className="relative z-10 mx-auto flex h-full max-w-7xl items-end px-4 pb-8 sm:px-6 sm:pb-12">
           <div className="flex flex-col sm:flex-row sm:items-end gap-5 w-full">
-            <Link href={`/character/${featured.id}`} className="shrink-0 group relative">
-              <div className="absolute -inset-2 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none" style={{ background: featColor }} />
-              <Image src={featured.image?.large || ""} alt={featured.name?.full || ""}
-                className="relative h-64 w-44 rounded-[14px] border-2 object-cover shadow-2xl sm:h-72 sm:w-48"
-                style={{ borderColor: featColor }}
-                width={176} height={256}
-              />
-              <div className="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur text-xs font-bold border" style={{ borderColor: featColor, color: featColor }}>
-                #{featuredIdx + 1}
-              </div>
-            </Link>
+            <motion.div
+              key={featured.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.45, ease: CARD_EASE }}
+            >
+              <Link href={`/character/${featured.id}`} className="shrink-0 group relative block">
+                <div className="absolute -inset-2 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none" style={{ background: featColor }} />
+                <Image src={featured.image?.large || ""} alt={featured.name?.full || ""}
+                  className="relative h-64 w-44 rounded-[14px] border-2 object-cover shadow-2xl sm:h-72 sm:w-48"
+                  style={{ borderColor: featColor }}
+                  width={176} height={256}
+                />
+                <div className="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur text-xs font-bold border" style={{ borderColor: featColor, color: featColor }}>
+                  #{featuredIdx + 1}
+                </div>
+              </Link>
+            </motion.div>
 
             <div className="min-w-0 flex-1 pb-1">
               <div className="flex items-center gap-2 text-[10px] font-semibold mb-1" style={{ color: featColor }}>
@@ -367,43 +397,63 @@ export default function CharactersBrowsePage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 space-y-10">
 
         {/* ═══════════════ CHARACTER SEARCH ═══════════════ */}
-        <div className="mx-auto max-w-lg">
-          <div className="group relative">
-            <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[var(--color-magenta)] via-[var(--color-cyan)] to-[var(--color-violet)] opacity-0 group-focus-within:opacity-100 blur-sm transition-all duration-700 animate-neon-rgb" />
-            <div className="relative flex items-center gap-2 rounded-xl border border-white/[0.06] bg-[var(--color-void)] backdrop-blur-sm px-4 py-3 transition-colors group-focus-within:border-white/[0.12]">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/30 shrink-0 group-focus-within:text-[var(--color-magenta)] transition-colors">
+        <div className="mx-auto max-w-xl">
+          <div className="relative group">
+            {/* animated gradient ring */}
+            <div className="absolute -inset-1 rounded-2xl bg-[linear-gradient(135deg,#ff00e6,#29f2e0,#7000ff,#ff00e6)] bg-[length:300%_300%] opacity-30 group-focus-within:opacity-80 blur-[6px] transition-all duration-700 animate-neon-rgb pointer-events-none" />
+            <div className="relative flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-[#0d0d16]/90 backdrop-blur-xl px-5 py-4 transition-all duration-300 group-focus-within:border-white/[0.18] group-focus-within:bg-[#0f0f1a]/95 shadow-[0_0_30px_-15px_rgba(192,38,255,0.3)]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/30 shrink-0 group-focus-within:text-[var(--color-magenta)] transition-colors">
                 <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
               </svg>
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search characters by name..."
-                className="w-full bg-transparent text-sm outline-none text-white/80 placeholder:text-white/30"
+                placeholder="Search 10,000+ anime characters..."
+                className="w-full bg-transparent text-base outline-none text-white/90 placeholder:text-white/30"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="text-white/30 hover:text-[var(--color-magenta)] transition-colors">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <button onClick={() => setSearchQuery("")} className="text-white/30 hover:text-[var(--color-magenta)] transition-colors shrink-0" aria-label="Clear search">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M18 6L6 18M6 6l12 12" />
                   </svg>
                 </button>
               )}
             </div>
           </div>
+
+          {/* quick search chips */}
+          {!isSearching && (
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
+              <span className="text-[10px] text-white/25 font-mono uppercase tracking-wider">Try:</span>
+              {QUICK_SEARCH.map((q) => (
+                <button key={q} onClick={() => setSearchQuery(q)}
+                  className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-[11px] text-white/50 hover:text-white hover:border-[var(--color-magenta)]/40 hover:bg-[var(--color-magenta)]/5 transition-all">
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+
         {/* ═══════════════ SEARCH RESULTS ═══════════════ */}
         {isSearching && (
           <section>
-            <h2 className="font-display text-lg font-bold text-white flex items-center gap-2 mb-4">
-              <span className="h-4 w-1 rounded-full bg-[#C026FF]" />
-              Search Results
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-lg font-bold text-white flex items-center gap-2">
+                <span className="h-4 w-1 rounded-full bg-[#C026FF]" />
+                Search Results
+              </h2>
+              {!searching && (
+                <span className="text-[10px] font-mono text-white/25">{searchResults.length} result{searchResults.length === 1 ? "" : "s"}</span>
+              )}
+            </div>
             {searching ? (
               <div className="flex justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#C026FF] border-t-transparent" />
+                <motion.div className="h-7 w-7 rounded-full border-2 border-[#C026FF] border-t-transparent" animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }} />
               </div>
             ) : searchResults.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                {searchResults.map((c) => <CharCard key={c.id} c={c} />)}
+                {searchResults.map((c, i) => <CharCard key={c.id} c={c} index={i} />)}
               </div>
             ) : (
               <p className="text-center text-sm text-white/30 py-8">No characters found for &ldquo;{searchQuery}&rdquo;</p>

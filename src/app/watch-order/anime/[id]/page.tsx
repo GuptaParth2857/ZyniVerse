@@ -2,7 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getAnimeDetailFull, bestTitle, type MediaAnimeFull } from "@/lib/anilist";
+import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
+import { buildWatchOrder } from "@/lib/watch-order";
 import AnimeWatchOrder from "./AnimeWatchOrder";
 
 interface Props {
@@ -44,8 +45,8 @@ export default async function AnimeWatchOrderPage({ params }: Props) {
   const title = bestTitle(anime.title);
   const relations = anime.relations?.edges || [];
 
-  // Build watch order from relations
-  const watchOrder = buildWatchOrder(anime, relations);
+  // Build smart watch order from relations
+  const guide = buildWatchOrder(anime, relations);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 animate-page-in">
@@ -95,7 +96,7 @@ export default async function AnimeWatchOrderPage({ params }: Props) {
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cyan)]/10 px-3 py-1 text-[10px] font-semibold text-[var(--color-cyan)] border border-[var(--color-cyan)]/20">
-                  {watchOrder.length} entries
+                  {guide.totalEntries} entries
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-magenta)]/10 px-3 py-1 text-[10px] font-semibold text-[var(--color-magenta)] border border-[var(--color-magenta)]/20">
                   Auto-Generated
@@ -107,7 +108,7 @@ export default async function AnimeWatchOrderPage({ params }: Props) {
       </div>
 
       {/* Watch Order Timeline */}
-      <AnimeWatchOrder entries={watchOrder} mainId={animeId} />
+      <AnimeWatchOrder guide={guide} />
 
       {/* Back link */}
       <div className="mt-10 text-center">
@@ -125,88 +126,4 @@ export default async function AnimeWatchOrderPage({ params }: Props) {
   );
 }
 
-interface WatchOrderEntry {
-  id: number;
-  title: string;
-  format?: string;
-  episodes?: number;
-  relationType: string;
-  coverImage?: string;
-  status?: string;
-}
 
-function buildWatchOrder(anime: MediaAnimeFull, relations: { id: number; relationType: string; node: { id: number; title: { romaji?: string | null; english?: string | null; native?: string | null; userPreferred?: string | null }; coverImage?: { large?: string | null }; format?: string; episodes?: number; status?: string } }[]): WatchOrderEntry[] {
-  const mainEntry: WatchOrderEntry = {
-    id: anime.id,
-    title: bestTitle(anime.title),
-    format: anime.format || undefined,
-    episodes: anime.episodes || undefined,
-    relationType: "MAIN",
-    coverImage: anime.coverImage?.large || undefined,
-    status: anime.status || undefined,
-  };
-
-  // Categorize relations
-  const prequels: WatchOrderEntry[] = [];
-  const sequels: WatchOrderEntry[] = [];
-  const sideStories: WatchOrderEntry[] = [];
-  const alternatives: WatchOrderEntry[] = [];
-  const spinoffs: WatchOrderEntry[] = [];
-
-  for (const edge of relations) {
-    const node = edge.node;
-    const entry: WatchOrderEntry = {
-      id: node.id,
-      title: bestTitle(node.title),
-      format: node.format || undefined,
-      episodes: node.episodes || undefined,
-      relationType: edge.relationType,
-      coverImage: node.coverImage?.large || undefined,
-      status: node.status || undefined,
-    };
-
-    switch (edge.relationType) {
-      case "PREQUEL":
-        prequels.push(entry);
-        break;
-      case "SEQUEL":
-        sequels.push(entry);
-        break;
-      case "SIDE_STORY":
-        sideStories.push(entry);
-        break;
-      case "ALTERNATIVE":
-        alternatives.push(entry);
-        break;
-      case "SPIN_OFF":
-        spinoffs.push(entry);
-        break;
-    }
-  }
-
-  // Build the chain: prequels (reversed) → main → sequels
-  const chain: WatchOrderEntry[] = [];
-
-  // Sort prequels by episode count or status to find the right order
-  prequels.sort((a, b) => (a.episodes || 0) - (b.episodes || 0));
-  for (const p of prequels) {
-    chain.push(p);
-  }
-
-  chain.push(mainEntry);
-
-  // Sort sequels
-  sequels.sort((a, b) => (a.episodes || 0) - (b.episodes || 0));
-  for (const s of sequels) {
-    chain.push(s);
-  }
-
-  // Add side stories, alternatives, spinoffs at the end
-  if (sideStories.length > 0 || alternatives.length > 0 || spinoffs.length > 0) {
-    for (const ss of sideStories) chain.push(ss);
-    for (const alt of alternatives) chain.push(alt);
-    for (const so of spinoffs) chain.push(so);
-  }
-
-  return chain;
-}

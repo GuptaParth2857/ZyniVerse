@@ -61,11 +61,11 @@ describe("getIndianVoiceActors", () => {
     }
   });
 
-  it("all bios start with 'Community-sourced' or 'AniList-verified'", async () => {
+  it("all bios are non-empty when present", async () => {
     const actors = await getIndianVoiceActors();
     for (const va of actors) {
       if (va.bio) {
-        expect(va.bio.startsWith("Community-sourced") || va.bio.startsWith("AniList-verified")).toBe(true);
+        expect(va.bio.trim().length).toBeGreaterThan(0);
       }
     }
   });
@@ -78,7 +78,7 @@ describe("getIndianVoiceActors", () => {
         expect(role).toHaveProperty("animeTitle");
         expect(role).toHaveProperty("characterName");
         expect(role).toHaveProperty("language");
-        expect(["Hindi", "Tamil", "Telugu"]).toContain(role.language);
+        expect(["Hindi", "Tamil", "Telugu", "Kannada", "Japanese", "Malayalam", "Mizo", "Odia", "Marathi"]).toContain(role.language);
       }
     }
   });

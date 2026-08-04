@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ExternalBlogDetail from "@/components/ExternalBlogDetail";
+import { CURATOR } from "@/lib/curator";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -8,7 +9,7 @@ interface Props {
 export async function generateMetadata({ params: _params }: Props): Promise<Metadata> {
   return {
     title: `Blog Article | ZyniVerse`,
-    description: "Read this anime blog article curated by ZyniBot from dev.to.",
+    description: `Read this anime blog article curated by ${CURATOR.username} from dev.to.`,
   };
 }
 

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { dedupedFetch } from "@/lib/wiki-cache";
 import { hasValidAnimeTag, getAnimeTagError } from "@/lib/blog-tags";
-import { searchAll } from "@/lib/anilist";
+import { searchAll, getTrending } from "@/lib/anilist";
 import { extractAnimeFromTitle, fetchAnimeFromWikipedia, fetchWikipediaAnimeArticles, searchAndFetchWikipediaArticles } from "@/lib/wikipedia";
 
 function slugify(text: string): string {
@@ -24,7 +24,7 @@ interface ExternalPost {
   content: string;
   coverImage: string | null;
   tags: string;
-  publishedAt: string;
+  publishedAt: string | null;
   user: { username: string; avatar: string | null };
   viewCount: number;
   likeCount: number;
@@ -53,36 +53,57 @@ const USER_AGENT = "ZyniVerse/1.0";
 const MAX_LIMIT = 50;
 
 async function enrichPostsWithAnimePosters(posts: ExternalPost[]): Promise<ExternalPost[]> {
-  const enriched = await Promise.all(
-    posts.map(async (post) => {
-      const animeName = extractAnimeFromTitle(post.title);
-      if (!animeName) return post;
-
-      const tasks: Promise<{ type: string; url: string | null }>[] = [];
-
-      if (!post.coverImage) {
-        tasks.push(
-          searchAll(animeName, 1, 3).then(data => {
-            const all = [...(data.anime || []), ...(data.manga || [])];
-            const best = all.find((m) => m.coverImage?.large) || all[0];
-            return { type: "anilist", url: best?.coverImage?.large || null };
-          }).catch(() => ({ type: "anilist", url: null }))
-        );
-      }
-
-      tasks.push(
-        fetchAnimeFromWikipedia(animeName).then(wiki => {
-          return { type: "wiki", url: wiki?.bannerUrl || wiki?.imageUrl || null };
-        }).catch(() => ({ type: "wiki", url: null }))
-      );
-
-      const results = await Promise.all(tasks);
-      const coverImage = post.coverImage || results.find(r => r.type === "anilist")?.url || results.find(r => r.type === "wiki")?.url || null;
-
-      return { ...post, coverImage };
+  return Promise.all(
+    posts.map((post) => {
+      if (post.coverImage) return Promise.resolve(post);
+      return dedupedFetch(
+        `blog:poster:${post.id}`,
+        () => enrichSinglePostWithPoster(post),
+        30 * 60 * 1000
+      ).catch(() => post);
     })
   );
-  return enriched;
+}
+
+async function enrichSinglePostWithPoster(post: ExternalPost): Promise<ExternalPost> {
+  const animeName = extractAnimeFromTitle(post.title);
+  if (animeName) {
+    try {
+      const data = await searchAll(animeName, 1, 3);
+      const all = [...(data.anime || []), ...(data.manga || [])];
+      const best = all.find((m) => m.coverImage?.large) || all[0];
+      const url = best?.coverImage?.large || null;
+      if (url) return { ...post, coverImage: url };
+    } catch {
+      // fall through to wikipedia
+    }
+
+    try {
+      const wiki = await fetchAnimeFromWikipedia(animeName);
+      const url = wiki?.bannerUrl || wiki?.imageUrl || null;
+      if (url) return { ...post, coverImage: url };
+    } catch {
+      // ignore
+    }
+  }
+
+  const generic = await genericPosterFor(post);
+  if (generic) return { ...post, coverImage: generic };
+
+  return post;
+}
+
+async function genericPosterFor(post: ExternalPost): Promise<string | null> {
+  try {
+    const trending = await getTrending(24);
+    const list = trending.filter((m) => m.coverImage?.large);
+    if (list.length === 0) return null;
+    let hash = 0;
+    for (let i = 0; i < post.id.length; i++) hash = ((hash << 5) - hash + post.id.charCodeAt(i)) | 0;
+    return list[Math.abs(hash) % list.length].coverImage.large || null;
+  } catch {
+    return null;
+  }
 }
 
 async function fetchDevToPosts(tag: string): Promise<ExternalPost[]> {
@@ -150,6 +171,7 @@ export async function GET(req: NextRequest) {
 
   const dbItems = posts.map((p) => ({
     ...p,
+    publishedAt: p.publishedAt ? p.publishedAt.toISOString() : null,
     commentCount: p._count.comments,
     likeCount: p._count.likes,
     _count: undefined,
@@ -168,11 +190,7 @@ export async function GET(req: NextRequest) {
         () => fetchDevToPosts(searchTag),
         10 * 60 * 1000
       );
-      externalItems = await dedupedFetch(
-        `blog:devto:posters:${searchTag}`,
-        () => enrichPostsWithAnimePosters(rawExternal),
-        30 * 60 * 1000
-      );
+      externalItems = rawExternal;
     } catch {
       // External fetch failed
     }
@@ -193,8 +211,9 @@ export async function GET(req: NextRequest) {
   }
 
   const merged = [...dbItems, ...wikiItems, ...externalItems].slice(0, limit);
+  const enriched = await enrichPostsWithAnimePosters(merged);
 
-  const response = NextResponse.json({ posts: merged, total: total + wikiItems.length + externalItems.length, hasMore: page * limit < total + wikiItems.length + externalItems.length });
+  const response = NextResponse.json({ posts: enriched, total: total + wikiItems.length + externalItems.length, hasMore: page * limit < total + wikiItems.length + externalItems.length });
   response.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
   return response;
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import BlogCard from "@/components/BlogCard";
 import NativeBannerAd from "@/components/NativeBannerAd";
 import { logError } from "@/lib/logger";
+import { CURATOR } from "@/lib/curator";
 
 interface Post {
   id: string;
@@ -236,8 +237,13 @@ export default function BlogPageClient() {
                   <div className="h-52 sm:h-60 sm:w-[420px] shrink-0 bg-gradient-to-br from-[var(--color-cyan)]/10 via-[var(--color-panel)] to-[var(--color-magenta)]/10 flex items-center justify-center relative overflow-hidden">
                     <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)", backgroundSize: "16px 16px" }} />
                     <div className="text-center z-10 px-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-cyan)] to-[var(--color-violet)] text-sm font-black text-black mx-auto mb-2">
-                        {featured.isExternal ? "ZB" : featured.user?.username?.charAt(0).toUpperCase() || "?"}
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-cyan)] to-[var(--color-violet)] text-sm font-black text-black mx-auto mb-2 overflow-hidden">
+                        {featured.isExternal ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={CURATOR.avatar} alt={CURATOR.username} className="h-full w-full object-cover" />
+                        ) : (
+                          featured.user?.username?.charAt(0).toUpperCase() || "?"
+                        )}
                       </div>
                       <span className="text-[10px] font-semibold text-[var(--color-mute)] uppercase tracking-wider">Featured</span>
                     </div>
@@ -253,13 +259,16 @@ export default function BlogPageClient() {
                   <div className="mt-4 flex items-center gap-3 text-[10px] font-mono text-[var(--color-mute)]/70">
                     <div className="flex items-center gap-1.5">
                       {featured.isExternal ? (
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-cyan)] to-[var(--color-violet)] text-[7px] font-black text-black">ZB</div>
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full overflow-hidden ring-1 ring-[rgba(10,10,15,0.8)]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={CURATOR.avatar} alt="" className="h-full w-full object-cover" />
+                        </div>
                       ) : (
                         <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] text-[7px] font-bold text-black">
                           {featured.user?.username?.charAt(0).toUpperCase() || "?"}
                         </div>
                       )}
-                      <span>{featured.isExternal ? "ZyniBot" : featured.user?.username}</span>
+                      <span>{featured.isExternal ? CURATOR.username : featured.user?.username}</span>
                     </div>
                     {featured.publishedAt && <span>{new Date(featured.publishedAt).toLocaleDateString()}</span>}
                     <span className="flex items-center gap-1">
@@ -323,8 +332,8 @@ export default function BlogPageClient() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {posts.map((post) => (
-                <BlogCard key={post.id} post={post} />
+              {posts.map((post, i) => (
+                <BlogCard key={post.id} post={post} index={i} />
               ))}
             </div>
           )}

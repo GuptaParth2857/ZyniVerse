@@ -16,6 +16,10 @@ export interface MomentCardProps {
 
 const PROXY = "/api/proxy-image?url=";
 
+/**
+ * Scales like the generated PNG (600x800 canvas):
+ * quote 4cqw, character 2.5cqw, meta 1.667cqw, logo 6.667cqw, watermark 1.333cqw
+ */
 export default function MomentCard({
   quote,
   character,
@@ -29,7 +33,7 @@ export default function MomentCard({
   const hasCover = !!animeCover && !coverFailed;
 
   return (
-    <div className="relative w-full max-w-[600px] aspect-[3/4] overflow-hidden rounded-2xl select-none neon-rgb-border">
+    <div className="relative w-full aspect-[3/4] overflow-hidden rounded-2xl select-none neon-rgb-border [container-type:inline-size]">
       {hasCover ? (
         <>
           <Image
@@ -53,23 +57,23 @@ export default function MomentCard({
       )}
 
       {/* Logo */}
-      <div className="absolute top-4 right-4 z-10">
-        <div className="flex items-center gap-1.5 rounded-full bg-black/40 backdrop-blur-sm px-2 py-1 border border-white/10">
-          <Image src="/logo.png" alt="" width={16} height={16} className="h-4 w-4 object-contain rounded-full" />
-          <span className="text-[10px] font-bold tracking-wider text-white/80">ZV</span>
+      <div className="absolute z-10" style={{ top: "3cqw", right: "3.667cqw" }}>
+        <div className="flex items-center gap-[1.5cqw] rounded-full bg-black/40 backdrop-blur-sm px-[2cqw] py-[1cqw] border border-white/10">
+          <Image src="/logo.png" alt="" width={40} height={40} className="h-[6.667cqw] w-[6.667cqw] rounded-full object-contain" />
+          <span className="font-bold tracking-wider text-white/80" style={{ fontSize: "1.667cqw" }}>ZV</span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-8 sm:px-14 text-center">
-        <p className="text-lg sm:text-2xl md:text-3xl leading-relaxed font-light italic text-white/90 drop-shadow-lg max-w-[90%]">
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-[8cqw] text-center">
+        <p className="italic font-light leading-relaxed text-white/90 drop-shadow-lg" style={{ fontSize: "4cqw", lineHeight: "5.667cqw" }}>
           &ldquo;{quote}&rdquo;
         </p>
-        <div className="mt-5 w-12 h-[1px] bg-white/30" />
-        <p className="mt-4 text-sm sm:text-base font-bold text-white/80 tracking-wide">
+        <div className="bg-white/30" style={{ width: "10cqw", height: "1px", marginTop: "3.667cqw" }} />
+        <p className="font-bold tracking-wide text-white/80" style={{ fontSize: "2.5cqw", marginTop: "4.667cqw" }}>
           &mdash; {character}
         </p>
-        <div className="mt-3 flex items-center justify-center gap-2 text-[11px] sm:text-xs font-mono text-white/40 flex-wrap">
+        <div className="flex flex-wrap items-center justify-center gap-[2cqw] font-mono text-white/40" style={{ fontSize: "1.667cqw", marginTop: "5cqw" }}>
           {animeTitle && <span>{animeTitle}</span>}
           {episode && <><span className="opacity-30">|</span><span>Ep. {episode}</span></>}
           {timestamp && <><span className="opacity-30">|</span><span>{timestamp}</span></>}
@@ -77,8 +81,8 @@ export default function MomentCard({
       </div>
 
       {/* Watermark */}
-      <div className="absolute bottom-3 left-0 right-0 z-10 text-center">
-        <span className="text-[8px] font-medium tracking-[0.2em] uppercase text-white/15">
+      <div className="absolute left-0 right-0 z-10 text-center" style={{ bottom: "3cqw" }}>
+        <span className="font-medium tracking-[0.2em] uppercase text-white/15" style={{ fontSize: "1.333cqw" }}>
           ZyniVerse &mdash; Anime for Everyone
         </span>
       </div>

@@ -57,49 +57,39 @@ export default function ThemesBrowsePage() {
           <p className="text-sm text-[var(--color-mute)] mt-1">Browse opening and ending themes from popular anime</p>
         </div>
 
-        <div className="mb-8 relative group">
-          <div className="absolute -inset-[2px] rounded-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500"
-            style={{
-              background: "conic-gradient(from var(--border-angle, 0deg), #29f2e0, #ff2d78, #8a5cff, #22c55e, #f59e0b, #29f2e0)",
-              animation: "spin 3s linear infinite",
-            }}
-          />
-          <div className="absolute -inset-1 rounded-2xl opacity-0 group-hover:opacity-50 transition-opacity duration-500 blur-md"
-            style={{ background: "linear-gradient(90deg, #29f2e0, #ff2d78, #8a5cff)" }}
-          />
-          <div className="relative flex items-center gap-3 rounded-2xl bg-[var(--color-panel)] border border-white/[0.08] px-5 py-3">
-            <svg className="w-5 h-5 text-[var(--color-mute)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+        <div className="mb-8 max-w-xl">
+          <div className="neon-rgb-border relative flex items-center rounded-full bg-[rgba(10,10,15,0.95)]">
+            <div className="pl-5 pr-1 flex items-center">
+              {searching ? (
+                <svg className="w-4 h-4 text-[var(--color-cyan)] animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 text-[var(--color-mute)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              )}
+            </div>
             <input
               type="text"
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Search any anime... (e.g. Demon Slayer, One Piece, Frieren)"
-              className="flex-1 bg-transparent text-sm text-white placeholder:text-[var(--color-mute)] outline-none"
+              className="flex-1 bg-transparent py-3.5 px-2 text-sm outline-none focus:outline-none focus-visible:outline-none placeholder-[var(--color-mute)]/60 text-[var(--color-ink)]"
             />
-            {searching && (
-              <div className="w-4 h-4 border-2 border-[var(--color-mute)] border-t-transparent rounded-full animate-spin" />
-            )}
-            {search && !searching && (
-              <button onClick={() => handleSearch("")} className="text-[var(--color-mute)] hover:text-white transition-colors text-xs">
-                Clear
+            {search && (
+              <button
+                onClick={() => handleSearch("")}
+                className="pr-3 text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             )}
           </div>
         </div>
-
-        <style>{`
-          @keyframes spin {
-            from { --border-angle: 0deg; }
-            to { --border-angle: 360deg; }
-          }
-          @property --border-angle {
-            syntax: '<angle>';
-            initial-value: 0deg;
-            inherits: false;
-          }
-        `}</style>
 
         {loading ? (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
@@ -124,7 +114,16 @@ export default function ThemesBrowsePage() {
                 key={g.mediaId}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
+                whileHover={{
+                  y: -10,
+                  scale: 1.04,
+                  rotateX: 5,
+                  rotateY: -5,
+                  boxShadow: "0 24px 60px -12px rgba(139, 92, 246, 0.5), 0 0 30px -4px rgba(41, 242, 224, 0.45)",
+                  transition: { type: "spring", stiffness: 300, damping: 20 },
+                }}
                 transition={{ delay: Math.min(i, 10) * 0.03, type: "spring", stiffness: 260, damping: 24 }}
+                style={{ transformPerspective: 900 }}
               >
                 <Link href={`/themes/${g.mediaId}`}
                   className="glass-card block group overflow-hidden rounded-xl">

@@ -27,7 +27,31 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         },
         orderBy: { startTime: "asc" },
       },
-      _count: { select: { members: true, posts: true, joinRequests: true } },
+      reels: {
+        include: {
+          user: { select: { id: true, username: true, avatar: true } },
+          _count: { select: { likes: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      polls: {
+        include: {
+          createdBy: { select: { id: true, username: true, avatar: true } },
+          options: {
+            include: { _count: { select: { votes: true } } },
+            orderBy: { id: "asc" },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      watchParties: {
+        include: {
+          host: { select: { id: true, username: true, avatar: true } },
+          members: { include: { user: { select: { id: true, username: true, avatar: true } } } },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      _count: { select: { members: true, posts: true, joinRequests: true, reels: true, polls: true } },
     },
   });
 

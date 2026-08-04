@@ -47,10 +47,11 @@ export async function createParty(
   mediaId: number,
   mediaTitle: string,
   mediaImage?: string | null,
-  coverImage?: string | null
+  coverImage?: string | null,
+  clubId?: string | null
 ): Promise<WatchPartyData> {
   const party = await prisma.watchParty.create({
-    data: { hostId, mediaId, mediaTitle, mediaImage, coverImage },
+    data: { hostId, mediaId, mediaTitle, mediaImage, coverImage, clubId: clubId || null },
     include: PARTY_INCLUDE,
   });
 

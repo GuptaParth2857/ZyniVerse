@@ -147,3 +147,78 @@ export async function removeFriend(userId: string, friendId: string) {
     },
   });
 }
+
+export async function cancelFriendRequest(senderId: string, receiverId: string) {
+  const res = await prisma.friendRequest.deleteMany({
+    where: { senderId, receiverId, status: "pending" },
+  });
+  return res.count > 0;
+}
+
+export async function getFriendSuggestions(userId: string, limit = 12) {
+  const [accepted, pending, myFollows, myFollowers] = await Promise.all([
+    prisma.friendRequest.findMany({
+      where: { OR: [{ senderId: userId }, { receiverId: userId }], status: "accepted" },
+      include: { sender: { select: { id: true } }, receiver: { select: { id: true } } },
+    }),
+    prisma.friendRequest.findMany({
+      where: { OR: [{ senderId: userId }, { receiverId: userId }], status: "pending" },
+      select: { senderId: true, receiverId: true },
+    }),
+    prisma.follow.findMany({ where: { followerId: userId }, select: { followingId: true } }),
+    prisma.follow.findMany({ where: { followingId: userId }, select: { followerId: true } }),
+  ]);
+
+  const friendIds = accepted.map((r) => (r.senderId === userId ? r.receiverId : r.senderId));
+  const excluded = new Set([
+    userId,
+    ...friendIds,
+    ...pending.map((r) => (r.senderId === userId ? r.receiverId : r.senderId)),
+  ]);
+
+  const mutual = new Map<string, number>();
+  if (friendIds.length > 0) {
+    const mutualFollows = await prisma.follow.findMany({
+      where: { followerId: { in: friendIds } },
+      select: { followingId: true },
+    });
+    for (const f of mutualFollows) {
+      if (!excluded.has(f.followingId)) {
+        mutual.set(f.followingId, (mutual.get(f.followingId) ?? 0) + 1);
+      }
+    }
+  }
+
+  const score = new Map<string, number>(mutual);
+  for (const [id, m] of mutual) score.set(id, m * 2);
+  for (const f of myFollows) {
+    if (mutual.has(f.followingId)) score.set(f.followingId, (score.get(f.followingId) ?? 0) + 1);
+  }
+  for (const f of myFollowers) {
+    if (mutual.has(f.followerId)) score.set(f.followerId, (score.get(f.followerId) ?? 0) + 1);
+  }
+
+  const scored = [...score.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
+  if (scored.length === 0) return [];
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: scored.map(([id]) => id) } },
+    select: { id: true, username: true, avatar: true },
+  });
+  const userMap = new Map(users.map((u) => [u.id, u]));
+
+  return scored
+    .map(([id, s]) => {
+      const u = userMap.get(id);
+      if (!u) return null;
+      return {
+        id: u.id,
+        username: u.username,
+        avatar: u.avatar,
+        mutualCount: mutual.get(id) ?? 0,
+        score: s,
+      };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null)
+    .sort((a, b) => b.score - a.score);
+}

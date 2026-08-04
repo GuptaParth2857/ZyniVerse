@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import type { VoiceLine } from "@/lib/voice-lines";
 import MomentMaker from "./MomentMaker";
 
@@ -14,6 +15,15 @@ const typeColors: Record<string, string> = {
   romantic: "bg-pink-500/20 text-pink-400 border-pink-500/30",
 };
 
+const typeAccent: Record<string, string> = {
+  iconic: "#facc15",
+  funny: "#4ade80",
+  inspiring: "#60a5fa",
+  sad: "#a78bfa",
+  badass: "#f87171",
+  romantic: "#f472b6",
+};
+
 const langLabels: Record<string, string> = {
   english: "EN",
   japanese: "JP",
@@ -22,11 +32,71 @@ const langLabels: Record<string, string> = {
   telugu: "TE",
 };
 
-export default function VoiceLineCard({ line }: { line: VoiceLine }) {
+export default function VoiceLineCard({ line, index = 0 }: { line: VoiceLine; index?: number }) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(line.likes);
+  const [likeBusy, setLikeBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [momentOpen, setMomentOpen] = useState(false);
+  const [characterImage, setCharacterImage] = useState<string | null>(null);
+
+  const accent = typeAccent[line.type] || "#00ffe0";
+
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (momentOpen) return;
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const px = (e.clientX - cx) / (rect.width / 2);
+    const py = (e.clientY - cy) / (rect.height / 2);
+    el.style.transform = `perspective(900px) rotateY(${px * 5}deg) rotateX(${-py * 5}deg) scale(1.02)`;
+  }, [momentOpen]);
+
+  const handlePointerLeave = useCallback(() => {
+    if (momentOpen) return;
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg) scale(1)";
+  }, [momentOpen]);
+
+  function handleOpenMoment() {
+    if (ref.current) {
+      ref.current.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg) scale(1)";
+    }
+    setMomentOpen(true);
+    if (!characterImage) {
+      const params = new URLSearchParams();
+      if (line.characterId) params.set("characterId", String(line.characterId));
+      params.set("animeId", String(line.animeId));
+      params.set("character", line.character);
+      fetch(`/api/voice-lines/character-image?${params}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d?.image) setCharacterImage(d.image);
+        })
+        .catch(() => {});
+    }
+  }
+
+  useEffect(() => {
+    let active = true;
+    fetch(`/api/voice-lines/${line.id}/like`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (active && d) {
+          setLiked(d.liked);
+          setLikes(d.likes);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [line.id]);
 
   function handleShare() {
     const text = `"${line.line}" — ${line.character} (${line.animeTitle})`;
@@ -36,84 +106,140 @@ export default function VoiceLineCard({ line }: { line: VoiceLine }) {
     });
   }
 
-  function handleLike() {
-    if (liked) {
-      setLikes((l) => l - 1);
-    } else {
-      setLikes((l) => l + 1);
+  async function handleLike() {
+    if (likeBusy) return;
+    setLikeBusy(true);
+    const prevLiked = liked;
+    const prevLikes = likes;
+    setLiked(!prevLiked);
+    setLikes((l) => (prevLiked ? l - 1 : l + 1));
+    try {
+      const res = await fetch(`/api/voice-lines/${line.id}/like`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setLiked(prevLiked);
+        setLikes(prevLikes);
+        if (res.status === 401) {
+          window.location.href = "/login";
+        }
+        return;
+      }
+      setLiked(data.liked);
+      setLikes(data.likes);
+    } catch {
+      setLiked(prevLiked);
+      setLikes(prevLikes);
+    } finally {
+      setLikeBusy(false);
     }
-    setLiked((l) => !l);
   }
 
   return (
-    <div className="group rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <Link href={`/voice-lines/${line.id}`} className="block">
-        <p className="text-lg leading-relaxed italic text-[var(--color-ink)] before:content-['\201C'] before:mr-1 after:content-['\201D'] after:ml-1">
-          {line.line}
-        </p>
-        {line.lineHindi && (
-          <p className="mt-2 text-sm text-[var(--color-magenta)] italic">
-            {line.lineHindi}
-          </p>
-        )}
-        <div className="mt-3 flex items-center gap-2 text-sm">
-          <span className="font-bold text-[var(--color-cyan)]">{line.character}</span>
-          <span className="text-[var(--color-mute)]">·</span>
-          <span className="text-[var(--color-mute)]">{line.animeTitle}</span>
-        </div>
-        {line.context && (
-          <p className="mt-1.5 text-xs text-[var(--color-mute)]">{line.context}</p>
-        )}
-        {line.episode && (
-          <p className="mt-0.5 text-[10px] font-mono text-[var(--color-mute)]">
-            Ep. {line.episode}
-            {line.timestamp && ` · ${line.timestamp}`}
-          </p>
-        )}
-      </Link>
-
-      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--color-line)] pt-3">
-        <span
-          className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${typeColors[line.type] || "bg-white/10 text-[var(--color-mute)]"}`}
-        >
-          {line.type}
-        </span>
-        <span className="rounded-full border border-[var(--color-line)] bg-[var(--color-void)] px-2 py-0.5 text-[10px] font-mono uppercase text-[var(--color-mute)]">
-          {langLabels[line.language] || line.language}
-        </span>
-        {line.language !== "english" && (
-          <span className="rounded-full border border-[var(--color-line)] bg-[var(--color-void)] px-2 py-0.5 text-[10px] font-mono uppercase text-[var(--color-mute)]">
-            {line.lineJapanese && "JP"}
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 26, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.45, delay: (index % 9) * 0.07, ease: [0.22, 1, 0.36, 1] }}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className="neon-premium rounded-[20px]"
+      style={{ transition: "transform 0.2s ease-out" }}
+    >
+      <div className="neon-premium-track" />
+      <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+      <div className="neon-premium-content rounded-[20px] p-5">
+        {/* Top badges */}
+        <div className="mb-3 flex items-center gap-2">
+          <span className="h-1.5 w-8 rounded-full" style={{ background: accent, boxShadow: `0 0 10px ${accent}88` }} />
+          <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${typeColors[line.type] || "bg-white/10 text-[var(--color-mute)]"}`}>
+            {line.type}
           </span>
-        )}
-        <div className="ml-auto flex items-center gap-2">
-          <button
+          <span className="ml-auto flex items-center gap-1.5">
+            <span className="rounded-full border border-[var(--color-line)] bg-[var(--color-void)] px-2 py-0.5 text-[10px] font-mono uppercase text-[var(--color-mute)]">
+              {langLabels[line.language] || line.language}
+            </span>
+            {line.language !== "english" && line.lineJapanese && (
+              <span className="rounded-full border border-[var(--color-line)] bg-[var(--color-void)] px-2 py-0.5 text-[10px] font-mono uppercase text-[var(--color-mute)]">
+                JP
+              </span>
+            )}
+          </span>
+        </div>
+
+        <Link href={`/voice-lines/${line.id}`} className="block no-underline">
+          <div className="relative">
+            <span
+              className="pointer-events-none absolute -top-3 -left-2 select-none font-serif text-6xl leading-none opacity-20"
+              style={{ color: accent }}
+            >
+              &quot;
+            </span>
+            <p className="relative pl-2 text-lg leading-relaxed italic text-[var(--color-ink)]">
+              {line.line}
+            </p>
+          </div>
+          {line.lineHindi && (
+            <p className="mt-2 text-sm text-[var(--color-magenta)] italic">{line.lineHindi}</p>
+          )}
+          <div className="mt-3 flex items-center gap-2 text-sm">
+            <span className="font-bold text-[var(--color-cyan)]">{line.character}</span>
+            <span className="text-[var(--color-mute)]">·</span>
+            <span className="text-[var(--color-mute)]">{line.animeTitle}</span>
+          </div>
+          {line.context && (
+            <p className="mt-1.5 text-xs text-[var(--color-mute)]">{line.context}</p>
+          )}
+          {line.episode && (
+            <p className="mt-0.5 text-[10px] font-mono text-[var(--color-mute)]">
+              Ep. {line.episode}
+              {line.timestamp && ` · ${line.timestamp}`}
+            </p>
+          )}
+        </Link>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[var(--color-line)] pt-3">
+          <motion.button
+            whileTap={{ scale: 0.82 }}
             onClick={handleLike}
-            className={`flex items-center gap-1 rounded-md px-4 py-2 text-xs transition-colors ${
+            disabled={likeBusy}
+            className={`flex items-center gap-1.5 rounded-md px-4 py-2 text-xs transition-colors disabled:opacity-60 ${
               liked
                 ? "text-red-400 bg-red-500/10"
                 : "text-[var(--color-mute)] hover:text-red-400 hover:bg-red-500/5"
             }`}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+            <motion.svg
+              key={liked ? "liked" : "unliked"}
+              initial={{ scale: 0.4 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 15 }}
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill={liked ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
+            </motion.svg>
             {likes}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.82 }}
             onClick={handleShare}
-            className="flex items-center gap-1 rounded-md px-4 py-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-cyan-500/5 transition-colors"
+            className="flex items-center gap-1.5 rounded-md px-4 py-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-cyan-500/5 transition-colors"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
               <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
             </svg>
             {copied ? "Copied!" : "Share"}
-          </button>
+          </motion.button>
           {line.animeId > 0 && (
-            <button
-              onClick={() => setMomentOpen(true)}
-              className="flex items-center gap-1 rounded-md px-4 py-2 text-xs text-[var(--color-magenta)] hover:text-[var(--color-magenta)] hover:bg-[var(--color-magenta)]/5 transition-colors"
+            <motion.button
+              whileTap={{ scale: 0.82 }}
+              onClick={handleOpenMoment}
+              className="flex items-center gap-1.5 rounded-md px-4 py-2 text-xs text-[var(--color-magenta)] hover:text-[var(--color-magenta)] hover:bg-[var(--color-magenta)]/5 transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -121,7 +247,7 @@ export default function VoiceLineCard({ line }: { line: VoiceLine }) {
                 <path d="M21 15l-5-5L5 21" />
               </svg>
               Moment
-            </button>
+            </motion.button>
           )}
         </div>
       </div>
@@ -131,11 +257,12 @@ export default function VoiceLineCard({ line }: { line: VoiceLine }) {
         onClose={() => setMomentOpen(false)}
         animeId={line.animeId}
         animeTitle={line.animeTitle}
+        animeCover={characterImage}
         initialQuote={line.line}
         initialCharacter={line.character}
         initialEpisode={line.episode ?? null}
         initialTimestamp={line.timestamp ?? null}
       />
-    </div>
+    </motion.div>
   );
 }

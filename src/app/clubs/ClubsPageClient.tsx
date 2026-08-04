@@ -65,48 +65,45 @@ export default function ClubsPageClient() {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
       <div className="mb-10">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Community</p>
-        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
-          <h1 className="font-display text-3xl font-bold sm:text-4xl mt-1">Clubs & Groups</h1>
-        </div>
-        <p className="mt-2 text-[var(--color-mute)] max-w-2xl">
+        <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">
+          <span className="gradient-text">Clubs & Groups</span>
+        </h1>
+        <p className="mt-3 max-w-2xl text-[var(--color-mute)]">
           Find your people. Join clubs for specific anime, manga, regions, languages, and more.
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.value}
               onClick={() => setCategory(cat.value)}
-              className={`rounded-full px-5 py-2.5 text-xs font-semibold transition-colors ${
+              className={`neon-rgb-border rounded-full px-4 py-2 text-xs font-semibold transition-all ${
                 category === cat.value
-                  ? "bg-[var(--color-magenta)] text-black"
-                   : "text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)]"
+                  ? "bg-gradient-to-r from-[var(--color-magenta)] to-[var(--color-violet)] text-black shadow-[0_0_16px_-4px_var(--color-magenta)]"
+                  : "bg-[var(--color-panel)] text-[var(--color-mute)] hover:text-[var(--color-cyan)]"
               }`}
             >
               {cat.label}
             </button>
           ))}
         </div>
-        <div className="flex gap-3">
-          <div className="relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-mute)" strokeWidth="2">
+        <div className="flex items-center gap-3">
+          <div className="neon-rgb-border relative rounded-full">
+            <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-mute)" strokeWidth="2">
               <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
             </svg>
             <input
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Search clubs..."
-              className="rounded-lg bg-[var(--color-panel)] pl-9 pr-3 py-2 text-sm outline-none w-full sm:w-56 text-[var(--color-ink)] placeholder-[var(--color-mute)] focus:border-[var(--color-cyan)] transition-colors border border-[var(--color-line)]"
+              className="w-full rounded-full bg-[var(--color-panel)] py-2 pl-10 pr-4 text-sm text-[var(--color-ink)] outline-none placeholder-[var(--color-mute)] sm:w-56"
             />
           </div>
-          <Link href="/clubs/create" className="neon-premium rounded-xl no-underline">
-            <div className="neon-premium-track rounded-xl" />
-            <div className="neon-premium-overlay rounded-[10.5px]" />
-            <span className="neon-premium-content flex items-center px-5 py-2.5 text-xs font-bold text-[var(--color-cyan)] hover:text-white transition-colors rounded-xl">
-              + Create Club
-            </span>
+          <Link href="/clubs/create" className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-[var(--color-magenta)] via-[#7000ff] to-[var(--color-cyan)] px-5 py-2.5 text-xs font-bold text-black shadow-[0_0_20px_-6px_var(--color-magenta)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_32px_-4px_var(--color-magenta)]">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M5 12h14" /></svg>
+            Create Club
           </Link>
         </div>
       </div>
@@ -114,43 +111,32 @@ export default function ClubsPageClient() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="neon-premium rounded-xl" style={{ minHeight: 160 }}>
-              <div className="neon-premium-track rounded-xl" />
-              <div className="neon-premium-overlay rounded-[10.5px]" />
-              <div className="neon-premium-content p-4 animate-pulse">
-                <div className="h-4 w-3/4 bg-[var(--color-line)] rounded mb-3" />
-                <div className="h-3 w-full bg-[var(--color-line)] rounded mb-2" />
-                <div className="h-3 w-1/2 bg-[var(--color-line)] rounded" />
-              </div>
+            <div key={i} className="neon-rgb-border rounded-2xl bg-[var(--color-panel)] p-4" style={{ minHeight: 160 }}>
+              <div className="h-20 w-full animate-pulse rounded-xl bg-[var(--color-line)]" />
+              <div className="mt-4 h-4 w-3/4 animate-pulse rounded bg-[var(--color-line)]" />
+              <div className="mt-2 h-3 w-full animate-pulse rounded bg-[var(--color-line)]" />
+              <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-[var(--color-line)]" />
             </div>
           ))}
         </div>
       ) : clubs.length === 0 ? (
-        <div className="neon-premium rounded-xl text-center">
-          <div className="neon-premium-track rounded-xl" />
-          <div className="neon-premium-overlay rounded-[10.5px]" />
-          <div className="neon-premium-content py-20 px-6">
-            <div className="h-16 w-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-magenta)" strokeWidth="2">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-              </svg>
-            </div>
-            <h3 className="font-display text-lg font-bold text-white mb-2">No clubs yet</h3>
-            <p className="text-sm text-[var(--color-mute)] mb-4">Be the first to create a community!</p>
-            <Link href="/clubs/create" className="neon-premium rounded-xl inline-flex no-underline">
-              <div className="neon-premium-track rounded-xl" />
-              <div className="neon-premium-overlay rounded-[10.5px]" />
-              <span className="neon-premium-content flex items-center gap-2 px-6 py-3 text-sm font-bold text-[var(--color-cyan)] hover:text-white transition-colors rounded-xl">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
-                Create Club
-              </span>
-            </Link>
+        <div className="neon-rgb-border rounded-2xl bg-[var(--color-panel)] px-6 py-16 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-magenta)" strokeWidth="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
+            </svg>
           </div>
+          <h3 className="mb-2 font-display text-lg font-bold text-white">No clubs yet</h3>
+          <p className="mb-4 text-sm text-[var(--color-mute)]">Be the first to create a community!</p>
+          <Link href="/clubs/create" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--color-magenta)] via-[#7000ff] to-[var(--color-cyan)] px-6 py-3 text-sm font-bold text-black shadow-[0_0_24px_-6px_var(--color-magenta)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_36px_-4px_var(--color-magenta)]">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M5 12h14" /></svg>
+            Create Club
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {clubs.map((club) => (
-            <ClubCard key={club.id} club={club} />
+          {clubs.map((club, i) => (
+            <ClubCard key={club.id} club={club} index={i} />
           ))}
         </div>
       )}

@@ -8,12 +8,21 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import ChatButton from "@/components/ChatButton";
+import AddFriendButton from "@/components/AddFriendButton";
 import { logError } from "@/lib/logger";
 
 interface FriendUser {
   id: string;
   username: string;
   avatar: string | null;
+}
+
+interface Suggestion {
+  id: string;
+  username: string;
+  avatar: string | null;
+  mutualCount: number;
+  score: number;
 }
 
 type Tab = "friends" | "requests" | "sent";
@@ -25,11 +34,13 @@ export default function FriendsClient() {
   const [friends, setFriends] = useState<FriendUser[]>([]);
   const [requests, setRequests] = useState<{ id: string; sender: FriendUser; createdAt: string }[]>([]);
   const [sent, setSent] = useState<{ id: string; receiver: FriendUser; createdAt: string }[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<FriendUser[]>([]);
   const [searching, setSearching] = useState(false);
   const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set());
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -48,10 +59,32 @@ export default function FriendsClient() {
   }, []);
 
   useEffect(() => {
+    if (status !== "authenticated") return;
+    let cancelled = false;
+    fetch("/api/friends/suggestions")
+      .then((r) => r.json())
+      .then((data) => { if (!cancelled) setSuggestions(data.suggestions ?? []); })
+      .catch((e) => logError(e));
+    return () => { cancelled = true; };
+  }, [status]);
+
+  useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return; }
     if (status !== "authenticated") return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAll();
+    const poll = setInterval(async () => {
+      try {
+        const [rRes, sRes] = await Promise.all([
+          fetch("/api/friends?type=pending"),
+          fetch("/api/friends?type=sent"),
+        ]);
+        const [rData, sData] = await Promise.all([rRes.json(), sRes.json()]);
+        setRequests(rData.requests ?? []);
+        setSent(sData.requests ?? []);
+      } catch (e) { logError(e); }
+    }, 15000);
+    return () => clearInterval(poll);
   }, [status, router, fetchAll]);
 
   useEffect(() => {
@@ -99,6 +132,15 @@ export default function FriendsClient() {
     try {
       await fetch(`/api/friends/${id}`, { method: "DELETE" });
       setFriends((prev) => prev.filter((f) => f.id !== id));
+      setConfirmRemoveId(null);
+    } catch (e) { logError(e); }
+  }
+
+  async function cancelRequest(id: string) {
+    try {
+      await fetch(`/api/friends/${id}`, { method: "DELETE" });
+      setSent((prev) => prev.filter((r) => r.receiver.id !== id));
+      fetchAll();
     } catch (e) { logError(e); }
   }
 
@@ -111,9 +153,18 @@ export default function FriendsClient() {
       });
       if (res.ok) {
         setRequestedIds((prev) => new Set(prev).add(userId));
+        refreshSent();
       }
     } catch (e) { logError(e); }
   }
+
+  const refreshSent = useCallback(async () => {
+    try {
+      const res = await fetch("/api/friends?type=sent");
+      const data = await res.json();
+      setSent(data.requests ?? []);
+    } catch (e) { logError(e); }
+  }, []);
 
   if (status === "loading") return null;
 
@@ -216,6 +267,43 @@ export default function FriendsClient() {
               )}
             </div>
 
+            {suggestions.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-cyan)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.42 4.58a5.4 5.4 0 00-7.65 0l-.77.78-.77-.78a5.4 5.4 0 00-7.65 7.65l.77.78 7.65 7.65 7.65-7.65.77-.78a5.4 5.4 0 000-7.65z" />
+                  </svg>
+                  <h2 className="text-sm font-mono uppercase tracking-wider text-[var(--color-cyan)]">
+                    People you may know
+                  </h2>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {suggestions.map((s) => (
+                    <motion.div
+                      key={s.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                      className="group neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm px-4 py-3 flex items-center gap-3 transition-all duration-300"
+                    >
+                      <Link href={`/profile/${s.id}`} className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-violet)] to-[var(--color-magenta)] text-sm font-bold text-black shrink-0 overflow-hidden">
+                        {s.avatar ? <Image src={s.avatar} alt="" width={40} height={40} className="object-cover" /> : s.username.charAt(0).toUpperCase()}
+                      </Link>
+                      <div className="min-w-0 flex-1">
+                        <Link href={`/profile/${s.id}`} className="block truncate text-sm font-semibold text-[var(--color-ink)] hover:text-[var(--color-cyan)] transition-colors">
+                          {s.username}
+                        </Link>
+                        <p className="text-[11px] text-[var(--color-mute)]">
+                          {s.mutualCount > 0 ? `${s.mutualCount} mutual friend${s.mutualCount === 1 ? "" : "s"}` : "Suggested for you"}
+                        </p>
+                      </div>
+                      <AddFriendButton userId={s.id} username={s.username} onChange={refreshSent} />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
               {loading ? (
                 <div className="space-y-3">
@@ -244,10 +332,19 @@ export default function FriendsClient() {
                     </Link>
                     <ChatButton userId={f.id} username={f.username} />
                     <button
-                      onClick={() => remove(f.id)}
-                      className="neon-rgb-border rounded-full px-3 py-1.5 text-xs font-bold text-[var(--color-mute)] hover:text-red-400 transition-colors"
+                      onClick={() => {
+                        if (confirmRemoveId === f.id) {
+                          remove(f.id);
+                        } else {
+                          setConfirmRemoveId(f.id);
+                          setTimeout(() => setConfirmRemoveId((cur) => (cur === f.id ? null : cur)), 3000);
+                        }
+                      }}
+                      className={`neon-rgb-border rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
+                        confirmRemoveId === f.id ? "text-red-400" : "text-[var(--color-mute)] hover:text-red-400"
+                      }`}
                     >
-                      Remove
+                      {confirmRemoveId === f.id ? "Confirm?" : "Remove"}
                     </button>
                   </motion.div>
                 ))
@@ -333,6 +430,12 @@ export default function FriendsClient() {
                   <span className="neon-rgb-border rounded-full px-4 py-1.5 text-xs font-bold text-[var(--color-mute)]">
                     Requested
                   </span>
+                  <button
+                    onClick={() => cancelRequest(r.receiver.id)}
+                    className="neon-rgb-border rounded-full px-3 py-1.5 text-xs font-bold text-[var(--color-mute)] hover:text-red-400 transition-colors"
+                  >
+                    Cancel
+                  </button>
                 </motion.div>
               ))
             )}

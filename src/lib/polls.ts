@@ -43,7 +43,7 @@ export async function createPoll(
   return poll as unknown as PollData;
 }
 
-export async function getPolls(activeOnly = false, page = 1, perPage = 20) {
+export async function getPolls(activeOnly = false, page = 1, perPage = 20, userId?: string) {
   const where = activeOnly ? { isActive: true } : {};
   const [polls, total] = await Promise.all([
     prisma.poll.findMany({
@@ -59,7 +59,17 @@ export async function getPolls(activeOnly = false, page = 1, perPage = 20) {
     }),
     prisma.poll.count({ where }),
   ]);
-  return { polls: polls as unknown as PollData[], total, page, perPage };
+
+  let result = polls as unknown as PollData[];
+  if (userId && result.length > 0) {
+    const votes = await prisma.pollVote.findMany({
+      where: { userId, pollId: { in: result.map((p) => p.id) } },
+    });
+    const voteMap = new Map(votes.map((v) => [v.pollId, v.optionId]));
+    result = result.map((p) => ({ ...p, userVote: voteMap.get(p.id) || null }));
+  }
+
+  return { polls: result, total, page, perPage };
 }
 
 export async function getPollById(pollId: string, userId?: string) {
