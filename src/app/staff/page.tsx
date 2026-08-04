@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -8,6 +8,132 @@ import { searchStaff, getPopularStaff } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import type { StaffBasic } from "@/lib/anilist";
+
+interface StaffStripCardProps {
+  staff: StaffBasic;
+  index: number;
+  isHovered: boolean;
+  onEnter: () => void;
+  onLeave: () => void;
+}
+
+function StaffStripCard({ staff, index, isHovered, onEnter, onLeave }: StaffStripCardProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const px = (e.clientX - cx) / (rect.width / 2);
+    const py = (e.clientY - cy) / (rect.height / 2);
+    el.style.transform = `perspective(800px) rotateY(${px * 4}deg) rotateX(${-py * 4}deg) scale(1.02)`;
+  }, []);
+
+  const handlePointerLeave = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) scale(1)";
+  }, []);
+
+  return (
+    <motion.div
+      layout
+      ref={ref}
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0, flex: isHovered ? 3 : 1 }}
+      transition={{
+        opacity: { duration: 0.45, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] },
+        y: { duration: 0.45, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] },
+        flex: { type: "spring", stiffness: 300, damping: 25 },
+      }}
+      onPointerMove={handlePointerMove}
+      onPointerEnter={onEnter}
+      onPointerLeave={() => { handlePointerLeave(); onLeave(); }}
+      className="neon-premium relative overflow-hidden rounded-2xl cursor-pointer group"
+      style={{ minWidth: 0, transition: "transform 0.2s ease-out" }}
+    >
+      <div className="neon-premium-track" />
+      <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+      <Link
+        href={`/staff/${staff.id}`}
+        className="neon-premium-content block h-full w-full"
+      >
+        {/* Background gradient (not image — avoids cut-off) */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-panel)] via-black to-[var(--color-void)]" />
+        {staff.image?.large && (
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-30 transition-opacity duration-700 group-hover:opacity-50"
+            style={{ backgroundImage: `url(${staff.image.large})` }}
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 via-30% to-transparent" />
+        {!isHovered && (
+          <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40" />
+        )}
+
+        {/* Collapsed: photo circle + vertical name */}
+        {!isHovered && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-3">
+            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-white/20 shadow-lg">
+              <Image
+                src={staff.image?.medium || staff.image?.large || ""}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="56px"
+              />
+            </div>
+            <p className="font-display text-[10px] font-bold leading-tight text-center text-white/80 [writing-mode:vertical-lr] rotate-180 truncate max-h-[120px]">
+              {staff.name?.full || "Unknown"}
+            </p>
+          </div>
+        )}
+
+        {/* Expanded content */}
+        {isHovered && (
+          <div className="absolute inset-x-0 bottom-0 p-5">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-white/30 shadow-lg">
+                <Image src={staff.image?.medium || staff.image?.large || ""} alt="" fill className="object-cover" sizes="56px" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-display text-lg font-bold leading-tight text-white drop-shadow-lg">
+                  {staff.name?.full}
+                </p>
+                {staff.name?.native && (
+                  <p className="text-xs text-white/50 truncate">{staff.name.native}</p>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
+              {staff.gender && <span>{staff.gender}</span>}
+              {staff.favourites != null && (
+                <span>♥ {staff.favourites.toLocaleString()}</span>
+              )}
+            </div>
+            <motion.span
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.15 }}
+              className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-magenta)]"
+            >
+              View Profile →
+            </motion.span>
+          </div>
+        )}
+
+        {/* Number badge */}
+        <div className="absolute left-3 top-3">
+          <span className="font-mono text-[10px] font-bold text-white/30">
+            {(index + 1).toString().padStart(2, "0")}
+          </span>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
 
 export default function StaffBrowsePage() {
   const [query, setQuery] = useState("");
@@ -80,7 +206,7 @@ export default function StaffBrowsePage() {
 
         {/* Section label */}
         <p className="text-center text-[10px] font-mono uppercase tracking-wider text-[var(--color-mute)] mb-6">
-          {query.trim() ? `Results for "${query}"` : "Popular Staff"}
+          {query.trim() ? `Results for "${query}" — ${displayItems.length}` : "Popular Staff"}
         </p>
 
         {/* Loading */}
@@ -96,98 +222,16 @@ export default function StaffBrowsePage() {
         {/* Staff strip — ExpandingFlexCard style */}
         {!loading && !error && displayItems.length > 0 && (
           <div className="flex h-[300px] sm:h-[420px] gap-2 w-full overflow-x-auto pb-2">
-            {displayItems.slice(0, 18).map((staff, i) => {
-              const isHovered = hovered === staff.id;
-              return (
-                <motion.div
-                  key={staff.id}
-                  layout
-                  initial={false}
-                  animate={{ flex: isHovered ? 3 : 1 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  onMouseEnter={() => setHovered(staff.id)}
-                  onMouseLeave={() => setHovered(null)}
-                  className="relative overflow-hidden rounded-2xl neon-rgb-border cursor-pointer group"
-                  style={{ minWidth: 0 }}
-                >
-                  <Link
-                    href={`/staff/${staff.id}`}
-                    className="block h-full w-full"
-                  >
-                    {/* Background gradient (not image — avoids cut-off) */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-panel)] via-black to-[var(--color-void)]" />
-                    {staff.image?.large && (
-                      <div
-                        className="absolute inset-0 bg-cover bg-center opacity-30 transition-opacity duration-700 group-hover:opacity-50"
-                        style={{ backgroundImage: `url(${staff.image.large})` }}
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 via-30% to-transparent" />
-                    {!isHovered && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40" />
-                    )}
-
-                    {/* Collapsed: photo circle + vertical name */}
-                    {!isHovered && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-3">
-                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-white/20 shadow-lg">
-                          <Image
-                            src={staff.image?.medium || staff.image?.large || ""}
-                            alt=""
-                            fill
-                            className="object-cover"
-                            sizes="56px"
-                          />
-                        </div>
-                        <p className="font-display text-[10px] font-bold leading-tight text-center text-white/80 [writing-mode:vertical-lr] rotate-180 truncate max-h-[120px]">
-                          {staff.name?.full || "Unknown"}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Expanded content */}
-                    {isHovered && (
-                      <div className="absolute inset-x-0 bottom-0 p-5">
-                        <div className="mb-3 flex items-center gap-3">
-                          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-white/30 shadow-lg">
-                            <Image src={staff.image?.medium || staff.image?.large || ""} alt="" fill className="object-cover" sizes="56px" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-display text-lg font-bold leading-tight text-white drop-shadow-lg">
-                              {staff.name?.full}
-                            </p>
-                            {staff.name?.native && (
-                              <p className="text-xs text-white/50 truncate">{staff.name.native}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
-                          {staff.gender && <span>{staff.gender}</span>}
-                          {staff.favourites != null && (
-                            <span>♥ {staff.favourites.toLocaleString()}</span>
-                          )}
-                        </div>
-                        <motion.span
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.15 }}
-                          className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-magenta)]"
-                        >
-                          View Profile →
-                        </motion.span>
-                      </div>
-                    )}
-
-                    {/* Number badge */}
-                    <div className="absolute left-3 top-3">
-                      <span className="font-mono text-[10px] font-bold text-white/30">
-                        {(i + 1).toString().padStart(2, "0")}
-                      </span>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
+            {displayItems.map((staff, i) => (
+              <StaffStripCard
+                key={staff.id}
+                staff={staff}
+                index={i}
+                isHovered={hovered === staff.id}
+                onEnter={() => setHovered(staff.id)}
+                onLeave={() => setHovered(null)}
+              />
+            ))}
           </div>
         )}
 

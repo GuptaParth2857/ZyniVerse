@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   });
   if (!member) return NextResponse.json({ error: "Not a member" }, { status: 403 });
 
-  const { title, content } = await req.json();
+  const { title, content, image, videoUrl, thumbnailUrl } = await req.json();
   if (!title || !content) return NextResponse.json({ error: "Title and content required" }, { status: 400 });
 
   const post = await prisma.clubPost.create({
@@ -43,11 +43,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       userId: session.user.id,
       title: title.trim(),
       content: content.trim(),
+      ...(image ? { image } : {}),
+      ...(videoUrl ? { videoUrl, thumbnailUrl: thumbnailUrl || null } : {}),
     },
     include: {
       user: { select: { id: true, username: true, avatar: true } },
     },
   });
+
+  if (member) {
+    await prisma.clubMember.update({
+      where: { clubId_userId: { clubId: id, userId: session.user.id } },
+      data: { points: { increment: 5 } },
+    });
+  }
 
   const club = await prisma.club.findUnique({ where: { id }, select: { name: true, slug: true } });
   if (club) {

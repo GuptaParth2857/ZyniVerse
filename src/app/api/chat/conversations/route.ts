@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-import { getConversations, getOrCreateConversation, getUnreadCounts } from "@/lib/chat";
+import { getConversations, getOrCreateConversation, getUnreadCounts, broadcastToConversation } from "@/lib/chat";
 
 export async function GET() {
   const session = await auth();
@@ -22,6 +22,7 @@ export async function GET() {
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
       otherUser: otherParticipant?.user ?? null,
+      otherLastReadAt: otherParticipant?.lastReadAt.toISOString() ?? null,
       lastMessage: c.lastMessage,
       unreadCount: unreadMap.get(c.id) ?? 0,
     };
@@ -55,6 +56,12 @@ export async function PUT(req: NextRequest) {
     where: { conversationId, userId: session.user.id },
     data: { lastReadAt: new Date() },
   });
+
+  broadcastToConversation(conversationId, session.user.id, "dm-seen", {
+    conversationId,
+    userId: session.user.id,
+    lastReadAt: new Date().toISOString(),
+  }).catch(() => {});
 
   return NextResponse.json({ success: true });
 }

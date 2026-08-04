@@ -10,6 +10,7 @@ interface TierListSummary {
   createdAt: string;
   itemCount: number;
   voteCount: number;
+  previewItems: { tier: string; mediaTitle: string; mediaImage: string | null }[];
   user: { id: string; username: string; avatar: string | null };
 }
 
@@ -64,9 +65,9 @@ export default function TierListGrid() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-20 animate-pulse rounded-xl bg-[var(--color-panel)]" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="h-56 animate-pulse rounded-2xl bg-[var(--color-panel)]" />
           ))}
         </div>
       ) : tierLists.length === 0 ? (
@@ -74,9 +75,9 @@ export default function TierListGrid() {
           <p className="text-[var(--color-mute)]">No tier lists yet. Be the first to create one!</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {tierLists.map((tl) => (
-            <TierListCard key={tl.id} tierList={tl} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {tierLists.map((tl, i) => (
+            <TierListCard key={tl.id} tierList={tl} index={i} />
           ))}
         </div>
       )}

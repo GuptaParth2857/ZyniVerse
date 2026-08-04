@@ -24,7 +24,7 @@ export default function ListsPage() {
         </div>
         <Link
           href="/lists/create"
-          className="rounded-lg bg-[var(--color-cyan)] px-4 py-2 text-sm font-semibold text-black hover:opacity-90 transition-opacity"
+          className="neon-rgb-border rounded-xl bg-[var(--color-panel)] px-5 py-2.5 text-sm font-bold text-[var(--color-cyan)] transition-all hover:text-[var(--color-ink)]"
         >
           Create Your List
         </Link>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { CURATOR } from "@/lib/curator";
 
 interface ExternalPost {
   id: string;
@@ -106,10 +107,11 @@ export default function ExternalBlogDetail({ id }: { id: string }) {
             style={{ background: "radial-gradient(circle, rgba(0,255,224,0.15) 0%, transparent 70%)", filter: "blur(30px)" }}
           />
           <div className="text-center z-10">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-cyan)] to-[var(--color-violet)] text-lg font-black text-black mx-auto mb-3 shadow-[0_0_30px_-4px_rgba(0,255,224,0.3)]">
-              ZB
+            <div className="flex h-14 w-14 items-center justify-center rounded-full overflow-hidden mx-auto mb-3 ring-2 ring-[rgba(10,10,15,0.8)] shadow-[0_0_30px_-4px_rgba(0,255,224,0.3)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={CURATOR.avatar} alt={CURATOR.username} className="h-full w-full object-cover" />
             </div>
-            <p className="text-[10px] font-semibold text-[var(--color-mute)] uppercase tracking-wider">Curated by ZyniBot</p>
+            <p className="text-[10px] font-semibold text-[var(--color-mute)] uppercase tracking-wider">Curated by {CURATOR.username}</p>
           </div>
         </div>
       )}
@@ -117,11 +119,12 @@ export default function ExternalBlogDetail({ id }: { id: string }) {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-cyan)] to-[var(--color-violet)] text-xs font-black text-black">
-            ZB
+          <div className="flex h-10 w-10 items-center justify-center rounded-full overflow-hidden ring-2 ring-[rgba(10,10,15,0.8)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={CURATOR.avatar} alt={CURATOR.username} className="h-full w-full object-cover" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">ZyniBot</p>
+            <p className="text-sm font-bold text-white">{CURATOR.username}</p>
             <p className="text-[10px] text-[var(--color-mute)]">Curated from dev.to · {post.readingTime} min read</p>
           </div>
         </div>

@@ -77,7 +77,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "sasuke-1",
     character: "Sasuke Uchiha",
-    characterId: 18,
+    characterId: 13,
     animeTitle: "Naruto",
     animeId: 20,
     line: "I don't care. I'm not interested.",
@@ -91,7 +91,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "sasuke-2",
     character: "Sasuke Uchiha",
-    characterId: 18,
+    characterId: 13,
     animeTitle: "Naruto",
     animeId: 20,
     line: "I will restore my clan. And I will kill a certain man.",
@@ -105,7 +105,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "sasuke-3",
     character: "Sasuke Uchiha",
-    characterId: 18,
+    characterId: 13,
     animeTitle: "Naruto Shippuden",
     animeId: 4565,
     line: "You're still so annoying, Naruto.",
@@ -119,7 +119,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "itachi-1",
     character: "Itachi Uchiha",
-    characterId: 19,
+    characterId: 14,
     animeTitle: "Naruto Shippuden",
     animeId: 4565,
     line: "Forgive me, Sasuke. This is the last time.",
@@ -133,7 +133,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "itachi-2",
     character: "Itachi Uchiha",
-    characterId: 19,
+    characterId: 14,
     animeTitle: "Naruto Shippuden",
     animeId: 4565,
     line: "Those who aren't capable of acknowledging themselves will eventually fail.",
@@ -147,7 +147,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "itachi-3",
     character: "Itachi Uchiha",
-    characterId: 19,
+    characterId: 14,
     animeTitle: "Naruto Shippuden",
     animeId: 4565,
     line: "People live their lives bound by what they accept as correct and true. That's how they define reality.",
@@ -161,7 +161,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "kakashi-1",
     character: "Kakashi Hatake",
-    characterId: 20,
+    characterId: 85,
     animeTitle: "Naruto",
     animeId: 20,
     line: "Those who break the rules are scum, but those who abandon their friends are worse than scum.",
@@ -175,7 +175,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "kakashi-3",
     character: "Kakashi Hatake",
-    characterId: 20,
+    characterId: 85,
     animeTitle: "Naruto",
     animeId: 20,
     line: "I'm late... I got lost on the road of life.",
@@ -189,7 +189,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "madara-1",
     character: "Madara Uchiha",
-    characterId: 170,
+    characterId: 53901,
     animeTitle: "Naruto Shippuden",
     animeId: 4565,
     line: "Wake up to reality! Nothing ever goes as planned in this world.",
@@ -203,7 +203,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "madara-2",
     character: "Madara Uchiha",
-    characterId: 170,
+    characterId: 53901,
     animeTitle: "Naruto Shippuden",
     animeId: 4565,
     line: "In this world, wherever there is light, there are also shadows.",
@@ -217,7 +217,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "gaara-1",
     character: "Gaara",
-    characterId: 22,
+    characterId: 1662,
     animeTitle: "Naruto",
     animeId: 20,
     line: "My existence has no meaning whatsoever... I am nothing but a weapon.",
@@ -231,7 +231,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "gaara-2",
     character: "Gaara",
-    characterId: 22,
+    characterId: 1662,
     animeTitle: "Naruto Shippuden",
     animeId: 4565,
     line: "I've finally found it... a reason to live. I want to protect those I care about.",
@@ -245,7 +245,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "jiraiya-1",
     character: "Jiraiya",
-    characterId: 21,
+    characterId: 2423,
     animeTitle: "Naruto Shippuden",
     animeId: 4565,
     line: "A ninja's life is not measured by how they lived, but by what they did before dying.",
@@ -259,7 +259,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "pain-1",
     character: "Pain (Nagato)",
-    characterId: 175,
+    characterId: 3180,
     animeTitle: "Naruto Shippuden",
     animeId: 4565,
     line: "Peace is the ultimate jutsu. But it can only be achieved through pain.",
@@ -273,7 +273,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "hinata-1",
     character: "Hinata Hyuga",
-    characterId: 23,
+    characterId: 1555,
     animeTitle: "Naruto Shippuden",
     animeId: 4565,
     line: "I've always been chasing after you. I've always wanted to catch up to you.",
@@ -369,7 +369,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "zoro-1",
     character: "Roronoa Zoro",
-    characterId: 41,
+    characterId: 62,
     animeTitle: "One Piece",
     animeId: 21,
     line: "If I die here, I'm just a man who couldn't fulfill his promise.",
@@ -383,7 +383,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "zoro-2",
     character: "Roronoa Zoro",
-    characterId: 41,
+    characterId: 62,
     animeTitle: "One Piece",
     animeId: 21,
     line: "Nothing happened.",
@@ -397,7 +397,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "zoro-3",
     character: "Roronoa Zoro",
-    characterId: 41,
+    characterId: 62,
     animeTitle: "One Piece",
     animeId: 21,
     line: "I'll become the world's greatest swordsman!",
@@ -411,7 +411,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "zoro-4",
     character: "Roronoa Zoro",
-    characterId: 41,
+    characterId: 62,
     animeTitle: "One Piece",
     animeId: 21,
     line: "Scars on the back are a swordsman's shame.",
@@ -425,7 +425,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "sanji-1",
     character: "Sanji",
-    characterId: 42,
+    characterId: 305,
     animeTitle: "One Piece",
     animeId: 21,
     line: "I'll never kick a woman, even if it means my death.",
@@ -439,7 +439,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "sanji-2",
     character: "Sanji",
-    characterId: 42,
+    characterId: 305,
     animeTitle: "One Piece",
     animeId: 21,
     line: "I needed a light.",
@@ -453,7 +453,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "whitebeard-1",
     character: "Edward Newgate (Whitebeard)",
-    characterId: 125,
+    characterId: 2751,
     animeTitle: "One Piece",
     animeId: 21,
     line: "The One Piece... it exists!",
@@ -467,7 +467,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "robin-1",
     character: "Nico Robin",
-    characterId: 43,
+    characterId: 61,
     animeTitle: "One Piece",
     animeId: 21,
     line: "I want to live! Take me out to sea with you!",
@@ -481,7 +481,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "law-1",
     character: "Trafalgar D. Water Law",
-    characterId: 499,
+    characterId: 13767,
     animeTitle: "One Piece",
     animeId: 21,
     line: "The loser is the one who gives up first.",
@@ -495,7 +495,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "nami-1",
     character: "Nami",
-    characterId: 44,
+    characterId: 723,
     animeTitle: "One Piece",
     animeId: 21,
     line: "Luffy... help me!",
@@ -509,7 +509,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "ace-1",
     character: "Portgas D. Ace",
-    characterId: 130,
+    characterId: 2072,
     animeTitle: "One Piece",
     animeId: 21,
     line: "I don't want to die... but I still want to live!",
@@ -523,7 +523,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "shanks-1",
     character: "Shanks",
-    characterId: 128,
+    characterId: 727,
     animeTitle: "One Piece",
     animeId: 21,
     line: "It's not a crime to exist. No matter who you are.",
@@ -538,7 +538,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "eren-1",
     character: "Eren Yeager",
-    characterId: 920,
+    characterId: 40882,
     animeTitle: "Attack on Titan",
     animeId: 16498,
     line: "Tatakae! Fight!",
@@ -552,7 +552,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "eren-2",
     character: "Eren Yeager",
-    characterId: 920,
+    characterId: 40882,
     animeTitle: "Attack on Titan",
     animeId: 16498,
     line: "I will destroy every last one of them!",
@@ -566,7 +566,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "eren-3",
     character: "Eren Yeager",
-    characterId: 920,
+    characterId: 40882,
     animeTitle: "Attack on Titan",
     animeId: 16498,
     line: "This world is cruel. It's also very beautiful.",
@@ -580,7 +580,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "eren-4",
     character: "Eren Yeager",
-    characterId: 920,
+    characterId: 40882,
     animeTitle: "Attack on Titan Final Season",
     animeId: 110277,
     line: "I'll keep moving forward until all my enemies are destroyed.",
@@ -594,7 +594,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "levi-1",
     character: "Levi Ackerman",
-    characterId: 1800,
+    characterId: 45627,
     animeTitle: "Attack on Titan",
     animeId: 16498,
     line: "Give up on your dreams and die.",
@@ -608,7 +608,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "levi-2",
     character: "Levi Ackerman",
-    characterId: 1800,
+    characterId: 45627,
     animeTitle: "Attack on Titan",
     animeId: 16498,
     line: "No matter what happens, you have to keep moving forward.",
@@ -622,7 +622,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "erwin-1",
     character: "Erwin Smith",
-    characterId: 1801,
+    characterId: 46496,
     animeTitle: "Attack on Titan",
     animeId: 16498,
     line: "My soldiers, rage! My soldiers, scream! My soldiers, fight!",
@@ -636,7 +636,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "erwin-2",
     character: "Erwin Smith",
-    characterId: 1801,
+    characterId: 46496,
     animeTitle: "Attack on Titan",
     animeId: 16498,
     line: "I have no regrets. I gave my heart for humanity.",
@@ -650,7 +650,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "armin-1",
     character: "Armin Arlert",
-    characterId: 1802,
+    characterId: 46494,
     animeTitle: "Attack on Titan",
     animeId: 16498,
     line: "Nobody can control anything. That's what makes it all so terrifying.",
@@ -664,7 +664,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "armin-2",
     character: "Armin Arlert",
-    characterId: 1802,
+    characterId: 46494,
     animeTitle: "Attack on Titan",
     animeId: 16498,
     line: "Someone who can't give up anything can't change anything.",
@@ -678,7 +678,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "mikasa-1",
     character: "Mikasa Ackerman",
-    characterId: 1803,
+    characterId: 40881,
     animeTitle: "Attack on Titan",
     animeId: 16498,
     line: "This world is cruel. And it's also very beautiful.",
@@ -692,7 +692,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "mikasa-2",
     character: "Mikasa Ackerman",
-    characterId: 1803,
+    characterId: 40881,
     animeTitle: "Attack on Titan",
     animeId: 16498,
     line: "I have to protect him. That's what I live for.",
@@ -707,7 +707,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "light-1",
     character: "Light Yagami",
-    characterId: 140,
+    characterId: 80,
     animeTitle: "Death Note",
     animeId: 1535,
     line: "I'll become the god of a new world.",
@@ -721,7 +721,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "light-2",
     character: "Light Yagami",
-    characterId: 140,
+    characterId: 80,
     animeTitle: "Death Note",
     animeId: 1535,
     line: "I am justice! I am the one who will pass judgment on you!",
@@ -735,7 +735,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "light-3",
     character: "Light Yagami",
-    characterId: 140,
+    characterId: 80,
     animeTitle: "Death Note",
     animeId: 1535,
     line: "Just as planned.",
@@ -749,7 +749,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "l-1",
     character: "L",
-    characterId: 141,
+    characterId: 71,
     animeTitle: "Death Note",
     animeId: 1535,
     line: "I am L. I'll catch you, Kira. I swear it.",
@@ -763,7 +763,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "l-2",
     character: "L",
-    characterId: 141,
+    characterId: 71,
     animeTitle: "Death Note",
     animeId: 1535,
     line: "Light-kun... you're so interesting.",
@@ -777,7 +777,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "ryuk-1",
     character: "Ryuk",
-    characterId: 142,
+    characterId: 75,
     animeTitle: "Death Note",
     animeId: 1535,
     line: "Humans are so interesting.",
@@ -791,7 +791,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "ryuk-2",
     character: "Ryuk",
-    characterId: 142,
+    characterId: 75,
     animeTitle: "Death Note",
     animeId: 1535,
     line: "I'll write your name in my notebook if you bore me.",
@@ -806,7 +806,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "tanjiro-1",
     character: "Tanjiro Kamado",
-    characterId: 113275,
+    characterId: 126071,
     animeTitle: "Demon Slayer",
     animeId: 101922,
     line: "Get up. You have to live. Don't give up.",
@@ -820,7 +820,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "tanjiro-2",
     character: "Tanjiro Kamado",
-    characterId: 113275,
+    characterId: 126071,
     animeTitle: "Demon Slayer",
     animeId: 101922,
     line: "Never give up! Keep your heart burning!",
@@ -834,7 +834,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "rengoku-1",
     character: "Kyojuro Rengoku",
-    characterId: 119498,
+    characterId: 129133,
     animeTitle: "Demon Slayer: Mugen Train",
     animeId: 110476,
     line: "Set your heart ablaze!",
@@ -848,7 +848,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "rengoku-2",
     character: "Kyojuro Rengoku",
-    characterId: 119498,
+    characterId: 129133,
     animeTitle: "Demon Slayer: Mugen Train",
     animeId: 110476,
     line: "My mother told me that one born fortunate should help others with that fortune.",
@@ -862,7 +862,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "zenitsu-1",
     character: "Zenitsu Agatsuma",
-    characterId: 114594,
+    characterId: 129131,
     animeTitle: "Demon Slayer",
     animeId: 101922,
     line: "I'm gonna die!! I'm definitely gonna die!!",
@@ -876,7 +876,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "zenitsu-2",
     character: "Zenitsu Agatsuma",
-    characterId: 114594,
+    characterId: 129131,
     animeTitle: "Demon Slayer",
     animeId: 101922,
     line: "Nezuko-chan! You're so beautiful!",
@@ -890,7 +890,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "inosuke-1",
     character: "Inosuke Hashibira",
-    characterId: 115467,
+    characterId: 129130,
     animeTitle: "Demon Slayer",
     animeId: 101922,
     line: "I'm the boss! I'll take down the demon!",
@@ -904,7 +904,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "muzan-1",
     character: "Muzan Kibutsuji",
-    characterId: 113277,
+    characterId: 129132,
     animeTitle: "Demon Slayer",
     animeId: 101922,
     line: "I will conquer the sun. I will become the perfect being.",
@@ -918,7 +918,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "nezuko-1",
     character: "Nezuko Kamado",
-    characterId: 113276,
+    characterId: 127518,
     animeTitle: "Demon Slayer",
     animeId: 101922,
     line: "Ummu! (Fierce determined growls)",
@@ -933,7 +933,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "edward-1",
     character: "Edward Elric",
-    characterId: 764,
+    characterId: 11,
     animeTitle: "Fullmetal Alchemist: Brotherhood",
     animeId: 5114,
     line: "Equivalent exchange! That's the law of alchemy.",
@@ -947,7 +947,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "edward-2",
     character: "Edward Elric",
-    characterId: 764,
+    characterId: 11,
     animeTitle: "Fullmetal Alchemist: Brotherhood",
     animeId: 5114,
     line: "I'll get Al's body back! I swear it!",
@@ -961,7 +961,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "roy-1",
     character: "Roy Mustang",
-    characterId: 766,
+    characterId: 68,
     animeTitle: "Fullmetal Alchemist: Brotherhood",
     animeId: 5114,
     line: "It's a terrible day for rain.",
@@ -975,7 +975,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "alphonse-1",
     character: "Alphonse Elric",
-    characterId: 765,
+    characterId: 12,
     animeTitle: "Fullmetal Alchemist: Brotherhood",
     animeId: 5114,
     line: "Humans are so weak... that's why they struggle. That's what makes them strong.",
@@ -990,7 +990,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "gojo-1",
     character: "Satoru Gojo",
-    characterId: 113814,
+    characterId: 127691,
     animeTitle: "Jujutsu Kaisen",
     animeId: 113415,
     line: "Throughout Heaven and Earth, I alone am the honored one.",
@@ -1004,7 +1004,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "gojo-2",
     character: "Satoru Gojo",
-    characterId: 113814,
+    characterId: 127691,
     animeTitle: "Jujutsu Kaisen",
     animeId: 113415,
     line: "I'm the strongest.",
@@ -1018,7 +1018,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "gojo-3",
     character: "Satoru Gojo",
-    characterId: 113814,
+    characterId: 127691,
     animeTitle: "Jujutsu Kaisen",
     animeId: 113415,
     line: "Nah, I'd win.",
@@ -1032,7 +1032,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "yuji-1",
     character: "Yuji Itadori",
-    characterId: 113812,
+    characterId: 127212,
     animeTitle: "Jujutsu Kaisen",
     animeId: 113415,
     line: "I don't need a reason. I'll save people when they're crying.",
@@ -1046,7 +1046,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "yuji-2",
     character: "Yuji Itadori",
-    characterId: 113812,
+    characterId: 127212,
     animeTitle: "Jujutsu Kaisen",
     animeId: 113415,
     line: "I'm cursed... I'll die surrounded by curses.",
@@ -1060,7 +1060,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "sukuna-1",
     character: "Ryomen Sukuna",
-    characterId: 113815,
+    characterId: 133701,
     animeTitle: "Jujutsu Kaisen",
     animeId: 113415,
     line: "You're boring me.",
@@ -1074,7 +1074,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "sukuna-2",
     character: "Ryomen Sukuna",
-    characterId: 113815,
+    characterId: 133701,
     animeTitle: "Jujutsu Kaisen",
     animeId: 113415,
     line: "I'll show you what true jujutsu looks like.",
@@ -1088,7 +1088,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "geto-1",
     character: "Suguru Geto",
-    characterId: 113817,
+    characterId: 133699,
     animeTitle: "Jujutsu Kaisen",
     animeId: 113415,
     line: "Are you the strongest because you're Gojo Satoru, or are you Gojo Satoru because you're the strongest?",
@@ -1103,7 +1103,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "goku-1",
     character: "Goku",
-    characterId: 73,
+    characterId: 246,
     animeTitle: "Dragon Ball Z",
     animeId: 813,
     line: "I am the hope of the universe!",
@@ -1117,7 +1117,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "goku-2",
     character: "Goku",
-    characterId: 73,
+    characterId: 246,
     animeTitle: "Dragon Ball Z",
     animeId: 813,
     line: "It's over 9000!",
@@ -1131,7 +1131,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "vegeta-1",
     character: "Vegeta",
-    characterId: 74,
+    characterId: 913,
     animeTitle: "Dragon Ball Z",
     animeId: 813,
     line: "I am the prince of all Saiyans!",
@@ -1145,7 +1145,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "vegeta-2",
     character: "Vegeta",
-    characterId: 74,
+    characterId: 913,
     animeTitle: "Dragon Ball Z",
     animeId: 813,
     line: "My pride is more important than my life!",
@@ -1159,7 +1159,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "frieza-1",
     character: "Frieza",
-    characterId: 75,
+    characterId: 3694,
     animeTitle: "Dragon Ball Z",
     animeId: 813,
     line: "This planet has 5 minutes left!",
@@ -1173,7 +1173,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "piccolo-1",
     character: "Piccolo",
-    characterId: 76,
+    characterId: 914,
     animeTitle: "Dragon Ball Z",
     animeId: 813,
     line: "DODGE!",
@@ -1188,7 +1188,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "spike-1",
     character: "Spike Spiegel",
-    characterId: 10,
+    characterId: 1,
     animeTitle: "Cowboy Bebop",
     animeId: 1,
     line: "Whatever happens, happens.",
@@ -1202,7 +1202,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "spike-2",
     character: "Spike Spiegel",
-    characterId: 10,
+    characterId: 1,
     animeTitle: "Cowboy Bebop",
     animeId: 1,
     line: "Bang.",
@@ -1215,7 +1215,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "spike-3",
     character: "Spike Spiegel",
-    characterId: 10,
+    characterId: 1,
     animeTitle: "Cowboy Bebop",
     animeId: 1,
     line: "I'm not going there to die. I'm going to find out if I'm really alive.",
@@ -1230,7 +1230,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "ichigo-1",
     character: "Ichigo Kurosaki",
-    characterId: 95,
+    characterId: 5,
     animeTitle: "Bleach",
     animeId: 269,
     line: "I can't see or hear you anymore, but I know you're still there.",
@@ -1244,7 +1244,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "ichigo-2",
     character: "Ichigo Kurosaki",
-    characterId: 95,
+    characterId: 5,
     animeTitle: "Bleach",
     animeId: 269,
     line: "Getsuga Tenshou!",
@@ -1258,7 +1258,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "aizen-1",
     character: "Sosuke Aizen",
-    characterId: 96,
+    characterId: 1086,
     animeTitle: "Bleach",
     animeId: 269,
     line: "Admiration is the furthest thing from understanding.",
@@ -1272,7 +1272,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "aizen-2",
     character: "Sosuke Aizen",
-    characterId: 96,
+    characterId: 1086,
     animeTitle: "Bleach",
     animeId: 269,
     line: "Since when did you think I wasn't using Kyoka Suigetsu?",
@@ -1287,7 +1287,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "shinji-1",
     character: "Shinji Ikari",
-    characterId: 280,
+    characterId: 89,
     animeTitle: "Neon Genesis Evangelion",
     animeId: 30,
     line: "I mustn't run away. I mustn't run away.",
@@ -1301,7 +1301,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "rei-1",
     character: "Rei Ayanami",
-    characterId: 281,
+    characterId: 86,
     animeTitle: "Neon Genesis Evangelion",
     animeId: 30,
     line: "I am only myself.",
@@ -1315,7 +1315,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "misato-1",
     character: "Misato Katsuragi",
-    characterId: 282,
+    characterId: 1259,
     animeTitle: "Neon Genesis Evangelion",
     animeId: 30,
     line: "Shinji, get in the robot!",
@@ -1344,7 +1344,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "killua-1",
     character: "Killua Zoldyck",
-    characterId: 31,
+    characterId: 27,
     animeTitle: "Hunter x Hunter (2011)",
     animeId: 11061,
     line: "I don't want to be friends with you anymore. I want to be your partner.",
@@ -1358,7 +1358,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "hisoka-1",
     character: "Hisoka Morrow",
-    characterId: 32,
+    characterId: 31,
     animeTitle: "Hunter x Hunter (2011)",
     animeId: 11061,
     line: "The game has just begun.",
@@ -1372,7 +1372,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "hisoka-2",
     character: "Hisoka Morrow",
-    characterId: 32,
+    characterId: 31,
     animeTitle: "Hunter x Hunter (2011)",
     animeId: 11061,
     line: "Bungee Gum possesses the properties of both rubber and gum.",
@@ -1386,7 +1386,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "kurapika-1",
     character: "Kurapika",
-    characterId: 33,
+    characterId: 28,
     animeTitle: "Hunter x Hunter (2011)",
     animeId: 11061,
     line: "I will avenge my clan. I will reclaim their scarlet eyes.",
@@ -1401,7 +1401,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "lelouch-1",
     character: "Lelouch vi Britannia",
-    characterId: 103,
+    characterId: 417,
     animeTitle: "Code Geass",
     animeId: 1575,
     line: "I, Lelouch vi Britannia, command you! Obey me!",
@@ -1415,7 +1415,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "thorfinn-1",
     character: "Thorfinn",
-    characterId: 31448,
+    characterId: 10138,
     animeTitle: "Vinland Saga",
     animeId: 101348,
     line: "A true warrior needs no sword.",
@@ -1429,7 +1429,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "saitama-1",
     character: "Saitama",
-    characterId: 73977,
+    characterId: 73935,
     animeTitle: "One Punch Man",
     animeId: 30276,
     line: "OK.",
@@ -1443,7 +1443,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "saitama-2",
     character: "Saitama",
-    characterId: 73977,
+    characterId: 73935,
     animeTitle: "One Punch Man",
     animeId: 30276,
     line: "I'm not a hero for recognition. I do it because I want to.",
@@ -1457,7 +1457,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "kaneki-1",
     character: "Ken Kaneki",
-    characterId: 207,
+    characterId: 87275,
     animeTitle: "Tokyo Ghoul",
     animeId: 20605,
     line: "This world is wrong.",
@@ -1471,7 +1471,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "allmight-1",
     character: "All Might",
-    characterId: 76793,
+    characterId: 89224,
     animeTitle: "My Hero Academia",
     animeId: 102526,
     line: "I am here!",
@@ -1485,7 +1485,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "deku-1",
     character: "Izuku Midoriya",
-    characterId: 76795,
+    characterId: 89028,
     animeTitle: "My Hero Academia",
     animeId: 102526,
     line: "Go beyond! Plus Ultra!",
@@ -1499,6 +1499,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "simon-1",
     character: "Simon",
+    characterId: 2257,
     animeTitle: "Gurren Lagann",
     animeId: 2001,
     line: "Believe in the me that believes in you!",
@@ -1512,6 +1513,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "kamina-1",
     character: "Kamina",
+    characterId: 2075,
     animeTitle: "Gurren Lagann",
     animeId: 2001,
     line: "Who the hell do you think I am!?",
@@ -1525,7 +1527,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "denji-1",
     character: "Denji",
-    characterId: 188760,
+    characterId: 130102,
     animeTitle: "Chainsaw Man",
     animeId: 127230,
     line: "I want to touch boobs! That's my dream!",
@@ -1539,8 +1541,9 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "dio-1",
     character: "Dio Brando",
+    characterId: 4004,
     animeTitle: "JoJo's Bizarre Adventure",
-    animeId: 14719,
+    animeId: 20474,
     line: "You thought it was your girlfriend, but it was me, Dio!",
     lineJapanese: "お前の彼女だと思ったか？だが、DIOだ！",
     context: "The most meme'd Dio moment",
@@ -1552,8 +1555,9 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "dio-2",
     character: "Dio Brando",
+    characterId: 4004,
     animeTitle: "JoJo's Bizarre Adventure",
-    animeId: 14719,
+    animeId: 20474,
     line: "Za Warudo! Time has stopped!",
     lineJapanese: "ザ・ワールド！時よ止まれ！",
     context: "Activating The World's time stop",
@@ -1565,8 +1569,9 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "jotaro-1",
     character: "Jotaro Kujo",
+    characterId: 4003,
     animeTitle: "JoJo's Bizarre Adventure",
-    animeId: 14719,
+    animeId: 20474,
     line: "Yare yare daze...",
     lineJapanese: "やれやれだぜ…",
     context: "His signature catchphrase",
@@ -1578,6 +1583,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "makima-1",
     character: "Makima",
+    characterId: 137080,
     animeTitle: "Chainsaw Man",
     animeId: 127230,
     line: "I want a dog. You'll be my dog, Denji.",
@@ -1592,8 +1598,9 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "shinchan-hindi-1",
     character: "Shinchan Nohara",
+    characterId: 2951,
     animeTitle: "Shinchan",
-    animeId: 243,
+    animeId: 966,
     line: "Mera naam hai Shinchan Nohara!",
     context: "Hindi dub - Self-introduction",
     language: "hindi",
@@ -1603,8 +1610,9 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "doraemon-hindi-1",
     character: "Nobita Nobi",
+    characterId: 4303,
     animeTitle: "Doraemon",
-    animeId: 247,
+    animeId: 501,
     line: "Doraemon! Kuch toh karo!",
     context: "Hindi dub - Nobita's classic cry for help",
     language: "hindi",
@@ -1614,8 +1622,9 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "doraemon-hindi-2",
     character: "Doraemon",
+    characterId: 4304,
     animeTitle: "Doraemon",
-    animeId: 247,
+    animeId: 501,
     line: "Nobita, tumse na hoga!",
     context: "Hindi dub - Doraemon's frustration",
     language: "hindi",
@@ -1650,6 +1659,7 @@ const allVoiceLines: VoiceLine[] = [
   {
     id: "pokemon-hindi-1",
     character: "Ash Ketchum",
+    characterId: 2473,
     animeTitle: "Pokemon",
     animeId: 527,
     line: "Main pakdaunga! Pokemon!",

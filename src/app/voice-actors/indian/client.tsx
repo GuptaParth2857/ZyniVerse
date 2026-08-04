@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { getIndianVoiceActors } from "@/lib/voice-actors";
 import type { VoiceActor } from "@/lib/voice-actors";
 import VoiceActorCard from "@/components/VoiceActorCard";
+import TiltCard from "@/components/TiltCard";
 import { PageTransition } from "@/components/PageTransition";
 
 const LANGUAGES = ["All", "Hindi", "Tamil", "Telugu"] as const;
@@ -51,53 +52,85 @@ export default function IndianVoiceActorsClient() {
     return counts;
   }, [actors]);
 
+  const totalRoles = useMemo(
+    () => actors.reduce((sum, a) => sum + a.roles.length, 0),
+    [actors]
+  );
+
+  const stats = useMemo(
+    () => [
+      { label: "Voice Actors", value: actors.length },
+      { label: "Anime Roles Dubbed", value: totalRoles },
+      { label: "Languages", value: LANGUAGES.length - 1 },
+      { label: "Shows Covered", value: new Set(actors.flatMap((a) => a.roles.map((r) => r.animeTitle))).size },
+    ],
+    [actors, totalRoles]
+  );
+
   return (
     <PageTransition>
       <div className="mx-auto min-h-[80vh] max-w-7xl px-4 py-10 sm:px-6">
         {/* Hero */}
-        <div className="text-center mb-8">
-          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
-            <h1 className="font-display text-4xl sm:text-5xl font-bold">
+        <div className="relative text-center mb-8">
+          <div
+            className="pointer-events-none absolute left-1/2 top-0 -z-10 h-64 w-[min(90vw,640px)] -translate-x-1/2 rounded-full opacity-40 blur-3xl"
+            style={{ background: "radial-gradient(circle, rgba(255,45,120,0.35), rgba(0,229,255,0.25), transparent 70%)" }}
+          />
+          <div className="neon-rgb-border inline-block rounded-xl px-4 py-2">
+            <h1 className="font-display text-4xl font-bold sm:text-5xl">
               Indian Voice{" "}
               <span className="bg-gradient-to-r from-[var(--color-magenta)] via-[var(--color-cyan)] to-[var(--color-violet)] bg-clip-text text-transparent">
                 Actors
               </span>
             </h1>
           </div>
-          <p className="mt-3 text-[var(--color-mute)] text-sm max-w-xl mx-auto">
+          <p className="mx-auto mt-3 max-w-xl text-sm text-[var(--color-mute)]">
             The real artists behind your favourite Hindi, Tamil &amp; Telugu anime dubs.
             Verified from Crunchyroll, Sony YAY!, Muse India, Amazon Prime &amp; Cartoon Network credits.
           </p>
+
+          {/* Stats strip */}
+          {!loading && actors.length > 0 && (
+            <div className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-2 sm:gap-3">
+              {stats.map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]/70 px-4 py-2 text-center backdrop-blur"
+                >
+                  <div className="bg-gradient-to-r from-[var(--color-magenta)] to-[var(--color-cyan)] bg-clip-text font-mono text-lg font-bold text-transparent">
+                    {s.value}
+                  </div>
+                  <div className="text-[9px] uppercase tracking-widest text-[var(--color-mute)]">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Search + Language Filter */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 mb-8">
-          {/* Search — Neon RGB Border */}
-          <div className="relative flex-1 w-full sm:max-w-md group">
-            <div className="absolute -inset-[2px] rounded-xl opacity-70 group-focus-within:opacity-100 transition-opacity duration-300">
-              <div className="va-neon-search-border absolute inset-0 rounded-xl" />
-            </div>
-            <div className="relative flex items-center gap-2 rounded-xl border border-transparent bg-[var(--color-panel)] px-4 py-2.5">
-              <svg className="w-4 h-4 text-[var(--color-mute)] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search by name, character or anime..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-transparent text-sm text-[var(--color-ink)] outline-none placeholder:text-[var(--color-mute)]/50"
-              />
-              {search && (
-                <button onClick={() => setSearch("")} className="text-[var(--color-mute)] hover:text-[var(--color-ink)] text-xs transition-colors">
-                  ✕
-                </button>
-              )}
-            </div>
+        <div className="mb-8 flex flex-col items-center gap-4 sm:flex-row">
+          {/* Search */}
+          <div className="relative flex w-full flex-1 items-center gap-2 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2.5 transition-colors focus-within:border-[var(--color-magenta)] sm:max-w-md">
+            <svg className="h-4 w-4 shrink-0 text-[var(--color-mute)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search by name, character or anime..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ outline: "none" }}
+              className="w-full bg-transparent text-sm text-[var(--color-ink)] placeholder:text-[var(--color-mute)]/50"
+            />
+            {search && (
+              <button onClick={() => setSearch("")} className="text-xs text-[var(--color-mute)] transition-colors hover:text-[var(--color-ink)]">
+                ✕
+              </button>
+            )}
           </div>
 
           {/* Language Tabs */}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {LANGUAGES.map((lang) => (
               <button
                 key={lang}
@@ -117,25 +150,27 @@ export default function IndianVoiceActorsClient() {
 
         {/* Grid */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {Array.from({ length: 15 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-xl bg-[var(--color-panel)] border border-[var(--color-line)]">
-                <div className="aspect-square bg-[var(--color-void)] rounded-t-xl" />
-                <div className="p-3 space-y-2">
-                  <div className="h-3 bg-[var(--color-line)] rounded w-3/4" />
-                  <div className="h-2 bg-[var(--color-line)] rounded w-1/2" />
+              <div key={i} className="animate-pulse rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]">
+                <div className="aspect-[3/4] rounded-t-xl bg-[var(--color-void)]" />
+                <div className="space-y-2 p-3">
+                  <div className="h-3 w-3/4 rounded bg-[var(--color-line)]" />
+                  <div className="h-2 w-1/2 rounded bg-[var(--color-line)]" />
                 </div>
               </div>
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-[var(--color-mute)] text-sm">No voice actors found matching your search.</p>
+          <div className="py-20 text-center">
+            <p className="text-sm text-[var(--color-mute)]">No voice actors found matching your search.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {filtered.map((actor) => (
-              <VoiceActorCard key={actor.id} actor={actor} neon />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {filtered.map((actor, i) => (
+              <TiltCard key={actor.id} index={i}>
+                <VoiceActorCard actor={actor} neon />
+              </TiltCard>
             ))}
           </div>
         )}

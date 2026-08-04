@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Home", icon: "♡" },
   { href: "/search", label: "Explore", icon: "◎" },
   { href: "/seasonal", label: "Seasonal", icon: "✦" },
-  { href: "/activity", label: "Feed", icon: "⚡" },
+  { href: "/reels", label: "Reels", icon: "🎬" },
   { href: "/watchlist", label: "List", icon: "☰" },
 ];
 

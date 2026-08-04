@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
+import AddFriendButton from "@/components/AddFriendButton";
 
 interface ActivityUser {
   id: string;
@@ -163,7 +164,35 @@ function ActivityCard({ activity, index }: { activity: Activity; index: number }
 
 function UserActivityGroup({ group, index }: { group: { user: ActivityUser; items: Activity[] }; index: number }) {
   const [expanded, setExpanded] = useState(false);
+  const { data: session } = useSession();
   const allItems = group.items;
+  const userId = group.user.id;
+  const isOwn = session?.user?.id === userId;
+  const [following, setFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+
+  useEffect(() => {
+    if (!session?.user?.id || isOwn) return;
+    fetch("/api/follow")
+      .then((r) => r.json())
+      .then((data) => setFollowing(data.following?.includes(userId) || false))
+      .catch(() => {});
+  }, [session, userId, isOwn]);
+
+  const toggleFollow = async () => {
+    if (!session?.user?.id || followLoading) return;
+    setFollowLoading(true);
+    try {
+      const res = await fetch("/api/follow", {
+        method: following ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ followingId: userId }),
+      });
+      const data = await res.json();
+      setFollowing(data.following === true);
+    } catch { /* ignore */ }
+    setFollowLoading(false);
+  };
 
   return (
     <motion.div
@@ -175,8 +204,8 @@ function UserActivityGroup({ group, index }: { group: { user: ActivityUser; item
       <div className="rounded-2xl bg-[var(--color-panel)] p-4">
         {/* User header */}
         <div className="flex items-center gap-3 mb-3">
-          <div className="relative">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cyan)]/15 text-sm font-bold text-[var(--color-cyan)] ring-2 ring-[var(--color-line)] transition-all">
+          <Link href={`/profile/${userId}`} className="relative shrink-0 group/avatar">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cyan)]/15 text-sm font-bold text-[var(--color-cyan)] ring-2 ring-[var(--color-line)] transition-all group-hover/avatar:ring-[var(--color-cyan)]">
               {group.user.avatar ? (
                 <Image src={group.user.avatar} alt="" width={40} height={40} className="rounded-full object-cover" />
               ) : (
@@ -186,11 +215,29 @@ function UserActivityGroup({ group, index }: { group: { user: ActivityUser; item
             <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[var(--color-panel)] bg-[#22c55e] flex items-center justify-center">
               <span className="text-[7px]">●</span>
             </div>
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-bold truncate">{group.user.username}</p>
+          </Link>
+          <div className="min-w-0 flex-1">
+            <Link href={`/profile/${userId}`} className="text-sm font-bold truncate block hover:text-[var(--color-cyan)] hover:underline transition-colors">
+              {group.user.username}
+            </Link>
             <p className="text-[10px] font-mono text-[var(--color-mute)]">{allItems.length} activities</p>
           </div>
+          {session?.user?.id && !isOwn && (
+            <div className="flex shrink-0 flex-col items-end gap-1.5">
+              <button
+                onClick={toggleFollow}
+                disabled={followLoading}
+                className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-bold transition-all ${
+                  following
+                    ? "border border-[var(--color-line)] text-[var(--color-mute)] hover:border-red-400 hover:text-red-400"
+                    : "bg-[var(--color-cyan)] text-black hover:opacity-90"
+                }`}
+              >
+                {followLoading ? "..." : following ? "Following" : "Follow"}
+              </button>
+              <AddFriendButton userId={userId} username={group.user.username} className="px-3! py-1! text-[10px]!" />
+            </div>
+          )}
         </div>
 
         {/* Activity cards */}
@@ -221,6 +268,7 @@ export default function ActivityFeed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState(0);
+  const [fallback, setFallback] = useState(false);
   const LIMIT = 40;
 
   const fetchActivities = useCallback(async (offset: number) => {
@@ -236,6 +284,7 @@ export default function ActivityFeed() {
       setActivities(data.activities || []);
       setTotal(data.total || 0);
       setHasMore((data.activities?.length || 0) >= LIMIT);
+      setFallback(!!data.fallback);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [fetchActivities]);
@@ -297,6 +346,18 @@ export default function ActivityFeed() {
   return (
     <PageTransition>
       <div className="relative">
+        {session && fallback && activities.length > 0 && (
+          <div className="mb-6 rounded-xl neon-rgb-border bg-[var(--color-panel)]/60 backdrop-blur-sm p-4 flex items-center gap-3">
+            <span className="text-xl">👋</span>
+            <p className="text-xs text-[var(--color-mute)] flex-1 leading-relaxed">
+              You are not following anyone yet, so this shows the latest activity from the whole community. Follow users to build your own feed.
+            </p>
+            <Link href="/leaderboard" className="shrink-0 text-xs font-bold text-[var(--color-cyan)] hover:underline">
+              Explore users →
+            </Link>
+          </div>
+        )}
+
         {Object.entries(dateGroups).map(([dateLabel, dayActivities]) => {
           const userGroups = groupByUser(dayActivities);
           return (

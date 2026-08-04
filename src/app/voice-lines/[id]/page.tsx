@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getVoiceLine } from "@/lib/voice-lines";
 import VoiceLineCard from "@/components/VoiceLineCard";
+import QuoteDetailPanel from "@/components/QuoteDetailPanel";
 import Link from "next/link";
 
 export async function generateMetadata({
@@ -61,23 +62,7 @@ export default async function VoiceLineDetail({
         Back to all quotes
       </Link>
       <VoiceLineCard line={line} />
-      <div className="mt-8 rounded-xl neon-rgb-border bg-[var(--color-panel)] p-6">
-        <h2 className="font-display text-lg font-bold">About this quote</h2>
-        <ul className="mt-3 space-y-2 text-sm text-[var(--color-mute)]">
-          <li><strong className="text-[var(--color-ink)]">Character:</strong> {line.character}</li>
-          <li><strong className="text-[var(--color-ink)]">Anime:</strong> {line.animeTitle}</li>
-          <li><strong className="text-[var(--color-ink)]">Type:</strong> {line.type.charAt(0).toUpperCase() + line.type.slice(1)}</li>
-          <li><strong className="text-[var(--color-ink)]">Language:</strong> {line.language.charAt(0).toUpperCase() + line.language.slice(1)}</li>
-          {line.context && <li><strong className="text-[var(--color-ink)]">Context:</strong> {line.context}</li>}
-          {line.episode && <li><strong className="text-[var(--color-ink)]">Episode:</strong> {line.episode}</li>}
-          {line.lineJapanese && (
-            <li><strong className="text-[var(--color-ink)]">Japanese:</strong> {line.lineJapanese}</li>
-          )}
-          {line.lineHindi && (
-            <li><strong className="text-[var(--color-ink)]">Hindi:</strong> {line.lineHindi}</li>
-          )}
-        </ul>
-      </div>
+      <QuoteDetailPanel line={line} />
     </main>
   );
 }

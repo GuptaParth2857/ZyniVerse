@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { motion, AnimatePresence } from "framer-motion";
 import MomentCard from "./MomentCard";
 import { generateMomentPng } from "@/lib/moment-canvas";
 import { logError } from "@/lib/logger";
@@ -165,17 +166,25 @@ export default function MomentMaker({
     });
   }, [quote, character, animeTitle, animeId]);
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-6xl mx-auto rounded-2xl bg-[var(--color-panel)] shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto neon-rgb-border"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.97 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="relative w-full max-w-4xl mx-auto rounded-2xl bg-[var(--color-panel)] shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto neon-rgb-border"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* HEADER */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 sticky top-0 bg-[var(--color-panel)] z-10">
           <div className="flex items-center gap-3">
@@ -191,7 +200,7 @@ export default function MomentMaker({
           </button>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 p-6">
+        <div className="flex flex-col lg:flex-row gap-6 p-5">
           {/* LEFT: Form */}
           <div className="flex-1 min-w-0 space-y-5">
             {/* Anime info */}
@@ -220,7 +229,7 @@ export default function MomentMaker({
             </div>
 
             {/* Character + Episode */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="neon-rgb-border rounded-xl">
                 <div className="m-[1px] rounded-[11px] bg-[var(--color-void)] p-4">
                   <label className="block text-xs font-medium text-[var(--color-mute)] mb-1 uppercase tracking-wider">Character *</label>
@@ -309,7 +318,7 @@ export default function MomentMaker({
 
           {/* RIGHT: Preview */}
           <div className="shrink-0 flex items-start justify-center lg:pt-8">
-            <div className="w-[280px] sm:w-[320px] rounded-xl overflow-hidden shadow-2xl scale-[0.75] origin-top-right lg:origin-top">
+            <div className="w-[300px] max-w-full rounded-xl overflow-hidden shadow-2xl">
               <MomentCard
                 quote={quote || "Your quote will appear here"}
                 character={character || "Character Name"}
@@ -323,7 +332,9 @@ export default function MomentMaker({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

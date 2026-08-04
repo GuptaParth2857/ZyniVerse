@@ -1864,3 +1864,10 @@ img[src=""] { display: none; }
   opacity: 1;
   filter: blur(4px);
 }
+
+/* Neon filter shells (voice-lines search) — remove global cyan :focus-visible outline */
+.va-search-shell:focus-within input:focus-visible,
+.va-search-shell:focus-within select:focus-visible,
+.va-search-shell:focus-within button:focus-visible {
+  outline: none !important;
+}

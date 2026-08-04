@@ -49,7 +49,38 @@ export interface DmMessage {
   conversationId: string;
   senderId: string;
   content: string;
+  replyToId: string | null;
+  replyTo: { id: string; content: string; isDeleted: boolean; deletedFor: string; sender: { id: string; username: string } } | null;
+  reactions: { id: string; userId: string; emoji: string; user: { id: string; username: string } }[];
   isDeleted: boolean;
+  deletedFor: string;
   createdAt: string;
   sender: { id: string; username: string; avatar: string | null };
+}
+
+export interface DmReactionEvent {
+  conversationId: string;
+  messageId: string;
+  reactions: { id: string; userId: string; emoji: string; user: { id: string; username: string } }[];
+}
+
+export interface DmTypingEvent {
+  conversationId: string;
+  userId: string;
+  username: string;
+  typing: boolean;
+}
+
+export interface DmSeenEvent {
+  conversationId: string;
+  userId: string;
+  lastReadAt: string;
+}
+
+export interface DmDeleteEvent {
+  conversationId: string;
+  messageId: string;
+  mode: "me" | "everyone";
+  deletedFor: string[];
+  isDeleted: boolean;
 }

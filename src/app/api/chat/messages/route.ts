@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-import { sendMessage, getMessages } from "@/lib/chat";
+import { sendMessage, getMessages, broadcastToConversation } from "@/lib/chat";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -27,31 +27,19 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { conversationId, content } = await req.json();
+  const { conversationId, content, replyToId } = await req.json();
   if (!conversationId || !content?.trim()) {
     return NextResponse.json({ error: "Missing conversationId or content" }, { status: 400 });
   }
 
-  const message = await sendMessage(conversationId, session.user.id, content.trim());
-
-  const participants = await prisma.conversationParticipant.findMany({
-    where: { conversationId, userId: { not: session.user.id } },
-    select: { userId: true },
-  });
-
-  const wsBase = process.env.NEXT_PUBLIC_WS_URL;
-  if (wsBase && participants.length > 0) {
-    const token = process.env.DM_BROADCAST_TOKEN;
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (token) headers["x-dm-token"] = token;
-    for (const p of participants) {
-      fetch(`${wsBase.replace(/\/$/, "")}/internal/dm-broadcast`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ recipientId: p.userId, message }),
-      }).catch(() => {});
-    }
+  try {
+    const message = await sendMessage(conversationId, session.user.id, content.trim(), replyToId || undefined);
+    broadcastToConversation(conversationId, session.user.id, "dm-message", message).catch(() => {});
+    return NextResponse.json({ message });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Failed to send" },
+      { status: 400 }
+    );
   }
-
-  return NextResponse.json({ message });
 }

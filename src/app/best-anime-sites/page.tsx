@@ -85,6 +85,13 @@ export default function BestAnimeSitesPage() {
         <p className="mt-4 max-w-2xl text-[var(--color-mute)] leading-relaxed">
           Looking for the best free anime site? We&apos;ve compared the top anime trackers, streaming platforms, and community sites to help you find the perfect one. Whether you need filler guides, Hindi dubbed tracking, or a comprehensive anime database — here are the best options.
         </p>
+        <p className="mt-3 max-w-2xl text-sm text-[var(--color-mute)] leading-relaxed">
+          <span className="text-red-300">⚠️ Note:</span> AniTally, AniTusk, and FillerAnimeList have shut down. If you used those sites, see our{" "}
+          <Link href="/alternatives" className="font-semibold text-[var(--color-cyan)] hover:underline">
+            shut-down anime site alternatives guide
+          </Link>{" "}
+          — or jump straight to the best replacement below.
+        </p>
       </div>
 
       <div className="space-y-8">

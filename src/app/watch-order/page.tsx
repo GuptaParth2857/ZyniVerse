@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { searchMedia, bestTitle, type Media } from "@/lib/anilist";
+import TiltCard from "@/components/TiltCard";
 
 export default function WatchOrderPage() {
   const [query, setQuery] = useState("");
@@ -133,49 +134,39 @@ export default function WatchOrderPage() {
 
       {/* Search Bar */}
       <div ref={ref} className="relative mb-8 max-w-xl">
-        <div className="relative rounded-full">
-          <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
-            <div
-              className="absolute inset-0"
-              style={{ background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)", animation: "spin 6s linear infinite", willChange: "transform" }}
-            />
-            <div className="absolute inset-[1.5px] rounded-full" style={{ background: "rgba(10,10,15,0.95)" }} />
-          </div>
-
-          <div className="relative z-10 flex items-center">
-            <div className="pl-5 pr-1 flex items-center">
-              {loading ? (
-                <svg className="w-4 h-4 text-[var(--color-cyan)] animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4 text-[var(--color-mute)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              )}
-            </div>
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") inputRef.current?.blur();
-              }}
-              placeholder="Search 200+ anime — try 'naruto', 'fate', 'evangelion'..."
-              className="flex-1 bg-transparent py-3.5 px-2 text-sm outline-none placeholder-[var(--color-mute)]/60 text-[var(--color-ink)]"
-            />
-            {query && (
-              <button
-                onClick={() => { setQuery(""); setAnilistResults([]); inputRef.current?.focus(); }}
-                className="pr-2 text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+        <div className="neon-rgb-border relative flex items-center rounded-full bg-[rgba(10,10,15,0.95)]">
+          <div className="pl-5 pr-1 flex items-center">
+            {loading ? (
+              <svg className="w-4 h-4 text-[var(--color-cyan)] animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 text-[var(--color-mute)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             )}
           </div>
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") inputRef.current?.blur();
+            }}
+            placeholder="Search 200+ anime — try 'naruto', 'fate', 'evangelion'..."
+            className="flex-1 bg-transparent py-3.5 px-2 text-sm outline-none focus:outline-none focus-visible:outline-none placeholder-[var(--color-mute)]/60 text-[var(--color-ink)]"
+          />
+          {query && (
+            <button
+              onClick={() => { setQuery(""); setAnilistResults([]); inputRef.current?.focus(); }}
+              className="pr-3 text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -203,11 +194,10 @@ export default function WatchOrderPage() {
             {allResults.guides.map((order, idx) => {
               const isHovered = hoveredId === order.id;
               return (
+                <TiltCard key={order.id} index={idx} className="h-full">
                 <Link
-                  key={order.id}
                   href={`/watch-order/${order.id}`}
-                  className="group block rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-[var(--color-magenta)]/30 hover:shadow-[0_8px_40px_-12px_rgba(255,45,120,0.15)]"
-                  style={{ animationDelay: `${idx * 50}ms` }}
+                  className="group block h-full rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-[var(--color-magenta)]/30 hover:shadow-[0_8px_40px_-12px_rgba(255,45,120,0.15)]"
                   onMouseEnter={() => setHoveredId(order.id)}
                   onMouseLeave={() => setHoveredId(null)}
                 >
@@ -264,6 +254,7 @@ export default function WatchOrderPage() {
                     </div>
                   </div>
                 </Link>
+                </TiltCard>
               );
             })}
           </div>
@@ -283,11 +274,10 @@ export default function WatchOrderPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {allResults.anilist.map((media, idx) => (
+              <TiltCard key={media.id} index={idx} className="h-full">
               <Link
-                key={media.id}
                 href={`/watch-order/anime/${media.id}`}
-                className="group block rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-[var(--color-cyan)]/30 hover:shadow-[0_8px_40px_-12px_rgba(0,229,255,0.15)]"
-                style={{ animationDelay: `${idx * 30}ms` }}
+                className="group block h-full rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-[var(--color-cyan)]/30 hover:shadow-[0_8px_40px_-12px_rgba(0,229,255,0.15)]"
               >
                 <div className="relative h-40 sm:h-44 overflow-hidden">
                   <Image
@@ -326,8 +316,9 @@ export default function WatchOrderPage() {
                       <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                     </svg>
                   </div>
-                </div>
-              </Link>
+                  </div>
+                </Link>
+              </TiltCard>
             ))}
           </div>
 

@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { CURATOR } from "@/lib/curator";
+import TiltCard from "@/components/TiltCard";
 
 interface BlogCardProps {
+  index?: number;
   post: {
     id: string;
     slug: string;
@@ -33,7 +36,7 @@ function getGradient(id: string) {
   return GRADIENT_PAIRS[Math.abs(hash) % GRADIENT_PAIRS.length];
 }
 
-export default function BlogCard({ post }: BlogCardProps) {
+export default function BlogCard({ post, index = 0 }: BlogCardProps) {
   const tags = post.tags ? post.tags.split(",").filter(Boolean) : [];
   const isExternal = post.isExternal;
   const isWikipedia = isExternal && post.id.startsWith("wiki-");
@@ -41,11 +44,12 @@ export default function BlogCard({ post }: BlogCardProps) {
   const [gradFrom, gradTo] = getGradient(post.id);
 
   return (
-    <Link
-      href={href}
-      className="group relative rounded-[16px] no-underline"
-      {...(isWikipedia ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-    >
+    <TiltCard index={index} className="h-full">
+      <Link
+        href={href}
+        className="group relative block h-full rounded-[16px] no-underline"
+        {...(isWikipedia ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      >
       {/* Animated conic-gradient border */}
       <div className="absolute inset-0 rounded-[16px] overflow-hidden pointer-events-none">
         <div
@@ -70,7 +74,7 @@ export default function BlogCard({ post }: BlogCardProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,0.8)] via-transparent to-transparent" />
             {isExternal && (
               <div className={`absolute top-3 right-3 rounded-full bg-[rgba(10,10,15,0.6)] backdrop-blur-sm border border-[rgba(255,255,255,0.1)] px-2 py-0.5 text-[8px] font-bold ${isWikipedia ? "text-amber-400" : "text-[var(--color-cyan)]"}`}>
-                {isWikipedia ? "Wikipedia" : "ZyniBot"}
+                {isWikipedia ? "Wikipedia" : CURATOR.username}
               </div>
             )}
           </div>
@@ -86,9 +90,14 @@ export default function BlogCard({ post }: BlogCardProps) {
 
             <div className="text-center z-10 px-4">
               {isExternal ? (
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${isWikipedia ? "from-amber-500 to-orange-500" : "from-[var(--color-cyan)] to-[var(--color-violet)]"} text-[11px] font-black text-black mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(0,255,224,0.3)]`}>
-                  {isWikipedia ? "W" : "ZB"}
-                </div>
+                isWikipedia ? (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-[11px] font-black text-black mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(255,170,0,0.3)]">W</div>
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full overflow-hidden mx-auto mb-2 ring-2 ring-[rgba(10,10,15,0.8)] shadow-[0_0_20px_-4px_rgba(0,255,224,0.3)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={CURATOR.avatar} alt={CURATOR.username} className="h-full w-full object-cover" />
+                  </div>
+                )
               ) : (
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] text-[11px] font-bold text-black mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(255,0,230,0.3)]">
                   {post.user.username?.charAt(0).toUpperCase() || "?"}
@@ -101,7 +110,7 @@ export default function BlogCard({ post }: BlogCardProps) {
 
             {isExternal && (
               <div className={`absolute top-3 right-3 rounded-full bg-[rgba(10,10,15,0.6)] backdrop-blur-sm border border-[rgba(255,255,255,0.1)] px-2 py-0.5 text-[8px] font-bold ${isWikipedia ? "text-amber-400" : "text-[var(--color-cyan)]"}`}>
-                {isWikipedia ? "Wikipedia" : "ZyniBot"}
+                {isWikipedia ? "Wikipedia" : CURATOR.username}
               </div>
             )}
           </div>
@@ -110,16 +119,21 @@ export default function BlogCard({ post }: BlogCardProps) {
         <div className="p-4">
           <div className="flex items-center gap-2 mb-2.5">
             {isExternal ? (
-              <div className={`flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br ${isWikipedia ? "from-amber-500 to-orange-500" : "from-[var(--color-cyan)] to-[var(--color-violet)]"} text-[9px] font-black text-black shrink-0 ring-2 ring-[rgba(10,10,15,0.8)]`}>
-                {isWikipedia ? "W" : "ZB"}
-              </div>
+              isWikipedia ? (
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-[9px] font-black text-black shrink-0 ring-2 ring-[rgba(10,10,15,0.8)]">W</div>
+              ) : (
+                <div className="flex h-7 w-7 items-center justify-center rounded-full overflow-hidden shrink-0 ring-2 ring-[rgba(10,10,15,0.8)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={CURATOR.avatar} alt={CURATOR.username} className="h-full w-full object-cover" />
+                </div>
+              )
             ) : (
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-violet)] text-[9px] font-bold text-black shrink-0 ring-2 ring-[rgba(10,10,15,0.8)]">
                 {post.user.username?.charAt(0).toUpperCase() || "?"}
               </div>
             )}
             <span className="text-xs text-[var(--color-mute)] font-medium">
-              {isWikipedia ? "Wikipedia" : isExternal ? "ZyniBot" : post.user.username}
+              {isWikipedia ? "Wikipedia" : isExternal ? CURATOR.username : post.user.username}
             </span>
             {post.publishedAt && (
               <span className="text-[10px] text-[var(--color-mute)]/60 ml-auto font-mono">
@@ -163,5 +177,6 @@ export default function BlogCard({ post }: BlogCardProps) {
         </div>
       </div>
     </Link>
+    </TiltCard>
   );
 }

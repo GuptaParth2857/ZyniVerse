@@ -6,6 +6,7 @@ import Image from "next/image";
 import { getOSTs, getAllArtists, getCoverImage } from "@/lib/ost";
 import type { OSTEntry } from "@/lib/ost";
 import OSTPlayer from "./OSTPlayer";
+import { NeonSelect } from "./NeonSelect";
 
 const TYPE_BADGES: Record<string, string> = {
   OP: "bg-red-500/90 text-white border-red-400/50 shadow-[0_0_8px_rgba(239,68,68,0.4)]",
@@ -32,6 +33,18 @@ export default function OSTList() {
   const [playing, setPlaying] = useState<OSTEntry | null>(null);
 
   const artists = useMemo(() => getAllArtists(), []);
+
+  const artistOptions = useMemo(
+    () => [
+      { value: "", label: "All Artists" },
+      ...artists.map((a) => ({
+        value: a,
+        label: a,
+        badge: String(getOSTs(undefined, undefined, a).length),
+      })),
+    ],
+    [artists]
+  );
 
   const results = useMemo(
     () => getOSTs(search || undefined, typeFilter || undefined, artistFilter || undefined),
@@ -66,18 +79,15 @@ export default function OSTList() {
             ))}
           </select>
         </div>
-        <div className="rgb-border rgb-border-always">
-          <select
-            value={artistFilter}
-            onChange={(e) => setArtistFilter(e.target.value)}
-            className="relative z-10 rounded-xl bg-[var(--color-panel)] px-4 py-3 text-sm outline-none text-[var(--color-ink)] max-w-[200px] cursor-pointer appearance-none"
-          >
-            <option value="">All Artists</option>
-            {artists.map((a) => (
-              <option key={a} value={a}>{a}</option>
-            ))}
-          </select>
-        </div>
+        <NeonSelect
+          variant="plain"
+          panelAlign="right"
+          value={artistFilter}
+          onChange={(v) => setArtistFilter(v)}
+          placeholder="All Artists"
+          panelClassName="max-w-[80vw]"
+          options={artistOptions}
+        />
       </div>
 
       {results.length > 0 && (

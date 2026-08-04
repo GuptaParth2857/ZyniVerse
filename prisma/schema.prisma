@@ -9,21 +9,21 @@ datasource db {
 }
 
 model User {
-  id         String    @id @default(cuid())
-  email      String    @unique
-  username   String    @unique
-  password   String?
-  avatar     String?
-  bio        String?
-  banner     String?
-  referralCode String?  @unique
-  referredBy   String?
-  referralCount Int     @default(0)
-  themeColor String?   @default("emerald")
-  signature  String?
-  provider   String?
-  lastSeen   DateTime?
-  createdAt  DateTime  @default(now())
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  password      String?
+  avatar        String?
+  bio           String?
+  banner        String?
+  referralCode  String?   @unique
+  referredBy    String?
+  referralCount Int       @default(0)
+  themeColor    String?   @default("emerald")
+  signature     String?
+  provider      String?
+  lastSeen      DateTime?
+  createdAt     DateTime  @default(now())
 
   entries                ListEntry[]
   progress               EpisodeProgress[]
@@ -69,6 +69,7 @@ model User {
   wikiHistory            WikiPageHistory[]         @relation("WikiHistoryEditor")
   conversations          ConversationParticipant[]
   messages               Message[]
+  messageReactions       MessageReaction[]
   doujinshiEntries       DoujinshiEntry[]
   tagVotes               TagVote[]
   characterVotes         CharacterVote[]
@@ -92,8 +93,8 @@ model User {
   sessions               UserSession[]
   searchLogs             SearchLog[]
   quizScores             QuizScore[]
-  quizChallenger         QuizChallenge[]         @relation("QuizChallenger")
-  quizChallengee         QuizChallenge[]         @relation("QuizChallengee")
+  quizChallenger         QuizChallenge[]           @relation("QuizChallenger")
+  quizChallengee         QuizChallenge[]           @relation("QuizChallengee")
   dubNotifications       DubNotification[]
   feedbackReplies        FeedbackReply[]
   feedbackLikes          FeedbackLike[]
@@ -104,6 +105,11 @@ model User {
   reelLikes              ReelLike[]
   reelComments           ReelComment[]
   reelReports            ReelReport[]
+  clubReels              ClubReel[]
+  clubReelLikes          ClubReelLike[]
+  clubPolls              ClubPoll[]                @relation("ClubPollCreator")
+  clubPollVotes          ClubPollVote[]
+  voiceLineLikes         VoiceLineLike[]
 }
 
 model Follow {
@@ -361,6 +367,7 @@ model TierListVote {
 model WatchParty {
   id          String    @id @default(cuid())
   hostId      String
+  clubId      String?
   mediaId     Int
   mediaTitle  String
   mediaImage  String?
@@ -377,9 +384,11 @@ model WatchParty {
   updatedAt   DateTime  @updatedAt
 
   host    User               @relation("Host", fields: [hostId], references: [id], onDelete: Cascade)
+  club    Club?              @relation(fields: [clubId], references: [id], onDelete: Cascade)
   members WatchPartyMember[]
 
   @@index([status, createdAt])
+  @@index([clubId])
 }
 
 model WatchPartyMember {
@@ -791,6 +800,9 @@ model Club {
   joinRequests ClubJoinRequest[]
   events       ClubEvent[]
   bans         ClubBan[]
+  reels        ClubReel[]
+  polls        ClubPoll[]
+  watchParties WatchParty[]
 
   @@index([slug])
   @@index([category, memberCount])
@@ -801,6 +813,7 @@ model ClubMember {
   clubId   String
   userId   String
   role     String   @default("member")
+  points   Int      @default(0)
   joinedAt DateTime @default(now())
 
   club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
@@ -812,14 +825,17 @@ model ClubMember {
 }
 
 model ClubPost {
-  id        String   @id @default(cuid())
-  clubId    String
-  userId    String
-  title     String
-  content   String
-  isPinned  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  clubId       String
+  userId       String
+  title        String
+  content      String
+  image        String?
+  videoUrl     String?
+  thumbnailUrl String?
+  isPinned     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   club     Club              @relation(fields: [clubId], references: [id], onDelete: Cascade)
   user     User              @relation("ClubPosts", fields: [userId], references: [id], onDelete: Cascade)
@@ -907,14 +923,33 @@ model Message {
   conversationId String
   senderId       String
   content        String
+  replyToId      String?
+  deletedFor     String   @default("")
   isDeleted      Boolean  @default(false)
   createdAt      DateTime @default(now())
 
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo      Message?          @relation("MessageReply", fields: [replyToId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replies      Message[]         @relation("MessageReply")
+  reactions    MessageReaction[]
 
   @@index([conversationId, createdAt])
   @@index([senderId])
+}
+
+model MessageReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
 }
 
 model AiringAlert {
@@ -1178,21 +1213,21 @@ model PasswordResetToken {
 }
 
 model Feedback {
-  id                  String           @id @default(cuid())
+  id                  String   @id @default(cuid())
   type                String
   message             String
   page                String?
   email               String?
   userId              String?
   userAgent           String?
-  status              String           @default("pending")
-  isFeatured          Boolean          @default(false)
+  status              String   @default("pending")
+  isFeatured          Boolean  @default(false)
   featuredHeading     String?
   featuredDescription String?
   featuredImage       String?
-  likeCount           Int              @default(0)
-  replyCount          Int              @default(0)
-  createdAt           DateTime         @default(now())
+  likeCount           Int      @default(0)
+  replyCount          Int      @default(0)
+  createdAt           DateTime @default(now())
 
   replies  FeedbackReply[]
   likes    FeedbackLike[]
@@ -1392,6 +1427,84 @@ model ClubBan {
   @@unique([clubId, userId])
 }
 
+// ── Club Reels (short video feed inside clubs) ──
+model ClubReel {
+  id           String   @id @default(cuid())
+  clubId       String
+  userId       String
+  videoUrl     String
+  thumbnailUrl String?
+  caption      String?
+  views        Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  club  Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes ClubReelLike[]
+
+  @@index([clubId, createdAt])
+  @@index([userId])
+}
+
+model ClubReelLike {
+  id        String   @id @default(cuid())
+  reelId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  reel ClubReel @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reelId, userId])
+  @@index([reelId])
+}
+
+// ── Club Polls (member voting) ──
+model ClubPoll {
+  id          String    @id @default(cuid())
+  clubId      String
+  title       String
+  description String?
+  createdById String
+  isActive    Boolean   @default(true)
+  endsAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  club         Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  createdBy    User             @relation("ClubPollCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  options      ClubPollOption[]
+  ClubPollVote ClubPollVote[]
+
+  @@index([clubId, createdAt])
+}
+
+model ClubPollOption {
+  id     String @id @default(cuid())
+  pollId String
+  label  String
+
+  poll  ClubPoll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes ClubPollVote[]
+
+  @@index([pollId])
+}
+
+model ClubPollVote {
+  id        String   @id @default(cuid())
+  pollId    String
+  optionId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  poll   ClubPoll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option ClubPollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId])
+  @@index([pollId])
+}
+
 // ── Feature 8: Discord Integration ──
 model DiscordAccount {
   id            String   @id @default(cuid())
@@ -1500,17 +1613,17 @@ model PageView {
 }
 
 model UserSession {
-  id             String   @id @default(cuid())
-  userId         String?
-  sessionId      String   @unique
-  startedAt      DateTime @default(now())
-  lastActiveAt   DateTime @default(now())
-  device         String?
-  browser        String?
-  os             String?
-  country        String?
-  pagesViewed    Int      @default(1)
-  isActive       Boolean  @default(true)
+  id           String   @id @default(cuid())
+  userId       String?
+  sessionId    String   @unique
+  startedAt    DateTime @default(now())
+  lastActiveAt DateTime @default(now())
+  device       String?
+  browser      String?
+  os           String?
+  country      String?
+  pagesViewed  Int      @default(1)
+  isActive     Boolean  @default(true)
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
@@ -1570,16 +1683,16 @@ model QuizScore {
 }
 
 model QuizChallenge {
-  id           String   @id @default(cuid())
-  challengerId String
-  challengeeId String
-  category     String
-  difficulty   String
-  status       String   @default("pending")
+  id              String   @id @default(cuid())
+  challengerId    String
+  challengeeId    String
+  category        String
+  difficulty      String
+  status          String   @default("pending")
   challengerScore Int?
   challengeeScore Int?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   challenger User @relation("QuizChallenger", fields: [challengerId], references: [id], onDelete: Cascade)
   challengee User @relation("QuizChallengee", fields: [challengeeId], references: [id], onDelete: Cascade)
@@ -1615,6 +1728,17 @@ model EpgCache {
 
   @@unique([channelId])
   @@index([channelId])
+}
+
+// ── AniList Last-Good Response Cache ──
+// Persists successful AniList GraphQL responses so the site can keep
+// serving previously-fetched data when AniList is down/unreachable.
+model AniListCache {
+  key       String   @id // sha256(query + variables)
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@index([updatedAt])
 }
 
 // ── External Awards (scraped from Crunchyroll, MAL, ANN, etc.) ──
@@ -1669,11 +1793,11 @@ model Convention {
 
 // ── Anime Events (curated global events) ──
 model AnimeEvent {
-  id          String  @id @default(cuid())
-  slug        String  @unique
+  id          String   @id @default(cuid())
+  slug        String   @unique
   name        String
   shortName   String
-  type        String  // expo | convention | stream | festival | premiere
+  type        String // expo | convention | stream | festival | premiere
   location    String
   country     String
   startDate   DateTime
@@ -1681,7 +1805,7 @@ model AnimeEvent {
   website     String
   image       String?
   description String
-  status      String  @default("upcoming") // upcoming | ongoing | past
+  status      String   @default("upcoming") // upcoming | ongoing | past
   attendance  Int?
   tags        String[]
   createdAt   DateTime @default(now())
@@ -1696,11 +1820,11 @@ model AnimeEvent {
 }
 
 model AnimeAnnouncement {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   eventId     String
   title       String
   description String
-  category    String  // anime-reveal | season-announcement | movie-reveal | game-reveal | collab | trailer | key-visual | casting | merchandise | other
+  category    String // anime-reveal | season-announcement | movie-reveal | game-reveal | collab | trailer | key-visual | casting | merchandise | other
   trailerUrl  String?
   posterUrl   String?
   sourceUrl   String?
@@ -1714,24 +1838,24 @@ model AnimeAnnouncement {
 }
 
 model Moment {
-  id          String   @id @default(cuid())
-  userId      String?
-  animeId     Int
-  animeTitle  String
-  animeCover  String?
-  quote       String
-  character   String
-  episode     String?
-  timestamp   String?
-  style       String   @default("classic")
-  likesCount  Int      @default(0)
-  viewsCount  Int      @default(0)
-  isPublic    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  userId     String?
+  animeId    Int
+  animeTitle String
+  animeCover String?
+  quote      String
+  character  String
+  episode    String?
+  timestamp  String?
+  style      String   @default("classic")
+  likesCount Int      @default(0)
+  viewsCount Int      @default(0)
+  isPublic   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  user   User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  likes  MomentLike[]
+  user  User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes MomentLike[]
 
   @@index([userId])
   @@index([animeId])
@@ -1762,10 +1886,10 @@ model Reel {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  likes    ReelLike[]
-  comments ReelComment[]
-  reports  ReelReport[]
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes     ReelLike[]
+  comments  ReelComment[]
+  reports   ReelReport[]
   reelViews ReelView[]
 
   @@index([userId])
@@ -1824,4 +1948,25 @@ model ReelReport {
 
   @@unique([userId, reelId])
   @@index([reelId])
+}
+
+model VoiceLine {
+  id         String          @id
+  likesCount Int             @default(0)
+  likes      VoiceLineLike[]
+
+  @@index([likesCount])
+}
+
+model VoiceLineLike {
+  id        String   @id @default(cuid())
+  lineId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  line VoiceLine @relation(fields: [lineId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([lineId, userId])
+  @@index([lineId])
 }

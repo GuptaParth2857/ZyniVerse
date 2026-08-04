@@ -6,6 +6,25 @@ interface CacheEntry {
   timestamp: number;
 }
 
+export interface AniListCacheAdapter {
+  persist(key: string, data: unknown): Promise<void>;
+  load(key: string): Promise<unknown | null>;
+}
+
+const GLOBAL_ADAPTER_KEY = "__zyniverse_anilist_cache_adapter__";
+
+let cacheAdapter: AniListCacheAdapter | null = null;
+
+function getActiveAdapter(): AniListCacheAdapter | null {
+  const g = globalThis as Record<string, unknown>;
+  return cacheAdapter ?? ((g[GLOBAL_ADAPTER_KEY] as AniListCacheAdapter | undefined) ?? null);
+}
+
+export function registerAniListCache(adapter: AniListCacheAdapter): void {
+  cacheAdapter = adapter;
+  (globalThis as Record<string, unknown>)[GLOBAL_ADAPTER_KEY] = adapter;
+}
+
 const responseCache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000;
 
@@ -83,6 +102,10 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
       }
 
       setCache(cacheKey, json.data);
+      const activeAdapter = getActiveAdapter();
+      if (activeAdapter) {
+        await activeAdapter.persist(cacheKey, json.data).catch(() => {});
+      }
       return json.data;
     } catch (e) {
       lastError = e instanceof Error ? e : new Error(String(e));
@@ -93,6 +116,19 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
         await new Promise((r) => setTimeout(r, 800));
         continue;
       }
+    }
+  }
+
+  const activeAdapter = getActiveAdapter();
+  if (activeAdapter) {
+    try {
+      const stale = await activeAdapter.load(cacheKey);
+      if (stale !== null && stale !== undefined) {
+        setCache(cacheKey, stale);
+        return stale;
+      }
+    } catch {
+      // ignore persistence errors
     }
   }
 
@@ -236,7 +272,7 @@ const ANIME_DETAIL_QUERY = `
           voiceActors(language: JAPANESE) {
             id name { first middle last full native } languageV2 image { large medium }
           }
-          voiceActorRoles(language: JAPANESE) {
+          voiceActorRoles(language: ENGLISH) {
             roleNotes dubGroup
             voiceActor { id name { first middle last full native } languageV2 image { large medium } }
           }
@@ -347,13 +383,16 @@ export async function getMangaDetailFull(id: number | string) {
   return data.Media as MediaMangaFull;
 }
 
-export async function getAnimeCharacters(id: number | string, perPage = 50) {
+export async function getAnimeCharacters(id: number | string, page = 1, perPage = 25) {
+  const base = Number(id);
+  const pageSize = Math.min(Math.max(perPage, 1), 25);
   const q = `
-    query ($id: Int, $pp: Int) {
+    query ($id: Int, $p: Int, $pp: Int) {
       Media(id: $id) {
         id title { romaji english native userPreferred }
         coverImage { large medium color }
-        characters(page: 1, perPage: $pp, sort: ROLE) {
+        characters(page: $p, perPage: $pp, sort: ROLE) {
+          pageInfo { hasNextPage total }
           edges {
             role
             name
@@ -367,8 +406,21 @@ export async function getAnimeCharacters(id: number | string, perPage = 50) {
         }
       }
     }`;
-  const data = await gql(q, { id: Number(id), pp: perPage });
-  return data.Media as { id: number; title: Media["title"]; coverImage: Media["coverImage"]; characters: { edges: CharacterEdge[] } };
+  const data = await gql(q, { id: base, p: page, pp: pageSize });
+  const media = data.Media;
+  return {
+    id: media.id,
+    title: media.title,
+    coverImage: media.coverImage,
+    pageInfo: media.characters?.pageInfo ?? { hasNextPage: false, total: 0 },
+    edges: (media.characters?.edges as CharacterEdge[] | undefined) ?? [],
+  } as {
+    id: number;
+    title: Media["title"];
+    coverImage: Media["coverImage"];
+    pageInfo: { hasNextPage: boolean; total: number };
+    edges: CharacterEdge[];
+  };
 }
 
 export async function getPopularCharacters(page = 1, perPage = 50) {
@@ -533,7 +585,7 @@ export async function getCharacter(id: number | string) {
             voiceActors(language: JAPANESE) {
               id name { first middle last full native } languageV2 image { large medium }
             }
-            voiceActorRoles(language: JAPANESE) {
+            voiceActorRoles(language: ENGLISH) {
               roleNotes dubGroup
               voiceActor { id name { first middle last full native } languageV2 image { large medium } }
             }

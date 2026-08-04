@@ -41,5 +41,10 @@ export async function POST(
     include: { user: { select: { id: true, username: true, avatar: true } } },
   });
 
+  await prisma.clubMember.update({
+    where: { clubId_userId: { clubId, userId: session.user.id } },
+    data: { points: { increment: 2 } },
+  }).catch(() => {});
+
   return NextResponse.json({ comment }, { status: 201 });
 }

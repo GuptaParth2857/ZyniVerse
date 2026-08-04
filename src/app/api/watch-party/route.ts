@@ -8,13 +8,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { mediaId, mediaTitle, mediaImage, coverImage } = await req.json();
+  const { mediaId, mediaTitle, mediaImage, coverImage, clubId } = await req.json();
   if (!mediaId || !mediaTitle) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
   try {
-    const party = await createParty(session.user.id, mediaId, mediaTitle, mediaImage, coverImage);
+    const party = await createParty(session.user.id, mediaId, mediaTitle, mediaImage, coverImage, clubId);
     return NextResponse.json({ party });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to create party";

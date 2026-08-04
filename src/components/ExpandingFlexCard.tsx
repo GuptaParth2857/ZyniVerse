@@ -68,7 +68,7 @@ export default function ExpandingFlexCard({ items }: { items: Media[] }) {
             >
               <Link
                 href={item.type === "MANGA" ? `/manga/${item.id}` : `/anime/${item.id}`}
-                className="block h-full w-full"
+                className="relative block h-full w-full"
               >
                 <Image
                   src={item.coverImage?.extraLarge || item.coverImage?.large || ""}

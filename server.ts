@@ -106,10 +106,10 @@ const httpServer = createServer(async (req, res) => {
     let body = "";
     for await (const chunk of req) body += chunk;
     try {
-      const { recipientId, message } = JSON.parse(body || "{}");
-      if (!recipientId || !message) {
+      const { recipientId, message, event, payload } = JSON.parse(body || "{}");
+      if (!recipientId || (!message && payload === undefined)) {
         res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "recipientId and message required" }));
+        res.end(JSON.stringify({ error: "recipientId and message/payload required" }));
         return;
       }
       const token = process.env.DM_BROADCAST_TOKEN;
@@ -118,7 +118,7 @@ const httpServer = createServer(async (req, res) => {
         res.end(JSON.stringify({ error: "Forbidden" }));
         return;
       }
-      io.to(`dm:${recipientId}`).emit("dm-message", message);
+      io.to(`dm:${recipientId}`).emit(event || "dm-message", payload !== undefined ? payload : message);
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ ok: true }));
     } catch {

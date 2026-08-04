@@ -10,7 +10,7 @@ export async function PUT(
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: clubId, postId } = await params;
-  const { title, content } = await req.json();
+  const { title, content, image, videoUrl, thumbnailUrl } = await req.json();
 
   const post = await prisma.clubPost.findUnique({ where: { id: postId }, select: { clubId: true, userId: true } });
   if (!post || post.clubId !== clubId) return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -29,6 +29,8 @@ export async function PUT(
     data: {
       ...(title !== undefined && { title: title.trim() }),
       ...(content !== undefined && { content: content.trim() }),
+      ...(image !== undefined && { image: image || null }),
+      ...(videoUrl !== undefined && { videoUrl: videoUrl || null, thumbnailUrl: thumbnailUrl !== undefined ? thumbnailUrl || null : undefined }),
     },
     include: { user: { select: { id: true, username: true, avatar: true } } },
   });

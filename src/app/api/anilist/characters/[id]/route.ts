@@ -10,7 +10,8 @@ export async function GET(
   if (rateCheck) return rateCheck;
   const { id } = await params;
   const url = new URL(req.url);
-  const perPage = Math.min(Number(url.searchParams.get("perPage")) || 50, 100);
-  const data = await getAnimeCharacters(id, perPage);
+  const page = Math.max(Number(url.searchParams.get("page")) || 1, 1);
+  const perPage = Math.min(Number(url.searchParams.get("perPage")) || 25, 25);
+  const data = await getAnimeCharacters(id, page, perPage);
   return Response.json(data);
 }

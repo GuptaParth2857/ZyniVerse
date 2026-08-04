@@ -56,7 +56,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "ZyniVerse — #1 Anime Site: Filler List, Hindi Dubs, Watch Tracker & Community (2026)",
+    default: "ZyniVerse — Anime Filler Guides, Indian Dubs & Manga Tracker",
     template: "%s | ZyniVerse — Free Anime Platform",
   },
   description:
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     "seasonal anime 2026", "anime airing schedule", "simulcast anime",
   ],
   openGraph: {
-    title: "ZyniVerse — #1 Anime Site: Filler List, Hindi Dubs, Watch Tracker & Community",
+    title: "ZyniVerse — Anime Filler Guides, Indian Dubs & Manga Tracker",
     description: "India's #1 anime platform — filler guides for 200+ anime, Hindi/Tamil/Telugu dubs, AI recommendations, watchlist, manga reader & anime community. Free.",
     type: "website",
     siteName: "ZyniVerse",
@@ -88,7 +88,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@GuptaParth2857",
     creator: "@GuptaParth2857",
-    title: "ZyniVerse — #1 Anime Site: Filler List, Hindi Dubs, Watch Tracker",
+    title: "ZyniVerse — Anime Filler Guides, Indian Dubs & Manga Tracker",
     description: "India's #1 anime platform — filler guides for 200+ anime, Hindi/Tamil/Telugu dubs, AI recommendations & community. Free.",
   },
   robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",

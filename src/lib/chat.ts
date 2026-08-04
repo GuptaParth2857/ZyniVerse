@@ -1,6 +1,48 @@
 import { prisma } from "./prisma";
 import type { Prisma } from "@prisma/client";
 
+export const messageInclude = {
+  sender: { select: { id: true, username: true, avatar: true } },
+  replyTo: {
+    select: {
+      id: true,
+      content: true,
+      isDeleted: true,
+      deletedFor: true,
+      sender: { select: { id: true, username: true } },
+    },
+  },
+  reactions: {
+    select: { id: true, userId: true, emoji: true, user: { select: { id: true, username: true } } },
+  },
+} satisfies Prisma.MessageInclude;
+
+export async function broadcastToConversation(
+  conversationId: string,
+  excludeUserId: string,
+  event: string,
+  payload: unknown
+) {
+  const wsBase = process.env.NEXT_PUBLIC_WS_URL;
+  if (!wsBase) return;
+  const participants = await prisma.conversationParticipant.findMany({
+    where: { conversationId, userId: { not: excludeUserId } },
+    select: { userId: true },
+  });
+  if (participants.length === 0) return;
+
+  const token = process.env.DM_BROADCAST_TOKEN;
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["x-dm-token"] = token;
+  for (const p of participants) {
+    fetch(`${wsBase.replace(/\/$/, "")}/internal/dm-broadcast`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ recipientId: p.userId, event, payload }),
+    }).catch(() => {});
+  }
+}
+
 export interface ConversationWithDetails {
   id: string;
   createdAt: Date;
@@ -17,6 +59,7 @@ export interface ConversationWithDetails {
     senderId: string;
     createdAt: Date;
     isDeleted: boolean;
+    deletedFor: string;
   } | null;
 }
 
@@ -48,15 +91,28 @@ export async function getOrCreateConversation(userId1: string, userId2: string) 
   });
 }
 
-export async function sendMessage(conversationId: string, senderId: string, content: string) {
+export async function sendMessage(
+  conversationId: string,
+  senderId: string,
+  content: string,
+  replyToId?: string
+) {
   const participant = await prisma.conversationParticipant.findUnique({
     where: { conversationId_userId: { conversationId, userId: senderId } },
   });
   if (!participant) throw new Error("Not a participant of this conversation");
 
+  if (replyToId) {
+    const reply = await prisma.message.findFirst({
+      where: { id: replyToId, conversationId },
+      select: { id: true },
+    });
+    if (!reply) throw new Error("Reply message not found in this conversation");
+  }
+
   return prisma.message.create({
-    data: { conversationId, senderId, content },
-    include: { sender: { select: { id: true, username: true, avatar: true } } },
+    data: { conversationId, senderId, content, replyToId: replyToId || null },
+    include: messageInclude,
   });
 }
 
@@ -71,10 +127,52 @@ export async function getMessages(conversationId: string, limit = 50, before?: s
     where,
     orderBy: { createdAt: "desc" },
     take: limit,
-    include: {
-      sender: { select: { id: true, username: true, avatar: true } },
-    },
+    include: messageInclude,
   });
+}
+
+export async function toggleReaction(messageId: string, userId: string, emoji: string) {
+  const message = await prisma.message.findUnique({
+    where: { id: messageId },
+    select: { conversationId: true },
+  });
+  if (!message) throw new Error("Message not found");
+
+  const participant = await prisma.conversationParticipant.findUnique({
+    where: { conversationId_userId: { conversationId: message.conversationId, userId } },
+  });
+  if (!participant) throw new Error("Not a participant of this conversation");
+
+  const existing = await prisma.messageReaction.findUnique({
+    where: { messageId_userId_emoji: { messageId, userId, emoji } },
+  });
+
+  if (existing) await prisma.messageReaction.delete({ where: { id: existing.id } });
+  else await prisma.messageReaction.create({ data: { messageId, userId, emoji } });
+
+  return prisma.messageReaction.findMany({
+    where: { messageId },
+    select: { id: true, userId: true, emoji: true, user: { select: { id: true, username: true } } },
+  });
+}
+
+export async function deleteMessage(messageId: string, userId: string, mode: "me" | "everyone") {
+  const message = await prisma.message.findUnique({ where: { id: messageId } });
+  if (!message) throw new Error("Message not found");
+
+  if (mode === "everyone" && message.senderId !== userId) {
+    throw new Error("Only the sender can delete for everyone");
+  }
+
+  if (mode === "everyone") {
+    await prisma.message.update({ where: { id: messageId }, data: { isDeleted: true } });
+  } else {
+    const list = message.deletedFor ? message.deletedFor.split(",").filter(Boolean) : [];
+    if (!list.includes(userId)) list.push(userId);
+    await prisma.message.update({ where: { id: messageId }, data: { deletedFor: list.join(",") } });
+  }
+
+  return prisma.message.findUnique({ where: { id: messageId }, include: messageInclude });
 }
 
 export async function getConversations(userId: string): Promise<ConversationWithDetails[]> {
@@ -88,6 +186,14 @@ export async function getConversations(userId: string): Promise<ConversationWith
       messages: {
         orderBy: { createdAt: "desc" },
         take: 1,
+        select: {
+          id: true,
+          content: true,
+          senderId: true,
+          createdAt: true,
+          isDeleted: true,
+          deletedFor: true,
+        },
       },
     },
   });
