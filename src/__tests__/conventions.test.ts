@@ -6,16 +6,37 @@ import {
   getStates,
 } from "@/lib/conventions";
 
+interface ConventionRow {
+  id: string;
+  name: string;
+  shortName: string | null;
+  city: string;
+  state: string;
+  venue: string;
+  website: string;
+  ticketUrl: string | null;
+  image: string | null;
+  description: string;
+  estimatedAttendance: number | null;
+  status: string;
+  organizers: string[];
+  tags: string[];
+  startDate: Date;
+  endDate: Date;
+  isPublic: boolean;
+  [key: string]: unknown;
+}
+
+interface WhereInput {
+  isPublic?: boolean;
+  city?: { contains?: string; mode?: string };
+  state?: { contains?: string; mode?: string };
+  status?: string;
+  AND?: Array<Record<string, { gte?: Date; lt?: Date }>>;
+}
+
 const conventionMock = vi.hoisted(() => {
-  const mk = (
-    id: string,
-    name: string,
-    city: string,
-    state: string,
-    start: string,
-    end: string,
-    extra: Record<string, unknown> = {}
-  ) => ({
+  const mk = (id: string, name: string, city: string, state: string, start: string, end: string): ConventionRow => ({
     id,
     name,
     shortName: null,
@@ -33,10 +54,9 @@ const conventionMock = vi.hoisted(() => {
     startDate: new Date(start),
     endDate: new Date(end),
     isPublic: true,
-    ...extra,
   });
 
-  const data = [
+  const data: ConventionRow[] = [
     mk("comic-con-delhi-jul", "Comic Con Delhi July 2026", "Delhi", "Delhi", "2026-07-10", "2026-07-12"),
     mk("anime-expo-delhi", "Anime Expo India Delhi", "Delhi", "Delhi", "2026-08-15", "2026-08-17"),
     mk("comic-con-mumbai", "Comic Con Mumbai", "Mumbai", "Maharashtra", "2026-08-28", "2026-08-30"),
@@ -44,21 +64,26 @@ const conventionMock = vi.hoisted(() => {
     mk("comic-con-pune", "Comic Con Pune", "Pune", "Maharashtra", "2026-11-20", "2026-11-22"),
   ];
 
-  const matchWhere = (row: Record<string, any>, where: any): boolean => {
+  const matchWhere = (row: ConventionRow, where?: WhereInput): boolean => {
     if (!where) return true;
-    for (const [key, val] of Object.entries<any>(where)) {
+    for (const [key, val] of Object.entries(where)) {
       if (key === "AND") {
-        for (const group of val) {
-          for (const [k2, cond] of Object.entries<any>(group)) {
-            if (cond.gte && row[k2] < cond.gte) return false;
-            if (cond.lt && row[k2] >= cond.lt) return false;
+        const andGroups = val as WhereInput["AND"];
+        for (const group of andGroups ?? []) {
+          for (const [k2, cond] of Object.entries(group)) {
+            const value = row[k2];
+            if (cond.gte !== undefined && (value as Date) < cond.gte) return false;
+            if (cond.lt !== undefined && (value as Date) >= cond.lt) return false;
           }
         }
       } else if (val && typeof val === "object" && "contains" in val) {
+        const contains = (val as { contains: string }).contains;
         const field = String(row[key] ?? "");
-        if (val.mode === "insensitive") {
-          if (!field.toLowerCase().includes(String(val.contains).toLowerCase())) return false;
-        } else if (!field.includes(String(val.contains))) return false;
+        if ((val as { mode?: string }).mode === "insensitive") {
+          if (!field.toLowerCase().includes(contains.toLowerCase())) return false;
+        } else if (!field.includes(contains)) {
+          return false;
+        }
       } else if (row[key] !== val) {
         return false;
       }
@@ -66,24 +91,28 @@ const conventionMock = vi.hoisted(() => {
     return true;
   };
 
-  const findMany = vi.fn(async (args: any = {}) => {
-    const { where, orderBy, distinct, select } = args;
-    let rows = data.filter((r) => matchWhere(r, where));
-    if (orderBy) {
-      const [[field, dir]] = Object.entries<any>(orderBy);
-      rows = [...rows].sort((a, b) => {
-        const cmp = a[field] > b[field] ? 1 : a[field] < b[field] ? -1 : 0;
-        return dir === "desc" ? -cmp : cmp;
-      });
+  const findMany = vi.fn(
+    async (args: { where?: WhereInput; orderBy?: Record<string, string>; distinct?: string[]; select?: Record<string, boolean> } = {}) => {
+      const { where, orderBy, distinct, select } = args;
+      let rows: ConventionRow[] = data.filter((r) => matchWhere(r, where));
+      if (orderBy) {
+        const [[field, dir]] = Object.entries(orderBy);
+        rows = [...rows].sort((a, b) => {
+          const av = String(a[field]);
+          const bv = String(b[field]);
+          const cmp = av > bv ? 1 : av < bv ? -1 : 0;
+          return dir === "desc" ? -cmp : cmp;
+        });
+      }
+      if (distinct) {
+        rows = rows.filter((r, i, arr) => arr.findIndex((x) => x[distinct[0]] === r[distinct[0]]) === i);
+      }
+      if (select) {
+        return rows.map((r) => Object.fromEntries(Object.keys(select).map((k) => [k, r[k]])));
+      }
+      return rows;
     }
-    if (distinct) {
-      rows = rows.filter((r, i, arr) => arr.findIndex((x) => x[distinct[0]] === r[distinct[0]]) === i);
-    }
-    if (select) {
-      return rows.map((r) => Object.fromEntries(Object.keys(select).map((k) => [k, r[k]])));
-    }
-    return rows;
-  });
+  );
   const findUnique = vi.fn(async ({ where }: { where: { id: string } }) => data.find((r) => r.id === where.id) ?? null);
   const count = vi.fn(async () => data.length);
   return { findMany, findUnique, count };

@@ -4,12 +4,22 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageTransition } from "@/components/PageTransition";
 import { logError } from "@/lib/logger";
+import { getSupabase } from "@/lib/supabase";
 
 const ALLOWED_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 const MAX_SIZE = 50 * 1024 * 1024; // 50MB — Supabase free plan storage limit
 const MAX_DURATION = 180;
 
 type Phase = "idle" | "validating" | "uploading" | "done" | "error";
+
+const parseJsonOrThrow = async (res: Response): Promise<Record<string, unknown>> => {
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    throw new Error(res.ok ? "Unexpected server response" : `Upload failed (${res.status}). Please try again.`);
+  }
+};
 
 export default function ReelUpload() {
   const router = useRouter();
@@ -30,7 +40,7 @@ export default function ReelUpload() {
       return null;
     }
     if (f.size > MAX_SIZE) {
-      setError("File cannot be larger than 50MB (Supabase free plan limit).");
+      setError("File cannot be larger than 50MB.");
       return null;
     }
     return f;
@@ -95,28 +105,52 @@ export default function ReelUpload() {
     setError("");
 
     try {
-      const form = new FormData();
-      form.append("file", file);
-      if (thumbnail) form.append("thumbnail", thumbnail, "thumb.jpg");
+      const presignRes = await fetch("/api/upload/reel/presign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          needThumbnail: Boolean(thumbnail),
+        }),
+      });
+      const presign = await parseJsonOrThrow(presignRes);
+      if (!presignRes.ok) throw new Error((presign.error as string) || "Failed to start upload");
+      setProgress(30);
 
-      const uploadRes = await fetch("/api/upload/reel", { method: "POST", body: form });
-      setProgress(45);
-      const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed");
+      const supabase = getSupabase();
+      const { error: uploadErr } = await supabase.storage
+        .from("reels")
+        .uploadToSignedUrl(presign.path as string, presign.token as string, file);
+      if (uploadErr) throw new Error(uploadErr.message || "Upload failed");
+      setProgress(60);
+
+      let thumbnailUrl: string | null = null;
+      const thumb = presign.thumb as { path: string; token: string; publicUrl: string } | null | undefined;
+      if (thumbnail && thumb) {
+        const thumbFile =
+          thumbnail instanceof File ? thumbnail : new File([thumbnail], "thumb.jpg", { type: "image/jpeg" });
+        const { error: thumbErr } = await supabase.storage
+          .from("reels")
+          .uploadToSignedUrl(thumb.path, thumb.token, thumbFile);
+        if (thumbErr) throw new Error(thumbErr.message || "Upload failed");
+        thumbnailUrl = thumb.publicUrl;
+      }
 
       setProgress(70);
       const createRes = await fetch("/api/reels", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          videoUrl: uploadData.url,
-          thumbnailUrl: uploadData.thumbnailUrl || null,
+          videoUrl: presign.publicUrl as string,
+          thumbnailUrl,
           caption,
           duration,
         }),
       });
-      const createData = await createRes.json();
-      if (!createRes.ok) throw new Error(createData.error || "Failed to save reel");
+      const createData = await parseJsonOrThrow(createRes);
+      if (!createRes.ok) throw new Error((createData.error as string) || "Failed to save reel");
 
       setProgress(100);
       setPhase("done");
