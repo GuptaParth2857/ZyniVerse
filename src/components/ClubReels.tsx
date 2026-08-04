@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { getSupabase } from "@/lib/supabase";
 
 interface ReelUser {
   id: string;
@@ -18,6 +19,19 @@ interface Reel {
   createdAt: string;
   _count: { likes: number };
   user: ReelUser;
+}
+
+async function parseJsonOrThrow(res: Response): Promise<Record<string, unknown>> {
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    try {
+      return (await res.json()) as Record<string, unknown>;
+    } catch {
+      // fall through to text fallback below
+    }
+  }
+  const text = await res.text();
+  throw new Error(text ? text.slice(0, 200) : `Upload failed (${res.status})`);
 }
 
 export default function ClubReels({
@@ -41,15 +55,32 @@ export default function ClubReels({
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 50 * 1024 * 1024) { setError("Max 50MB allowed"); return; }
+    if (!["video/mp4", "video/webm", "video/quicktime"].includes(file.type)) { setError("Use MP4, WebM, or MOV"); return; }
     setUploading(true);
     setError("");
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/upload/reel", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Upload failed");
-      onUpload({ videoUrl: data.url, thumbnailUrl: data.thumbnailUrl || undefined, caption: caption || undefined });
+      const res = await fetch("/api/upload/reel/presign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileName: file.name, fileType: file.type, fileSize: file.size }),
+      });
+      const presign = (await parseJsonOrThrow(res)) as {
+        path: string;
+        token: string;
+        publicUrl: string;
+        error?: string;
+      };
+      if (!res.ok) throw new Error(presign.error || "Failed to start upload");
+
+      const supabase = getSupabase();
+      const { error: uploadError } = await supabase.storage
+        .from("reels")
+        .uploadToSignedUrl(presign.path, presign.token, file);
+
+      if (uploadError) throw new Error(uploadError.message || "Upload failed");
+
+      const { data: pub } = supabase.storage.from("reels").getPublicUrl(presign.path);
+      onUpload({ videoUrl: pub.publicUrl, caption: caption || undefined });
       setCaption("");
     } catch (err) { setError(err instanceof Error ? err.message : "Upload failed"); }
     setUploading(false);

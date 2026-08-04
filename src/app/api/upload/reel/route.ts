@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       );
     }
     if (file.size > MAX_SIZE) {
-      return NextResponse.json({ error: "File too large. Max 50MB (Supabase free plan limit)." }, { status: 400 });
+      return NextResponse.json({ error: "File too large. Max 50MB." }, { status: 400 });
     }
 
     const supabase = getSupabaseAdmin();
