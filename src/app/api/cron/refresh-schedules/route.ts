@@ -4,6 +4,7 @@ import { fetchAllEpgFromPw } from "@/lib/epg-pw";
 import { getAnimaxSchedule } from "@/lib/animax-schedule";
 
 export const revalidate = 0;
+export const maxDuration = 60;
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -84,6 +85,23 @@ export async function GET(request: Request) {
       task: "live-action-updates",
       status: 500,
       detail: error instanceof Error ? error.message : "Failed to update live-action data",
+    });
+  }
+
+  // 5. Sync live-action catalog from Wikipedia (+ AniList enrichment)
+  try {
+    const { syncLiveActionCatalog } = await import("@/lib/live-action-catalog");
+    const catalogResult = await syncLiveActionCatalog();
+    results.push({
+      task: "live-action-catalog-sync",
+      status: 200,
+      detail: `${catalogResult.total} titles, +${catalogResult.added} new, ${catalogResult.enriched} enriched`,
+    });
+  } catch (error) {
+    results.push({
+      task: "live-action-catalog-sync",
+      status: 500,
+      detail: error instanceof Error ? error.message : "Failed to sync live-action catalog",
     });
   }
 

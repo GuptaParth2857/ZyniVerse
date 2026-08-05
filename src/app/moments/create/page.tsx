@@ -147,11 +147,11 @@ export default function CreateMomentPage() {
                   value={query}
                   onChange={(e) => handleSearch(e.target.value)}
                   placeholder="Search anime..."
-                  className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-void)] px-4 py-3 text-sm text-white placeholder:text-[var(--color-mute)] focus:outline-none focus:border-[var(--color-cyan)]"
+                  className="w-full rounded-xl neon-rgb-border bg-[var(--color-void)] px-4 py-3 text-sm text-white placeholder:text-[var(--color-mute)] focus:outline-none"
                   autoFocus
                 />
                 {suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 max-h-72 overflow-y-auto rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl z-20">
+                  <div className="absolute top-full left-0 right-0 mt-2 max-h-72 overflow-y-auto rounded-xl neon-rgb-border bg-[var(--color-panel)] shadow-2xl z-20">
                     {suggestions.map((s) => (
                       <button
                         key={s.id}

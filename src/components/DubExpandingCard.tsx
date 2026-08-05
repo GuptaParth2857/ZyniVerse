@@ -70,12 +70,12 @@ export default function DubExpandingCard({ items }: Props) {
             <motion.div
               key={`${item.mal_id}-${idx}`}
               layout
-              animate={{ flex: isHovered ? 3 : 1 }}
+              animate={{ flexGrow: isHovered ? 3 : 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               onMouseEnter={() => setHovered(item.mal_id)}
               onMouseLeave={() => setHovered(null)}
               className="relative overflow-hidden rounded-2xl cursor-pointer group bg-[var(--color-panel)] neon-rgb-border"
-              style={{ minWidth: 0 }}
+              style={{ minWidth: 0, flexBasis: 0 }}
             >
               <Link
                 href={`/search?q=${encodeURIComponent(item.displayTitle || item.title)}`}

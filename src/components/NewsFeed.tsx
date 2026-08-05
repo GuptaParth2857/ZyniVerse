@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -72,17 +72,42 @@ function NewsCardSkeleton() {
   );
 }
 
-function NewsCard({ item }: { item: NewsItem }) {
+function NewsCard({ item, index = 0 }: { item: NewsItem; index?: number }) {
   const sourceStyle = SOURCE_STYLES[item.source] || SOURCE_STYLES.Trending;
   const typeStyle = TYPE_STYLES[item.type] || TYPE_STYLES.community;
   const href = item.type === "rss" ? `/news/${item.id}` : item.url;
 
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const px = (e.clientX - cx) / (rect.width / 2);
+    const py = (e.clientY - cy) / (rect.height / 2);
+    el.style.transform = `perspective(800px) rotateY(${px * 6}deg) rotateX(${-py * 6}deg) scale(1.02)`;
+  }, []);
+
+  const handlePointerLeave = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) scale(1)";
+  }, []);
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      ref={ref}
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className="group h-full"
+      style={{ transition: "transform 0.2s ease-out" }}
     >
-      <Link href={href} className="rounded-xl neon-border-card no-underline group block overflow-hidden bg-[var(--color-panel)]">
+      <Link href={href} className="rounded-xl neon-border-card no-underline group block h-full overflow-hidden bg-[var(--color-panel)]">
         {item.image ? (
           <div className="relative h-48 w-full overflow-hidden">
             <div
@@ -244,7 +269,7 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
             >
               {news.map((item, i) => (
                 <div key={item.id} style={{ ["--i" as string]: i }}>
-                  <NewsCard item={item} />
+                  <NewsCard item={item} index={i} />
                 </div>
               ))}
             </motion.div>
