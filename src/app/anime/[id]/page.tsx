@@ -16,6 +16,7 @@ import ReviewsSection from "@/components/ReviewsSection";
 import WhereToWatch from "@/components/WhereToWatch";
 import TvScheduleCard from "@/components/TvScheduleCard";
 import EpisodeTracker from "@/components/EpisodeTracker";
+import AnimeRatingInput from "@/components/AnimeRatingInput";
 import AffiliateLink from "@/components/AffiliateLink";
 import AdBanner from "@/components/AdBanner";
 import NativeBannerAd from "@/components/NativeBannerAd";
@@ -426,6 +427,9 @@ export default function AnimeDetailsPage() {
           {anime.episodes && (
             <EpisodeTracker mediaId={anime.id} totalEpisodes={anime.episodes} animeTitle={title} />
           )}
+
+          {/* Your Rating */}
+          <AnimeRatingInput mediaId={anime.id} />
 
           {/* Episode Ratings from MAL */}
           {anime.idMal && (

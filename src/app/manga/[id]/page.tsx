@@ -11,6 +11,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import MangaProgress from "@/components/MangaProgress";
 import MangaRatingInput from "@/components/MangaRatingInput";
+import MangaReadingHistory from "@/components/MangaReadingHistory";
 import MangaStatsCard from "@/components/MangaStatsCard";
 import ScoreDistributionChart from "@/components/features/ScoreDistributionChart";
 import RecRelationships from "@/components/RecRelationships";
@@ -529,6 +530,9 @@ export default function MangaDetailsPage() {
               onScoreUpdate={handleScoreUpdate}
             />
           )}
+
+          {/* Reading History */}
+          <MangaReadingHistory mediaId={Number(id)} />
 
           {/* Manga Stats (MangaDex + MAL) */}
           <MangaStatsCard mediaId={manga.id} />

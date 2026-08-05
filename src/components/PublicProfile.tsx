@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
@@ -202,6 +203,15 @@ export default function PublicProfile({
                   <div className="text-[10px] text-[var(--color-mute)] uppercase tracking-wider">{s.label}</div>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link href={`/u/${username}/watchlist`} className="rounded-full border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-1.5 text-xs font-semibold text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors">
+                Anime Watchlist →
+              </Link>
+              <Link href={`/u/${username}/manga`} className="rounded-full border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-1.5 text-xs font-semibold text-[var(--color-violet)] hover:border-[var(--color-violet)] transition-colors">
+                Manga List →
+              </Link>
             </div>
           </div>
         </motion.div>
