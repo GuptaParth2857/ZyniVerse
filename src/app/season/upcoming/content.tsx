@@ -1,29 +1,144 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { bestTitle, type Media } from "@/lib/anilist";
 import AnimeCard from "@/components/AnimeCard";
 
+function stripHtml(str?: string | null): string {
+  return str ? str.replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#039;/g, "'") : "";
+}
+
+function formatReleaseDate(item: Media): string | null {
+  if (item.nextAiringEpisode?.airingAt) {
+    return new Date(item.nextAiringEpisode.airingAt * 1000).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  }
+  const sd = item.startDate;
+  if (sd?.year) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    if (sd.month) return `${months[sd.month - 1]} ${sd.year}`;
+    return String(sd.year);
+  }
+  return null;
+}
+
+function daysUntil(item: Media): number | null {
+  const ts = item.nextAiringEpisode?.airingAt;
+  if (!ts) return null;
+  return Math.max(0, Math.ceil((ts * 1000 - Date.now()) / 86400000));
+}
+
+function NeonCard({ item, index }: { item: Media; index: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const px = (e.clientX - cx) / (rect.width / 2);
+    const py = (e.clientY - cy) / (rect.height / 2);
+    el.style.transform = `perspective(800px) rotateY(${px * 8}deg) rotateX(${-py * 8}deg) scale(1.03)`;
+  };
+
+  const handlePointerLeave = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "";
+  };
+
+  return (
+    <div
+      ref={ref}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className="up-neon-card rounded-xl"
+      style={{ ["--i" as string]: index, transition: "transform 0.2s ease-out" }}
+    >
+      <AnimeCard anime={item} no3D />
+    </div>
+  );
+}
+
 export default function UpcomingClient({ anime }: { anime: Media[] }) {
   const [view, setView] = useState<"grid" | "list">("grid");
   const [query, setQuery] = useState("");
+  const [items, setItems] = useState<Media[]>(anime);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<Media[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const filtered = useMemo(() => {
-    if (!query.trim()) return anime;
-    const q = query.toLowerCase();
-    const words = q.split(/\s+/).filter(Boolean);
-    return anime.filter((a) => {
-      const title = bestTitle(a.title).toLowerCase();
-      const romaji = a.title?.romaji?.toLowerCase() || "";
-      const genres = (a.genres || []).join(" ").toLowerCase();
-      const format = (a.format || "").toLowerCase().replace(/_/g, " ");
-      const haystack = `${title} ${romaji} ${genres} ${format}`;
-      return words.every((w) => haystack.includes(w));
-    });
-  }, [query, anime]);
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore || query.trim()) return;
+    setLoading(true);
+    try {
+      const d = await fetch(`/api/anilist/upcoming?page=${page + 1}&perPage=50`).then((r) => r.json());
+      const next = (d.media || []) as Media[];
+      setItems((prev) => {
+        const seen = new Set(prev.map((m) => m.id));
+        return [...prev, ...next.filter((m) => !seen.has(m.id))];
+      });
+      setHasMore(!!d.pageInfo?.hasNextPage);
+      setPage((p) => p + 1);
+    } catch {
+      // observer retries on next intersection
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, hasMore, query, page]);
+
+  const loadMoreRef = useRef(loadMore);
+
+  useEffect(() => {
+    loadMoreRef.current = loadMore;
+  });
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMoreRef.current();
+      },
+      { rootMargin: "600px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSearchResults([]);
+      setSearchLoading(false);
+      return;
+    }
+    setSearchLoading(true);
+    let cancelled = false;
+    const t = window.setTimeout(async () => {
+      try {
+        const d = await fetch(`/api/anilist/upcoming/search?q=${encodeURIComponent(q)}&perPage=50`).then((r) => r.json());
+        if (!cancelled) setSearchResults((d.media || []) as Media[]);
+      } catch {
+        if (!cancelled) setSearchResults([]);
+      } finally {
+        if (!cancelled) setSearchLoading(false);
+      }
+    }, 500);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
+  }, [query]);
+
+  const displayItems = query.trim() ? searchResults : items;
 
   return (
     <>
@@ -89,6 +204,32 @@ export default function UpcomingClient({ anime }: { anime: Media[] }) {
           animation: upNeonBorderHover 1.5s linear infinite !important;
           transform: translateY(-2px);
         }
+        .up-neon-card {
+          display: flex;
+          flex-direction: column;
+          transition: transform 0.2s ease-out;
+        }
+        .up-neon-card > .group {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+        .up-neon-card .glass-card {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+        .up-neon-card .glass-content {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+        .up-neon-card .glass-content > div.border-t {
+          margin-top: auto;
+        }
+        .up-neon-card .glass-card:hover {
+          transform: none;
+        }
       `}</style>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
@@ -122,14 +263,14 @@ export default function UpcomingClient({ anime }: { anime: Media[] }) {
         </div>
         {query && (
           <p className="text-xs text-[var(--color-mute)] mt-2 ml-1">
-            {filtered.length} result{filtered.length !== 1 ? "s" : ""} for &ldquo;<span className="text-[var(--color-cyan)]">{query}</span>&rdquo;
+            {searchLoading ? "Searching..." : `${displayItems.length} result${displayItems.length !== 1 ? "s" : ""} for`} &ldquo;<span className="text-[var(--color-cyan)]">{query}</span>&rdquo;
           </p>
         )}
       </motion.div>
 
       {/* View Toggle + Count */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-6 flex items-center gap-3">
-        <span className="text-xs text-[var(--color-mute)]">{filtered.length} title{filtered.length !== 1 ? "s" : ""}</span>
+        <span className="text-xs text-[var(--color-mute)]">{displayItems.length} title{displayItems.length !== 1 ? "s" : ""}</span>
         <div className="flex items-center gap-1 rounded-lg border border-[var(--color-line)] p-0.5">
           <button onClick={() => setView("grid")}
             className={`up-neon-filter px-3 py-1.5 rounded-md text-xs font-semibold transition-all`}
@@ -154,71 +295,127 @@ export default function UpcomingClient({ anime }: { anime: Media[] }) {
         </div>
       </motion.div>
 
-      {filtered.length === 0 ? (
+      {searchLoading ? (
         <div className="up-neon-card rounded-xl bg-[var(--color-panel)] py-20 text-center" style={{ ["--i" as string]: 0 }}>
-          <p className="text-sm font-semibold text-[var(--color-mute)]">No anime match your search</p>
+          <motion.div className="mx-auto h-6 w-6 rounded-full border-2 border-[var(--color-magenta)] border-t-transparent" animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }} />
+          <p className="text-sm font-semibold text-[var(--color-mute)] mt-3">Searching upcoming titles...</p>
+        </div>
+      ) : displayItems.length === 0 ? (
+        <div className="up-neon-card rounded-xl bg-[var(--color-panel)] py-20 text-center" style={{ ["--i" as string]: 0 }}>
+          <p className="text-sm font-semibold text-[var(--color-mute)]">No upcoming anime match your search</p>
           <p className="text-xs text-[var(--color-mute)]/60 mt-1">Try a different keyword</p>
         </div>
       ) : view === "grid" ? (
         <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {filtered.map((item, i) => (
-            <div key={item.id} className="up-neon-card rounded-xl" style={{ ["--i" as string]: i }}>
-              <AnimeCard anime={item} />
-            </div>
+          {displayItems.map((item, i) => (
+            <NeonCard key={item.id} item={item} index={i} />
           ))}
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.02 }}
-            >
-              <Link href={`/anime/${item.id}`}
-                className="up-list-card group flex items-stretch overflow-hidden rounded-xl bg-[var(--color-panel)]"
-                style={{ ["--i" as string]: i }}
+          {displayItems.map((item, i) => {
+            const release = formatReleaseDate(item);
+            const days = daysUntil(item);
+            const studio = item.studios?.nodes?.find((s) => s.isAnimationStudio)?.name || item.studios?.nodes?.[0]?.name;
+            const title = bestTitle(item.title);
+            return (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.02 }}
               >
-                <div className="flex items-stretch w-full">
-                  <div className="relative w-[100px] sm:w-[130px] shrink-0 overflow-hidden rounded-l-xl">
-                    {item.coverImage?.large ? (
-                      <Image src={item.coverImage.large} alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="130px" />
-                    ) : (
-                      <div className="w-full h-full bg-[var(--color-line)]/20" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--color-panel)]/80" />
-                    {item.averageScore != null && (
-                      <div className="absolute bottom-2 left-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-mono font-bold z-10 text-[var(--color-amber)]">
-                        ★ {(item.averageScore / 10).toFixed(1)}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col justify-center">
-                    <h3 className="text-sm sm:text-base font-bold truncate group-hover:opacity-80 transition-opacity">{bestTitle(item.title)}</h3>
-                    {item.title?.romaji && item.title?.romaji !== bestTitle(item.title) && (
-                      <p className="text-[10px] text-[var(--color-mute)] truncate mt-0.5">{item.title.romaji}</p>
-                    )}
-                    <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                      {item.format && (
-                        <span className="text-[10px] font-mono text-white/30">{item.format.replace(/_/g, " ")}</span>
+                <Link href={`/anime/${item.id}`}
+                  className="up-list-card group relative flex items-stretch overflow-hidden rounded-xl bg-[var(--color-panel)]"
+                  style={{ ["--i" as string]: i }}
+                >
+                  <div className="flex items-stretch w-full">
+                    <div className="relative aspect-[2/3] w-[100px] sm:w-[130px] shrink-0 overflow-hidden rounded-l-xl bg-[var(--color-line)]/10">
+                      {item.coverImage?.large || item.coverImage?.medium ? (
+                        <Image src={item.coverImage.large || item.coverImage.medium || ""} alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="130px" />
+                      ) : (
+                        <div className="w-full h-full bg-[var(--color-line)]/20" />
                       )}
-                      {item.episodes && <span className="text-[10px] text-[var(--color-mute)]">{item.episodes} ep</span>}
-                      {item.status && <span className="text-[10px] text-[var(--color-mute)]">{item.status.replace(/_/g, " ").toLowerCase()}</span>}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--color-panel)]/80" />
+                      {item.averageScore != null && (
+                        <div className="absolute bottom-2 left-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-mono font-bold z-10 text-[var(--color-amber)]">
+                          ★ {(item.averageScore / 10).toFixed(1)}
+                        </div>
+                      )}
                     </div>
-                    {item.genres && item.genres.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1.5">
-                        {item.genres.slice(0, 4).map((g) => (
-                          <span key={g} className="text-[10px] font-medium text-[var(--color-mute)] uppercase tracking-wider">{g}</span>
-                        ))}
+
+                    <div className="relative flex-1 min-w-0 p-3 sm:p-4 flex flex-col justify-center">
+                      <div className="pointer-events-none absolute -right-2 -bottom-4 font-display text-5xl sm:text-6xl font-bold leading-none text-white/[0.04] select-none">
+                        {i + 1}
                       </div>
-                    )}
+                      <div className="flex items-start gap-2">
+                        <h3 className="font-display text-sm sm:text-lg font-bold leading-snug line-clamp-2 group-hover:opacity-80 transition-opacity">
+                          {title}
+                        </h3>
+                        {days != null && (
+                          <span className="shrink-0 rounded-full border border-[var(--color-magenta)]/30 bg-[var(--color-magenta)]/15 px-2 py-0.5 text-[10px] font-mono font-bold text-[var(--color-magenta)]">
+                            in {days}d
+                          </span>
+                        )}
+                      </div>
+                      {item.title?.romaji && item.title?.romaji !== title && (
+                        <p className="text-[10px] text-[var(--color-mute)] truncate mt-0.5">{item.title.romaji}</p>
+                      )}
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5">
+                        {item.format && (
+                          <span className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-white/40">{item.format.replace(/_/g, " ")}</span>
+                        )}
+                        {item.season && item.seasonYear && (
+                          <span className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-white/40">{item.season} {item.seasonYear}</span>
+                        )}
+                        {studio && (
+                          <span className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[9px] font-medium text-white/40 truncate max-w-[180px]">{studio}</span>
+                        )}
+                        {item.episodes != null && (
+                          <span className="text-[9px] text-white/30">{item.episodes} ep</span>
+                        )}
+                      </div>
+                      {release && (
+                        <p className="text-[10px] font-medium text-[var(--color-cyan)] mt-1.5">
+                          Releases {release}
+                        </p>
+                      )}
+                      {item.genres && item.genres.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {item.genres.slice(0, 3).map((g) => (
+                            <span key={g} className="rounded-full border border-white/[0.08] px-2 py-px text-[9px] font-medium text-[var(--color-mute)]">{g}</span>
+                          ))}
+                        </div>
+                      )}
+                      {item.description && (
+                        <p className="hidden sm:block mt-1.5 text-[11px] leading-snug text-[var(--color-mute)]/80 line-clamp-2">
+                          {stripHtml(item.description)}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                  <div className="flex items-center pr-3 sm:pr-4 shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/20 transition-all duration-300 group-hover:text-[var(--color-magenta)] group-hover:translate-x-0.5">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {!query.trim() && (
+        <div ref={sentinelRef} className="flex items-center justify-center gap-3 py-10">
+          {loading && (
+            <motion.div className="h-6 w-6 rounded-full border-2 border-[var(--color-magenta)] border-t-transparent" animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }} />
+          )}
+          {!hasMore && (
+            <p className="text-xs text-[var(--color-mute)]">
+              {items.length} upcoming titles loaded — that&apos;s all of them.
+            </p>
+          )}
         </div>
       )}
     </>

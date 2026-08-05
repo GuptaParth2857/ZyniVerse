@@ -1,6 +1,7 @@
 import { getTrending, getAiringAnime, bestTitle, getSeasonal } from "@/lib/anilist";
 import { prisma } from "@/lib/prisma";
 import { dedupedFetch } from "@/lib/wiki-cache";
+import { enrichActivities } from "@/lib/activity";
 import RssParser from "rss-parser";
 import type { Media } from "@/lib/anilist";
 
@@ -62,6 +63,44 @@ function simpleHash(str: string): string {
     hash = hash & hash;
   }
   return Math.abs(hash).toString(36);
+}
+
+const OG_IMAGE_CACHE = new Map<string, string>();
+
+async function fetchOGImage(url: string): Promise<string> {
+  if (!url || !/^https?:\/\//.test(url)) return "";
+  const cached = OG_IMAGE_CACHE.get(url);
+  if (cached !== undefined) return cached;
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; ZyniVerseNewsBot/1.0)" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return "";
+    const html = await res.text();
+    const match =
+      html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+    const image = match ? match[1].replace(/&amp;/g, "&").trim() : "";
+    OG_IMAGE_CACHE.set(url, image);
+    return image;
+  } catch {
+    OG_IMAGE_CACHE.set(url, "");
+    return "";
+  }
+}
+
+async function mapWithConcurrency<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let idx = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (idx < items.length) {
+      const i = idx++;
+      results[i] = await fn(items[i]);
+    }
+  });
+  await Promise.all(workers);
+  return results;
 }
 
 export async function getAnimeNews(): Promise<NewsItem[]> {
@@ -145,16 +184,30 @@ export async function getRecentReviews(): Promise<NewsItem[]> {
       orderBy: { createdAt: "desc" },
       take: 10,
       include: {
-        user: { select: { username: true } },
+        user: { select: { username: true, avatar: true } },
       },
     });
 
-    return reviews.map((r) => ({
+    let images: string[] = [];
+    try {
+      const enriched = await enrichActivities(
+        reviews.map((r) => ({
+          mediaId: r.mediaId,
+          mediaTitle: null,
+          mediaImage: null,
+        }))
+      );
+      images = enriched.map((e) => e.mediaImage || "");
+    } catch {
+      images = reviews.map(() => "");
+    }
+
+    return reviews.map((r, i) => ({
       id: `review-${r.id}`,
       title: `${r.user.username} reviewed anime #${r.mediaId}`,
       summary: `Rating: ${r.rating}/10${r.comment ? ` — ${r.comment.slice(0, 120)}` : ""}`,
       url: `/anime/${r.mediaId}`,
-      image: "",
+      image: images[i] || r.user.avatar || "",
       source: "Community" as const,
       type: "community" as const,
       publishedAt: r.createdAt.toISOString(),
@@ -179,16 +232,24 @@ export async function getActivityFeed(userId?: string): Promise<NewsItem[]> {
       orderBy: { createdAt: "desc" },
       take: 20,
       include: {
-        user: { select: { username: true } },
+        user: { select: { username: true, avatar: true } },
       },
     });
 
-    return activities.filter((a) => a.user !== null).map((a) => ({
+    const filtered = activities.filter((a) => a.user !== null);
+    let enriched = filtered;
+    try {
+      enriched = await enrichActivities(filtered);
+    } catch {
+      // keep originals if enrichment fails
+    }
+
+    return enriched.map((a) => ({
       id: `activity-${a.id}`,
       title: `${a.user!.username} ${a.type.toLowerCase()}${a.mediaId ? ` anime #${a.mediaId}` : ""}`,
       summary: a.message || `${a.user!.username} performed an action`,
       url: a.mediaId ? `/anime/${a.mediaId}` : "#",
-      image: "",
+      image: a.mediaImage || a.user!.avatar || "",
       source: "Community" as const,
       type: "community" as const,
       publishedAt: a.createdAt.toISOString(),
@@ -201,7 +262,7 @@ export async function getANNNews(): Promise<NewsItem[]> {
   return dedupedFetch("news:ann", async () => {
     try {
       const feed = await rssParser.parseURL("https://www.animenewsnetwork.com/all/rss.xml?ann-hierarchical");
-      return feed.items.slice(0, 20).map((item) => {
+      const items = feed.items.slice(0, 20).map((item) => {
         const content = item.content || item.contentSnippet || "";
         const guid = item.guid || item.link || "";
         return {
@@ -217,6 +278,16 @@ export async function getANNNews(): Promise<NewsItem[]> {
           tags: ["ANN", ...(item.categories || []).slice(0, 2)],
         };
       });
+
+      const missing = items.filter((i) => !i.image);
+      if (missing.length > 0) {
+        await mapWithConcurrency(missing, 4, async (item) => {
+          item.image = await fetchOGImage(item.url);
+          return item;
+        });
+      }
+
+      return items;
     } catch (e) {
       console.error("ANN RSS fetch failed:", e);
       return [];
@@ -228,7 +299,7 @@ export async function getMALNews(): Promise<NewsItem[]> {
   return dedupedFetch("news:mal", async () => {
     try {
       const feed = await rssParser.parseURL("https://myanimelist.net/rss/news.xml");
-      return feed.items.slice(0, 20).map((item) => {
+      const items = feed.items.slice(0, 20).map((item) => {
         const content = item.content || item.contentSnippet || "";
         const thumb = (item as unknown as Record<string, string>).mediaThumbnail || "";
         const guid = item.guid || item.link || "";
@@ -245,6 +316,16 @@ export async function getMALNews(): Promise<NewsItem[]> {
           tags: ["MAL", ...(item.categories || []).slice(0, 2)],
         };
       });
+
+      const missing = items.filter((i) => !i.image);
+      if (missing.length > 0) {
+        await mapWithConcurrency(missing, 4, async (item) => {
+          item.image = await fetchOGImage(item.url);
+          return item;
+        });
+      }
+
+      return items;
     } catch (e) {
       console.error("MAL RSS fetch failed:", e);
       return [];

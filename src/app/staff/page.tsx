@@ -42,17 +42,17 @@ function StaffStripCard({ staff, index, isHovered, onEnter, onLeave }: StaffStri
       layout
       ref={ref}
       initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0, flex: isHovered ? 3 : 1 }}
+      animate={{ opacity: 1, y: 0, flexGrow: isHovered ? 3 : 1 }}
       transition={{
         opacity: { duration: 0.45, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] },
         y: { duration: 0.45, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] },
-        flex: { type: "spring", stiffness: 300, damping: 25 },
+        flexGrow: { type: "spring", stiffness: 300, damping: 25 },
       }}
       onPointerMove={handlePointerMove}
       onPointerEnter={onEnter}
       onPointerLeave={() => { handlePointerLeave(); onLeave(); }}
       className="neon-premium relative overflow-hidden rounded-2xl cursor-pointer group"
-      style={{ minWidth: 0, transition: "transform 0.2s ease-out" }}
+      style={{ minWidth: 0, flexBasis: 0, transition: "transform 0.2s ease-out" }}
     >
       <div className="neon-premium-track" />
       <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />

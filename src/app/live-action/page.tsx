@@ -11,6 +11,7 @@ import {
 } from "@/lib/live-action-anime";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
+import LiveActionPlaceholder from "@/components/LiveActionPlaceholder";
 
 const FADE_UP = {
   initial: { opacity: 0, y: 20 },
@@ -47,26 +48,29 @@ function RatingBadge({ rating }: { rating: number }) {
   );
 }
 
-function PosterCard({ anime, rank }: { anime: LiveActionAnime; rank?: number }) {
+function PosterCard({ anime, rank, priority }: { anime: LiveActionAnime; rank?: number; priority?: boolean }) {
+  const [imgErr, setImgErr] = useState(false);
   return (
     <Link
       href={`/live-action/${anime.id}`}
       className="snap-start shrink-0 group/card w-[150px] sm:w-[170px] md:w-[190px]"
     >
       <div className="relative aspect-[2/3] overflow-hidden rounded-xl la-neon-card bg-[var(--color-panel)] transition-all duration-400" style={{ ["--i" as string]: rank ? (rank % 5) : 0 }}>
-        {anime.posterUrl ? (
+        {anime.status === "upcoming" ? (
+          <LiveActionPlaceholder title={anime.title} year={anime.releaseYear} />
+        ) : anime.posterUrl && !imgErr ? (
           <Image
             src={anime.posterUrl}
             alt={anime.title}
             fill
             sizes="190px"
             className="object-cover transition-transform duration-500 group-hover/card:scale-110"
-            loading="lazy"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            priority={priority}
+            onError={() => setImgErr(true)}
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-cyan)]/20 to-[var(--color-magenta)]/20 flex items-center justify-center">
-            <span className="text-4xl opacity-30">🎬</span>
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-cyan)]/20 to-[var(--color-magenta)]/20 flex items-center justify-center p-2.5 text-center">
+            <span className="font-display text-xs font-bold leading-tight text-white/60 line-clamp-3">{anime.title}</span>
           </div>
         )}
         <StatusBadge status={anime.status} />
@@ -164,16 +168,18 @@ function MostPopularSection({ items, allData }: { items?: LiveActionAnime[]; all
             <motion.div
               key={anime.id}
               layout
-              animate={{ flex: isHovered ? 3 : 1 }}
+              animate={{ flexGrow: isHovered ? 3 : 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               onMouseEnter={() => setHovered(anime.id)}
               onMouseLeave={() => setHovered(null)}
               className="relative overflow-hidden rounded-2xl border border-[var(--color-line)] cursor-pointer group"
-              style={{ minWidth: 0 }}
+              style={{ minWidth: 0, flexBasis: 0 }}
             >
-              <Link href={`/live-action/${anime.id}`} className="block h-full w-full">
-                {anime.posterUrl ? (
-                  <Image src={anime.posterUrl} alt="" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover transition-transform duration-700 group-hover:scale-110" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <Link href={`/live-action/${anime.id}`} className="block h-full w-full relative">
+                {anime.status === "upcoming" ? (
+                  <LiveActionPlaceholder title={anime.title} year={anime.releaseYear} />
+                ) : anime.posterUrl ? (
+                  <Image src={anime.posterUrl} alt="" fill sizes="(max-width: 768px) 100vw, 400px" priority className="object-cover transition-transform duration-700 group-hover:scale-110" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
                   <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-cyan)]/20 to-[var(--color-magenta)]/20" />
                 )}
@@ -223,7 +229,7 @@ function MostPopularSection({ items, allData }: { items?: LiveActionAnime[]; all
       {/* Mobile: horizontal scroll */}
       <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory md:hidden -mx-4 px-4">
         {popular.map((anime, idx) => (
-          <PosterCard key={anime.id} anime={anime} rank={idx + 1} />
+          <PosterCard key={anime.id} anime={anime} rank={idx + 1} priority={idx < 2} />
         ))}
       </div>
     </motion.div>
@@ -257,6 +263,7 @@ function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "upcoming">("all");
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<"all" | "series" | "movie">("all");
+  const [visibleCount, setVisibleCount] = useState(96);
 
   const filtered = useMemo(() => {
     let result = [...allData];
@@ -279,7 +286,7 @@ function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
       {/* Filters */}
       <div className="flex flex-wrap gap-2 mb-4">
         {(["all", "available", "upcoming"] as const).map((s, i) => (
-          <button key={s} onClick={() => setStatusFilter(s)}
+          <button key={s} onClick={() => { setStatusFilter(s); setVisibleCount(96); }}
             className="rounded-lg la-neon-filter px-3 py-1.5 text-xs font-semibold transition-all"
             style={{
               ["--fd" as string]: i,
@@ -293,7 +300,7 @@ function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
         ))}
         <span className="w-px h-6 bg-[var(--color-line)] self-center mx-1" />
         {(["all", "series", "movie"] as const).map((t, i) => (
-          <button key={t} onClick={() => setSelectedType(t)}
+          <button key={t} onClick={() => { setSelectedType(t); setVisibleCount(96); }}
             className="rounded-lg la-neon-filter px-3 py-1.5 text-xs font-semibold transition-all"
             style={{
               ["--fd" as string]: i + 3,
@@ -307,7 +314,7 @@ function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
         ))}
         <span className="w-px h-6 bg-[var(--color-line)] self-center mx-1" />
         {LIVE_ACTION_PLATFORMS.filter((p) => allData.some((a) => a.platforms.some((pl) => pl.name.toLowerCase() === p.name.toLowerCase()))).map((p, i) => (
-          <button key={p.name} onClick={() => setSelectedPlatform(selectedPlatform === p.name ? null : p.name)}
+          <button key={p.name} onClick={() => { setSelectedPlatform(selectedPlatform === p.name ? null : p.name); setVisibleCount(96); }}
             className="flex items-center gap-1.5 rounded-lg la-neon-filter px-3 py-1.5 text-xs font-semibold transition-all"
             style={{
               ["--fd" as string]: i + 6,
@@ -324,10 +331,22 @@ function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
 
       {/* Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {filtered.map((anime) => (
+        {filtered.slice(0, visibleCount).map((anime) => (
           <PosterCard key={anime.id} anime={anime} />
         ))}
       </div>
+
+      {visibleCount < filtered.length && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setVisibleCount((c) => c + 96)}
+            className="rounded-lg la-neon-filter px-6 py-2.5 text-xs font-semibold transition-all"
+            style={{ borderColor: "var(--color-cyan)", background: "rgba(0,188,212,0.08)", color: "var(--color-cyan)" }}
+          >
+            Show more ({Math.min(96, filtered.length - visibleCount)} more of {filtered.length - visibleCount})
+          </button>
+        </div>
+      )}
 
       {filtered.length === 0 && (
         <div className="text-center py-16">
@@ -382,6 +401,7 @@ function LiveActionPage() {
     const popular = [...liveData].sort((a, b) => b.popularity - a.popularity).slice(0, 8);
     return filterTitles(popular);
   }, [filterTitles, liveData]);
+  const filteredGrid = useMemo(() => (searchQuery ? filterTitles(liveData) : liveData), [filterTitles, searchQuery, liveData]);
 
   return (
     <PageTransition>
@@ -539,7 +559,7 @@ function LiveActionPage() {
                   </div>
                 </div>
               </div>
-              <HorizontalCarousel items={filteredAvailable} />
+              <HorizontalCarousel items={filteredAvailable.slice(0, 60)} />
             </motion.div>
           )}
 
@@ -566,7 +586,7 @@ function LiveActionPage() {
           ))}
 
           {/* Full Catalog */}
-          <FilterableGrid allData={liveData} />
+          <FilterableGrid allData={filteredGrid} />
         </div>
       </div>
     </PageTransition>

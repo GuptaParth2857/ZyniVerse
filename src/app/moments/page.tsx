@@ -62,7 +62,7 @@ export default function MomentsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mb-3">
-              <h1 className="font-display text-3xl font-bold text-white">Moments</h1>
+              <h1 className="neon-glow-text font-display text-3xl font-bold text-white">Moments</h1>
             </div>
             <p className="text-[var(--color-mute)] max-w-xl">
               Create and share your favorite anime quote cards. Browse the community gallery or make your own.
@@ -86,7 +86,7 @@ export default function MomentsPage() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder="Search quotes, characters, anime..."
-              className="w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[var(--color-mute)] focus:outline-none focus:border-[var(--color-cyan)]"
+              className="w-full rounded-xl neon-rgb-border bg-[var(--color-panel)] pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[var(--color-mute)] focus:outline-none"
             />
           </div>
           <div className="flex gap-1.5">
@@ -96,7 +96,7 @@ export default function MomentsPage() {
                 onClick={() => { setSort(o.value); setPage(1); }}
                 className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
                   sort === o.value
-                    ? "bg-[var(--color-violet)] text-white"
+                    ? "neon-rgb-border bg-[var(--color-violet)] text-white"
                     : "bg-white/5 text-[var(--color-mute)] hover:bg-white/10"
                 }`}
               >
@@ -110,11 +110,11 @@ export default function MomentsPage() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] rounded-2xl bg-white/5 animate-pulse" />
+              <div key={i} className="aspect-[3/4] rounded-2xl neon-rgb-border bg-[var(--color-panel)] animate-pulse" />
             ))}
           </div>
         ) : moments.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="neon-rgb-border rounded-2xl bg-[var(--color-panel)] text-center py-20">
             <p className="text-[var(--color-mute)] text-lg mb-4">No moments yet. Be the first to create one!</p>
             <Link href="/moments/create" className="neon-rgb-border rounded-xl px-6 py-3 text-sm font-bold text-white hover:bg-white/5 transition-colors inline-block">
               ✦ Create Moment
@@ -123,8 +123,8 @@ export default function MomentsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {moments.map((m) => (
-              <Link key={m.id} href={`/moments/${m.id}`} className="group">
-                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-[var(--color-line)] hover:border-[var(--color-cyan)] transition-colors">
+              <Link key={m.id} href={`/moments/${m.id}`} className="group block">
+                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden neon-rgb-border bg-[var(--color-void)] transition-transform duration-300 group-hover:-translate-y-1">
                   {m.animeCover ? (
                     <>
                       <Image src={m.animeCover} alt="" fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 33vw" />
@@ -135,6 +135,11 @@ export default function MomentsPage() {
                   )}
 
                   <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center">
+                    {m.style ? (
+                      <span className="mb-3 neon-rgb-border rounded-full px-3 py-1 text-[10px] font-mono uppercase tracking-[0.2em] text-white/60">
+                        {m.style}
+                      </span>
+                    ) : null}
                     <p className="text-base sm:text-lg leading-relaxed font-light italic text-white/95 drop-shadow-lg line-clamp-5">
                       &ldquo;{m.quote}&rdquo;
                     </p>
@@ -172,7 +177,7 @@ export default function MomentsPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="px-4 py-2 rounded-xl text-sm font-semibold bg-white/5 text-[var(--color-mute)] hover:bg-white/10 disabled:opacity-30 transition-all"
+              className="px-4 py-2 rounded-xl neon-rgb-border text-sm font-semibold bg-white/5 text-[var(--color-mute)] hover:bg-white/10 hover:text-white disabled:opacity-30 transition-all"
             >
               Prev
             </button>
@@ -182,7 +187,7 @@ export default function MomentsPage() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="px-4 py-2 rounded-xl text-sm font-semibold bg-white/5 text-[var(--color-mute)] hover:bg-white/10 disabled:opacity-30 transition-all"
+              className="px-4 py-2 rounded-xl neon-rgb-border text-sm font-semibold bg-white/5 text-[var(--color-mute)] hover:bg-white/10 hover:text-white disabled:opacity-30 transition-all"
             >
               Next
             </button>

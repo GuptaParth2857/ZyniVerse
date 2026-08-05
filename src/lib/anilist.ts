@@ -188,6 +188,18 @@ export async function getUpcoming(perPage = 12) {
   return d.Page.media as Media[];
 }
 
+export async function getUpcomingPage(page = 1, perPage = 50) {
+  const q = `query ($page: Int, $p: Int) { Page(page: $page, perPage: $p) { pageInfo { hasNextPage total } media(sort: POPULARITY_DESC, type: ANIME, status: NOT_YET_RELEASED, isAdult: false) { ${MEDIA_FIELDS} } } }`;
+  const d = await gql(q, { page, p: perPage });
+  return d.Page as { pageInfo: { hasNextPage: boolean; total: number }; media: Media[] };
+}
+
+export async function searchUpcoming(query: string, perPage = 50) {
+  const q = `query ($s: String, $p: Int) { Page(page: 1, perPage: $p) { pageInfo { hasNextPage total } media(search: $s, type: ANIME, status: NOT_YET_RELEASED, isAdult: false, sort: POPULARITY_DESC) { ${MEDIA_FIELDS} } } }`;
+  const d = await gql(q, { s: query, p: perPage });
+  return d.Page as { pageInfo: { hasNextPage: boolean; total: number }; media: Media[] };
+}
+
 export async function getTopRated(perPage = 12) {
   const q = `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: SCORE_DESC, type: ANIME, isAdult: false) { ${MEDIA_FIELDS} } } }`;
   const d = await gql(q, { p: perPage });
@@ -636,7 +648,7 @@ export async function getAiringSchedule(fromSec: number, toSec: number) {
         airingSchedules(airingAt_greater: $from, airingAt_lesser: $to, sort: TIME) {
           id episode airingAt
           media {
-            id title { romaji english } coverImage { large color } format genres episodes
+            id title { romaji english } coverImage { large color } format genres episodes popularity isAdult countryOfOrigin
             externalLinks { url site }
           }
         }
@@ -1027,6 +1039,7 @@ export interface AiringScheduleEntry {
   media: {
     id: number; title: { romaji?: string; english?: string };
     coverImage: { large?: string; color?: string }; format?: string; genres?: string[]; episodes?: number;
+    popularity?: number; isAdult?: boolean; countryOfOrigin?: string;
     externalLinks?: { url: string; site?: string }[];
   };
 }

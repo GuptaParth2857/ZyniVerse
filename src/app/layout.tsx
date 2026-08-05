@@ -21,6 +21,7 @@ import HeartbeatProvider from "@/components/HeartbeatProvider";
 import ActivityTracker from "@/components/ActivityTracker";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const rajdhani = Rajdhani({
   variable: "--font-rajdhani",
@@ -126,6 +127,7 @@ export default function RootLayout({
         />
         <script
           type="application/ld+json"
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: JSON.stringify([
               {
@@ -249,9 +251,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">
-        <Script
+        <script
+          async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5241033119281791"
-          strategy="afterInteractive"
+          crossOrigin="anonymous"
         />
         <AuthProvider>
           <HeartbeatProvider />
@@ -281,6 +284,7 @@ export default function RootLayout({
           </Providers>
         </AuthProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

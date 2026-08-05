@@ -28,7 +28,10 @@ const FADE_UP = {
 export default function PodcastPage() {
   const [episodes, setEpisodes] = useState<PodcastEpisode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [source, setSource] = useState<"youtube" | "curated" | null>(null);
   const [query, setQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<PodcastEpisode[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [langFilter, setLangFilter] = useState<"all" | "en" | "hi">("all");
   const [channelFilter, setChannelFilter] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
@@ -36,25 +39,45 @@ export default function PodcastPage() {
   useEffect(() => {
     fetch("/api/podcast")
       .then((r) => r.json())
-      .then((data) => { setEpisodes(data.episodes); setIsLoading(false); })
+      .then((data) => { setEpisodes(data.episodes); setSource(data.source || null); setIsLoading(false); })
       .catch(() => setIsLoading(false));
   }, []);
 
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSearchResults([]);
+      setSearchLoading(false);
+      return;
+    }
+    setSearchLoading(true);
+    let cancelled = false;
+    const t = window.setTimeout(async () => {
+      try {
+        const d = await fetch(`/api/podcast/search?q=${encodeURIComponent(q)}`).then((r) => r.json());
+        if (!cancelled) setSearchResults((d.episodes || []) as PodcastEpisode[]);
+      } catch {
+        if (!cancelled) setSearchResults([]);
+      } finally {
+        if (!cancelled) setSearchLoading(false);
+      }
+    }, 500);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
+  }, [query]);
+
   const channels = useMemo(() => [...new Set(episodes.map((e) => e.channel))], [episodes]);
 
-  const filtered = useMemo(() => {
-    let result = [...episodes];
+  const displayEpisodes = useMemo(() => {
+    const list = query.trim() ? searchResults : episodes;
+    let result = [...list];
     if (langFilter !== "all") result = result.filter((e) => e.language === langFilter || e.language === "both");
     if (channelFilter) result = result.filter((e) => e.channel === channelFilter);
-    if (query.trim()) {
-      const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-      result = result.filter((e) => {
-        const haystack = `${e.title} ${e.description} ${e.channel} ${e.tags.join(" ")}`.toLowerCase();
-        return words.every((w) => haystack.includes(w));
-      });
-    }
     return result.sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
-  }, [episodes, query, langFilter, channelFilter]);
+  }, [episodes, searchResults, query, langFilter, channelFilter]);
 
   return (
     <PageTransition>
@@ -128,8 +151,14 @@ export default function PodcastPage() {
             </h1>
           </div>
           <p className="text-sm text-[var(--color-mute)] ml-4">
-            Real anime discussions — Hindi voice actors, seasonal reviews, and community talks
+            Worldwide anime talks — voice actors, mangaka & authors, directors, studios, and Hindi community podcasts
           </p>
+          {source === "youtube" && (
+            <span className="mt-2 ml-4 inline-flex items-center gap-1.5 rounded-full bg-green-500/10 border border-green-500/30 px-2.5 py-1 text-[10px] font-semibold text-green-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+              LIVE from YouTube
+            </span>
+          )}
         </motion.div>
 
         {/* Search Bar */}
@@ -158,7 +187,8 @@ export default function PodcastPage() {
           </div>
           {query && (
             <p className="text-xs text-[var(--color-mute)] mt-2 ml-1">
-              {filtered.length} result{filtered.length !== 1 ? "s" : ""} for &ldquo;<span className="text-[var(--color-cyan)]">{query}</span>&rdquo;
+              {searchLoading ? "Searching YouTube..." : `${displayEpisodes.length} result${displayEpisodes.length !== 1 ? "s" : ""} for`} &ldquo;<span className="text-[var(--color-cyan)]">{query}</span>&rdquo;
+              {!searchLoading && <span className="text-[var(--color-mute)]/60"> — live from YouTube</span>}
             </p>
           )}
         </motion.div>
@@ -198,7 +228,7 @@ export default function PodcastPage() {
             { label: "Total Episodes", value: episodes.length, color: "var(--color-magenta)" },
             { label: "Channels", value: channels.length, color: "var(--color-cyan)" },
             { label: "English", value: episodes.filter((e) => e.language === "en").length, color: "#48BB78" },
-            { label: "Hindi", value: episodes.filter((e) => e.language === "hi").length, color: "#ED8936" },
+            { label: "Hindi", value: episodes.filter((e) => e.language !== "en").length, color: "#ED8936" },
           ].map((stat, i) => (
             <div key={stat.label} className="pod-neon-card rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm p-4 text-center" style={{ ["--i" as string]: i }}>
               <p className="text-2xl font-black" style={{ color: stat.color }}>{stat.value}</p>
@@ -224,7 +254,7 @@ export default function PodcastPage() {
         )}
 
         {/* Empty State */}
-        {!isLoading && filtered.length === 0 && (
+        {!isLoading && !searchLoading && displayEpisodes.length === 0 && (
           <div className="pod-neon-card rounded-xl bg-[var(--color-panel)] py-20 text-center" style={{ ["--i" as string]: 0 }}>
             <p className="text-sm font-semibold text-[var(--color-mute)]">No episodes match your search</p>
             <p className="text-xs text-[var(--color-mute)]/60 mt-1">Try a different keyword or filter</p>
@@ -234,7 +264,7 @@ export default function PodcastPage() {
         {/* Episodes */}
         {!isLoading && (
           <div className="space-y-4">
-            {filtered.map((ep, i) => (
+            {displayEpisodes.map((ep, i) => (
               <motion.div
                 key={ep.id}
                 initial={{ opacity: 0, x: -16 }}
@@ -280,8 +310,8 @@ export default function PodcastPage() {
                         <span className="text-[10px] text-[var(--color-mute)]">•</span>
                         <span className="text-[10px] text-[var(--color-mute)]">{ep.publishDate}</span>
                         <span className="text-[10px] text-[var(--color-mute)]">•</span>
-                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${ep.language === "hi" ? "bg-orange-500/20 text-orange-400" : "bg-green-500/20 text-green-400"}`}>
-                          {ep.language === "hi" ? "Hindi" : "English"}
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${ep.language !== "en" ? "bg-orange-500/20 text-orange-400" : "bg-green-500/20 text-green-400"}`}>
+                          {ep.language === "en" ? "English" : ep.language === "both" ? "Hindi + English" : "Hindi"}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1 mt-2">

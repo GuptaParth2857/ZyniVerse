@@ -17,7 +17,7 @@ const STATUS_LABEL: Record<string, string> = {
   HIATUS: "Hiatus",
 };
 
-export default function AnimeCard({ anime }: { anime: Media }) {
+export default function AnimeCard({ anime, no3D = false }: { anime: Media; no3D?: boolean }) {
   const { isSaved, toggle } = useWatchlist();
   const saved = isSaved(anime.id);
   const title = bestTitle(anime.title);
@@ -45,17 +45,17 @@ export default function AnimeCard({ anime }: { anime: Media }) {
 
   return (
     <div
-      ref={ref}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
+      ref={no3D ? undefined : ref}
+      onPointerMove={no3D ? undefined : handlePointerMove}
+      onPointerLeave={no3D ? undefined : handlePointerLeave}
       className="group"
-      style={{ transition: "transform 0.2s ease-out" }}
+      style={no3D ? undefined : { transition: "transform 0.2s ease-out" }}
     >
       <Link href={href} className="glass-card block">
         <div className="glass-content">
-          <div className="relative aspect-[2/3] overflow-hidden rounded-t-xl">
+          <div className="relative aspect-[2/3] overflow-hidden rounded-t-xl bg-[var(--color-panel)]">
             <Image
-              src={anime.coverImage?.extraLarge || anime.coverImage?.large || ""}
+              src={anime.coverImage?.extraLarge || anime.coverImage?.large || anime.coverImage?.medium || ""}
               alt={title}
               fill
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"

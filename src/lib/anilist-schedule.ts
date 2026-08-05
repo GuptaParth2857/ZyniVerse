@@ -32,6 +32,64 @@ export interface AiringAnime {
   totalEpisodes?: number;
 }
 
+export interface StreamingCalendarEntry {
+  id: number;
+  title: string;
+  episode: number;
+  platform: string;
+  date: string;
+  time: string;
+  color?: string;
+}
+
+const PLATFORM_MAP: { match: string[]; name: string }[] = [
+  { match: ["crunchyroll"], name: "Crunchyroll" },
+  { match: ["netflix"], name: "Netflix" },
+  { match: ["amazon"], name: "Amazon Prime" },
+  { match: ["disney", "hotstar"], name: "JioHotstar" },
+  { match: ["muse", "ani-one"], name: "Muse Asia" },
+];
+
+function platformFromLinks(links?: { url: string; site?: string }[]): string {
+  const sites = (links ?? []).map((l) => `${l.site ?? ""} ${l.url}`.toLowerCase());
+  for (const p of PLATFORM_MAP) {
+    if (sites.some((s) => p.match.some((m) => s.includes(m)))) return p.name;
+  }
+  return "Streaming";
+}
+
+function formatISTTime(airingAt: number): string {
+  const ist = new Date((airingAt + IST_OFFSET) * 1000);
+  let h = ist.getUTCHours();
+  const m = ist.getUTCMinutes().toString().padStart(2, "0");
+  const suffix = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${h}:${m} ${suffix} IST`;
+}
+
+export async function fetchStreamingCalendarWeek(): Promise<StreamingCalendarEntry[]> {
+  const now = Math.floor(Date.now() / 1000);
+  const weekEnd = now + 7 * 24 * 60 * 60;
+  const entries = await getAiringSchedule(now, weekEnd);
+
+  return entries
+    .filter(
+      (e) =>
+        !e.media.isAdult &&
+        e.media.countryOfOrigin !== "CN" &&
+        e.media.format === "TV"
+    )
+    .map((e) => ({
+      id: e.media.id,
+      title: titleBest(e.media),
+      episode: e.episode,
+      platform: platformFromLinks(e.media.externalLinks),
+      date: getDayOfWeek(e.airingAt),
+      time: formatISTTime(e.airingAt),
+      color: e.media.coverImage?.color || undefined,
+    }));
+}
+
 export async function fetchWeeklyAiringSchedule(): Promise<AiringAnime[]> {
   const now = Math.floor(Date.now() / 1000);
   const weekEnd = now + 7 * 24 * 60 * 60;

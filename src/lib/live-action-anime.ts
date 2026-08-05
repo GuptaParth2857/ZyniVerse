@@ -1877,7 +1877,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     rating: 3.5,
     popularity: 70,
     basedOn: "Saint Seiya by Masami Kurumada",
-    posterUrl: "https://image.tmdb.org/t/p/w500/mHIpKmFCSjQd3fFwGTHaOfnHxIe.jpg",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/d/d8/Knights_of_the_Zodiac_poster.jpg",
     description: "A Hollywood live-action adaptation of the classic manga/anime. A young street orphan discovers he is destined to become one of the Knights of the Zodiac, warriors who serve the goddess Athena. He must embrace his destiny and fight to protect Earth.",
     cast: [
       { name: "Mackenyu", role: "Seiya / Pegasus" },
@@ -1933,7 +1933,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     rating: 0,
     popularity: 88,
     basedOn: "Mobile Suit Gundam by Yoshiyuki Tomino",
-    posterUrl: "https://upload.wikimedia.org/wikipedia/en/4/41/Mobile_Suit_Gundam_%28anime%29.jpg",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/d/d5/MOBILESUITGUNDAMPoster.jpg",
     description: "Legendary and Bandai's live-action adaptation of the iconic mecha franchise. In a war between Earth Federation and space colonists, young Amuro Ray pilots the prototype Gundam mobile suit to fight the Zeon forces.",
     cast: [
       { name: "TBA", role: "Cast TBA" },
@@ -1957,7 +1957,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     rating: 0,
     popularity: 72,
     basedOn: "Voltron / Beast King GoLion",
-    posterUrl: "https://image.tmdb.org/t/p/w500/oA40fn2V9jBRHGzSN9VV3dG7KX6.jpg",
+    posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/1448.jpg",
     description: "A live-action adaptation of the beloved mecha anime. Five young pilots must unite to form Voltron, a giant robot made of five robotic lions, to defend the universe against the evil Galra Empire.",
     cast: [
       { name: "Henry Cavill", role: "TBA" },
@@ -2455,7 +2455,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     rating: 0,
     popularity: 80,
     basedOn: "Blue Lock by Muneyuki Kaneshiro & Yusuke Nomura",
-    posterUrl: "https://image.tmdb.org/t/p/w500/aXoM0VfQwGiVxd4zKfB4ezMqfJn.jpg",
+    posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx137822-U8naszP96vzC.png",
     description: "A live-action adaptation of the hit sports manga/anime. 300 of Japan's best young strikers are locked in a prison-like training program designed to create the ultimate egoist forward. One player will emerge as the world's greatest striker.",
     cast: [
       { name: "Fumiya Takahashi", role: "Yoichi Isagi" },
@@ -2479,7 +2479,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     rating: 0,
     popularity: 72,
     basedOn: "Look Back by Tatsuki Fujimoto",
-    posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx166519-gQV6r9t1J6bq.jpg",
+    posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx174788-9LsUnn0oEppv.jpg",
     description: "Live-action adaptation of Tatsuki Fujimoto's emotionally powerful one-shot manga. Two young girls connected by their shared passion for drawing form a deep friendship that is tested by tragedy and the pursuit of artistic dreams.",
     cast: [
       { name: "TBA", role: "Cast TBA" },
@@ -2527,7 +2527,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     rating: 0,
     popularity: 92,
     basedOn: "Spy x Family by Tatsuya Endo",
-    posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx136554-HaF6pM6YsZ9e.jpg",
+    posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx140960-Kb6R5nYQfjmP.jpg",
     description: "Live-action film adaptation of the hit manga/anime about a spy, an assassin, and a telepathic girl who form a fake family for their respective missions, only to genuinely bond with each other. The family must navigate their double lives while protecting world peace.",
     cast: [
       { name: "TBA", role: "Cast TBA" },
@@ -2552,7 +2552,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     rating: 7.8,
     popularity: 88,
     basedOn: "Jujutsu Kaisen by Gege Akutami",
-    posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx175675-4lW0bGQdnr9D.jpg",
+    posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx145064-hSNRJM03pvv1.jpg",
     description: "The theatrical film adapting the Hidden Inventory and Punishment arcs. Gojo and Geto's past unfolds as they protect a powerful girl from curse users. A story of friendship, betrayal, and the origins of the jujutsu world's greatest conflict.",
     cast: [
       { name: "TBA", role: "Voice Cast" },
