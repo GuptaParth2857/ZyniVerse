@@ -24,7 +24,16 @@ export async function POST(req: NextRequest) {
   const userId = await resolveUserId();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { mediaId, type, action, status, mediaTitle, mediaImage } = await req.json();
+  const { mediaId, type, action, status, mediaTitle, mediaImage, score } = await req.json();
+
+  if (action === "rate") {
+    await prisma.listEntry.upsert({
+      where: { userId_mediaId: { userId, mediaId } },
+      update: { score: score ?? null },
+      create: { userId, mediaId, type: type || "ANIME", status: "PLANNING", progress: 0, total: 0, score: score ?? null },
+    });
+    return NextResponse.json({ ok: true });
+  }
 
   if (action === "add" && status) {
     await prisma.listEntry.upsert({

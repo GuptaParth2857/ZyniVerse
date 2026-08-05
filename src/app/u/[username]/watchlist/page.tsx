@@ -146,6 +146,9 @@ export default async function PublicWatchlistPage({ params }: { params: Promise<
           <p className="text-sm text-[var(--color-mute)]">
             {entries.length} {entries.length === 1 ? "anime" : "anime"} in list
           </p>
+          <Link href={`/u/${user.username}/manga`} className="text-xs text-[var(--color-cyan)] hover:underline">
+            View {user.username}&apos;s Manga List →
+          </Link>
         </div>
       </div>
 

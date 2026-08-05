@@ -33,6 +33,8 @@ interface WatchlistCtx {
   toggle: (anime: WatchlistItem) => void;
   setStatus: (mediaId: number, status: ListStatus, type?: string) => void;
   getProgress: (mediaId: number) => number;
+  getScore: (mediaId: number) => number | null;
+  rate: (mediaId: number, score: number | null, type?: string) => void;
 }
 
 const WatchlistContext = createContext<WatchlistCtx | null>(null);
@@ -133,7 +135,29 @@ export function WatchlistProvider({ children }: { children: React.ReactNode }) {
     return entry?.progress || 0;
   }, [entries]);
 
-  const value = useMemo(() => ({ items, entries, isSaved, getStatus, toggle, setStatus, getProgress }), [items, entries, isSaved, getStatus, toggle, setStatus, getProgress]);
+  const getScore = useCallback((mediaId: number) => {
+    const entry = entries.find((e) => e.mediaId === mediaId);
+    return entry?.score ?? null;
+  }, [entries]);
+
+  const rate = useCallback((mediaId: number, score: number | null, type = "ANIME") => {
+    if (session?.user?.id) {
+      fetch("/api/watchlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "rate", mediaId, type, score }),
+      }).catch(() => {});
+    }
+    setEntries((prev) => {
+      const existing = prev.find((e) => e.mediaId === mediaId);
+      if (existing) {
+        return prev.map((e) => e.mediaId === mediaId ? { ...e, score } : e);
+      }
+      return [...prev, { mediaId, type, status: "PLANNING", progress: 0, total: 0, score }];
+    });
+  }, [session]);
+
+  const value = useMemo(() => ({ items, entries, isSaved, getStatus, toggle, setStatus, getProgress, getScore, rate }), [items, entries, isSaved, getStatus, toggle, setStatus, getProgress, getScore, rate]);
 
   return (
     <WatchlistContext.Provider value={value}>
