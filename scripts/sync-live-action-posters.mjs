@@ -19,7 +19,8 @@ function loadEnv(file) {
 }
 
 const env = { ...loadEnv(".env"), ...loadEnv(".env.local"), ...process.env };
-const base = (env.BASE_URL || env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000").replace(/\/+$/, "");
+const argBase = process.argv.find((a) => a.startsWith("--base="))?.slice(7);
+const base = (argBase || env.POSTERS_SYNC_URL || "http://localhost:3000").replace(/\/+$/, "");
 const secret = env.CRON_SECRET;
 
 if (!secret) {

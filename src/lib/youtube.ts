@@ -194,7 +194,8 @@ export async function getYouTubePodcasts(): Promise<PodcastEpisode[]> {
     return top;
   } catch (e) {
     logError(e, "youtube-podcasts");
-    return [];
+    const err = e as { message?: string; status?: number };
+    throw new Error(`[DIAG] youtube-podcasts failed: ${err.status ?? ""} ${err.message ?? e}`);
   }
 }
 
