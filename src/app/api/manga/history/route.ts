@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
           title: true,
           coverImage: true,
           subType: true,
+          mangaDexId: true,
         },
       },
     },
