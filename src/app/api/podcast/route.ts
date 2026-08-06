@@ -3,7 +3,7 @@ import { PODCAST_EPISODES } from "@/lib/podcast-data";
 import { getYouTubePodcasts } from "@/lib/youtube";
 import { logError } from "@/lib/logger";
 
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export async function GET() {
   try {
