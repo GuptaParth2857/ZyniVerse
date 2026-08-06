@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "posters:sync": "node scripts/sync-live-action-posters.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

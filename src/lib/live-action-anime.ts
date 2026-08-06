@@ -81,12 +81,12 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://image.tmdb.org/t/p/w500/lOkv76wi8ekOuvLc3VbVQeqtih1.jpg",
     description: "A live-action adaptation of the legendary pirate epic. Monkey D. Luffy sets sail with his crew of Straw Hat Pirates in search of the ultimate treasure, the One Piece. Netflix's ambitious adaptation captures the spirit of the original with stunning visuals and faithful storytelling.",
     cast: [
-      { name: "Iñaki Godoy", role: "Monkey D. Luffy", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/I%C3%B1aki_Godoy_OP_01.jpg/200px-I%C3%B1aki_Godoy_OP_01.jpg" },
-      { name: "Mackenyu", role: "Roronoa Zoro", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Mackenyu.png/200px-Mackenyu.png" },
-      { name: "Emily Rudd", role: "Nami", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Emily_Rudd_GalaxyCon_St_Louis_2025.jpg/200px-Emily_Rudd_GalaxyCon_St_Louis_2025.jpg" },
-      { name: "Jacob Romero", role: "Usopp", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Jacob_Gibson_Photo_Op_GalaxyCon_Richmond_2024.jpg/200px-Jacob_Gibson_Photo_Op_GalaxyCon_Richmond_2024.jpg" },
-      { name: "Taz Skylar", role: "Sanji", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Taz_Skylar_Photo_Op_GalaxyCon_San_Jose_2025.jpg/200px-Taz_Skylar_Photo_Op_GalaxyCon_San_Jose_2025.jpg" },
-      { name: "Vincent Regan", role: "Monkey D. Garp", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Stuttgart_2023_-Comic_Con_Germany-_Vincent_Regan-_by-RaBoe_023_%28cropped-J1%29.jpg/200px-Stuttgart_2023_-Comic_Con_Germany-_Vincent_Regan-_by-RaBoe_023_%28cropped-J1%29.jpg" },
+      { name: "Iñaki Godoy", role: "Monkey D. Luffy", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/I%C3%B1aki_Godoy_OP_01.jpg/250px-I%C3%B1aki_Godoy_OP_01.jpg" },
+      { name: "Mackenyu", role: "Roronoa Zoro", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Mackenyu.png/250px-Mackenyu.png" },
+      { name: "Emily Rudd", role: "Nami", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Emily_Rudd_GalaxyCon_St_Louis_2025.jpg/250px-Emily_Rudd_GalaxyCon_St_Louis_2025.jpg" },
+      { name: "Jacob Romero", role: "Usopp", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Jacob_Gibson_Photo_Op_GalaxyCon_Richmond_2024.jpg/250px-Jacob_Gibson_Photo_Op_GalaxyCon_Richmond_2024.jpg" },
+      { name: "Taz Skylar", role: "Sanji", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Taz_Skylar_Photo_Op_GalaxyCon_San_Jose_2025.jpg/250px-Taz_Skylar_Photo_Op_GalaxyCon_San_Jose_2025.jpg" },
+      { name: "Vincent Regan", role: "Monkey D. Garp", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Stuttgart_2023_-Comic_Con_Germany-_Vincent_Regan-_by-RaBoe_023_%28cropped-J1%29.jpg/250px-Stuttgart_2023_-Comic_Con_Germany-_Vincent_Regan-_by-RaBoe_023_%28cropped-J1%29.jpg" },
       { name: "Jeff Ward", role: "Buggy" },
       { name: "Steven Ward", role: "Dracule Mihawk" },
     ],
@@ -123,8 +123,8 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/a/ab/Alice_in_Borderland_title_card.jpg",
     description: "A gamer and his friends are mysteriously transported to a deserted Tokyo where they must compete in deadly games to survive. The series blends high-stakes survival games with emotional character development across three gripping seasons.",
     cast: [
-      { name: "Kento Yamazaki", role: "Ryohei Arisu", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/200px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
-      { name: "Tao Tsuchiya", role: "Usagi Yuzuha", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Tao_Tsuchiya_IMG_0919-30_20181111.jpg/200px-Tao_Tsuchiya_IMG_0919-30_20181111.jpg" },
+      { name: "Kento Yamazaki", role: "Ryohei Arisu", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/250px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
+      { name: "Tao Tsuchiya", role: "Usagi Yuzuha", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Tao_Tsuchiya_IMG_0919-30_20181111.jpg/250px-Tao_Tsuchiya_IMG_0919-30_20181111.jpg" },
       { name: "Yūki Morinaga", role: "Chishiya Shuntarō" },
       { name: "Kōtarō Yoshida", role: "Niragi Suguru" },
       { name: "Dori Sakurada", role: "Aguni Morizono" },
@@ -154,9 +154,9 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://image.tmdb.org/t/p/w500/phePxRL08ovho6OazkOjxZBJMo0.jpg",
     description: "After dying to save a child, delinquent Yusuke Urameshi is brought back as a Spirit Detective and tasked with investigating supernatural cases. This compact adaptation condenses the classic '90s anime into a stylish five-episode series.",
     cast: [
-      { name: "Takumi Kitamura", role: "Yusuke Urameshi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Kitamura_Takumi_from_%22Tremble_All_You_Want%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2826331141758%29.jpg/200px-Kitamura_Takumi_from_%22Tremble_All_You_Want%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2826331141758%29.jpg" },
+      { name: "Takumi Kitamura", role: "Yusuke Urameshi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Kitamura_Takumi_from_%22Tremble_All_You_Want%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2826331141758%29.jpg/250px-Kitamura_Takumi_from_%22Tremble_All_You_Want%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2826331141758%29.jpg" },
       { name: "Shun'go Koto", role: "Botan" },
-      { name: "Kanata Hongō", role: "Hiei", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Kanata_Hongo_2023_%28cropped%29.jpg/200px-Kanata_Hongo_2023_%28cropped%29.jpg" },
+      { name: "Kanata Hongō", role: "Hiei", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Kanata_Hongo_2023_%28cropped%29.jpg/250px-Kanata_Hongo_2023_%28cropped%29.jpg" },
       { name: "Jun Shison", role: "Kurama", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/c/ce/%E5%BF%97%E5%B0%8A%E6%B7%B3_2.jpg" },
       { name: "Keita Machenko", role: "Kazuma Kuwabara" },
     ],
@@ -186,11 +186,11 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
 
     description: "A five-film live-action saga following Himura Kenshin, a legendary assassin turned wandering samurai, as he protects the innocent during the Meiji Restoration. Widely regarded as one of the best anime-to-live-action adaptations ever made, featuring breathtaking swordplay.",
     cast: [
-      { name: "Takeru Satoh", role: "Himura Kenshin", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/200px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
+      { name: "Takeru Satoh", role: "Himura Kenshin", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/250px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
       { name: "Emi Takeo", role: "Kamiya Kaoru" },
-      { name: "Munetaka Aoki", role: "Sagara Sanosuke", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Rurouni_Kenshin_Kyoto_Inferno_The_Legend_Ends%2C_Red_Carpet_Premiere_Munetaka_Aoki.jpg/200px-Rurouni_Kenshin_Kyoto_Inferno_The_Legend_Ends%2C_Red_Carpet_Premiere_Munetaka_Aoki.jpg" },
-      { name: "Yu Aoi", role: "Takani Megumi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Aoi_Yu_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2840203519371%29_%28cropped%29.jpg/200px-Aoi_Yu_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2840203519371%29_%28cropped%29.jpg" },
-      { name: "Tatsuya Fujiwara", role: "Makoto Shishio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg/200px-Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg" },
+      { name: "Munetaka Aoki", role: "Sagara Sanosuke", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Rurouni_Kenshin_Kyoto_Inferno_The_Legend_Ends%2C_Red_Carpet_Premiere_Munetaka_Aoki.jpg/250px-Rurouni_Kenshin_Kyoto_Inferno_The_Legend_Ends%2C_Red_Carpet_Premiere_Munetaka_Aoki.jpg" },
+      { name: "Yu Aoi", role: "Takani Megumi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Aoi_Yu_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2840203519371%29_%28cropped%29.jpg/250px-Aoi_Yu_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2840203519371%29_%28cropped%29.jpg" },
+      { name: "Tatsuya Fujiwara", role: "Makoto Shishio", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg/250px-Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg" },
     ],
     crew: [
       { name: "Keishi Ōtomo", role: "Director" },
@@ -215,10 +215,10 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
 
     description: "A high school student discovers a supernatural notebook that kills anyone whose name is written in it. Netflix's American adaptation transposes the story to a U.S. setting, diverging significantly from the Japanese original and receiving mixed reception.",
     cast: [
-      { name: "Takeru Satoh", role: "Light Yagari", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/200px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
+      { name: "Takeru Satoh", role: "Light Yagari", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/250px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
       { name: "Masataka Kubota", role: "L" },
       { name: "Mio Yūki", role: "Misa Amane" },
-      { name: "Sousuke Ikematsu", role: "Raye Penber", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Ikematsu_Sosuke_from_%22Ravens%22_at_Red_Carpet_of_the_Tokyo_International_Film_Festival_2024_%2854577780201%29.jpg/200px-Ikematsu_Sosuke_from_%22Ravens%22_at_Red_Carpet_of_the_Tokyo_International_Film_Festival_2024_%2854577780201%29.jpg" },
+      { name: "Sousuke Ikematsu", role: "Raye Penber", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Ikematsu_Sosuke_from_%22Ravens%22_at_Red_Carpet_of_the_Tokyo_International_Film_Festival_2024_%2854577780201%29.jpg/250px-Ikematsu_Sosuke_from_%22Ravens%22_at_Red_Carpet_of_the_Tokyo_International_Film_Festival_2024_%2854577780201%29.jpg" },
       { name: "Michiko Godai", role: "Soichiro Yagami" },
     ],
     crew: [
@@ -247,10 +247,10 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
 
     description: "Bounty hunters Spike Spiegel, Jet Black, and Faye Valentine travel the solar system in their ship, the Bebop, taking on dangerous jobs. This live-action adaptation brings the beloved sci-fi classic to life with John Cho starring as Spike Spiegel.",
     cast: [
-      { name: "John Cho", role: "Spike Spiegel", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Cho_by_Gage_Skidmore.jpg/200px-John_Cho_by_Gage_Skidmore.jpg" },
-      { name: "Mustafa Shakir", role: "Jet Black", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Mustafa-shakir.jpg/200px-Mustafa-shakir.jpg" },
-      { name: "Daniella Pineda", role: "Faye Valentine", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Daniella_Pineda_by_Gage_Skidmore.jpg/200px-Daniella_Pineda_by_Gage_Skidmore.jpg" },
-      { name: "Alex Hassell", role: "Vicious", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Alex_Hassell_at_BAFTAs_2026_03.jpg/200px-Alex_Hassell_at_BAFTAs_2026_03.jpg" },
+      { name: "John Cho", role: "Spike Spiegel", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Cho_by_Gage_Skidmore.jpg/250px-John_Cho_by_Gage_Skidmore.jpg" },
+      { name: "Mustafa Shakir", role: "Jet Black", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Mustafa-shakir.jpg/250px-Mustafa-shakir.jpg" },
+      { name: "Daniella Pineda", role: "Faye Valentine", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Daniella_Pineda_by_Gage_Skidmore.jpg/250px-Daniella_Pineda_by_Gage_Skidmore.jpg" },
+      { name: "Alex Hassell", role: "Vicious", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Alex_Hassell_at_BAFTAs_2026_03.jpg/250px-Alex_Hassell_at_BAFTAs_2026_03.jpg" },
       { name: "Elena Satine", role: "Julia" },
     ],
     crew: [
@@ -282,10 +282,10 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
       { name: "Jeon So-ni", role: "Jaeyoon" },
       { name: "Koo Kyo-hwan", role: "Jun-kyung" },
       { name: "Lee Jung-hyun", role: "Choi Jun-kyung" },
-      { name: "Kwon Hae-hyo", role: "Kim Chul-min", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Kwon_Hae-hyo_at_Berlinale_2025.jpg/200px-Kwon_Hae-hyo_at_Berlinale_2025.jpg" },
+      { name: "Kwon Hae-hyo", role: "Kim Chul-min", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Kwon_Hae-hyo_at_Berlinale_2025.jpg/250px-Kwon_Hae-hyo_at_Berlinale_2025.jpg" },
     ],
     crew: [
-      { name: "Yeon Sang-ho", role: "Director / Writer", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Yeon_Sang-ho_at_2025_Toronto_International_Film_Festival_5.jpg/200px-Yeon_Sang-ho_at_2025_Toronto_International_Film_Festival_5.jpg" },
+      { name: "Yeon Sang-ho", role: "Director / Writer", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Yeon_Sang-ho_at_2025_Toronto_International_Film_Festival_5.jpg/250px-Yeon_Sang-ho_at_2025_Toronto_International_Film_Festival_5.jpg" },
     ],
   },
   {
@@ -341,7 +341,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     description: "Sawako Kuronuma, nicknamed 'Sadako' for her resemblance to the horror character, struggles to make friends until she develops feelings for the popular Shota Kazehaya. A heartwarming live-action adaptation of the beloved shoujo manga.",
     cast: [
       { name: "Suzu Hirose", role: "Sawako Kuronuma" },
-      { name: "Kento Yamazaki", role: "Shota Kazehaya", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/200px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
+      { name: "Kento Yamazaki", role: "Shota Kazehaya", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/250px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
       { name: "Ryusei Yokohama", role: "Ryu Sanada" },
       { name: "Miwako Ichikawa", role: "Chizuru Yoshida" },
     ],
@@ -370,7 +370,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
 
     description: "In early 20th century Hokkaido, war veteran Sugimoto and Ainu girl Asirpa race to find legendary lost Ainu gold. Combines brutal action with dark humor, historical detail, and genuine human warmth.",
     cast: [
-      { name: "Kento Yamazaki", role: "Sugimoto", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/200px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
+      { name: "Kento Yamazaki", role: "Sugimoto", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/250px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
       { name: "Anna Yamada", role: "Asirpa" },
       { name: "Gordon Maeda", role: "Hijikata Toshizō" },
       { name: "Hiroshi Tachi", role: "Cikapasi" },
@@ -430,10 +430,10 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://image.tmdb.org/t/p/w500/seo8PmWofwOIGRRyx5EwA984rXv.jpg",
     description: "A high school student discovers his fighting ability when pushed too far and begins streaming his fights online, quickly going viral. Explores themes of bullying, social media culture, and the morality of violence for entertainment.",
     cast: [
-      { name: "Jang Dong-yoon", role: "Park Wooyoung", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Jang_Dong-yoon_in_2024_-_2.png/200px-Jang_Dong-yoon_in_2024_-_2.png" },
-      { name: "Kang Han-na", role: "Lee Na-kyung", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/230102_Kang_Han_Na_%28%EA%B0%95%ED%95%9C%EB%82%98%29.png/200px-230102_Kang_Han_Na_%28%EA%B0%95%ED%95%9C%EB%82%98%29.png" },
-      { name: "Park Seo-ham", role: "Choi Eun-seok", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Park_Seo-ham_in_March_2022.jpg/200px-Park_Seo-ham_in_March_2022.jpg" },
-      { name: "Lee Jang-woo", role: "Yoon Tae-sung", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/190417_%EC%9D%B4%EC%9E%A5%EC%9A%B0_%282%29.jpg/200px-190417_%EC%9D%B4%EC%9E%A5%EC%9A%B0_%282%29.jpg" },
+      { name: "Jang Dong-yoon", role: "Park Wooyoung", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Jang_Dong-yoon_in_2024_-_2.png/250px-Jang_Dong-yoon_in_2024_-_2.png" },
+      { name: "Kang Han-na", role: "Lee Na-kyung", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/230102_Kang_Han_Na_%28%EA%B0%95%ED%95%9C%EB%82%98%29.png/250px-230102_Kang_Han_Na_%28%EA%B0%95%ED%95%9C%EB%82%98%29.png" },
+      { name: "Park Seo-ham", role: "Choi Eun-seok", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Park_Seo-ham_in_March_2022.jpg/250px-Park_Seo-ham_in_March_2022.jpg" },
+      { name: "Lee Jang-woo", role: "Yoon Tae-sung", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/190417_%EC%9D%B4%EC%9E%A5%EC%9A%B0_%282%29.jpg/250px-190417_%EC%9D%B4%EC%9E%A5%EC%9A%B0_%282%29.jpg" },
     ],
     crew: [
       { name: "Park Shin-woo", role: "Director" },
@@ -460,17 +460,17 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
 
     description: "In a world of elemental bending, young Aang must master all four elements and stop the Fire Nation from conquering the world. Netflix's adaptation brings the beloved animated series to live-action with a fresh take on the iconic story.",
     cast: [
-      { name: "Gordon Cormier", role: "Aang", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Gordon_Cormier_GalaxyCon_Raleigh_2024.jpg/200px-Gordon_Cormier_GalaxyCon_Raleigh_2024.jpg" },
+      { name: "Gordon Cormier", role: "Aang", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Gordon_Cormier_GalaxyCon_Raleigh_2024.jpg/250px-Gordon_Cormier_GalaxyCon_Raleigh_2024.jpg" },
       { name: "Kiawentiio", role: "Katara" },
-      { name: "Ian Ousley", role: "Sokka", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Ian_Ousley_GalaxyCon_Raleigh_2024.jpg/200px-Ian_Ousley_GalaxyCon_Raleigh_2024.jpg" },
-      { name: "Dallas Liu", role: "Zuko", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Dallas_Liu_GalaxyCon_Raleigh_2024.jpg/200px-Dallas_Liu_GalaxyCon_Raleigh_2024.jpg" },
-      { name: "Paul Sun-Hyung Lee", role: "Iroh", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Paul_Sun-Hyung_Lee_by_Gage_Skidmore.jpg/200px-Paul_Sun-Hyung_Lee_by_Gage_Skidmore.jpg" },
+      { name: "Ian Ousley", role: "Sokka", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Ian_Ousley_GalaxyCon_Raleigh_2024.jpg/250px-Ian_Ousley_GalaxyCon_Raleigh_2024.jpg" },
+      { name: "Dallas Liu", role: "Zuko", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Dallas_Liu_GalaxyCon_Raleigh_2024.jpg/250px-Dallas_Liu_GalaxyCon_Raleigh_2024.jpg" },
+      { name: "Paul Sun-Hyung Lee", role: "Iroh", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Paul_Sun-Hyung_Lee_by_Gage_Skidmore.jpg/250px-Paul_Sun-Hyung_Lee_by_Gage_Skidmore.jpg" },
       { name: "Elizabeth Yu", role: "Azula" },
     ],
     crew: [
       { name: "Albert Kim", role: "Showrunner" },
       { name: "Jabbar Raisani", role: "Director" },
-      { name: "Michael Goi", role: "Director", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Michael_Goi_2023.png/200px-Michael_Goi_2023.png" },
+      { name: "Michael Goi", role: "Director", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Michael_Goi_2023.png/250px-Michael_Goi_2023.png" },
     ],
   },
   {
@@ -642,11 +642,11 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21-ELSYx3yMPcKM.jpg",
     description: "The third season of Netflix's hit One Piece live-action adaptation, currently in filming. Will continue adapting the beloved manga with the Straw Hat Pirates' next adventures. Following the massive success of Seasons 1 and 2, expectations are sky-high.",
     cast: [
-      { name: "Iñaki Godoy", role: "Monkey D. Luffy", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/I%C3%B1aki_Godoy_OP_01.jpg/200px-I%C3%B1aki_Godoy_OP_01.jpg" },
-      { name: "Mackenyu", role: "Roronoa Zoro", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Mackenyu.png/200px-Mackenyu.png" },
-      { name: "Emily Rudd", role: "Nami", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Emily_Rudd_GalaxyCon_St_Louis_2025.jpg/200px-Emily_Rudd_GalaxyCon_St_Louis_2025.jpg" },
-      { name: "Jacob Romero", role: "Usopp", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Jacob_Gibson_Photo_Op_GalaxyCon_Richmond_2024.jpg/200px-Jacob_Gibson_Photo_Op_GalaxyCon_Richmond_2024.jpg" },
-      { name: "Taz Skylar", role: "Sanji", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Taz_Skylar_Photo_Op_GalaxyCon_San_Jose_2025.jpg/200px-Taz_Skylar_Photo_Op_GalaxyCon_San_Jose_2025.jpg" },
+      { name: "Iñaki Godoy", role: "Monkey D. Luffy", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/I%C3%B1aki_Godoy_OP_01.jpg/250px-I%C3%B1aki_Godoy_OP_01.jpg" },
+      { name: "Mackenyu", role: "Roronoa Zoro", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Mackenyu.png/250px-Mackenyu.png" },
+      { name: "Emily Rudd", role: "Nami", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Emily_Rudd_GalaxyCon_St_Louis_2025.jpg/250px-Emily_Rudd_GalaxyCon_St_Louis_2025.jpg" },
+      { name: "Jacob Romero", role: "Usopp", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Jacob_Gibson_Photo_Op_GalaxyCon_Richmond_2024.jpg/250px-Jacob_Gibson_Photo_Op_GalaxyCon_Richmond_2024.jpg" },
+      { name: "Taz Skylar", role: "Sanji", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Taz_Skylar_Photo_Op_GalaxyCon_San_Jose_2025.jpg/250px-Taz_Skylar_Photo_Op_GalaxyCon_San_Jose_2025.jpg" },
     ],
     crew: [
       { name: "Matt Owens", role: "Showrunner / Writer" },
@@ -673,7 +673,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/4/41/Tokyo_Revengers_film_Theatrical_release_poster_%282021%29.jpg",
     description: "A time-traveling gang drama where Takemichi Hanagaki travels back to his middle school days to save his ex-girlfriend from the Tokyo Manji Gang. Features intense biker gang conflicts and emotional stakes across three films.",
     cast: [
-      { name: "Takumi Kitamura", role: "Takemichi Hanagaki", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Kitamura_Takumi_from_%22Tremble_All_You_Want%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2826331141758%29.jpg/200px-Kitamura_Takumi_from_%22Tremble_All_You_Want%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2826331141758%29.jpg" },
+      { name: "Takumi Kitamura", role: "Takemichi Hanagaki", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Kitamura_Takumi_from_%22Tremble_All_You_Want%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2826331141758%29.jpg/250px-Kitamura_Takumi_from_%22Tremble_All_You_Want%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2826331141758%29.jpg" },
       { name: "Yuki Yamada", role: "Ken Ryuguji (Draken)" },
       { name: "Mio Imada", role: "Hinata Tachibana" },
       { name: "Gordon Maeda", role: "Keisuke Baji" },
@@ -705,7 +705,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
       { name: "Ryōsuke Yamada", role: "Edward Elric" },
       { name: "Tsubasa Honda", role: "Winry Rockbell" },
       { name: "Dean Fujioka", role: "Roy Mustang" },
-      { name: "Atomu Mizuishi", role: "Alphonse Elric", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Mizuishi_Atom_from_%22The_Hungry_Lion%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2839491582354%29.jpg/200px-Mizuishi_Atom_from_%22The_Hungry_Lion%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2839491582354%29.jpg" },
+      { name: "Atomu Mizuishi", role: "Alphonse Elric", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Mizuishi_Atom_from_%22The_Hungry_Lion%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2839491582354%29.jpg/250px-Mizuishi_Atom_from_%22The_Hungry_Lion%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2839491582354%29.jpg" },
     ],
     crew: [
       { name: "Fumihiko Sori", role: "Director" },
@@ -731,7 +731,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     description: "College student Ken Kaneki is critically injured in an encounter with a ghoul and receives an organ transplant from one, transforming him into a half-ghoul. He must navigate both the human and ghoul worlds while struggling with his new identity.",
     cast: [
       { name: "Masataka Kubota", role: "Ken Kaneki" },
-      { name: "Yū Aoi", role: "Touka Kirishima", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Aoi_Yu_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2840203519371%29_%28cropped%29.jpg/200px-Aoi_Yu_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2840203519371%29_%28cropped%29.jpg" },
+      { name: "Yū Aoi", role: "Touka Kirishima", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Aoi_Yu_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2840203519371%29_%28cropped%29.jpg/250px-Aoi_Yu_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2017_%2840203519371%29_%28cropped%29.jpg" },
       { name: "Shunya Shiraishi", role: "Shuu Tsukiyama" },
     ],
     crew: [
@@ -842,7 +842,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     description: "An elderly man and a teenage boy are transformed into powerful cyborgs by an alien explosion. While the teenager uses his powers for destruction, the old man decides to become a hero and save people's lives.",
     cast: [
       { name: "Noritake Kinashi", role: "Ichiro Inuyashiki" },
-      { name: "Takeru Satoh", role: "Hiro Shishigami", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/200px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
+      { name: "Takeru Satoh", role: "Hiro Shishigami", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/250px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
       { name: "Yūki Morinaga", role: "Naoyuki Ando" },
     ],
     crew: [
@@ -896,7 +896,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/a/a5/Kingdom_film_%28poster%29.jpeg",
     description: "In China's Warring States period, orphaned war slave Xin dreams of becoming the greatest general. He allies with young King Zheng of Qin, embarking on epic military campaigns to unify China with massive battle sequences.",
     cast: [
-      { name: "Kento Yamazaki", role: "Xin (Shin)", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/200px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
+      { name: "Kento Yamazaki", role: "Xin (Shin)", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/250px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
       { name: "Kanna Hashimoto", role: "Qiang (Karyo)" },
     ],
     crew: [
@@ -949,7 +949,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/5/5c/Zom_100_manga_vol._1.png",
     description: "Overworked office drone Akira Tendo finds new purpose when a zombie apocalypse strikes Tokyo. Rather than despair, he creates a bucket list of 100 things to do before becoming a zombie, leading to hilarious undead adventures.",
     cast: [
-      { name: "Mackenyu", role: "Akira Tendo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Mackenyu.png/200px-Mackenyu.png" },
+      { name: "Mackenyu", role: "Akira Tendo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Mackenyu.png/250px-Mackenyu.png" },
       { name: "Mai Shiraishi", role: "Shizuka Mikazuki" },
     ],
     crew: [
@@ -977,7 +977,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     description: "The legendary yakuza 'Immortal Tatsu' retires from crime to become a full-time househusband, applying his intimidating demeanor to grocery shopping, cooking, and cleaning. A comedy about breaking stereotypes.",
     cast: [
       { name: "Kenichi Endo", role: "Tatsu" },
-      { name: "Munetaka Aoki", role: "Masa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Rurouni_Kenshin_Kyoto_Inferno_The_Legend_Ends%2C_Red_Carpet_Premiere_Munetaka_Aoki.jpg/200px-Rurouni_Kenshin_Kyoto_Inferno_The_Legend_Ends%2C_Red_Carpet_Premiere_Munetaka_Aoki.jpg" },
+      { name: "Munetaka Aoki", role: "Masa", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Rurouni_Kenshin_Kyoto_Inferno_The_Legend_Ends%2C_Red_Carpet_Premiere_Munetaka_Aoki.jpg/250px-Rurouni_Kenshin_Kyoto_Inferno_The_Legend_Ends%2C_Red_Carpet_Premiere_Munetaka_Aoki.jpg" },
       { name: "Kyoko Yoshine", role: "Miku" },
     ],
     crew: [
@@ -1030,7 +1030,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21450-D7XFwEQjZ5GA.jpg",
     description: "Josuke Higashikata, a high school student with a mysterious Stand power, moves to the town of Morioh where he discovers a serial killer and bands together with friends to protect their peaceful town.",
     cast: [
-      { name: "Kento Yamazaki", role: "Josuke Higashikata", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/200px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
+      { name: "Kento Yamazaki", role: "Josuke Higashikata", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/250px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
       { name: "Takuya Kimura", role: "Rohan Kishibe" },
     ],
     crew: [
@@ -1057,9 +1057,9 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     description: "A Hollywood adaptation following teenager Goku as he searches for the Dragon Balls to prevent the evil Piccolo from using them to take over the world. Widely considered one of the worst anime adaptations ever made.",
     cast: [
       { name: "Justin Chatwin", role: "Goku" },
-      { name: "Yun-Fat Chow", role: "Master Roshi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Chow_Yun_Fat_for_wiki.jpg/200px-Chow_Yun_Fat_for_wiki.jpg" },
+      { name: "Yun-Fat Chow", role: "Master Roshi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Chow_Yun_Fat_for_wiki.jpg/250px-Chow_Yun_Fat_for_wiki.jpg" },
       { name: "James Marsters", role: "Piccolo" },
-      { name: "Emmy Rossum", role: "Bulma", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/EmmyRossum-byPhilipRomano.jpg/200px-EmmyRossum-byPhilipRomano.jpg" },
+      { name: "Emmy Rossum", role: "Bulma", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/EmmyRossum-byPhilipRomano.jpg/250px-EmmyRossum-byPhilipRomano.jpg" },
     ],
     crew: [
       { name: "James Wong", role: "Director" },
@@ -1084,11 +1084,11 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/e/ee/Alita_Battle_Angel_%282019_poster%29.png",
     description: "In a dystopian future, a female cyborg is revived by a scientist with no memory of her past. She discovers her deadly combat abilities and uncovers secrets about her origin in a visually stunning cyberpunk world.",
     cast: [
-      { name: "Rosa Salazar", role: "Alita", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Rosa_Salazar_by_Gage_Skidmore.jpg/200px-Rosa_Salazar_by_Gage_Skidmore.jpg" },
-      { name: "Christoph Waltz", role: "Dr. Dyson Ido", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Christoph_Waltz_at_82nd_Venice_International_Film_Festival-1_%28cropped%29.jpg/200px-Christoph_Waltz_at_82nd_Venice_International_Film_Festival-1_%28cropped%29.jpg" },
-      { name: "Keean Johnson", role: "Hugo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Keean_Johnson_by_Gage_Skidmore.jpg/200px-Keean_Johnson_by_Gage_Skidmore.jpg" },
-      { name: "Mahershala Ali", role: "Vector", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Mahershala_Ali_by_Gage_Skidmore_%28cropped%29.jpg/200px-Mahershala_Ali_by_Gage_Skidmore_%28cropped%29.jpg" },
-      { name: "Jennifer Connelly", role: "Chiren", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Jennifer_Connelly_2019_2.png/200px-Jennifer_Connelly_2019_2.png" },
+      { name: "Rosa Salazar", role: "Alita", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Rosa_Salazar_by_Gage_Skidmore.jpg/250px-Rosa_Salazar_by_Gage_Skidmore.jpg" },
+      { name: "Christoph Waltz", role: "Dr. Dyson Ido", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Christoph_Waltz_at_82nd_Venice_International_Film_Festival-1_%28cropped%29.jpg/250px-Christoph_Waltz_at_82nd_Venice_International_Film_Festival-1_%28cropped%29.jpg" },
+      { name: "Keean Johnson", role: "Hugo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Keean_Johnson_by_Gage_Skidmore.jpg/250px-Keean_Johnson_by_Gage_Skidmore.jpg" },
+      { name: "Mahershala Ali", role: "Vector", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Mahershala_Ali_by_Gage_Skidmore_%28cropped%29.jpg/250px-Mahershala_Ali_by_Gage_Skidmore_%28cropped%29.jpg" },
+      { name: "Jennifer Connelly", role: "Chiren", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Jennifer_Connelly_2019_2.png/250px-Jennifer_Connelly_2019_2.png" },
     ],
     crew: [
       { name: "Robert Rodriguez", role: "Director" },
@@ -1114,9 +1114,9 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/1/11/Ghost_in_the_Shell_%282017_film%29.png",
     description: "In a future where cybernetic enhancements are commonplace, a cyborg policewoman known as the Major leads an elite task force hunting a mysterious hacker. She begins to uncover the truth about her own forgotten past.",
     cast: [
-      { name: "Scarlett Johansson", role: "Major Mira Killian", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Scarlett_Johansson-8588.jpg/200px-Scarlett_Johansson-8588.jpg" },
+      { name: "Scarlett Johansson", role: "Major Mira Killian", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Scarlett_Johansson-8588.jpg/250px-Scarlett_Johansson-8588.jpg" },
       { name: "Takeshi Kitano", role: "Chief Aramaki" },
-      { name: "Pilou Asbæk", role: "Batou", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Pilou_Asb%C3%A6k_2025.jpg/200px-Pilou_Asb%C3%A6k_2025.jpg" },
+      { name: "Pilou Asbæk", role: "Batou", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Pilou_Asb%C3%A6k_2025.jpg/250px-Pilou_Asb%C3%A6k_2025.jpg" },
       { name: "Juliette Binoche", role: "Dr. Ouélet" },
     ],
     crew: [
@@ -1143,7 +1143,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/f/f1/Gintama_%28film%29%2C_Theatrical_release_poster.jpg",
     description: "In an alien-occupied Japan, former samurai Gintoki Sakata takes on odd jobs with his companions to pay rent. Three live-action films capture the series' unique blend of absurdist comedy, epic action, and emotional storytelling.",
     cast: [
-      { name: "Shun Oguri", role: "Gintoki Sakata", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png/200px-%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png" },
+      { name: "Shun Oguri", role: "Gintoki Sakata", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png/250px-%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png" },
       { name: "Masami Nagasawa", role: "Tae Shimura (Otae)" },
       { name: "Ryōhei Suzuki", role: "Toshiro Hijikata" },
       { name: "Masaki Suda", role: "Shinpachi Shimura" },
@@ -1173,7 +1173,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     description: "In the far future, humanity sends enhanced humans to Mars to combat mutated cockroach-like creatures evolved from terraforming organisms. Features over-the-top action and body horror in a sci-fi survival setting.",
     cast: [
       { name: "Tomohisa Yamashita", role: "Alex Stewart" },
-      { name: "Emi Takei", role: "Akane Hizumi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Rurouni_Kenshin-_Kyoto_Inferno_-_The_Legend_Ends%2C_Red_Carpet_Premiere-_Takei_Emi_%26_Sato_Takeru_%2815212291520%29_%28cropped%29.jpg/200px-Rurouni_Kenshin-_Kyoto_Inferno_-_The_Legend_Ends%2C_Red_Carpet_Premiere-_Takei_Emi_%26_Sato_Takeru_%2815212291520%29_%28cropped%29.jpg" },
+      { name: "Emi Takei", role: "Akane Hizumi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Rurouni_Kenshin-_Kyoto_Inferno_-_The_Legend_Ends%2C_Red_Carpet_Premiere-_Takei_Emi_%26_Sato_Takeru_%2815212291520%29_%28cropped%29.jpg/250px-Rurouni_Kenshin-_Kyoto_Inferno_-_The_Legend_Ends%2C_Red_Carpet_Premiere-_Takei_Emi_%26_Sato_Takeru_%2815212291520%29_%28cropped%29.jpg" },
       { name: "Takayuki Yamada", role: "Jōjiro Nishi" },
     ],
     crew: [
@@ -1199,7 +1199,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/4/40/Battle_Royale_Japanese.JPG",
     description: "In a dystopian future Japan, a class of ninth-graders is randomly selected to fight to the death on an island until only one survivor remains. A controversial and influential cult classic that predates the modern battle royale genre.",
     cast: [
-      { name: "Tatsuya Fujiwara", role: "Shuya Nanahara", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg/200px-Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg" },
+      { name: "Tatsuya Fujiwara", role: "Shuya Nanahara", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg/250px-Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg" },
       { name: "Aoi Miyazaki", role: "Noriko Nakagawa" },
       { name: "Takeshi Kitano", role: "Kitano" },
     ],
@@ -1227,7 +1227,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     description: "A military officer with no combat experience is killed in battle against alien invaders and wakes up reliving the same day. He teams up with a legendary warrior to find a way to end the war using his time-loop ability.",
     cast: [
       { name: "Tom Cruise", role: "Major William Cage" },
-      { name: "Emily Blunt", role: "Rita Vrataski", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Emily_Blunt_at_WWD_Style_Awards_2026-02.jpg/200px-Emily_Blunt_at_WWD_Style_Awards_2026-02.jpg" },
+      { name: "Emily Blunt", role: "Rita Vrataski", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Emily_Blunt_at_WWD_Style_Awards_2026-02.jpg/250px-Emily_Blunt_at_WWD_Style_Awards_2026-02.jpg" },
       { name: "Bill Paxton", role: "Master Sergeant Farell" },
       { name: "Brendan Gleeson", role: "General Brigham" },
     ],
@@ -1308,7 +1308,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/5/5a/Ajin_Demi-Human_Manga_Cover.png",
     description: "Humans who cannot die and have superhuman abilities are called Ajin. When high schooler Nagai Kei discovers he is an Ajin, he becomes the target of a government manhunt and joins other Ajin in a fight against human oppression.",
     cast: [
-      { name: "Takeru Satoh", role: "Kei Nagai", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/200px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
+      { name: "Takeru Satoh", role: "Kei Nagai", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/250px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
       { name: "Gou Ayano", role: "Kou Nakajima" },
     ],
     crew: [
@@ -1390,7 +1390,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/3/37/Crowszero.jpg",
     description: "A prequel to the Crows manga, following new student Genji Takiya as he arrives at the notoriously violent Suzuran High School and aims to become its top fighter. Features brutal high school gang battles directed by Takashi Miike.",
     cast: [
-      { name: "Shun Oguri", role: "Genji Takiya", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png/200px-%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png" },
+      { name: "Shun Oguri", role: "Genji Takiya", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png/250px-%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png" },
     ],
     crew: [
       { name: "Takashi Miike", role: "Director" },
@@ -1415,7 +1415,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/2/2b/Kaiji-_Final_Game_poster.jpg",
     description: "Following his previous gambling ordeals, Kaiji Itsuki faces a new deadly game orchestrated by the Teiai Group. High-stakes psychological gambling with life-or-death consequences in this Japanese thriller.",
     cast: [
-      { name: "Tatsuya Fujiwara", role: "Kaiji Itsuki", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg/200px-Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg" },
+      { name: "Tatsuya Fujiwara", role: "Kaiji Itsuki", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg/250px-Independence_Day-_Resurgence_Japan_Premiere-_Roland_Emmerich%2C_Fujiwara_Tatsuya_%26_Liam_Hemsworth_%2828296253470%29_%28cropped%29.jpg" },
     ],
     crew: [
       { name: "Tōichirō Rutō", role: "Director" },
@@ -1467,8 +1467,8 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/6/6c/Orange_%282015_film%29_poster.jpeg",
     description: "High schooler Naho Takamiya receives a letter from her future self, warning her about a transfer student named Kakeru Naruse and urging her to prevent a tragedy. A heartfelt story about friendship, regret, and second chances.",
     cast: [
-      { name: "Kento Yamazaki", role: "Kakeru Naruse", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/200px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
-      { name: "Tao Tsuchiya", role: "Naho Takamiya", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Tao_Tsuchiya_IMG_0919-30_20181111.jpg/200px-Tao_Tsuchiya_IMG_0919-30_20181111.jpg" },
+      { name: "Kento Yamazaki", role: "Kakeru Naruse", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/250px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
+      { name: "Tao Tsuchiya", role: "Naho Takamiya", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Tao_Tsuchiya_IMG_0919-30_20181111.jpg/250px-Tao_Tsuchiya_IMG_0919-30_20181111.jpg" },
     ],
     crew: [
       { name: "Kōjirō Hashimoto", role: "Director" },
@@ -1524,7 +1524,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     description: "Ten years after the Kira case, six new Death Notes fall into the human world. A new heir to L's detective agency must confront a new Kira who wields the power of the deadly notebooks alongside a mysterious virus.",
     cast: [
       { name: "Masahiro Higashide", role: "Teru Mikami" },
-      { name: "Sousuke Ikematsu", role: "Ryuzaki", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Ikematsu_Sosuke_from_%22Ravens%22_at_Red_Carpet_of_the_Tokyo_International_Film_Festival_2024_%2854577780201%29.jpg/200px-Ikematsu_Sosuke_from_%22Ravens%22_at_Red_Carpet_of_the_Tokyo_International_Film_Festival_2024_%2854577780201%29.jpg" },
+      { name: "Sousuke Ikematsu", role: "Ryuzaki", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Ikematsu_Sosuke_from_%22Ravens%22_at_Red_Carpet_of_the_Tokyo_International_Film_Festival_2024_%2854577780201%29.jpg/250px-Ikematsu_Sosuke_from_%22Ravens%22_at_Red_Carpet_of_the_Tokyo_International_Film_Festival_2024_%2854577780201%29.jpg" },
       { name: "Erika Toda", role: "Misa Amane" },
       { name: "Masaharu Fukuyama", role: "Soichiro Yagami" },
     ],
@@ -1551,7 +1551,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/5/57/Rurouni_Kenshin_The_Beginning.jpg",
     description: "The final chapter in the live-action saga flashes back to Kenshin's past as the legendary assassin Himura Battosai. He meets Tomoe Yukishiro, whose death shapes his vow never to kill again, and faces the tragic betrayal of Enishi.",
     cast: [
-      { name: "Takeru Satoh", role: "Himura Kenshin", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/200px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
+      { name: "Takeru Satoh", role: "Himura Kenshin", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/250px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
       { name: "Kasumi Arimura", role: "Tomoe Yukishiro" },
       { name: "Ishida Hongo", role: "Enishi Yukishiro" },
       { name: "Yūsuke Iseya", role: "Aoshi Shinomori" },
@@ -1634,7 +1634,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
       { name: "TBA", role: "Saitama" },
     ],
     crew: [
-      { name: "Dan Trachtenberg", role: "Director/Executive Producer", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Dan_Trachtenberg_by_Gage_Skidmore.jpg/200px-Dan_Trachtenberg_by_Gage_Skidmore.jpg" },
+      { name: "Dan Trachtenberg", role: "Director/Executive Producer", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Dan_Trachtenberg_by_Gage_Skidmore.jpg/250px-Dan_Trachtenberg_by_Gage_Skidmore.jpg" },
     ],
   },
   {
@@ -1656,7 +1656,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/a/a6/Space_Brothers_%28manga%29_1.png",
     description: "After their childhood promise to become astronauts, one brother reaches the moon while the other is stuck as a salaryman. A chance opportunity propels the older brother into JAXA's astronaut training program.",
     cast: [
-      { name: "Shun Oguri", role: "Mutta Nanba", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png/200px-%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png" },
+      { name: "Shun Oguri", role: "Mutta Nanba", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png/250px-%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png" },
       { name: "Masaki Okada", role: "Hibito Nanba" },
     ],
     crew: [
@@ -1682,11 +1682,11 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/9/94/Lupin_III-_The_First_poster.jpg",
     description: "The world's greatest thief Arsène Lupin III returns in a live-action adventure. When Lupin targets a mysterious item called the Blood Solidus, he crosses paths with Interpol inspector Zenigata and the alluring Fujiko Mine.",
     cast: [
-      { name: "Shun Oguri", role: "Lupin III", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png/200px-%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png" },
+      { name: "Shun Oguri", role: "Lupin III", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png/250px-%E5%8E%9A%E7%94%9F%E5%8A%B4%E5%83%8D2020%E5%B9%B410%E6%9C%88%E5%8F%B7%E8%A1%A8%E7%B4%99%28cropped%29.png" },
       { name: "Tetsuji Tamayama", role: "Daisuke Jigen" },
       { name: "Gō Ayano", role: "Goemon Ishikawa XIII", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/f/fc/Go_Ayano_20151028.jpg" },
       { name: "Meisa Kuroki", role: "Fujiko Mine" },
-      { name: "Jerry Yang", role: "Inspector Zenigata", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Jerry_Yang_speaks_to_Village_Global_founders_%28Cropped%29.jpg/200px-Jerry_Yang_speaks_to_Village_Global_founders_%28Cropped%29.jpg" },
+      { name: "Jerry Yang", role: "Inspector Zenigata", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Jerry_Yang_speaks_to_Village_Global_founders_%28Cropped%29.jpg/250px-Jerry_Yang_speaks_to_Village_Global_founders_%28Cropped%29.jpg" },
     ],
     crew: [
       { name: "Satoshi Takashi", role: "Director" },
@@ -1740,9 +1740,9 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/f/f7/Sweet_Home_-_TV_series_%28title_card%29.png/500px-Sweet_Home_-_TV_series_%28title_card%29.png",
     description: "A reclusive high school student moves into a new apartment building just as humanity begins to transform into monsters born from their deepest desires. The residents must fight to survive in their besieged home.",
     cast: [
-      { name: "Song Kang", role: "Cha Hyun-su", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Song_Kang_in_November_2023.png/200px-Song_Kang_in_November_2023.png" },
+      { name: "Song Kang", role: "Cha Hyun-su", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Song_Kang_in_November_2023.png/250px-Song_Kang_in_November_2023.png" },
       { name: "Lee Si-young", role: "Yi-su" },
-      { name: "Lee Do-hyun", role: "Pyeon Sang-wook", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Lee_Do-hyun_%EC%9E%84%EB%8F%99%ED%98%84_2022.jpg/200px-Lee_Do-hyun_%EC%9E%84%EB%8F%99%ED%98%84_2022.jpg" },
+      { name: "Lee Do-hyun", role: "Pyeon Sang-wook", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Lee_Do-hyun_%EC%9E%84%EB%8F%99%ED%98%84_2022.jpg/250px-Lee_Do-hyun_%EC%9E%84%EB%8F%99%ED%98%84_2022.jpg" },
     ],
     crew: [
       { name: "Lee Eung-bok", role: "Director" },
@@ -1768,8 +1768,8 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/2/24/All_of_Us_Are_Dead.jpeg",
     description: "When a zombie virus outbreak traps students inside Hyosan High School, they must fight for survival while rescue attempts are made from the outside. Loyalties and humanity are tested to the limit.",
     cast: [
-      { name: "Yoon Chan-young", role: "Lee Cheong-san", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Yoon_Chanyoung_2023.jpg/200px-Yoon_Chanyoung_2023.jpg" },
-      { name: "Park Ji-hu", role: "Nam On-jo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Park_Jihu_2022.png/200px-Park_Jihu_2022.png" },
+      { name: "Yoon Chan-young", role: "Lee Cheong-san", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Yoon_Chanyoung_2023.jpg/250px-Yoon_Chanyoung_2023.jpg" },
+      { name: "Park Ji-hu", role: "Nam On-jo", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Park_Jihu_2022.png/250px-Park_Jihu_2022.png" },
       { name: "Jo Yi-hyun", role: "Choi Nam-ra" },
     ],
     crew: [
@@ -1796,9 +1796,9 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/9/99/Itaewon_Class.jpg",
     description: "An ex-convict and his friends fight to build a successful restaurant business in the trendy Itaewon district while seeking revenge against the powerful food conglomerate that ruined his father's life.",
     cast: [
-      { name: "Park Seo-joon", role: "Park Sae-royi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Park_Seo-joon_in_March_2026.png/200px-Park_Seo-joon_in_March_2026.png" },
+      { name: "Park Seo-joon", role: "Park Sae-royi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Park_Seo-joon_in_March_2026.png/250px-Park_Seo-joon_in_March_2026.png" },
       { name: "Kim Da-mi", role: "Jo Yi-seo" },
-      { name: "Yoo Jae-myung", role: "Jang Dae-hee", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Yoo_Jae-myung_20251218.png/200px-Yoo_Jae-myung_20251218.png" },
+      { name: "Yoo Jae-myung", role: "Jang Dae-hee", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Yoo_Jae-myung_20251218.png/250px-Yoo_Jae-myung_20251218.png" },
     ],
     crew: [
       { name: "Kim Sung-yoon", role: "Director" },
@@ -1824,12 +1824,12 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Hellbound_%28TV_series%29_title_card.png/500px-Hellbound_%28TV_series%29_title_card.png",
     description: "People are mysteriously condemned to hell by supernatural beings, sparking a new religious movement that claims these decrees are divine punishment. Chaos and societal collapse ensue as the phenomena intensify.",
     cast: [
-      { name: "Yoo Ah-in", role: "Jeong Jin-su", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Yoo_Ah-In_%EC%9C%A0%EC%95%84%EC%9D%B8_20181206.jpg/200px-Yoo_Ah-In_%EC%9C%A0%EC%95%84%EC%9D%B8_20181206.jpg" },
+      { name: "Yoo Ah-in", role: "Jeong Jin-su", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Yoo_Ah-In_%EC%9C%A0%EC%95%84%EC%9D%B8_20181206.jpg/250px-Yoo_Ah-In_%EC%9C%A0%EC%95%84%EC%9D%B8_20181206.jpg" },
       { name: "Kim Hyun-joo", role: "Min Hye-jin" },
       { name: "Park Jeong-min", role: "Bae Jong-su" },
     ],
     crew: [
-      { name: "Yeon Sang-ho", role: "Director", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Yeon_Sang-ho_at_2025_Toronto_International_Film_Festival_5.jpg/200px-Yeon_Sang-ho_at_2025_Toronto_International_Film_Festival_5.jpg" },
+      { name: "Yeon Sang-ho", role: "Director", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Yeon_Sang-ho_at_2025_Toronto_International_Film_Festival_5.jpg/250px-Yeon_Sang-ho_at_2025_Toronto_International_Film_Festival_5.jpg" },
     ],
   },
   {
@@ -2011,7 +2011,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://image.tmdb.org/t/p/w500/EljUwZJhpuYfVuSfqY8Pt1xxpH.jpg",
     description: "A struggling manga artist discovers he can travel back in time to prevent tragic events. When he's sent back 18 years to his childhood, he must solve a series of kidnappings and save his classmates and his mother.",
     cast: [
-      { name: "Takeru Satoh", role: "Satoru Fujinuma", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/200px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
+      { name: "Takeru Satoh", role: "Satoru Fujinuma", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg/250px-Sato_Takeru_from_%22One_Night%22_at_Opening_Ceremony_of_the_Tokyo_International_Film_Festival_2019_%2849013876096%29.jpg" },
       { name: "Mio Imada", role: "Airi Katagiri" },
     ],
     crew: [
@@ -2065,7 +2065,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://image.tmdb.org/t/p/w500/fzyU8VAMFn0mvIGgPfuCXKyWbbE.jpg",
     description: "A group of socially awkward otaku women live in an all-female dorm called Amars. When fashion-obsessed cross-dresser Kuranosuke befriends timid Tsukimi, he helps her transform and confront a developer threatening their home.",
     cast: [
-      { name: "Kento Yamazaki", role: "Kuranosuke Koibuchi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/200px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
+      { name: "Kento Yamazaki", role: "Kuranosuke Koibuchi", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/250px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
       { name: "Ayame Goriki", role: "Tsukimi Kurashita" },
     ],
     crew: [
@@ -2328,7 +2328,7 @@ export const LIVE_ACTION_ANIME: LiveActionAnime[] = [
     posterUrl: "https://image.tmdb.org/t/p/w500/6bjQSKW2uPsO9BEYtvzoO6rXdar.jpg",
     description: "A piano prodigy who lost the ability to hear his own playing meets a free-spirited violinist who changes his life. A beautiful, heart-wrenching story about music, love, and letting go.",
     cast: [
-      { name: "Kento Yamazaki", role: "Kōsei Arima", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/200px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
+      { name: "Kento Yamazaki", role: "Kōsei Arima", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg/250px-Kingdom%2BSingapore%2BPremiere%2BPress%2BConference%2Bcaagvhp5Gwax.jpg" },
       { name: "Mone Kamishiraishi", role: "Kaori Miyazono" },
     ],
     crew: [

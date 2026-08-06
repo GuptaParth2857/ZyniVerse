@@ -56,9 +56,7 @@ function PosterCard({ anime, rank, priority }: { anime: LiveActionAnime; rank?: 
       className="snap-start shrink-0 group/card w-[150px] sm:w-[170px] md:w-[190px]"
     >
       <div className="relative aspect-[2/3] overflow-hidden rounded-xl la-neon-card bg-[var(--color-panel)] transition-all duration-400" style={{ ["--i" as string]: rank ? (rank % 5) : 0 }}>
-        {anime.status === "upcoming" ? (
-          <LiveActionPlaceholder title={anime.title} year={anime.releaseYear} />
-        ) : anime.posterUrl && !imgErr ? (
+        {anime.posterUrl && !imgErr ? (
           <Image
             src={anime.posterUrl}
             alt={anime.title}
@@ -68,6 +66,8 @@ function PosterCard({ anime, rank, priority }: { anime: LiveActionAnime; rank?: 
             priority={priority}
             onError={() => setImgErr(true)}
           />
+        ) : anime.status === "upcoming" ? (
+          <LiveActionPlaceholder title={anime.title} year={anime.releaseYear} />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-cyan)]/20 to-[var(--color-magenta)]/20 flex items-center justify-center p-2.5 text-center">
             <span className="font-display text-xs font-bold leading-tight text-white/60 line-clamp-3">{anime.title}</span>
