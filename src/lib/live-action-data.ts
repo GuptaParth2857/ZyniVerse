@@ -1,6 +1,7 @@
 import { LIVE_ACTION_ANIME, type LiveActionAnime } from "./live-action-anime";
 import { getLiveActionUpdateCache, type LiveActionUpdate } from "./live-action-updater";
 import { catalogToLiveAction, getLiveActionCatalogEntries, normalizeTitle } from "./live-action-catalog";
+import { getPosterCache } from "./live-action-posters";
 
 function mergeUpdates(base: LiveActionAnime[], updates: Record<string, LiveActionUpdate>): LiveActionAnime[] {
   return base.map((entry) => {
@@ -23,8 +24,15 @@ function mergeUpdates(base: LiveActionAnime[], updates: Record<string, LiveActio
 }
 
 export async function getAllLiveAction(): Promise<LiveActionAnime[]> {
-  const cache = await getLiveActionUpdateCache();
-  const data = mergeUpdates(LIVE_ACTION_ANIME, cache.updates);
+  const [cache, posterCache] = await Promise.all([
+    getLiveActionUpdateCache(),
+    getPosterCache(),
+  ]);
+  const data = mergeUpdates(LIVE_ACTION_ANIME, cache.updates).map((entry) => {
+    if (entry.status !== "upcoming") return entry;
+    const info = posterCache.posters[entry.id];
+    return { ...entry, posterUrl: info?.url };
+  });
 
   const catalog = await getLiveActionCatalogEntries();
   const staticNorms = new Set(LIVE_ACTION_ANIME.map((a) => normalizeTitle(a.title)));

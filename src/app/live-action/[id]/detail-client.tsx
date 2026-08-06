@@ -121,7 +121,7 @@ export default function LiveActionDetailClient({ id, initialList }: { id: string
           {/* ── Hero ── */}
           <div className="relative min-h-[50vh] sm:min-h-[70vh] flex items-end border-b border-[var(--color-line)] overflow-hidden">
             {/* Background poster as banner */}
-            {anime.posterUrl && anime.status !== "upcoming" && !posterError && (
+            {anime.posterUrl && !posterError && (
               <div className="absolute inset-0">
                 <div className="relative h-full w-full">
                   <Image src={anime.posterUrl} alt="" fill sizes="100vw" className="object-cover opacity-20 blur-sm scale-110" onError={() => setPosterError(true)} />
@@ -140,11 +140,7 @@ export default function LiveActionDetailClient({ id, initialList }: { id: string
                 {/* Cover */}
                 <div className="shrink-0 mx-auto sm:mx-0 -mb-16 sm:-mb-20 z-20">
                   <div className="relative h-64 w-44 sm:h-80 sm:w-56">
-                    {anime.status === "upcoming" ? (
-                      <div className="relative h-full w-full overflow-hidden rounded-xl border-2 border-[var(--color-magenta)]/30">
-                        <LiveActionPlaceholder title={anime.title} year={anime.releaseYear} />
-                      </div>
-                    ) : anime.posterUrl && !posterError ? (
+                    {anime.posterUrl && !posterError ? (
                       <Image
                         src={anime.posterUrl}
                         alt={anime.title}
@@ -154,6 +150,10 @@ export default function LiveActionDetailClient({ id, initialList }: { id: string
                         className="rounded-xl border-2 border-[var(--color-magenta)]/30 object-cover shadow-2xl shadow-[var(--color-magenta)]/10"
                         onError={() => setPosterError(true)}
                       />
+                    ) : anime.status === "upcoming" ? (
+                      <div className="relative h-full w-full overflow-hidden rounded-xl border-2 border-[var(--color-magenta)]/30">
+                        <LiveActionPlaceholder title={anime.title} year={anime.releaseYear} />
+                      </div>
                     ) : (
                       <div className="absolute inset-0 rounded-xl border-2 border-[var(--color-magenta)]/30 bg-gradient-to-br from-[var(--color-cyan)]/20 to-[var(--color-magenta)]/20 flex items-center justify-center p-3 text-center">
                         <span className="font-display text-sm font-bold leading-tight text-white/70 line-clamp-4">{anime.title}</span>
