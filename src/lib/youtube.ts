@@ -1,4 +1,6 @@
 import { logError } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import type { PodcastEpisode } from "@/lib/podcast-data";
 
 const API_KEY = process.env.YOUTUBE_API_KEY;
@@ -11,6 +13,30 @@ interface CacheEntry {
 
 const responseCache = new Map<string, CacheEntry>();
 const CACHE_TTL = 12 * 60 * 60 * 1000;
+const DB_CACHE_TTL = 12 * 60 * 60 * 1000;
+
+async function readDbCache(key: string, allowStale = false): Promise<PodcastEpisode[] | null> {
+  try {
+    const row = await prisma.podcastCache.findUnique({ where: { key } });
+    if (!row) return null;
+    if (!allowStale && Date.now() - new Date(row.updatedAt).getTime() > DB_CACHE_TTL) return null;
+    return row.data as unknown as PodcastEpisode[];
+  } catch {
+    return null;
+  }
+}
+
+async function writeDbCache(key: string, data: PodcastEpisode[]): Promise<void> {
+  try {
+    await prisma.podcastCache.upsert({
+      where: { key },
+      update: { data: data as unknown as Prisma.InputJsonValue },
+      create: { key, data: data as unknown as Prisma.InputJsonValue },
+    });
+  } catch {
+    // cache write is best-effort
+  }
+}
 
 const SEARCH_QUERIES: { key: string; label: string; q: string; extra?: string }[] = [
   { key: "anime", label: "Anime", q: "anime podcast" },
@@ -182,6 +208,8 @@ export async function getYouTubePodcasts(): Promise<PodcastEpisode[]> {
   const cacheKey = "youtube-podcasts";
   const cached = getFromCache(cacheKey);
   if (cached) return cached as PodcastEpisode[];
+  const dbCached = await readDbCache(cacheKey);
+  if (dbCached) return dbCached;
 
   try {
     const collected: SearchEntry[] = [];
@@ -191,10 +219,12 @@ export async function getYouTubePodcasts(): Promise<PodcastEpisode[]> {
     const episodes = await processItems(collected);
     const top = episodes.slice(0, 100);
     setCache(cacheKey, top);
+    await writeDbCache(cacheKey, top);
     return top;
   } catch (e) {
     logError(e, "youtube-podcasts");
-    return [];
+    const stale = await readDbCache(cacheKey, true);
+    return stale ?? [];
   }
 }
 
@@ -208,6 +238,8 @@ export async function searchYouTubePodcasts(query: string): Promise<PodcastEpiso
   const cacheKey = `search-${q.toLowerCase()}`;
   const entry = searchCache.get(cacheKey);
   if (entry && Date.now() - entry.timestamp < SEARCH_CACHE_TTL) return entry.data;
+  const dbCached = await readDbCache(cacheKey);
+  if (dbCached) return dbCached;
 
   try {
     const data = await fetchJson(
@@ -216,9 +248,11 @@ export async function searchYouTubePodcasts(query: string): Promise<PodcastEpiso
     const items = (data.items || []) as YouTubeSearchItem[];
     const episodes = await processItems(items.map((item) => ({ item, label: "Search" })));
     searchCache.set(cacheKey, { data: episodes, timestamp: Date.now() });
+    await writeDbCache(cacheKey, episodes);
     return episodes;
   } catch (e) {
     logError(e, "youtube-podcast-search");
-    return [];
+    const stale = await readDbCache(cacheKey, true);
+    return stale ?? [];
   }
 }
