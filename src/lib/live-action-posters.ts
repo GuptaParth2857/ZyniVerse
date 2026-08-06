@@ -82,10 +82,11 @@ async function fetchPages(api: string, titles: string[]): Promise<Map<string, Pa
       if (p.missing || typeof p.missing !== "undefined") {
         map.set(resolvedTitle, { title: resolvedTitle, missing: true, files: [] });
       } else {
+        const thumb = p.thumbnail?.source ? cleanUrl(p.thumbnail.source) : undefined;
         map.set(resolvedTitle, {
           title: resolvedTitle,
           missing: false,
-          thumbnail: p.thumbnail?.source ? cleanUrl(p.thumbnail.source) : undefined,
+          thumbnail: thumb && !/\.svg|logo|userbox/i.test(thumb) ? thumb : undefined,
           files: (p.images || []).map((i: any) => i.title),
         });
       }
@@ -113,7 +114,7 @@ async function fetchFileThumbs(api: string, files: string[]): Promise<Map<string
 }
 
 function pickPosterFile(files: string[]): string | undefined {
-  return files.find((f) => !/logo|icon|flag|svg/i.test(f) && /poster|ポスター|\.(jpe?g|png|webp)$/i.test(f));
+  return files.find((f) => /poster|ポスター/i.test(f) && !/logo|icon|flag|svg|userbox/i.test(f));
 }
 
 export async function getPosterCache(): Promise<PosterCache> {
