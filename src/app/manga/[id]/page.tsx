@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { getMangaDetailFull, bestTitle } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
 import { DynamicCarousel3D as Carousel3D } from "@/components/lazy";
@@ -38,6 +38,7 @@ interface MangaEntryDB {
   totalChapters: number | null;
   totalVolumes: number | null;
   score: number | null;
+  mangaDexId: string | null;
 }
 
 interface MangaChapterDB {
@@ -61,6 +62,35 @@ export default function MangaDetailsPage() {
   const [showChapters, setShowChapters] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("PLANNING");
   const [showAllChapters, setShowAllChapters] = useState(false);
+  const [readingDex, setReadingDex] = useState(false);
+  const router = useRouter();
+
+  async function openReader() {
+    if (readingDex) return;
+    setReadingDex(true);
+    try {
+      let dexId = entry?.mangaDexId || null;
+      if (!dexId) {
+        const res = await fetch("/api/manga/dex/resolve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mediaId: Number(id), title }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.mangaDexId) {
+          setError(data.error || "Could not find this manga on MangaDex.");
+          return;
+        }
+        dexId = data.mangaDexId;
+      }
+      router.push(`/manga/read/${dexId}?mediaId=${id}&title=${encodeURIComponent(title)}`);
+    } catch (e) {
+      logError(e);
+      setError("Failed to open reader.");
+    } finally {
+      setReadingDex(false);
+    }
+  }
 
   async function fetchEntry() {
     try {
@@ -322,6 +352,13 @@ export default function MangaDetailsPage() {
                   >Add to My List</button>
                 </>
               )}
+              <button
+                onClick={openReader}
+                disabled={readingDex}
+                className="rounded-full bg-[var(--color-cyan)] px-5 py-2 text-sm font-semibold text-black hover:opacity-90 transition-opacity disabled:opacity-60"
+              >
+                {readingDex ? "Finding source…" : "📖 Read Online"}
+              </button>
               <ShareButton mediaId={manga.id} title={title} />
             </div>
           </div>

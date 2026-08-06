@@ -4,7 +4,7 @@ import MangaReader from "@/components/MangaReader";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ chapter?: string; title?: string }>;
+  searchParams: Promise<{ chapter?: string; title?: string; mediaId?: string }>;
 }
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
@@ -28,6 +28,7 @@ export default async function MangaReadPage({ params, searchParams }: Props) {
       mangaTitle={sp.title}
       mangaId={id}
       initialChapterId={sp.chapter}
+      mediaId={sp.mediaId}
     />
   );
 }

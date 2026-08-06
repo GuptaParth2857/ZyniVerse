@@ -10,9 +10,10 @@ interface Props {
   mangaTitle?: string;
   mangaId?: string;
   initialChapterId?: string;
+  mediaId?: string;
 }
 
-export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialChapterId }: Props) {
+export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialChapterId, mediaId }: Props) {
   const [manga, setManga] = useState<MangaDexManga | null>(null);
   const [chapters, setChapters] = useState<MangaChapter[]>([]);
   const [currentChapter, setCurrentChapter] = useState<MangaChapter | null>(null);
@@ -83,6 +84,18 @@ export default function MangaReader({ mangaTitle, mangaId: propMangaId, initialC
   function handleChapterSelect(chapter: MangaChapter) {
     setCurrentChapter(chapter);
     setShowChapters(false);
+    if (mediaId) {
+      fetch("/api/manga/chapters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mediaId: Number(mediaId),
+          chapter: chapter.chapter,
+          read: true,
+          mangaDexId: manga?.id || propMangaId,
+        }),
+      }).catch(() => {});
+    }
   }
 
   function nextPage() {

@@ -33,13 +33,20 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { mediaId, chapter, title, read } = await req.json();
+  const { mediaId, chapter, title, read, mangaDexId } = await req.json();
   if (!mediaId || chapter == null) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
 
   const entry = await prisma.mangaEntry.findUnique({
     where: { userId_mediaId: { userId: session.user.id, mediaId } },
   });
   if (!entry) return NextResponse.json({ error: "Entry not found. Add manga to your list first." }, { status: 404 });
+
+  if (mangaDexId) {
+    await prisma.mangaEntry.update({
+      where: { id: entry.id },
+      data: { mangaDexId },
+    });
+  }
 
   const existing = await prisma.mangaChapter.findUnique({
     where: { entryId_chapter: { entryId: entry.id, chapter } },

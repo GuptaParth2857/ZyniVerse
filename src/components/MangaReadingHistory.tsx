@@ -13,6 +13,7 @@ interface HistoryItem {
     title: string;
     coverImage: string | null;
     subType: string;
+    mangaDexId: string | null;
   };
 }
 
@@ -56,10 +57,15 @@ export default function MangaReadingHistory({ mediaId }: { mediaId: number }) {
         <p className="text-xs text-[var(--color-mute)]">No chapters read yet. Track your reading to build a history.</p>
       ) : (
         <ol className="space-y-1.5 max-h-80 overflow-y-auto">
-          {history.map((h) => (
+          {history.map((h) => {
+            const readerHref = h.entry.mangaDexId
+              ? `/manga/read/${h.entry.mangaDexId}?mediaId=${h.entry.mediaId}&chapter=${h.chapter}&title=${encodeURIComponent(h.entry.title)}`
+              : null;
+            const href = readerHref || `/manga/${h.entry.mediaId}`;
+            return (
             <li key={`${h.entry.mediaId}-${h.chapter}`}>
               <Link
-                href={`/manga/read/${h.entry.mediaId}?chapter=${h.chapter}&title=${encodeURIComponent(h.entry.title)}`}
+                href={href}
                 className={`group flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/5 ${
                   h.entry.mediaId === mediaId ? "bg-[var(--color-violet)]/10" : ""
                 }`}
@@ -81,7 +87,8 @@ export default function MangaReadingHistory({ mediaId }: { mediaId: number }) {
                 <span className="shrink-0 text-[10px] font-mono text-[var(--color-mute)]">{timeAgo(h.readAt)}</span>
               </Link>
             </li>
-          ))}
+            );
+          })}
         </ol>
       )}
     </div>
