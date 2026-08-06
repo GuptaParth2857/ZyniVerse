@@ -1751,6 +1751,18 @@ model AniListCache {
   @@index([updatedAt])
 }
 
+// ── YouTube Podcast Response Cache ──
+// Persists successful YouTube podcast results so the site keeps serving
+// them when the daily Search quota is exhausted, and avoids burning the
+// quota on every request.
+model PodcastCache {
+  key       String   @id
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@index([updatedAt])
+}
+
 // ── External Awards (scraped from Crunchyroll, MAL, ANN, etc.) ──
 model ExternalAward {
   id        Int      @id @default(autoincrement())
