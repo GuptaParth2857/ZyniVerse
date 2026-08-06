@@ -14,6 +14,11 @@ interface CacheEntry {
 const responseCache = new Map<string, CacheEntry>();
 const CACHE_TTL = 12 * 60 * 60 * 1000;
 const DB_CACHE_TTL = 12 * 60 * 60 * 1000;
+const SEARCH_DELAY_MS = 500;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 async function readDbCache(key: string, allowStale = false): Promise<PodcastEpisode[] | null> {
   try {
@@ -155,6 +160,7 @@ async function searchCategory(c: (typeof SEARCH_QUERIES)[number]): Promise<YouTu
 async function fetchDurations(ids: string[]): Promise<Map<string, string>> {
   const durations = new Map<string, string>();
   for (let i = 0; i < ids.length; i += 50) {
+    if (i > 0) await delay(SEARCH_DELAY_MS);
     const chunk = ids.slice(i, i + 50);
     const data = await fetchJson(`/videos?part=contentDetails&id=${encodeURIComponent(chunk.join(","))}`);
     for (const item of data.items || []) {
@@ -213,8 +219,11 @@ export async function getYouTubePodcasts(): Promise<PodcastEpisode[]> {
 
   try {
     const collected: SearchEntry[] = [];
-    for (const c of SEARCH_QUERIES) {
-      for (const item of await searchCategory(c)) collected.push({ item, label: c.label });
+    for (let i = 0; i < SEARCH_QUERIES.length; i++) {
+      if (i > 0) await delay(SEARCH_DELAY_MS);
+      for (const item of await searchCategory(SEARCH_QUERIES[i])) {
+        collected.push({ item, label: SEARCH_QUERIES[i].label });
+      }
     }
     const episodes = await processItems(collected);
     const top = episodes.slice(0, 100);
