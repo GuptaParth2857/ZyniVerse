@@ -55,8 +55,7 @@ async function fetchJson(path: string): Promise<{ items?: unknown[] }> {
     next: { revalidate: 12 * 60 * 60 },
   });
   if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`YouTube API request failed (${res.status}) ${body.slice(0, 250)}`);
+    throw new Error(`YouTube API request failed (${res.status})`);
   }
   return res.json();
 }
@@ -195,8 +194,7 @@ export async function getYouTubePodcasts(): Promise<PodcastEpisode[]> {
     return top;
   } catch (e) {
     logError(e, "youtube-podcasts");
-    const err = e as { message?: string; status?: number };
-    throw new Error(`[DIAG] youtube-podcasts failed: ${err.status ?? ""} ${err.message ?? e}`);
+    return [];
   }
 }
 

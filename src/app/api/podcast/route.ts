@@ -14,11 +14,6 @@ export async function GET() {
     return NextResponse.json({ episodes: PODCAST_EPISODES, count: PODCAST_EPISODES.length, source: "curated" });
   } catch (e) {
     logError(e, "podcast-api");
-    return NextResponse.json({
-      episodes: PODCAST_EPISODES,
-      count: PODCAST_EPISODES.length,
-      source: "curated",
-      diag: e instanceof Error ? e.message : String(e),
-    });
+    return NextResponse.json({ episodes: PODCAST_EPISODES, count: PODCAST_EPISODES.length, source: "curated" });
   }
 }
