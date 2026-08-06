@@ -210,12 +210,12 @@ async function processItems(entries: SearchEntry[]): Promise<PodcastEpisode[]> {
 }
 
 export async function getYouTubePodcasts(): Promise<PodcastEpisode[]> {
-  if (!API_KEY) return [];
   const cacheKey = "youtube-podcasts";
   const cached = getFromCache(cacheKey);
   if (cached) return cached as PodcastEpisode[];
   const dbCached = await readDbCache(cacheKey);
   if (dbCached) return dbCached;
+  if (!API_KEY) return [];
 
   try {
     const collected: SearchEntry[] = [];
@@ -240,8 +240,27 @@ export async function getYouTubePodcasts(): Promise<PodcastEpisode[]> {
 const searchCache = new Map<string, { data: PodcastEpisode[]; timestamp: number }>();
 const SEARCH_CACHE_TTL = 60 * 60 * 1000;
 
+function filterFeedByQuery(episodes: PodcastEpisode[], q: string): PodcastEpisode[] {
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return episodes.slice(0, 25);
+  return episodes
+    .map((ep) => {
+      const hay = `${ep.title} ${ep.description} ${ep.channel} ${ep.tags.join(" ")}`.toLowerCase();
+      const hits = terms.filter((t) => hay.includes(t)).length;
+      return { ep, hits };
+    })
+    .filter(({ hits }) => hits > 0)
+    .sort((a, b) => b.hits - a.hits)
+    .slice(0, 25)
+    .map(({ ep }) => ep);
+}
+
+async function feedFallbackSearch(q: string): Promise<PodcastEpisode[]> {
+  const feed = await readDbCache("youtube-podcasts", true);
+  return feed ? filterFeedByQuery(feed, q) : [];
+}
+
 export async function searchYouTubePodcasts(query: string): Promise<PodcastEpisode[]> {
-  if (!API_KEY) return [];
   const q = query.trim();
   if (!q) return [];
   const cacheKey = `search-${q.toLowerCase()}`;
@@ -249,6 +268,8 @@ export async function searchYouTubePodcasts(query: string): Promise<PodcastEpiso
   if (entry && Date.now() - entry.timestamp < SEARCH_CACHE_TTL) return entry.data;
   const dbCached = await readDbCache(cacheKey);
   if (dbCached) return dbCached;
+
+  if (!API_KEY) return feedFallbackSearch(q);
 
   try {
     const data = await fetchJson(
@@ -262,6 +283,6 @@ export async function searchYouTubePodcasts(query: string): Promise<PodcastEpiso
   } catch (e) {
     logError(e, "youtube-podcast-search");
     const stale = await readDbCache(cacheKey, true);
-    return stale ?? [];
+    return stale ?? (await feedFallbackSearch(q));
   }
 }
