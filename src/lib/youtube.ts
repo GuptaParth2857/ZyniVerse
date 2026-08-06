@@ -55,7 +55,8 @@ async function fetchJson(path: string): Promise<{ items?: unknown[] }> {
     next: { revalidate: 12 * 60 * 60 },
   });
   if (!res.ok) {
-    throw new Error(`YouTube API request failed (${res.status})`);
+    const body = await res.text();
+    throw new Error(`YouTube API request failed (${res.status}) ${body.slice(0, 250)}`);
   }
   return res.json();
 }
