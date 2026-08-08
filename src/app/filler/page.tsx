@@ -5,7 +5,7 @@ import AffiliateLink from "@/components/AffiliateLink";
 import FillerSearch from "@/components/FillerSearch";
 import AdBanner from "@/components/AdBanner";
 import NativeBannerAd from "@/components/NativeBannerAd";
-import { getPopularFillerAnime } from "@/lib/filler";
+import { getPopularFillerAnime, getFillerData } from "@/lib/filler";
 
 export const metadata: Metadata = {
   title: "Anime Filler List — Skip Filler in Naruto, One Piece, Bleach (2026 Updated)",
@@ -36,7 +36,13 @@ export const metadata: Metadata = {
 };
 
 export default async function FillerListingPage() {
-  const popular = await getPopularFillerAnime(20);
+  const [popular, all] = await Promise.allSettled([
+    getPopularFillerAnime(20),
+    getFillerData(),
+  ]);
+  const popularAnime = popular.status === "fulfilled" ? popular.value : [];
+  const allShows = all.status === "fulfilled" ? all.value : [];
+  const allShowsSorted = [...allShows].sort((a, b) => a.title.localeCompare(b.title));
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
       {/* Breadcrumbs */}
@@ -81,7 +87,7 @@ export default async function FillerListingPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {popular.map((anime) => (
+        {popularAnime.map((anime) => (
           <Link
             key={anime.id}
             href={`/anime/${anime.id}/filler`}
@@ -125,6 +131,29 @@ export default async function FillerListingPage() {
           </Link>
         ))}
       </div>
+
+      {allShowsSorted.length > 0 && (
+        <section className="mb-8">
+          <div className="mb-4 flex items-center gap-2">
+            <span className="h-4 w-1 rounded-full bg-[var(--color-cyan)]" />
+            <h2 className="font-display text-lg font-bold">Browse All Filler Guides</h2>
+            <span className="rounded-full bg-[var(--color-cyan)]/10 px-2 py-0.5 text-[10px] font-bold text-[var(--color-cyan)]">
+              {allShowsSorted.length}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {allShowsSorted.map((s) => (
+              <Link
+                key={s.slug}
+                href={`/filler/${s.slug}`}
+                className="rounded-full border border-[var(--color-line)] bg-[var(--color-panel)]/60 px-3 py-1.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 transition-all"
+              >
+                {s.title} Filler List
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Native banner after filler list */}
       <NativeBannerAd className="mt-8" />

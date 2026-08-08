@@ -1,16 +1,30 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/admin";
 import { scrapeAllSources } from "@/lib/awards-scraper";
+import { CURATED_AWARDS } from "@/lib/awards-seed-data";
 
 export async function POST() {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { awards, errors } = await scrapeAllSources();
+
+    const seen = new Set<string>();
+    const combined: typeof awards = [];
+    for (const award of [...awards, ...CURATED_AWARDS]) {
+      const key = `${award.year}|${award.category}|${award.platform}|${award.winner}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      combined.push(award);
+    }
 
     let created = 0;
     let updated = 0;
     let skipped = 0;
 
-    for (const award of awards) {
+    for (const award of combined) {
       try {
         const existing = await prisma.externalAward.findUnique({
           where: {
@@ -61,6 +75,7 @@ export async function POST() {
       updated,
       skipped,
       totalScraped: awards.length,
+      curated: CURATED_AWARDS.length,
       errors,
       timestamp: new Date().toISOString(),
     });

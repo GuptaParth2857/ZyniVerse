@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, animate } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { UPCOMING_AWARDS, type UpcomingAward } from "@/lib/awards-data";
 
@@ -61,6 +61,26 @@ function getCountdown(dateStr: string): { days: number; hours: number; minutes: 
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
   return { days, hours, minutes, expired: false };
+}
+
+function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const controls = animate(0, value, {
+      duration: 1.4,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate: (v) => setDisplay(Math.round(v)),
+    });
+    return () => controls.stop();
+  }, [value]);
+
+  return (
+    <span className="font-mono tabular-nums text-2xl font-bold bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
+      {display}
+      {suffix}
+    </span>
+  );
 }
 
 function NeonBorder({ children }: { children: React.ReactNode }) {
@@ -194,6 +214,7 @@ function AwardCard({ award, index }: { award: AwardEntry; index: number }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3, delay: index * 0.03 }}
+      whileHover={{ y: -6, boxShadow: "0 20px 60px -20px rgba(255,0,230,0.35)" }}
       className="neon-rgb-border bg-gray-800/60 backdrop-blur-sm rounded-2xl overflow-hidden transition-all group"
     >
       {/* Poster */}
@@ -207,8 +228,10 @@ function AwardCard({ award, index }: { award: AwardEntry; index: number }) {
             sizes="(max-width: 768px) 50vw, 33vw"
           />
         ) : (
-          <div className={`w-full h-full bg-gradient-to-br ${getGradient(award.winner)} flex items-center justify-center`}>
-            <span className="text-5xl font-black text-white/20 select-none">{award.winner.charAt(0)}</span>
+          <div className={`award-gradient-letter w-full h-full bg-gradient-to-br ${getGradient(award.winner)} flex items-center justify-center`}>
+            <span className="text-5xl font-black text-white/25 select-none">
+              {award.winner.charAt(0)}
+            </span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/30 to-transparent" />
@@ -221,6 +244,7 @@ function AwardCard({ award, index }: { award: AwardEntry; index: number }) {
             {award.winner}
           </h3>
         </div>
+        <div className="award-sheen" />
       </div>
 
       {/* Info */}
@@ -262,7 +286,7 @@ function CommunityPicks({ currentYear }: { currentYear: number }) {
       .catch(() => setLoading(false));
   }, [currentYear]);
 
-  if (loading || picks.length === 0) return null;
+  if (loading) return null;
 
   return (
     <div className="mb-14">
@@ -293,7 +317,36 @@ function CommunityPicks({ currentYear }: { currentYear: number }) {
         </motion.p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+      {picks.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.5 }}
+          className="rounded-2xl border border-dashed border-[rgba(255,255,255,0.14)] bg-white/[0.02] p-8 sm:p-10 text-center max-w-2xl mx-auto mb-6"
+        >
+          <div className="flex justify-center gap-3 mb-5 text-3xl">
+            {["🏆", "⚔️", "💕", "🎵", "🎬"].map((e, i) => (
+              <span key={e} className="float-anim inline-block" style={{ animationDelay: `${i * 0.4}s` }}>
+                {e}
+              </span>
+            ))}
+          </div>
+          <h3 className="text-white font-bold text-lg mb-2">No community picks yet for {currentYear}</h3>
+          <p className="text-[rgba(255,255,255,0.4)] text-sm mb-6 max-w-md mx-auto leading-relaxed">
+            Nominations and voting open soon. Be the first to crown the best anime, characters, and songs of {currentYear}.
+          </p>
+          <Link
+            href={`/awards/nominees/${currentYear}`}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-[14px] bg-gradient-to-r from-[#ff00e6] to-[#7000ff] text-white text-sm font-bold shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_-8px_rgba(255,0,230,0.4)] active:scale-[0.98]"
+          >
+            Vote Now
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </Link>
+        </motion.div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-6">
         {picks.slice(0, 6).map((pick, i) => (
           <motion.div
             key={pick.category}
@@ -321,7 +374,8 @@ function CommunityPicks({ currentYear }: { currentYear: number }) {
             )}
           </motion.div>
         ))}
-      </div>
+        </div>
+      )}
 
       <div className="text-center">
         <Link
@@ -348,16 +402,37 @@ const CATEGORY_EMOJIS: Record<string, string> = {
   BEST_MANGA: "📖", BEST_ORIGINAL: "💎", BEST_ISEKAI: "🌀", BEST_BACKGROUND_ART: "🏔️",
 };
 
-const FilterButton = ({ active, onClick, children, className = "" }: { active: boolean; onClick: () => void; children: React.ReactNode; className?: string }) => (
+const FilterButton = ({
+  active,
+  onClick,
+  children,
+  className = "",
+  layoutId,
+  activeClassName = "text-gray-900 shadow-lg shadow-white/10",
+  pillClassName = "bg-white",
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+  layoutId?: string;
+  activeClassName?: string;
+  pillClassName?: string;
+}) => (
   <button
     onClick={onClick}
-    className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
-      active
-        ? "bg-white text-gray-900 shadow-lg shadow-white/10"
-        : `bg-gray-800 text-gray-300 hover:bg-gray-700 ${className}`
+    className={`relative px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
+      active ? activeClassName : `bg-gray-800 text-gray-300 hover:bg-gray-700 ${className}`
     }`}
   >
-    {children}
+    {active && layoutId && (
+      <motion.span
+        layoutId={`award-filter-${layoutId}`}
+        className={`absolute inset-0 rounded-full ${pillClassName}`}
+        transition={{ type: "spring", stiffness: 420, damping: 34 }}
+      />
+    )}
+    <span className="relative z-10 flex items-center gap-1.5">{children}</span>
   </button>
 );
 
@@ -454,15 +529,105 @@ export default function AwardsPage() {
             </ol>
           </nav>
 
-          <div className="text-center mb-10">
-            <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
-              <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight">Anime Awards Hub</h1>
+          <div className="text-center mb-14">
+            {/* Floating trophy */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: "spring", stiffness: 260, damping: 18 }}
+              className="inline-flex items-center justify-center mb-6"
+            >
+              <div className="relative">
+                <motion.div
+                  className="absolute inset-[-14px] rounded-full"
+                  style={{
+                    background: "conic-gradient(from 0deg, rgba(255,0,230,0.45), rgba(0,255,224,0.45), rgba(112,0,255,0.45), rgba(255,0,230,0.45))",
+                    filter: "blur(18px)",
+                  }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                />
+                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#1a1a2e] to-[#0d0d1a] border border-white/10 flex items-center justify-center shadow-[0_0_40px_-8px_rgba(255,0,230,0.5)]">
+                  <span className="text-4xl float-anim">🏆</span>
+                </div>
+              </div>
+            </motion.div>
+
+            <div className="neon-rgb-border rounded-2xl px-6 py-4 inline-block mb-5">
+              <motion.div
+                initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <motion.h1
+                  className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text"
+                  style={{
+                    backgroundImage: "linear-gradient(90deg, #ffffff 0%, #00ffe0 25%, #7000ff 50%, #ff00e6 75%, #ffffff 100%)",
+                    backgroundSize: "200% auto",
+                  }}
+                  animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                  transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  Anime Awards Hub
+                </motion.h1>
+              </motion.div>
             </div>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25, duration: 0.5 }}
+              className="text-gray-400 text-lg max-w-2xl mx-auto"
+            >
               Real winners from the biggest anime award ceremonies — every platform, every category, every year.
-            </p>
+            </motion.p>
             {lastUpdated && (
-              <p className="text-gray-500 text-xs mt-2">Last updated: {lastUpdated.toLocaleTimeString()} · Source: {source}</p>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-gray-500 text-xs mt-2"
+              >
+                Last updated: {lastUpdated.toLocaleTimeString()} · Source: {source}
+              </motion.p>
+            )}
+
+            {/* Animated stats */}
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-8">
+              {[
+                { value: allAwards.length, label: "Verified Winners" },
+                { value: platforms.length, label: "Ceremonies" },
+                { value: years.length, label: "Years" },
+                { value: allAwards.filter((a) => a.image).length, label: "Posters", suffix: "+" },
+              ].map((s, i) => (
+                <motion.div
+                  key={s.label}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 + i * 0.08, duration: 0.5 }}
+                  className="min-w-[96px] px-5 py-3 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm"
+                >
+                  <Counter value={s.value} suffix={s.suffix} />
+                  <p className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.3)] mt-1">{s.label}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Platform badges */}
+            {platforms.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-2 mt-6">
+                {platforms.map((p, i) => (
+                  <motion.span
+                    key={p}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.55 + i * 0.06 }}
+                    className={`text-[11px] font-semibold px-3 py-1.5 rounded-full border ${PLATFORM_COLORS[p] || "bg-gray-800 text-gray-300 border-gray-600"}`}
+                  >
+                    {p}
+                  </motion.span>
+                ))}
+              </div>
             )}
           </div>
 
@@ -525,48 +690,46 @@ export default function AwardsPage() {
             <>
               {/* TYPE FILTER */}
               <div className="mb-3 flex flex-wrap gap-2 justify-center">
-                <FilterButton active={selectedType === null} onClick={() => setSelectedType(null)}>All Types</FilterButton>
+                <FilterButton active={selectedType === null} onClick={() => setSelectedType(null)} layoutId="type">All Types</FilterButton>
                 {types.map((t) => {
                   const info = TYPE_LABELS[t] || { label: t, icon: "🏅", color: "from-gray-500 to-gray-600" };
                   return (
-                    <button
+                    <FilterButton
                       key={t}
+                      active={selectedType === t}
                       onClick={() => setSelectedType(selectedType === t ? null : t)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
-                        selectedType === t
-                          ? `bg-gradient-to-r ${info.color} text-white shadow-lg`
-                          : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                      }`}
+                      layoutId="type"
+                      activeClassName="text-white shadow-lg"
+                      pillClassName={`bg-gradient-to-r ${info.color}`}
                     >
                       {info.icon} {info.label}
-                    </button>
+                    </FilterButton>
                   );
                 })}
               </div>
 
               {/* PLATFORM FILTER */}
               <div className="mb-3 flex flex-wrap gap-2 justify-center">
-                <FilterButton active={selectedPlatform === null} onClick={() => setSelectedPlatform(null)}>All Platforms</FilterButton>
+                <FilterButton active={selectedPlatform === null} onClick={() => setSelectedPlatform(null)} layoutId="platform">All Platforms</FilterButton>
                 {platforms.map((p) => (
-                  <button
+                  <FilterButton
                     key={p}
+                    active={selectedPlatform === p}
                     onClick={() => setSelectedPlatform(selectedPlatform === p ? null : p)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
-                      selectedPlatform === p
-                        ? `${PLATFORM_COLORS[p] || "bg-gray-700 text-white"} border shadow-lg`
-                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                    }`}
+                    layoutId="platform"
+                    activeClassName="text-white border shadow-lg"
+                    pillClassName={`${PLATFORM_COLORS[p] || "bg-gray-700"}`}
                   >
                     {p}
-                  </button>
+                  </FilterButton>
                 ))}
               </div>
 
               {/* YEAR FILTER */}
               <div className="mb-8 flex flex-wrap gap-2 justify-center">
-                <FilterButton active={selectedYear === null} onClick={() => setSelectedYear(null)}>All Years</FilterButton>
+                <FilterButton active={selectedYear === null} onClick={() => setSelectedYear(null)} layoutId="year">All Years</FilterButton>
                 {years.map((y) => (
-                  <FilterButton key={y} active={selectedYear === y} onClick={() => setSelectedYear(selectedYear === y ? null : y)}>{y}</FilterButton>
+                  <FilterButton key={y} active={selectedYear === y} onClick={() => setSelectedYear(selectedYear === y ? null : y)} layoutId="year">{y}</FilterButton>
                 ))}
               </div>
 

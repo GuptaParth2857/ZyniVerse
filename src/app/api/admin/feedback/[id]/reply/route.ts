@@ -1,21 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/admin";
 import { createNotification } from "@/lib/notifications";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const session = await auth();
-    if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { email: true, username: true },
-    });
-    if (user?.email !== "gupta.parth2857@gmail.com") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const admin = await requireAdmin();
+    if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { message } = await req.json();
     if (!message?.trim()) {
@@ -28,7 +20,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const reply = await prisma.feedbackReply.create({
       data: {
         feedbackId: id,
-        userId: session.user.id,
+        userId: admin.user.id,
         message: message.trim().slice(0, 2000),
       },
       include: { user: { select: { id: true, username: true, avatar: true } } },

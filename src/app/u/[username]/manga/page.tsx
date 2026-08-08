@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { safeDecode } from "@/lib/url-params";
 
 interface UserRow {
   id: string;
@@ -29,7 +30,8 @@ function subTypeLabel(subType: string): string {
 }
 
 export default async function PublicMangaListPage({ params }: { params: Promise<{ username: string }> }) {
-  const { username } = await params;
+  const { username: rawUsername } = await params;
+  const username = safeDecode(rawUsername);
 
   const user = await prisma.user.findUnique({
     where: { username },

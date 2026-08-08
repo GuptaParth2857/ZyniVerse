@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const TITLE = "ZyniVerse";
@@ -43,7 +43,21 @@ const glowVariants = {
   },
 };
 
+const SPLASH_SEEN_KEY = "zyniverse_splash_seen";
+
+const emptySubscribe = () => () => {};
+
+function getSplashSeen(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return sessionStorage.getItem(SPLASH_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 export default function SplashScreen() {
+  const seen = useSyncExternalStore(emptySubscribe, getSplashSeen, () => false);
   const [isVisible, setIsVisible] = useState(true);
   const [isMounted, setIsMounted] = useState(true);
 
@@ -52,15 +66,22 @@ export default function SplashScreen() {
   }, []);
 
   useEffect(() => {
+    try {
+      sessionStorage.setItem(SPLASH_SEEN_KEY, "1");
+    } catch {
+      /* ignore */
+    }
     const timer = setTimeout(dismiss, 1500);
     return () => clearTimeout(timer);
   }, [dismiss]);
 
   if (!isMounted) return null;
 
+  const showSplash = isVisible && !seen;
+
   return (
     <AnimatePresence onExitComplete={() => setIsMounted(false)}>
-      {isVisible && (
+      {showSplash && (
         <motion.div
           key="splash"
           initial={{ opacity: 0 }}

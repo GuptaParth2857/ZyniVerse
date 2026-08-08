@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
@@ -17,6 +18,7 @@ interface WikiPageData {
   createdAt: string;
   editor: { id: string; username: string; avatar?: string | null };
   _count: { history: number };
+  coverImage?: string | null;
 }
 
 interface Props {
@@ -36,6 +38,20 @@ export default function WikiPage({ page }: Props) {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+      {/* Cover image */}
+      {page.coverImage && (
+        <div className="relative w-full h-56 sm:h-72 rounded-xl overflow-hidden mb-8 border border-[var(--color-line)] bg-[var(--color-void)]">
+          <Image
+            src={page.coverImage}
+            alt={page.title}
+            fill
+            sizes="(max-width: 768px) 100vw, 896px"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-transparent to-transparent" />
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--color-mute)] mb-2">

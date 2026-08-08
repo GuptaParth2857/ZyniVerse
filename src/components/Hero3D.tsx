@@ -7,11 +7,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
 
-export default function Hero3D({ items }: { items: Media[] }) {
+interface HeroStats {
+  users?: number;
+  fillerGuides?: number;
+  watchOrders?: number;
+  indianDubs?: number;
+}
+
+export default function Hero3D({ items, stats }: { items: Media[]; stats?: HeroStats }) {
   const [active, setActive] = useState(0);
   const [, setDirection] = useState(1);
   const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
   const total = Math.min(items.length, 8);
+  const statUsers = stats?.users ?? 0;
+  const showStatsRow = statUsers >= 100;
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
@@ -49,7 +58,7 @@ export default function Hero3D({ items }: { items: Media[] }) {
         >
           {hero?.bannerImage && (
             <div className="relative h-full w-full">
-              <Image src={hero.bannerImage} alt="" fill className="object-cover opacity-30" sizes="100vw" />
+              <Image src={hero.bannerImage} alt="" fill priority className="object-cover opacity-30" sizes="100vw" />
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-void)] via-[var(--color-void)]/70 to-transparent" />
@@ -102,18 +111,56 @@ export default function Hero3D({ items }: { items: Media[] }) {
               </div>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
+                <Link href="/filler"
+                  className="group relative inline-flex items-center gap-2 rounded-full bg-[var(--color-magenta)] px-6 py-3 text-sm font-bold text-black transition-transform hover:scale-105 overflow-hidden"
+                >
+                  <span className="relative z-10">Skip Filler — Watch Only Canon</span>
+                  <span className="relative z-10 group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
                 {hero && (
                   <Link href={hero.type === "MANGA" ? `/manga/${hero.id}` : `/anime/${hero.id}`}
-                    className="group relative inline-flex items-center gap-2 rounded-full bg-[var(--color-magenta)] px-6 py-3 text-sm font-bold text-black transition-transform hover:scale-105 overflow-hidden"
+                    className="rounded-full border border-[var(--color-line)] px-6 py-3 text-sm font-semibold text-[var(--color-ink)] hover:border-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 transition-all"
                   >
-                    <span className="relative z-10">View Details</span>
-                    <span className="relative z-10 group-hover:translate-x-1 transition-transform">→</span>
+                    View Details
                   </Link>
                 )}
                 <Link href="/search"
                   className="rounded-full border border-[var(--color-line)] px-6 py-3 text-sm font-semibold text-[var(--color-ink)] hover:border-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 transition-all"
                 >Start Exploring →</Link>
               </div>
+
+              {showStatsRow && (
+                <div className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-2 text-xs text-[var(--color-mute)]">
+                  <span className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-cyan)]" />
+                    <strong className="font-mono text-sm text-[var(--color-ink)]">
+                      {(statUsers / 1000).toFixed(1)}k+
+                    </strong>
+                    Indian Otakus
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-magenta)]" />
+                    <strong className="font-mono text-sm text-[var(--color-ink)]">
+                      {stats?.fillerGuides ?? 200}+
+                    </strong>
+                    Filler Guides
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-violet)]" />
+                    <strong className="font-mono text-sm text-[var(--color-ink)]">
+                      {stats?.watchOrders ?? 40}+
+                    </strong>
+                    Watch Orders
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    <strong className="font-mono text-sm text-[var(--color-ink)]">
+                      {stats?.indianDubs ?? 1000}+
+                    </strong>
+                    Hindi/Tamil/Telugu Dubs
+                  </span>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
 

@@ -14,6 +14,10 @@
     {
       "path": "/api/cron/refresh-posters",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/analytics",
+      "schedule": "0 6 * * *"
     }
   ]
 }

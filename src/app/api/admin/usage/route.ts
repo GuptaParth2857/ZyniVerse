@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 import { API_TIERS } from "@/lib/api-key";
+import { requireAdmin } from "@/lib/admin";
 
 export async function GET(_req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { email: true },
-  });
-
-  if (user?.email !== "gupta.parth2857@gmail.com") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const now = new Date();

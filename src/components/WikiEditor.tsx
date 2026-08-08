@@ -51,13 +51,13 @@ export default function WikiEditor({ initialData, onSave, isEditing }: Props) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-[var(--color-mute)] mb-1">Title</label>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Page title..." className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)]" />
+          <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Page title..." className="w-full rounded-lg neon-rgb-border bg-[var(--color-panel)] px-4 py-2.5 text-sm outline-none" />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-[var(--color-mute)] mb-1">Category</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)]">
+            <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-lg neon-rgb-border bg-[var(--color-panel)] px-4 py-2.5 text-sm outline-none">
               {CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
@@ -65,13 +65,13 @@ export default function WikiEditor({ initialData, onSave, isEditing }: Props) {
           </div>
           <div>
             <label className="block text-xs font-semibold text-[var(--color-mute)] mb-1">Tags (comma-separated)</label>
-            <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="anime, one-piece, guide" className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)]" />
+            <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="anime, one-piece, guide" className="w-full rounded-lg neon-rgb-border bg-[var(--color-panel)] px-4 py-2.5 text-sm outline-none" />
           </div>
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-[var(--color-mute)] mb-1">Summary</label>
-          <input value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Brief description..." className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)]" />
+          <input value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Brief description..." className="w-full rounded-lg neon-rgb-border bg-[var(--color-panel)] px-4 py-2.5 text-sm outline-none" />
         </div>
 
         <div>
@@ -86,7 +86,7 @@ export default function WikiEditor({ initialData, onSave, isEditing }: Props) {
               {content || "Nothing to preview"}
             </div>
           ) : (
-            <textarea value={content} onChange={(e) => setContent(e.target.value)} required rows={16} placeholder="Write wiki content in markdown..." className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-cyan)] resize-y font-mono" />
+            <textarea value={content} onChange={(e) => setContent(e.target.value)} required rows={16} placeholder="Write wiki content in markdown..." className="w-full rounded-lg neon-rgb-border bg-[var(--color-panel)] px-4 py-2.5 text-sm outline-none resize-y font-mono" />
           )}
         </div>
 

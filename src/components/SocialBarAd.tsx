@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { shouldShowAds } from "@/lib/ads";
+import { shouldShowAds, adsEnabled } from "@/lib/ads";
 
 /**
  * Adsterra Social Bar — a floating sticky widget that appears on all pages.
@@ -17,9 +17,11 @@ export default function SocialBarAd() {
     ? { premium: Boolean((session.user as Record<string, unknown>).premium) }
     : undefined;
 
-  const showAds = shouldShowAds(user);
+  const showAds = adsEnabled() && shouldShowAds(user);
 
   useEffect(() => {
+    // Never inject ad scripts while developing locally.
+    if (!adsEnabled()) return;
     // Wait until we know the premium status (session loaded)
     if (session === undefined) return; // still loading
     if (!showAds) return;             // premium user

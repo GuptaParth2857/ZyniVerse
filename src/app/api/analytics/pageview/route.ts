@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { trackPageView } from "@/lib/analytics";
+import { trackPageView, countryFromRequest } from "@/lib/analytics";
 
 export async function POST(req: Request) {
   try {
@@ -10,6 +10,7 @@ export async function POST(req: Request) {
       sessionId: body.sessionId,
       referrer: body.referrer,
       userAgent: body.userAgent,
+      country: countryFromRequest(req.headers),
     });
     return NextResponse.json({ ok: true });
   } catch {

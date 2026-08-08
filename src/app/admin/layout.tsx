@@ -1,16 +1,16 @@
-"use client";
+import { redirect } from "next/navigation";
+import AdminShell from "@/components/admin/AdminShell";
+import { getAdminSession } from "@/lib/admin";
 
-import AdminSidebar from "@/components/admin/AdminSidebar";
-
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen bg-[var(--color-void)]">
-      <AdminSidebar />
-      <main className="lg:ml-56 px-4 py-10 sm:px-6">{children}</main>
-    </div>
-  );
+  const { session, isAdmin } = await getAdminSession();
+  if (!session || !isAdmin) {
+    redirect("/login");
+  }
+
+  return <AdminShell>{children}</AdminShell>;
 }

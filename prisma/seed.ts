@@ -240,6 +240,28 @@ Yuji Itadori, a high school student with extraordinary physical abilities, swall
   },
 ];
 
+const COMMUNITY_TAG_SEED: { mediaId: number; tags: string[] }[] = [
+  { mediaId: 21, tags: ["masterpiece", "long-running", "adventure", "peak-fiction", "iconic", "binge-worthy", "underrated"] },
+  { mediaId: 16498, tags: ["masterpiece", "dark", "mind-blowing", "emotional", "peak-fiction", "rewatchable", "underrated"] },
+  { mediaId: 101922, tags: ["great-animation", "binge-worthy", "action-packed", "masterpiece"] },
+  { mediaId: 113415, tags: ["action-packed", "great-animation", "dark", "binge-worthy", "overrated"] },
+  { mediaId: 127720, tags: ["controversial", "great-animation", "isekai"] },
+  { mediaId: 5114, tags: ["masterpiece", "classic", "wholesome", "must-watch", "peak-fiction"] },
+  { mediaId: 1535, tags: ["classic", "mind-blowing", "must-watch", "nostalgic"] },
+  { mediaId: 11061, tags: ["masterpiece", "slow-burn", "binge-worthy", "peak-fiction"] },
+  { mediaId: 21856, tags: ["action-packed", "binge-worthy", "nostalgic"] },
+  { mediaId: 20, tags: ["classic", "nostalgic", "iconic", "long-running"] },
+  { mediaId: 154587, tags: ["masterpiece", "wholesome", "emotional", "must-watch", "slow-burn"] },
+  { mediaId: 151807, tags: ["great-animation", "action-packed", "overrated", "binge-worthy"] },
+  { mediaId: 142838, tags: ["wholesome", "feel-good", "comedy", "binge-worthy"] },
+  { mediaId: 101348, tags: ["masterpiece", "emotional", "dark", "peak-fiction", "must-watch"] },
+  { mediaId: 30276, tags: ["action-packed", "comedy", "overrated", "great-animation"] },
+  { mediaId: 1, tags: ["classic", "nostalgic", "masterpiece", "must-watch"] },
+  { mediaId: 9253, tags: ["mind-blowing", "masterpiece", "slow-burn", "rewatchable"] },
+  { mediaId: 1575, tags: ["classic", "mind-blowing", "must-watch", "iconic"] },
+  { mediaId: 269, tags: ["classic", "nostalgic", "long-running", "iconic"] },
+];
+
 const FORUM_CATEGORIES = [
   { name: "General", slug: "general", description: "General chit-chat about anything otaku-related.", sortOrder: 1 },
   { name: "Anime Discussion", slug: "anime-discussion", description: "Discuss all things anime — airing shows, classics, and everything in between.", sortOrder: 2 },
@@ -294,11 +316,69 @@ async function main() {
       },
     });
   }
+
+  const tagCount = await seedCommunityTags();
+  console.log(`Seeded ${WIKI_SEED.length} wiki pages, ${FORUM_CATEGORIES.length} forum categories, and ${tagCount} community tags`);
+}
+
+async function seedCommunityTags(): Promise<number> {
+  const creator = await prisma.user.findUnique({ where: { id: SYSTEM_USER_ID } });
+  if (!creator) return 0;
+
+  const realUsers = await prisma.user.findMany({
+    where: { id: { not: SYSTEM_USER_ID } },
+    select: { id: true },
+  });
+  const voterIds = realUsers.map((u) => u.id);
+
+  let created = 0;
+  for (const anime of COMMUNITY_TAG_SEED) {
+    for (const tag of Array.from(new Set(anime.tags))) {
+      const existing = await prisma.communityTag.findUnique({
+        where: { mediaId_tag: { mediaId: anime.mediaId, tag } },
+      });
+      if (existing) continue;
+
+      const tagRow = await prisma.communityTag.create({
+        data: {
+          mediaId: anime.mediaId,
+          tag,
+          createdBy: SYSTEM_USER_ID,
+          upvotes: 0,
+          downvotes: 0,
+          score: 0,
+          isApproved: true,
+        },
+      });
+      created++;
+
+      if (voterIds.length > 0) {
+        const hash = anime.mediaId * 31 + tag.charCodeAt(0) * 7 + tag.length;
+        const count = Math.min(12, 4 + (hash % 6) + (tag === "masterpiece" ? 4 : 0));
+        const shuffled = [...voterIds].sort(() => Math.random() - 0.5);
+        const chosen = shuffled.slice(0, count).map((userId) => ({
+          userId,
+          communityTagId: tagRow.id,
+          vote: tag === "overrated" && Math.random() < 0.35 ? -1 : 1,
+        }));
+        for (const vote of chosen) {
+          await prisma.tagVote2.create({ data: vote });
+        }
+        const up = chosen.filter((c) => c.vote === 1).length;
+        const down = chosen.filter((c) => c.vote === -1).length;
+        await prisma.communityTag.update({
+          where: { id: tagRow.id },
+          data: { upvotes: up, downvotes: down, score: up - down },
+        });
+      }
+    }
+  }
+  return created;
 }
 
 main()
   .then(() => {
-    console.log(`Seeded ${WIKI_SEED.length} wiki pages and ${FORUM_CATEGORIES.length} forum categories`);
+    console.log("Seed complete");
   })
   .catch((e) => {
     console.error(e);

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import WikiPageView from "@/components/WikiPage";
 
 interface WikiPageData {
@@ -11,6 +12,7 @@ interface WikiPageData {
   title: string;
   slug: string;
   content: string;
+  contentHtml?: string;
   summary?: string | null;
   category: string;
   tags: string;
@@ -133,21 +135,39 @@ export default function WikiDetailPageClient() {
         </div>
 
         {/* Content */}
-        <div className="neon-premium rounded-xl">
-          <div className="neon-premium-track rounded-xl" />
-          <div className="neon-premium-overlay rounded-[10.5px]" />
-          <div className="neon-premium-content p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 26, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.45, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+          className="neon-premium rounded-[20px]"
+        >
+          <div className="neon-premium-track" />
+          <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+          <div className="neon-premium-content rounded-[20px] p-6 sm:p-8">
+            <div className="mb-5 flex items-center gap-2">
+              <span className="h-1.5 w-8 rounded-full bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-magenta)] shadow-[0_0_10px_rgba(0,255,224,0.4)]" />
+              <span className="rounded-full border border-[var(--color-cyan)]/40 bg-[var(--color-cyan)]/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-cyan)]">
+                Wikipedia Article
+              </span>
+              <span className="ml-auto rounded-full border border-[var(--color-line)] bg-[var(--color-void)] px-2 py-0.5 text-[10px] font-mono uppercase text-[var(--color-mute)]">
+                {page.category}
+              </span>
+            </div>
             <div className="prose prose-sm prose-invert max-w-none">
-              {page.content.split("\n").map((line, i) => {
-                if (line.startsWith("== ")) return <h2 key={i} className="text-xl font-bold mt-5 mb-2">{line.replace(/^==\s*/, "").replace(/\s*==$/, "")}</h2>;
-                if (line.startsWith("=== ")) return <h3 key={i} className="text-lg font-bold mt-4 mb-2">{line.replace(/^===\s*/, "").replace(/\s*===$/, "")}</h3>;
-                if (line.match(/^\[?https?:\/\//)) return <a key={i} href={line} target="_blank" rel="noopener noreferrer" className="text-[var(--color-cyan)] hover:underline text-sm block my-1">{line}</a>;
-                if (line.trim() === "") return <div key={i} className="h-2" />;
-                return <p key={i} className="text-sm text-[var(--color-mute)] leading-relaxed">{line}</p>;
-              })}
+              {page.contentHtml ? (
+                <div className="wiki-article" dangerouslySetInnerHTML={{ __html: page.contentHtml }} />
+              ) : (
+                page.content.split("\n").map((line, i) => {
+                  if (line.startsWith("== ")) return <h2 key={i} className="text-xl font-bold mt-5 mb-2">{line.replace(/^==\s*/, "").replace(/\s*==$/, "")}</h2>;
+                  if (line.startsWith("=== ")) return <h3 key={i} className="text-lg font-bold mt-4 mb-2">{line.replace(/^===\s*/, "").replace(/\s*===$/, "")}</h3>;
+                  if (line.match(/^\[?https?:\/\//)) return <a key={i} href={line} target="_blank" rel="noopener noreferrer" className="text-[var(--color-cyan)] hover:underline text-sm block my-1">{line}</a>;
+                  if (line.trim() === "") return <div key={i} className="h-2" />;
+                  return <p key={i} className="text-sm text-[var(--color-mute)] leading-relaxed">{line}</p>;
+                })
+              )}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Source link */}
         <div className="mt-6 text-center">

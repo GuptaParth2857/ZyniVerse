@@ -51,7 +51,22 @@ const DEFAULT_CACHE: PosterCache = {
   posters: {},
 };
 
-async function wikiFetch(url: string): Promise<any> {
+interface WikiPage {
+  title: string;
+  missing?: boolean;
+  thumbnail?: { source?: string };
+  images?: { title: string }[];
+  imageinfo?: { thumburl?: string }[];
+}
+
+interface WikiResponse {
+  query?: {
+    redirects?: { from: string; to: string }[];
+    pages?: Record<string, WikiPage>;
+  };
+}
+
+async function wikiFetch(url: string): Promise<WikiResponse> {
   const res = await fetch(url, { headers: { "User-Agent": UA }, cache: "no-store", signal: AbortSignal.timeout(20000) });
   if (!res.ok) throw new Error(`Wikipedia ${res.status} for ${url}`);
   return res.json();
@@ -75,19 +90,18 @@ async function fetchPages(api: string, titles: string[]): Promise<Map<string, Pa
     const chunk = titles.slice(i, i + CHUNK);
     const uri = `${api}?action=query&format=json&prop=pageimages|images&imlimit=30&piprop=thumbnail&pithumbsize=600&redirects=1&titles=${encodeURIComponent(chunk.join("|"))}`;
     const data = await wikiFetch(uri);
-    const redirects = new Map((data.query?.redirects || []).map((r: any) => [r.from, r.to]));
+    const redirects = new Map((data.query?.redirects || []).map((r) => [r.from, r.to]));
     for (const page of Object.values(data.query?.pages || {})) {
-      const p = page as any;
-      const resolvedTitle = redirects.get(p.title) || p.title;
-      if (p.missing || typeof p.missing !== "undefined") {
+      const resolvedTitle = redirects.get(page.title) || page.title;
+      if (page.missing || typeof page.missing !== "undefined") {
         map.set(resolvedTitle, { title: resolvedTitle, missing: true, files: [] });
       } else {
-        const thumb = p.thumbnail?.source ? cleanUrl(p.thumbnail.source) : undefined;
+        const thumb = page.thumbnail?.source ? cleanUrl(page.thumbnail.source) : undefined;
         map.set(resolvedTitle, {
           title: resolvedTitle,
           missing: false,
           thumbnail: thumb && !/\.svg|logo|userbox/i.test(thumb) ? thumb : undefined,
-          files: (p.images || []).map((i: any) => i.title),
+          files: (page.images || []).map((i) => i.title),
         });
       }
     }
@@ -104,9 +118,8 @@ async function fetchFileThumbs(api: string, files: string[]): Promise<Map<string
     const uri = `${api}?action=query&format=json&prop=imageinfo&iiprop=url&iiurlwidth=600&titles=${encodeURIComponent(chunk.join("|"))}`;
     const data = await wikiFetch(uri);
     for (const page of Object.values(data.query?.pages || {})) {
-      const p = page as any;
-      const url = cleanUrl(p.imageinfo?.[0]?.thumburl);
-      if (url) map.set(p.title, url);
+      const url = cleanUrl(page.imageinfo?.[0]?.thumburl);
+      if (url) map.set(page.title, url);
     }
     await new Promise((resolve) => setTimeout(resolve, 300));
   }

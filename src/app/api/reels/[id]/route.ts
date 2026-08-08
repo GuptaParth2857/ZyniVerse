@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
 import { auth } from "@/lib/auth";
+import { isAdminEmail } from "@/lib/admin";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
 async function isAdminOrOwner(userId: string, reelUserId: string) {
@@ -10,7 +11,7 @@ async function isAdminOrOwner(userId: string, reelUserId: string) {
     where: { id: userId },
     select: { email: true },
   });
-  return user?.email === "gupta.parth2857@gmail.com";
+  return isAdminEmail(user?.email);
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

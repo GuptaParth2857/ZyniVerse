@@ -108,7 +108,7 @@ export default function MessagesClient() {
     const convo = conversations.find((c) => c.id === activeConvoId);
     setSeenByOther(convo?.otherLastReadAt ?? null);
     markAsRead(activeConvoId);
-    const interval = setInterval(() => fetchMessages(activeConvoId), 3000);
+    const interval = setInterval(() => fetchMessages(activeConvoId), 15000);
     return () => clearInterval(interval);
   }, [activeConvoId, fetchMessages, conversations, markAsRead]);
 

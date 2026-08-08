@@ -19,7 +19,11 @@ import MonthlyCalendar from "@/components/features/MonthlyCalendar";
 import FeaturedFeedbackCarousel from "@/components/FeaturedFeedbackCarousel";
 import WhyZyniVerse from "@/components/WhyZyniVerse";
 import NeonBanner from "@/components/NeonBanner";
+import BrandPartners from "@/components/BrandPartners";
+import GamificationWidget from "@/components/GamificationWidget";
+import PoweredBy from "@/components/PoweredBy";
 import type { Media } from "@/lib/anilist";
+import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
 
 function AnimatedSection({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -47,16 +51,36 @@ export default async function Home() {
   const upcomingData = getData(upcoming);
   const topRatedData = getData(topRated);
 
+  let userCount = 0;
+  try {
+    userCount = await prisma.user.count();
+  } catch (e) { logError(e); }
+
+  const heroStats = {
+    users: userCount,
+    fillerGuides: 200,
+    watchOrders: 40,
+    indianDubs: 1000,
+  };
+
   return (
     <PageTransition>
       <div className="animate-page-in">
-      <Hero3D items={trendingData} />
+      <Hero3D items={trendingData} stats={heroStats} />
       <FadeIn delay={0.02}>
         <NeonBanner />
+      </FadeIn>
+      <FadeIn delay={0.03}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <GamificationWidget />
+        </div>
       </FadeIn>
       <HorizontalScroll items={trendingData.slice(0, 20)} />
       <FadeIn delay={0.05}>
         <WhyZyniVerse />
+      </FadeIn>
+      <FadeIn delay={0.06}>
+        <BrandPartners />
       </FadeIn>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
         <AdBanner placement="homepage" type="banner" />
@@ -218,6 +242,11 @@ export default async function Home() {
         </AnimatedSection>
       </FadeIn>
 
+      {/* Powered By */}
+      <FadeIn delay={0.46}>
+        <PoweredBy />
+      </FadeIn>
+
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-16">
         <FadeIn>
           <div className="rounded-2xl border border-[var(--color-line)] bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] p-8 sm:p-12 text-center">
@@ -226,7 +255,8 @@ export default async function Home() {
               Browse manga, explore character details, check weekly schedules, and build your personal watchlist.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Link href="/filler" className="rounded-full bg-[var(--color-magenta)] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity">Skip Filler →</Link>
+              <Link href="/manga-million" className="rounded-full bg-[var(--color-magenta)] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity">📰 Manga Million News →</Link>
+              <Link href="/filler" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold transition-colors">Skip Filler →</Link>
               <Link href="/tools" className="rounded-full bg-[var(--color-cyan)] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity">Anime Tools →</Link>
               <Link href="/manga" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold transition-colors">Browse Manga</Link>
               <Link href="/schedule" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold transition-colors">View Schedule</Link>

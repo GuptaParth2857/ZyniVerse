@@ -1,6 +1,8 @@
+import { unproxyImageUrl } from "./avatar-src";
+
 export function isDefaultAvatar(url?: string | null): boolean {
   if (!url) return true;
-  const u = url.toLowerCase().trim();
+  const u = (unproxyImageUrl(url) || url).toLowerCase().trim();
   if (u === "") return true;
   if (u.includes("/a/default")) return true;
   if (u.includes("avatars.githubusercontent.com/u/0")) return true;

@@ -938,6 +938,205 @@ body {
   }
 }
 
+/* Awards: card sheen sweep (triggered on hover via .group) */
+.award-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.16) 50%, transparent 60%);
+  transform: translateX(-140%);
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.group:hover .award-sheen {
+  transform: translateX(140%);
+}
+
+/* Awards: shimmer sweep for gradient-letter posters */
+.award-gradient-letter {
+  background-size: 200% 100%;
+  animation: shimmer 2.8s ease-in-out infinite;
+}
+
+/* Wikipedia article rendering (full detail view) */
+.wiki-article {
+  color: var(--color-ink);
+  font-size: 0.875rem;
+  line-height: 1.75;
+  overflow-wrap: break-word;
+}
+.wiki-article > :first-child {
+  margin-top: 0 !important;
+}
+.wiki-article > :last-child {
+  margin-bottom: 0 !important;
+}
+.wiki-article h1,
+.wiki-article h2,
+.wiki-article h3,
+.wiki-article h4,
+.wiki-article h5,
+.wiki-article h6 {
+  font-family: var(--font-display, inherit);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 1.6em 0 0.6em;
+  line-height: 1.3;
+}
+.wiki-article h1 { font-size: 1.35rem; border-bottom: 1px solid var(--color-line); padding-bottom: 0.3em; }
+.wiki-article h2 { font-size: 1.2rem; border-bottom: 1px solid var(--color-line); padding-bottom: 0.25em; }
+.wiki-article h3 { font-size: 1.05rem; }
+.wiki-article h4 { font-size: 0.95rem; }
+.wiki-article p {
+  margin: 0.6em 0;
+  color: var(--color-mute);
+}
+.wiki-article a {
+  color: var(--color-cyan);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.wiki-article a:hover {
+  text-decoration: underline;
+  color: #7fffd9;
+}
+.wiki-article ul,
+.wiki-article ol {
+  margin: 0.6em 0 0.6em 1.4em;
+  color: var(--color-mute);
+}
+.wiki-article ul { list-style: disc; }
+.wiki-article ol { list-style: decimal; }
+.wiki-article li {
+  margin: 0.25em 0;
+}
+.wiki-article img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+.wiki-article figure,
+.wiki-article .thumbinner {
+  margin: 1em 0;
+  max-width: 100%;
+}
+.wiki-article .thumb {
+  margin: 1em 0;
+  max-width: 100%;
+}
+.wiki-article .thumbinner {
+  border: 1px solid var(--color-line);
+  background: var(--color-panel);
+  border-radius: 0.6rem;
+  padding: 0.4em;
+  display: inline-block;
+}
+.wiki-article .thumbcaption {
+  font-size: 0.75rem;
+  color: var(--color-mute);
+  padding: 0.35em 0.25em 0.1em;
+}
+.wiki-article .magnify { display: none; }
+.wiki-article table {
+  border-collapse: collapse;
+  margin: 1em 0;
+  max-width: 100%;
+  font-size: 0.82rem;
+}
+.wiki-article th,
+.wiki-article td {
+  border: 1px solid var(--color-line);
+  padding: 0.4em 0.6em;
+  vertical-align: top;
+}
+.wiki-article th {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-ink);
+}
+.wiki-article .infobox {
+  float: right;
+  clear: right;
+  margin: 0 0 1em 1.5em;
+  width: 19.5em;
+  border: 1px solid var(--color-line);
+  background: var(--color-panel);
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+.wiki-article .infobox th,
+.wiki-article .infobox td {
+  border: none;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 0.8rem;
+}
+.wiki-article .infobox .infobox-image img {
+  display: block;
+  margin: 0 auto;
+}
+.wiki-article .infobox-header {
+  background: linear-gradient(90deg, rgba(0, 255, 224, 0.12), rgba(255, 0, 230, 0.12));
+  text-align: center;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+.wiki-article .reflist,
+.wiki-article .references {
+  font-size: 0.78rem;
+  color: var(--color-mute);
+}
+.wiki-article .reflist ol,
+.wiki-article .references ol {
+  margin-left: 1.2em;
+}
+.wiki-article sup.reference {
+  font-size: 0.68em;
+  vertical-align: super;
+}
+.wiki-article sup.reference a {
+  color: var(--color-magenta);
+  font-weight: 600;
+}
+.wiki-article .hatnote,
+.wiki-article .dablink,
+.wiki-article .noprint {
+  font-style: italic;
+  color: var(--color-mute);
+  font-size: 0.8rem;
+  margin: 0.6em 0;
+}
+.wiki-article blockquote {
+  border-left: 3px solid var(--color-magenta);
+  background: rgba(255, 0, 230, 0.05);
+  padding: 0.6em 1em;
+  margin: 1em 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--color-mute);
+}
+.wiki-article code,
+.wiki-article pre {
+  background: var(--color-void);
+  border: 1px solid var(--color-line);
+  border-radius: 0.35rem;
+  padding: 0.1em 0.35em;
+  font-size: 0.82em;
+}
+.wiki-article .navbox,
+.wiki-article .catlinks,
+.wiki-article .mw-editsection,
+.wiki-article .metadata,
+.wiki-article .mbox-empty {
+  display: none;
+}
+.wiki-article .mw-headline {
+  color: var(--color-ink);
+}
+@media (max-width: 640px) {
+  .wiki-article .infobox {
+    float: none;
+    width: 100%;
+    margin: 1em 0;
+  }
+}
+
 /* Forum Neon RGB Gradient Animation */
 @keyframes gradientMove {
   0% { background-position: 0% 50%; }
@@ -1870,4 +2069,14 @@ img[src=""] { display: none; }
 .va-search-shell:focus-within select:focus-visible,
 .va-search-shell:focus-within button:focus-visible {
   outline: none !important;
+}
+
+/* ─────────── Admin Sidebar layout ───────────
+   The admin sidebar is fixed (w-56) and overlaps in-flow siblings rendered by the
+   root layout (Navbar, ad banners, site Footer). While it is open on desktop, push
+   in-flow body content right so nothing sits half-hidden underneath it. */
+@media (min-width: 1024px) {
+  html[data-admin-sidebar="open"] > body {
+    padding-left: 14rem;
+  }
 }

@@ -4,9 +4,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
 import ChatBubble from "./ChatBubble";
 import { logError } from "@/lib/logger";
-import { useDmSocket } from "@/hooks/useDmSocket";
+import type { DmMessage } from "@/lib/socket";
+
+const DmSocketBridge = dynamic(() => import("./DmSocketBridge"), { ssr: false });
 
 interface ConversationSummary {
   id: string;
@@ -80,11 +83,21 @@ export default function ChatWidget() {
     if (!session?.user?.id) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUnreadTotal();
-    const interval = setInterval(fetchUnreadTotal, 5000);
+    const interval = setInterval(fetchUnreadTotal, 30000);
     return () => clearInterval(interval);
   }, [session, fetchUnreadTotal]);
 
-  useDmSocket(session?.user?.id, (msg) => {
+  const markAsRead = useCallback(async (conversationId: string) => {
+    try {
+      await fetch("/api/chat/conversations", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId }),
+      });
+    } catch (e) { logError(e); }
+  }, []);
+
+  const handleDmMessage = useCallback((msg: DmMessage) => {
     if (open && view === "messages" && activeConvo === msg.conversationId) {
       setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
       markAsRead(msg.conversationId);
@@ -93,23 +106,13 @@ export default function ChatWidget() {
       setUnreadTotal((t) => t + 1);
       if (open && view === "list") fetchConversations();
     }
-  });
+  }, [open, view, activeConvo, markAsRead, fetchUnreadTotal, fetchConversations]);
 
   useEffect(() => {
     if (!open || !session?.user?.id) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (view === "list") fetchConversations();
   }, [open, view, session, fetchConversations]);
-
-  async function markAsRead(conversationId: string) {
-    try {
-      await fetch("/api/chat/conversations", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId }),
-      });
-    } catch (e) { logError(e); }
-  }
 
   useEffect(() => {
     if (!activeConvo || !open) return;
@@ -119,9 +122,9 @@ export default function ChatWidget() {
 
     const interval = setInterval(() => {
       fetchMessages(activeConvo);
-    }, 5000);
+    }, 20000);
     return () => clearInterval(interval);
-  }, [activeConvo, open, fetchMessages]);
+  }, [activeConvo, open, fetchMessages, markAsRead]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -194,7 +197,9 @@ export default function ChatWidget() {
   const activeConvoData = conversations.find((c) => c.id === activeConvo);
 
   return (
-    <div ref={panelRef} className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
+    <>
+      <DmSocketBridge userId={session.user.id} onMessage={handleDmMessage} />
+      <div ref={panelRef} className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
       <AnimatePresence>
         {open && (
           <motion.div
@@ -375,5 +380,6 @@ export default function ChatWidget() {
         )}
       </button>
     </div>
+    </>
   );
 }

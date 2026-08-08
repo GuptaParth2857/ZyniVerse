@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { logError } from "@/lib/logger";
@@ -257,9 +258,9 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
         <p className="text-xs text-[var(--color-mute)] leading-relaxed">
           Filler guide not available for this anime.
         </p>
-        <a href="/filler"
+        <Link href="/filler"
           className="mt-2 inline-flex text-xs text-[var(--color-cyan)] hover:underline"
-        >Search all filler guides →</a>
+        >Search all filler guides →</Link>
       </div>
     );
   }

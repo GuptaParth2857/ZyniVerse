@@ -1,6 +1,3 @@
-import { prisma } from "./prisma";
-import { logError } from "@/lib/logger";
-
 export interface AdPlacement {
   id: string;
   type: "native" | "banner" | "sidebar" | "in-content" | "footer" | "socialbar";
@@ -20,7 +17,7 @@ export interface AdPlacement {
 //  NativeBanner → native-async → shown between content blocks
 //  SocialBar    → socialbar-sync → sitewide floating widget
 //
-const PLACEMENTS: AdPlacement[] = [
+export const PLACEMENTS: AdPlacement[] = [
   // ── 300×250 Medium Rectangle (sidebar / in-content) ───────────────────
   {
     id: "adsterra-300x250",
@@ -86,6 +83,15 @@ const PLACEMENTS: AdPlacement[] = [
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
+/** Maps a page placement key to its canonical ad location. */
+export function canonicalLocation(pageType: string): string {
+  const sidebarPages = ["search", "wiki", "manga", "manga-detail", "anime-detail"];
+  const bannerPages  = ["homepage", "filler", "global-footer", "forum", "recommendations", "banner"];
+  if (sidebarPages.includes(pageType)) return "sidebar";
+  if (bannerPages.includes(pageType))  return "banner";
+  return pageType;
+}
+
 /**
  * Returns the best ad placement for a given page location key.
  *
@@ -102,30 +108,56 @@ const PLACEMENTS: AdPlacement[] = [
  *   "anime-detail"    → sidebar (300×250)
  *   "in-content"      → native banner
  *   "global"          → social bar
+ *
+ * When `overrides` is provided (DB-backed live config), it takes precedence
+ * and the static PLACEMENTS are used as a fallback only.
  */
-export function getAdsForLocation(pageType: string): AdPlacement[] {
-  // Map legacy location names to canonical location keys
-  const sidebarPages = ["search", "wiki", "manga", "manga-detail", "anime-detail"];
-  const bannerPages  = ["homepage", "filler", "global-footer", "forum", "recommendations", "banner"];
-
-  let canonicalLocation = pageType;
-  if (sidebarPages.includes(pageType)) canonicalLocation = "sidebar";
-  if (bannerPages.includes(pageType))  canonicalLocation = "banner";
-
-  return PLACEMENTS.filter((a) => a.location === canonicalLocation && a.isActive);
+export function getAdsForLocation(pageType: string, overrides?: AdPlacement[]): AdPlacement[] {
+  const loc = canonicalLocation(pageType);
+  const source = overrides && overrides.length > 0 ? overrides : PLACEMENTS;
+  return source.filter((a) => a.location === loc && a.isActive);
 }
 
-export function getNativeAd(): AdPlacement | undefined {
-  return PLACEMENTS.find((a) => a.id === "adsterra-native" && a.isActive);
+export function getNativeAd(overrides?: AdPlacement[]): AdPlacement | undefined {
+  const source = overrides && overrides.length > 0 ? overrides : PLACEMENTS;
+  return source.find((a) => a.type === "native" && a.isActive);
 }
 
-export function getSocialBarAd(): AdPlacement | undefined {
-  return PLACEMENTS.find((a) => a.id === "adsterra-socialbar" && a.isActive);
+export function getSocialBarAd(overrides?: AdPlacement[]): AdPlacement | undefined {
+  const source = overrides && overrides.length > 0 ? overrides : PLACEMENTS;
+  return source.find((a) => a.type === "socialbar" && a.isActive);
 }
 
 export function getAdScript(placement: AdPlacement): string {
   return placement.code;
 }
+
+/** Converts an AdConfig row into an AdPlacement. */
+export function adConfigToPlacement(row: {
+  id: string;
+  type: string;
+  network: string;
+  code: string;
+  location: string;
+  isActive: boolean;
+  width: number | null;
+  height: number | null;
+  renderMode: string | null;
+}): AdPlacement {
+  return {
+    id: row.id,
+    type: row.type as AdPlacement["type"],
+    network: row.network as AdPlacement["network"],
+    code: row.code,
+    location: row.location,
+    isActive: row.isActive,
+    dimensions: row.width && row.height ? { width: row.width, height: row.height } : undefined,
+    renderMode: (row.renderMode as AdPlacement["renderMode"]) || undefined,
+  };
+}
+
+/** Reads the live ad config from the DB, seeded from the static defaults. */
+// Moved to @/lib/ad-config (server-only) so Prisma is never bundled for the browser.
 
 export function shouldShowAds(user?: { premium?: boolean; id?: string }): boolean {
   if (!user) return true;
@@ -133,16 +165,9 @@ export function shouldShowAds(user?: { premium?: boolean; id?: string }): boolea
   return true;
 }
 
-export async function shouldShowAdsForUser(userId?: string | null): Promise<boolean> {
-  if (!userId) return true;
-  try {
-    const sub = await prisma.subscription.findUnique({
-      where: { userId },
-      select: { plan: true, status: true },
-    });
-    if (sub && sub.plan !== "free" && sub.status === "active") return false;
-  } catch (e) { logError(e); }
-  return true;
+/** Ads should never load while developing locally — they only add noise/overlays. */
+export function adsEnabled(): boolean {
+  return process.env.NODE_ENV === "production";
 }
 
 export const AD_TRACKING_PIXEL = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";

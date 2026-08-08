@@ -1,4 +1,4 @@
-const CACHE_NAME = "zyverse-v1";
+const CACHE_NAME = "zyverse-v2";
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
@@ -73,7 +73,10 @@ async function cacheFirstWithNetwork(request) {
     }
     return response;
   } catch {
-    return new Response("Offline", { status: 503 });
+    return new Response(JSON.stringify({ ok: false, offline: true }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
@@ -88,6 +91,9 @@ async function networkFirstWithCache(request) {
   } catch {
     const cached = await caches.match(request);
     if (cached) return cached;
-    return new Response("Offline", { status: 503 });
+    return new Response(JSON.stringify({ ok: false, offline: true }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

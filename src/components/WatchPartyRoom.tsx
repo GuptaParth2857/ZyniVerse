@@ -160,6 +160,47 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
     onScreenShareStopped: handleScreenShareStopped,
   });
 
+  const isHostRef = useRef(!!isHost);
+  useEffect(() => { isHostRef.current = !!isHost; }, [isHost]);
+  const isPlayingRef = useRef(isPlaying);
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+  const playbackPosRef = useRef(playbackPos);
+  useEffect(() => { playbackPosRef.current = playbackPos; }, [playbackPos]);
+  const lastAppliedRef = useRef(0);
+
+  useEffect(() => {
+    if (connected) return;
+    const interval = setInterval(async () => {
+      if (isHostRef.current) return;
+      try {
+        const res = await fetch(`/api/watch-party/${partyId}/sync`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const server = data.party;
+        if (!server) return;
+        const curPlaying = isPlayingRef.current;
+        if (server.isPlaying !== curPlaying) {
+          isPlayingRef.current = server.isPlaying;
+          playbackPosRef.current = server.playbackPos;
+          lastAppliedRef.current = server.playbackPos;
+          setIsPlaying(server.isPlaying);
+          setPlaybackPos(server.playbackPos);
+        } else if (!curPlaying) {
+          if (Math.abs(server.playbackPos - playbackPosRef.current) > 2) {
+            playbackPosRef.current = server.playbackPos;
+            lastAppliedRef.current = server.playbackPos;
+            setPlaybackPos(server.playbackPos);
+          }
+        } else if (Math.abs(server.playbackPos - lastAppliedRef.current) > 8) {
+          playbackPosRef.current = server.playbackPos;
+          lastAppliedRef.current = server.playbackPos;
+          setPlaybackPos(server.playbackPos);
+        }
+      } catch { /* ignore polling errors */ }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [connected, partyId]);
+
   async function handleAction(action: string) {
     await fetch(`/api/watch-party/${partyId}`, {
       method: "PUT",
@@ -366,10 +407,16 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
             All Parties
           </Link>
           <div className="flex items-center gap-3">
-            {socketAvailable && (
-              <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold ${connected ? "bg-green-500/10 border-green-500/20 text-green-400" : "bg-yellow-500/10 border-yellow-500/20 text-yellow-400"}`}>
-                <span className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-green-400 animate-pulse" : "bg-yellow-400"}`} />
-                {connected ? "LIVE SYNC" : "CONNECTING"}
+            {socketAvailable && connected && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-1 text-[10px] font-bold text-green-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                LIVE SYNC
+              </span>
+            )}
+            {!connected && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold text-amber-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                FALLBACK SYNC
               </span>
             )}
             {isMember && (

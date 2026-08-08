@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { checkAndAwardAchievement } from "@/lib/achievements";
+import { checkAndAwardAchievement } from "@/lib/achievements-server";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
