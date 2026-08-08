@@ -309,6 +309,11 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
             <Link href="/filler" className="text-sm text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors underline">
               Browse all filler guides →
             </Link>
+            {filler.slug && (
+              <Link href={`/filler/${filler.slug}`} className="text-sm text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors underline">
+                {title} filler list page →
+              </Link>
+            )}
           </div>
         </div>
       </div>

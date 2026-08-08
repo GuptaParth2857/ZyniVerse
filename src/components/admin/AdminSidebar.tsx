@@ -16,7 +16,13 @@ const links = [
   { href: "/admin/reels", label: "Reels", icon: "🎬" },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({
+  collapsed,
+  onToggleCollapse,
+}: {
+  collapsed: boolean;
+  onToggleCollapse: () => void;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -31,6 +37,18 @@ export default function AdminSidebar() {
         </svg>
       </button>
 
+      {collapsed && (
+        <button
+          onClick={onToggleCollapse}
+          title="Show sidebar"
+          className="fixed top-4 left-4 z-50 hidden lg:inline-flex rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-2 text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-white/5 transition-colors"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M12 5l-5 5 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
+
       {open && (
         <div
           className="fixed inset-0 bg-black/60 z-40 lg:hidden"
@@ -39,13 +57,22 @@ export default function AdminSidebar() {
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-40 h-full w-56 border-r border-[var(--color-line)] bg-[var(--color-panel)] transition-transform duration-200 lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-40 h-full w-56 border-r border-[var(--color-line)] bg-[var(--color-panel)] transition-transform duration-200 ${
           open ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } ${collapsed ? "lg:-translate-x-full" : "lg:translate-x-0"}`}
       >
         <div className="flex items-center gap-2 px-5 py-5 border-b border-[var(--color-line)]">
           <span className="text-lg">⚡</span>
           <span className="font-display text-lg font-bold">Admin Panel</span>
+          <button
+            onClick={onToggleCollapse}
+            title="Hide sidebar"
+            className="ml-auto hidden lg:inline-flex rounded-md p-1.5 text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-white/5 transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M6 4l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
         </div>
 
         <nav className="mt-4 space-y-1 px-3">

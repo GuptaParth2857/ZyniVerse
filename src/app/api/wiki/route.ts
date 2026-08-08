@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { dedupedFetch } from "@/lib/wiki-cache";
+import { proxyImageUrl } from "@/lib/avatar-src";
 
 interface WikiEntry {
   id: string;
@@ -21,8 +22,8 @@ interface WikiEntry {
 const USER_AGENT = "ZyniVerse/1.0";
 const MAX_LIMIT = 50;
 
-function buildWikiUrl(q: string, limit: number): string {
-  return `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrlimit=${limit}&exlimit=max&prop=pageimages|extracts&exintro&explaintext&pithumbsize=400&format=json&origin=*`;
+function buildWikiUrl(q: string, limit: number, offset: number): string {
+  return `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrlimit=${limit}&gsroffset=${offset}&list=search&srsearch=${q}&srlimit=1&exlimit=max&prop=pageimages|extracts&exintro&explaintext&pithumbsize=400&pilicense=any&format=json&origin=*`;
 }
 
 interface WikiApiPage {
@@ -43,7 +44,7 @@ function parseWikiPages(pagesObj: WikiPagesMap, category: string): WikiEntry[] {
       title: item.title,
       slug: item.title.replace(/ /g, "_"),
       summary: (item.extract || "").slice(0, 300),
-      coverImage: item.thumbnail?.source || null,
+      coverImage: proxyImageUrl(item.thumbnail?.source || null),
       category: category || "wiki",
       tags: "",
       version: 1,
@@ -56,22 +57,28 @@ function parseWikiPages(pagesObj: WikiPagesMap, category: string): WikiEntry[] {
 
 const FALLBACK_TITLES = "Naruto|Attack_on_Titan|One_Piece|Demon_Slayer:_Kimetsu_no_Yaiba|Jujutsu_Kaisen";
 
-async function fetchWikipediaSearch(q: string, limit: number): Promise<WikiEntry[]> {
-  const url = buildWikiUrl(q, Math.min(limit, MAX_LIMIT));
+interface WikiSearchResult {
+  entries: WikiEntry[];
+  totalHits: number;
+}
+
+async function fetchWikipediaSearch(q: string, limit: number, offset: number): Promise<WikiSearchResult> {
+  const url = buildWikiUrl(q, Math.min(limit, MAX_LIMIT), offset);
   const res = await fetch(url, {
     headers: { "User-Agent": USER_AGENT },
     signal: AbortSignal.timeout(8000),
   });
-  if (!res.ok) return [];
+  if (!res.ok) return { entries: [], totalHits: 0 };
   const data = await res.json();
   const pagesObj = data.query?.pages;
-  if (!pagesObj) return [];
+  if (!pagesObj) return { entries: [], totalHits: 0 };
   const entries = parseWikiPages(pagesObj, "");
-  return entries;
+  const totalHits = data.query?.searchinfo?.totalhits || 0;
+  return { entries, totalHits };
 }
 
 async function fetchFallback(): Promise<WikiEntry[]> {
-  const url = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages|extracts&exlimit=max&explaintext&pithumbsize=400&format=json&origin=*&titles=${FALLBACK_TITLES}`;
+  const url = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages|extracts&exlimit=max&explaintext&pithumbsize=400&pilicense=any&format=json&origin=*&titles=${FALLBACK_TITLES}`;
   try {
     const res = await fetch(url, {
       headers: { "User-Agent": USER_AGENT },
@@ -96,16 +103,14 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(rawLimit, MAX_LIMIT);
 
   let dbPages: WikiEntry[] = [];
-  let total = 0;
 
   const where: {
     isPublished: boolean;
-    lastEditorId: { not: string };
     category?: string;
-    title?: { contains: string };
-  } = { isPublished: true, lastEditorId: { not: "system-bot" } };
+    title?: { contains: string; mode: "insensitive" };
+  } = { isPublished: true };
   if (category) where.category = category;
-  if (search) where.title = { contains: search };
+  if (search) where.title = { contains: search, mode: "insensitive" };
 
   const [dbResults, dbTotal] = await Promise.all([
     prisma.wikiPage.findMany({
@@ -116,6 +121,7 @@ export async function GET(req: NextRequest) {
       select: {
         id: true, title: true, slug: true, summary: true, category: true,
         tags: true, version: true, updatedAt: true, createdAt: true,
+        coverImage: true,
         editor: { select: { id: true, username: true } },
         _count: { select: { history: true } },
       },
@@ -123,34 +129,42 @@ export async function GET(req: NextRequest) {
     prisma.wikiPage.count({ where }),
   ]);
 
-  dbPages = dbResults.map((p) => ({ ...p, updatedAt: p.updatedAt.toISOString() }));
-  total = dbTotal;
+  dbPages = dbResults.map((p) => ({
+    ...p,
+    updatedAt: p.updatedAt.toISOString(),
+    coverImage: proxyImageUrl(p.coverImage),
+  }));
 
   let wikiPages: WikiEntry[] = [];
+  let wikiTotal = 0;
   const effectiveSearch = search || category || "";
+  const offset = Math.max(0, (page - 1) * limit - Math.min(dbTotal, (page - 1) * limit));
 
   if (effectiveSearch) {
     const term = category && !search ? category : search!;
     const q = encodeURIComponent(term + (search && category && category !== "guide" && category !== "help" ? ` ${category}` : ""));
-    const cacheKey = `wiki:search:${q}:${limit}`;
+    const cacheKey = `wiki:search:${q}:${limit}:${offset}`;
 
     try {
-      wikiPages = await dedupedFetch(cacheKey, () => fetchWikipediaSearch(q, limit));
+      const res = await dedupedFetch(cacheKey, () => fetchWikipediaSearch(q, limit, offset));
+      wikiPages = res.entries;
+      wikiTotal = res.totalHits;
     } catch {
       // Wikipedia search failed
     }
+  } else {
+    try {
+      const fallback = await dedupedFetch("wiki:fallback", fetchFallback);
+      wikiPages = fallback.slice(offset, offset + limit);
+      wikiTotal = fallback.length;
+    } catch {
+      // Wikipedia fallback failed
+    }
   }
 
-  if (wikiPages.length === 0 && !search && !category) {
-    wikiPages = await fetchFallback();
-  }
-
-  const remaining = limit - dbPages.length;
   const merged = [...dbPages, ...wikiPages].slice(0, limit);
-  const _shownWiki = Math.max(0, remaining - (merged.length - dbPages.length));
-  const wikiCount = Math.min(wikiPages.length, Math.max(0, limit - dbPages.length));
 
-  const response = NextResponse.json({ pages: merged, total: total + wikiCount, page, limit });
+  const response = NextResponse.json({ pages: merged, total: dbTotal + wikiTotal, page, limit });
   response.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
   return response;
 }

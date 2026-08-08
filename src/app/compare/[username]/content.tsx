@@ -5,9 +5,11 @@ import { PageTransition } from "@/components/PageTransition";
 import ListComparison from "@/components/features/ListComparison";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { safeDecode } from "@/lib/url-params";
 
 export default function CompareContent({ paramsPromise }: { paramsPromise: Promise<{ username: string }> }) {
   const { username } = use(paramsPromise);
+  const decodedUsername = safeDecode(username);
   const { data: session } = useSession();
 
   if (!session) {
@@ -28,10 +30,10 @@ export default function CompareContent({ paramsPromise }: { paramsPromise: Promi
         <div className="mb-8">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">Social</p>
           <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block mt-1">
-            <h1 className="font-display text-3xl font-bold">Comparing with @{username}</h1>
+            <h1 className="font-display text-3xl font-bold">Comparing with @{decodedUsername}</h1>
           </div>
         </div>
-        <ListComparison username={username} />
+        <ListComparison username={decodedUsername} />
       </div>
     </PageTransition>
   );

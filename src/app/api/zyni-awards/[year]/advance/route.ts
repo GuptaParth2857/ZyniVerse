@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/admin";
 import { advanceNominees } from "@/lib/zyni-awards";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ year: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  if (session.user.email !== "gupta.parth2857@gmail.com") {
-    return NextResponse.json({ error: "Admin only" }, { status: 403 });
-  }
+  if (!(await requireAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { year: yearStr } = await params;
   const year = parseInt(yearStr, 10);

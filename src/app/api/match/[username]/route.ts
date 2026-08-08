@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { safeDecode } from "@/lib/url-params";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ username: string }> }) {
   const session = await auth();
   if (!session?.user?.id || !params) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { username } = await params;
+  const { username: rawUsername } = await params;
+  const username = safeDecode(rawUsername);
   const targetUser = await prisma.user.findUnique({ where: { username } });
   if (!targetUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
 

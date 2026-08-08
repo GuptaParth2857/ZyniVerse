@@ -2,12 +2,23 @@
 
 import { useState, useEffect, useRef, useId } from "react";
 import { useSession } from "next-auth/react";
-import { getAdsForLocation, shouldShowAds } from "@/lib/ads";
+import { getAdsForLocation, shouldShowAds, adsEnabled, type AdPlacement } from "@/lib/ads";
 
 interface AdBannerProps {
   placement: string;
   type?: "banner" | "sidebar" | "in-content" | "native" | "socialbar";
   className?: string;
+}
+
+interface ApiPlacement {
+  id: string;
+  type: string;
+  network: string;
+  code: string;
+  location: string;
+  isActive: boolean;
+  dimensions?: { width: number; height: number } | null;
+  renderMode?: string | null;
 }
 
 /**
@@ -96,16 +107,43 @@ export default function AdBanner({
 }: AdBannerProps) {
   const { data: session } = useSession();
   const [impressionTracked, setImpressionTracked] = useState(false);
+  const [liveAds, setLiveAds] = useState<AdPlacement[] | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
   const uniqueId = useId();
   // Make a DOM-safe container id (no colons)
   const containerId = `container-188115be46209eff2403f0d29b32d940-${uniqueId.replace(/:/g, "")}`;
 
+  // Load the live (DB-backed) ad config once. Falls back to static defaults.
+  useEffect(() => {
+    if (!adsEnabled()) return;
+    let cancelled = false;
+    fetch("/api/ads/config")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => {
+        if (cancelled) return;
+        const config: AdPlacement[] = (data?.placements || []).map((p: ApiPlacement) => ({
+          id: p.id,
+          type: p.type as AdPlacement["type"],
+          network: p.network as AdPlacement["network"],
+          code: p.code,
+          location: p.location,
+          isActive: p.isActive,
+          dimensions: p.dimensions || undefined,
+          renderMode: (p.renderMode as AdPlacement["renderMode"]) || undefined,
+        }));
+        setLiveAds(config);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const user = session?.user
     ? { premium: (session.user as { premium?: boolean }).premium === true }
     : undefined;
 
-  const showAds = shouldShowAds(user);
+  const showAds = adsEnabled() && shouldShowAds(user);
 
   // Track impressions
   useEffect(() => {
@@ -143,6 +181,11 @@ export default function AdBanner({
     }).catch(() => {});
   };
 
+  // ── Dev: never render ad containers (they inject external scripts) ─────
+  if (!adsEnabled()) {
+    return null;
+  }
+
   // ── Premium users: show ad-free badge ─────────────────────────────────
   if (!showAds) {
     return (
@@ -154,7 +197,7 @@ export default function AdBanner({
     );
   }
 
-  const ads = getAdsForLocation(placement);
+  const ads = getAdsForLocation(placement, liveAds);
   const ad = ads[0];
 
   // ── No ad configured for this placement ───────────────────────────────
@@ -169,6 +212,7 @@ export default function AdBanner({
         ref={containerRef}
         onClick={handleClick}
         className={`relative w-full overflow-hidden rounded-xl ${className}`}
+        style={{ minHeight: 200 }}
       >
         <AdLabel />
         <NativeAsyncAd containerId={containerId} />

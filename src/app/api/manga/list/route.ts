@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { autoCompleteAnimeForChallenge } from "@/lib/challenges";
-import { checkAndAwardAchievement } from "@/lib/achievements";
+import { checkAndAwardAchievement } from "@/lib/achievements-server";
 
 export async function GET(req: NextRequest) {
   const rateCheck = apiLimiter.middleware(req);

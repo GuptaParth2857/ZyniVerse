@@ -1,30 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/admin";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
+  if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const isAdmin = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { email: true },
-  });
+  const now = new Date();
+  const DAYS = 14;
 
-  if (!isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const [impressions, clicks, topPlacements] = await Promise.all([
+  const [impressions, clicks, impressionsLast7, clicksLast7, topPlacements, recentCreatedAt] = await Promise.all([
     prisma.adImpression.count(),
     prisma.adClick.count(),
+    prisma.adImpression.count({ where: { createdAt: { gte: new Date(now.getTime() - 7 * 864e5) } } }),
+    prisma.adClick.count({ where: { createdAt: { gte: new Date(now.getTime() - 7 * 864e5) } } }),
     prisma.adImpression.groupBy({
       by: ["placement"],
       _count: { id: true },
       orderBy: { _count: { id: "desc" } },
       take: 10,
+    }),
+    prisma.adImpression.findMany({
+      where: { createdAt: { gte: new Date(now.getTime() - DAYS * 864e5) } },
+      select: { createdAt: true },
     }),
   ]);
 
@@ -41,11 +41,29 @@ export async function GET() {
     clicks: clickMap.get(p.placement) || 0,
   }));
 
+  const dailyMap = new Map<string, number>();
+  for (let i = DAYS - 1; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 864e5);
+    dailyMap.set(d.toISOString().slice(0, 10), 0);
+  }
+  for (const { createdAt } of recentCreatedAt) {
+    const key = createdAt.toISOString().slice(0, 10);
+    if (dailyMap.has(key)) dailyMap.set(key, (dailyMap.get(key) || 0) + 1);
+  }
+  const daily = Array.from(dailyMap.entries()).map(([date, count]) => ({
+    date,
+    label: new Date(`${date}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
+    count,
+  }));
+
   return NextResponse.json({
     impressions,
     clicks,
+    impressionsLast7,
+    clicksLast7,
     ctr: impressions > 0 ? ((clicks / impressions) * 100).toFixed(2) : "0.00",
     topPlacements: top,
+    daily,
   });
 }
 

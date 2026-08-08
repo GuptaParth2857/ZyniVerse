@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/admin";
 import { moderateTag } from "@/lib/community-tags";
 
 export async function PUT(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  if (session.user.email !== "gupta.parth2857@gmail.com") {
-    return NextResponse.json({ error: "Admin only" }, { status: 403 });
-  }
+  if (!(await requireAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { communityTagId, isApproved } = await req.json();
   if (!communityTagId) return NextResponse.json({ error: "communityTagId required" }, { status: 400 });

@@ -113,6 +113,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`h-full antialiased ${rajdhani.variable} ${inter.variable} ${jetbrainsMono.variable}`} data-scroll-behavior="smooth">
       <head>
+        <link rel="preconnect" href="https://img.anili.st" />
+        <link rel="preconnect" href="https://s4.anilist.co" />
+        <link rel="dns-prefetch" href="https://img.anili.st" />
+        <link rel="dns-prefetch" href="https://s4.anilist.co" />
         <Script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-1B5P1BSEB9"

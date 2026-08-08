@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/admin";
+import { getMediaBatch, bestTitle } from "@/lib/anilist";
 
 function getRank(points: number) {
   if (points >= 10000) return { name: "Grandmaster", color: "#FF6B00", tier: 7 };
@@ -15,15 +16,8 @@ function getRank(points: number) {
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const session = await auth();
-    if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const admin = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { email: true },
-    });
-    if (admin?.email !== "gupta.parth2857@gmail.com") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -68,6 +62,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       prisma.follow.count({ where: { followerId: id } }),
     ]);
 
+    const mediaList = await getMediaBatch(entries.map((e) => e.mediaId));
+    const titleMap = new Map(mediaList.map((m) => [m.id, bestTitle(m.title)]));
+    const enrichedEntries = entries.map((e) => ({
+      ...e,
+      title: titleMap.get(e.mediaId) || `#${e.mediaId}`,
+    }));
+
     const points = pointsData?.points || 0;
     const rank = getRank(points);
 
@@ -83,7 +84,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
           followers: followerCount,
           following: followingCount,
         },
-        entries,
+        entries: enrichedEntries,
         rank,
       },
     });

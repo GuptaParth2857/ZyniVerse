@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { shouldShowAds } from "@/lib/ads";
+import { shouldShowAds, adsEnabled } from "@/lib/ads";
 
 /**
  * Adsterra Native Banner Ad.
@@ -18,9 +18,11 @@ export default function NativeBannerAd({ className = "" }: { className?: string 
     ? { premium: (session.user as { premium?: boolean }).premium === true }
     : undefined;
 
-  const showAds = shouldShowAds(user);
+  const showAds = adsEnabled() && shouldShowAds(user);
 
   useEffect(() => {
+    // Never inject ad scripts while developing locally.
+    if (!adsEnabled()) return;
     // Wait until session is resolved
     if (status === "loading") return;
     if (!showAds) return;
@@ -41,11 +43,12 @@ export default function NativeBannerAd({ className = "" }: { className?: string 
     containerRef.current.appendChild(script);
   }, [showAds, status]);
 
-  // Don't render anything for premium users
+  // Don't render anything while developing locally or for premium users
+  if (process.env.NODE_ENV !== "production") return null;
   if (status !== "loading" && !showAds) return null;
 
   return (
-    <div className={`w-full overflow-hidden rounded-xl ${className}`}>
+    <div className={`w-full overflow-hidden rounded-xl ${className}`} style={{ minHeight: 200 }}>
       <span className="block text-center text-[9px] font-mono uppercase tracking-[0.2em] text-[var(--color-mute)] py-1 select-none">
         Advertisement
       </span>

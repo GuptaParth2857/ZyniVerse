@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-import { checkAndAwardAchievement } from "@/lib/achievements";
+import { checkAndAwardAchievement } from "@/lib/achievements-server";
 
 export async function POST(
   req: NextRequest,

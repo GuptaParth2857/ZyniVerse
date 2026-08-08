@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
 import { getPopular, getMangaPopular, getPopularCharacters } from "@/lib/anilist";
+import { getFillerData } from "@/lib/filler";
+import { getAllRSSNews } from "@/lib/news";
 import { SHUT_DOWN_SITES } from "@/lib/data/dead-site-alternatives";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
@@ -41,6 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/challenges`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE_URL}/stats`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/news`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
+    { url: `${BASE_URL}/manga-million`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE_URL}/cosplay`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
     { url: `${BASE_URL}/doujinshi`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
     { url: `${BASE_URL}/clubs`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
@@ -160,6 +163,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
+  // Dynamic: Per-anime long-tail filler guide pages (static, high SEO value)
+  let fillerSlugPages: MetadataRoute.Sitemap = [];
+  try {
+    const fillerShows = await getFillerData();
+    fillerSlugPages = fillerShows.map((s) => ({
+      url: `${BASE_URL}/filler/${s.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
+  } catch (e) { logError(e); }
+
   // Dynamic: Wiki seed data (from seed.ts)
   const wikiSeedSlugs = [
     "attack-on-titan", "demon-slayer", "naruto", "one-piece", "dragon-ball-z",
@@ -240,6 +255,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  // Dynamic: RSS news detail pages
+  let newsPages: MetadataRoute.Sitemap = [];
+  try {
+    const newsItems = await getAllRSSNews();
+    newsPages = newsItems.slice(0, 30).map((n) => ({
+      url: `${BASE_URL}/news/${encodeURIComponent(n.id)}`,
+      lastModified: n.publishedAt ? new Date(n.publishedAt) : now,
+      changeFrequency: "daily" as const,
+      priority: 0.5,
+    }));
+  } catch (e) { logError(e); }
+
   return [
     ...staticPages,
     ...blogPages,
@@ -250,6 +277,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...forumPages,
     ...eventPages,
     ...fillerPages,
+    ...fillerSlugPages,
+    ...newsPages,
     ...alternativePages,
     ...popularAnimePages,
     ...popularMangaPages,

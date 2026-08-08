@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { createActivity } from "@/lib/activity";
 import { autoCompleteAnimeForChallenge } from "@/lib/challenges";
-import { checkAndAwardAchievement } from "@/lib/achievements";
+import { checkAndAwardAchievement } from "@/lib/achievements-server";
 import { resolveUserId } from "@/lib/resolve-user";
 
 export async function GET() {

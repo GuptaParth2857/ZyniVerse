@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function ToolsHero() {
@@ -32,9 +33,9 @@ export default function ToolsHero() {
             <a href="#tools" className="rounded-full bg-[var(--color-magenta)] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity">
               Explore Tools ↓
             </a>
-            <a href="/filler" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold hover:border-[var(--color-cyan)] transition-colors">
+            <Link href="/filler" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold hover:border-[var(--color-cyan)] transition-colors">
               Filler Guides
-            </a>
+            </Link>
           </div>
         </div>
 

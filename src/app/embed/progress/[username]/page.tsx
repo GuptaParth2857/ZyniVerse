@@ -3,6 +3,7 @@ import { getAnimeListFromAniList, bestTitle } from "@/lib/anilist";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { safeDecode } from "@/lib/url-params";
 
 export const metadata: Metadata = { robots: "noindex" };
 
@@ -11,7 +12,8 @@ export default async function ProgressEmbedPage({
 }: {
   params: Promise<{ username: string }>;
 }) {
-  const { username } = await params;
+  const { username: rawUsername } = await params;
+  const username = safeDecode(rawUsername);
   if (!username.trim()) notFound();
 
   let entries: Awaited<ReturnType<typeof getAnimeListFromAniList>> = [];

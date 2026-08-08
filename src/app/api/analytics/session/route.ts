@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
-import { startSession } from "@/lib/analytics";
+import { startSession, countryFromRequest } from "@/lib/analytics";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const sessionId = await startSession({
+      sessionId: body.sessionId,
       userId: body.userId,
       device: body.device,
       browser: body.browser,
       os: body.os,
+      country: countryFromRequest(req.headers),
     });
     return NextResponse.json({ sessionId });
   } catch {

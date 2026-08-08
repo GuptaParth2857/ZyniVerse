@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
+import { safeDecode } from "@/lib/url-params";
 
 interface AniListMedia {
   id: number;
@@ -86,7 +87,8 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default async function PublicWatchlistPage({ params }: { params: Promise<{ username: string }> }) {
-  const { username } = await params;
+  const { username: rawUsername } = await params;
+  const username = safeDecode(rawUsername);
 
   const user = await prisma.user.findUnique({
     where: { username },

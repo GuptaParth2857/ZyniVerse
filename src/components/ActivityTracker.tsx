@@ -10,13 +10,13 @@ function trackActivity(action: string, data?: Record<string, unknown>) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action, ...data }),
-    });
+    }).catch((e) => logError(e));
   } catch (e) { logError(e); }
 }
 
 function checkAchievements() {
   try {
-    fetch("/api/achievements/check-activity", { method: "POST" });
+    fetch("/api/achievements/check-activity", { method: "POST" }).catch((e) => logError(e));
   } catch (e) { logError(e); }
 }
 

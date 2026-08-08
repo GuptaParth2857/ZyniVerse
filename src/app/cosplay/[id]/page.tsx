@@ -4,7 +4,7 @@ import CosplayDetailPage from "./client";
 async function fetchCosplay(id: string) {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in"}/api/cosplay/${id}`, {
-      next: { revalidate: 30 },
+      next: { revalidate: 300 },
     });
     if (!res.ok) return null;
     const data = await res.json();

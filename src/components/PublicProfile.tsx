@@ -206,6 +206,9 @@ export default function PublicProfile({
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
+              <Link href={`/compare/${encodeURIComponent(username)}`} className="rounded-full bg-gradient-to-r from-[var(--color-cyan)] to-[#29f2e0]/80 px-4 py-1.5 text-xs font-bold text-black transition-all hover:shadow-[0_0_20px_rgba(41,242,224,0.35)]">
+                Compare Lists ⚡
+              </Link>
               <Link href={`/u/${username}/watchlist`} className="rounded-full border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-1.5 text-xs font-semibold text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors">
                 Anime Watchlist →
               </Link>

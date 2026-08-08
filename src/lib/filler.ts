@@ -24,15 +24,26 @@ export interface FillerShow {
   episodes: FillerEpisode[];
 }
 
-export async function getFillerData(): Promise<FillerShow[]> {
+async function fetchFillerData(): Promise<FillerShow[]> {
   if (fillerCache && Date.now() - fillerCache.timestamp < CACHE_TTL) {
     return fillerCache.data;
   }
-  const res = await fetch(FILLER_JSON_URL, { cache: "no-store", signal: AbortSignal.timeout(15000) });
+  const res = await fetch(FILLER_JSON_URL, { cache: "no-store", signal: AbortSignal.timeout(30000) });
   if (!res.ok) throw new Error("Failed to fetch filler data");
   const data: FillerShow[] = await res.json();
   fillerCache = { data, timestamp: Date.now() };
   return data;
+}
+
+export async function getFillerData(): Promise<FillerShow[]> {
+  return fetchFillerData();
+}
+
+export function getFillerDataFromCache(): FillerShow[] {
+  if (!fillerCache || Date.now() - fillerCache.timestamp >= CACHE_TTL) {
+    throw new Error("Filler data not cached");
+  }
+  return fillerCache.data;
 }
 
 function slugify(text: string) {

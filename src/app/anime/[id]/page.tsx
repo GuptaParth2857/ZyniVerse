@@ -25,7 +25,7 @@ import ThemeSongsSection from "@/components/features/ThemeSongsSection";
 import ScoreDistributionChart from "@/components/features/ScoreDistributionChart";
 import UsersAlsoLiked from "@/components/features/UsersAlsoLiked";
 import MetadataPanel from "@/components/MetadataPanel";
-import TagVotePanel from "@/components/TagVotePanel";
+import CommunityTagPanel from "@/components/CommunityTagPanel";
 import ShareButton from "@/components/ShareButton";
 import MomentMaker from "@/components/MomentMaker";
 import RecRelationships from "@/components/RecRelationships";
@@ -300,7 +300,7 @@ export default function AnimeDetailsPage() {
                 <span className="h-3 w-1 rounded-full bg-[var(--color-magenta)]" />
                 Community Tags
               </h3>
-              <TagVotePanel mediaId={anime.id} />
+              <CommunityTagPanel mediaId={anime.id} />
             </div>
           </section>
 

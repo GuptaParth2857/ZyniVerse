@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { getDashboardMetrics } from "@/lib/analytics";
+import { requireAdmin } from "@/lib/admin";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user || (session.user as { email?: string | null }).email !== "gupta.parth2857@gmail.com") {
+  if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

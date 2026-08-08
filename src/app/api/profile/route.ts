@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveUserId } from "@/lib/resolve-user";
+import { unproxyImageUrl } from "@/lib/avatar-src";
 import bcrypt from "bcryptjs";
 
 export async function GET() {
@@ -188,11 +189,11 @@ export async function PATCH(req: NextRequest) {
     }
 
     const data: Record<string, string> = {};
-    if (banner !== undefined) data.banner = banner;
+    if (banner !== undefined) data.banner = unproxyImageUrl(banner) as string;
     if (themeColor !== undefined) data.themeColor = themeColor;
     if (signature !== undefined) data.signature = signature;
     if (bio !== undefined) data.bio = bio;
-    if (avatar !== undefined) data.avatar = avatar;
+    if (avatar !== undefined) data.avatar = unproxyImageUrl(avatar) as string;
     if (username !== undefined) data.username = username.trim();
 
     const user = await prisma.user.update({ where: { id: userId }, data });

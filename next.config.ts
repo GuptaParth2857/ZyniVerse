@@ -42,11 +42,6 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/compare",
-        destination: "/search",
-        permanent: true,
-      },
-      {
         source: "/calendar",
         destination: "/schedule",
         permanent: true,

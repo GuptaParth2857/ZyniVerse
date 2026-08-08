@@ -1,20 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
-import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/admin";
 
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    if (!(await requireAdmin())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { email: true },
-    });
-    if (user?.email !== "gupta.parth2857@gmail.com") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const reported = await prisma.reelReport.groupBy({
@@ -41,6 +33,8 @@ export async function GET() {
         return {
           ...reel,
           reportCount: r._count._all,
+          likesCount: reel._count.likes,
+          commentsCount: reel._count.comments,
         };
       })
       .filter(Boolean);

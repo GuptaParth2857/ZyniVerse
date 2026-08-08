@@ -35,17 +35,6 @@ export function proxy(request: NextRequest) {
     return response;
   }
 
-  // For API routes, set locale based on Accept-Language header
-  if (pathname.startsWith("/api/")) {
-    const acceptLanguage = request.headers.get("Accept-Language");
-    const locale = getLocaleFromAcceptLanguage(acceptLanguage);
-    const response = NextResponse.next();
-    if (locale !== "en") {
-      response.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
-    }
-    return response;
-  }
-
   // For regular page routes, detect language from Accept-Language if no cookie set
   const existingCookie = request.cookies.get(LOCALE_COOKIE)?.value;
   if (!existingCookie || !SUPPORTED_LOCALES.includes(existingCookie as Locale)) {
@@ -63,6 +52,6 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|logo.png|manifest.json|icons/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|logo.png|manifest.json|icons/|api/).*)",
   ],
 };
