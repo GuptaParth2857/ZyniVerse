@@ -28,7 +28,7 @@ async function fetchFillerData(): Promise<FillerShow[]> {
   if (fillerCache && Date.now() - fillerCache.timestamp < CACHE_TTL) {
     return fillerCache.data;
   }
-  const res = await fetch(FILLER_JSON_URL, { cache: "no-store", signal: AbortSignal.timeout(30000) });
+  const res = await fetch(FILLER_JSON_URL, { cache: "force-cache", next: { revalidate: 86400 }, signal: AbortSignal.timeout(30000) });
   if (!res.ok) throw new Error("Failed to fetch filler data");
   const data: FillerShow[] = await res.json();
   fillerCache = { data, timestamp: Date.now() };

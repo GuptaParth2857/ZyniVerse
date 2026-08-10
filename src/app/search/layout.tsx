@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${BASE_URL}/search`,
   },
-  robots: { index: true, follow: true },
+  robots: { index: false, follow: true },
 };
 
 export default function SearchLayout({ children }: { children: React.ReactNode }) {

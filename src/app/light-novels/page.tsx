@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import LightNovelBrowseClient from "./client";
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function LightNovelsPage() {
-  return <LightNovelBrowseClient />;
+  return (
+    <Suspense fallback={null}>
+      <LightNovelBrowseClient />
+    </Suspense>
+  );
 }

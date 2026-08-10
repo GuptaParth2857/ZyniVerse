@@ -8,8 +8,8 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
   try {
-    const { id } = await params;
     const manga = await getMangaDetailFull(id);
     const title = bestTitle(manga.title);
     const desc = manga.description
@@ -39,6 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title: "Manga Details — ZyniVerse",
       description: "Browse detailed manga information including chapters, genres, characters, and recommendations. Read manga online with India's #1 free anime platform.",
+      alternates: { canonical: `${BASE_URL}/manga/${id}` },
       robots: { index: true, follow: true },
     };
   }

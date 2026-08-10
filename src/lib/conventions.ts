@@ -34,9 +34,6 @@ export async function getConventions(filters?: {
   if (filters?.state) {
     where.state = { contains: filters.state, mode: "insensitive" };
   }
-  if (filters?.status && filters.status !== "all") {
-    where.status = filters.status;
-  }
   if (filters?.month !== undefined || filters?.year !== undefined) {
     const AND: Record<string, unknown>[] = [];
     if (filters?.month !== undefined) {
@@ -63,7 +60,7 @@ export async function getConventions(filters?: {
     orderBy: { startDate: "asc" },
   });
 
-  return results.map((r) => ({
+  const mapped = results.map((r) => ({
     id: r.id,
     name: r.name,
     shortName: r.shortName,
@@ -77,10 +74,23 @@ export async function getConventions(filters?: {
     image: r.image,
     description: r.description,
     estimatedAttendance: r.estimatedAttendance,
-    status: r.status as Convention["status"],
+    status: computeStatus(r),
     organizers: r.organizers,
     tags: r.tags,
   }));
+
+  if (filters?.status && filters.status !== "all") {
+    return mapped.filter((c) => c.status === filters.status);
+  }
+
+  return mapped;
+}
+
+function computeStatus(r: { startDate: Date; endDate: Date; status: string }, now: Date = new Date()): Convention["status"] {
+  if (r.status === "cancelled") return "cancelled";
+  if (now < r.startDate) return "upcoming";
+  if (now <= r.endDate) return "ongoing";
+  return "past";
 }
 
 export async function getConventionById(id: string): Promise<Convention | null> {
@@ -100,7 +110,7 @@ export async function getConventionById(id: string): Promise<Convention | null> 
     image: result.image,
     description: result.description,
     estimatedAttendance: result.estimatedAttendance,
-    status: result.status as Convention["status"],
+    status: computeStatus(result),
     organizers: result.organizers,
     tags: result.tags,
   };

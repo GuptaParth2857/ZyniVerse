@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
 import { getFillerForAnime } from "@/lib/filler";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400;
 
 interface Props {
   params: Promise<{ id: string }>;

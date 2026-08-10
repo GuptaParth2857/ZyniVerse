@@ -6,6 +6,7 @@ import Image from "next/image";
 import { type LiveActionAnime } from "@/lib/live-action-anime";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
+import TrailerModal from "@/components/TrailerModal";
 import LiveActionPlaceholder from "@/components/LiveActionPlaceholder";
 
 function formatScore(score: number) { return score > 0 ? score.toFixed(1) : "—"; }
@@ -79,6 +80,7 @@ export default function LiveActionDetailClient({ id, initialList }: { id: string
   const [showAllCast, setShowAllCast] = useState(false);
   const [showAllCrew, setShowAllCrew] = useState(false);
   const [posterError, setPosterError] = useState(false);
+  const [trailerOpen, setTrailerOpen] = useState(false);
 
   const anime = useMemo(() => initialList.find((a) => a.id === id), [initialList, id]);
 
@@ -230,14 +232,12 @@ export default function LiveActionDetailClient({ id, initialList }: { id: string
                       </a>
                     )}
                     {anime.trailerUrl && (
-                      <a
-                        href={anime.trailerUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        onClick={() => setTrailerOpen(true)}
                         className="rounded-full border border-white/20 bg-white/5 px-6 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-cyan)]/10 hover:border-[var(--color-cyan)] transition-all backdrop-blur"
                       >
                         ▶ Trailer
-                      </a>
+                      </button>
                     )}
                     <Link
                       href="/live-action"
@@ -521,6 +521,10 @@ export default function LiveActionDetailClient({ id, initialList }: { id: string
             </aside>
           </div>
         </div>
+        <TrailerModal
+          url={trailerOpen ? anime.trailerUrl ?? null : null}
+          onClose={() => setTrailerOpen(false)}
+        />
       </ErrorBoundary>
     </PageTransition>
   );

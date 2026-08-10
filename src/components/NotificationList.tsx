@@ -29,11 +29,12 @@ const TYPE_META: Record<string, TypeMeta> = {
   SYSTEM: { icon: "\u2699\uFE0F", color: "#807ba3", label: "System" },
   FRIEND: { icon: "\uD83E\uDD1D", color: "#ff2d78", label: "Friend" },
   ACTIVITY: { icon: "\uD83D\uDDFA\uFE0F", color: "#8a5cff", label: "Activity" },
+  EVENT: { icon: "\uD83D\uDCC5", color: "#29f2e0", label: "Event" },
 };
 
 const DEFAULT_META: TypeMeta = { icon: "\uD83D\uDD14", color: "#807ba3", label: "Update" };
 
-const TYPES = ["ALL", "AIRING", "FOLLOW", "REVIEW", "COMMENT", "IMPORT", "SYSTEM", "FRIEND", "ACTIVITY"] as const;
+const TYPES = ["ALL", "EVENT", "AIRING", "FOLLOW", "REVIEW", "COMMENT", "IMPORT", "SYSTEM", "FRIEND", "ACTIVITY"] as const;
 
 function metaFor(type: string): TypeMeta {
   return TYPE_META[type] || DEFAULT_META;

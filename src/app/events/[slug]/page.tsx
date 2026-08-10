@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -6,7 +5,10 @@ import {
   getAnimeEventBySlug,
   getUpcomingEvents,
 } from "@/lib/anime-events";
+import { eventImageSrc } from "@/lib/event-images";
 import EventAnnouncementCard from "@/components/EventAnnouncementCard";
+import EventDetailHero from "@/components/EventDetailHero";
+import EventDetailInfo from "@/components/EventDetailInfo";
 import EventTimeline from "@/components/EventTimeline";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -54,12 +56,6 @@ export default async function AnimeEventDetailPage({ params }: Props) {
           ? `In ${daysUntil} days`
           : "Ongoing";
 
-  const STATUS_COLORS: Record<string, string> = {
-    upcoming: "text-green-400 border-green-500/50 bg-green-500/10",
-    ongoing: "text-blue-400 border-blue-500/50 bg-blue-500/10 animate-pulse",
-    past: "text-gray-400 border-gray-500/30 bg-gray-500/10",
-  };
-
   const TYPE_CONFIG: Record<string, { icon: string; color: string; gradient: string }> = {
     expo: { icon: "🎯", color: "text-cyan-400 border-cyan-500/40 bg-cyan-500/10", gradient: "from-cyan-500/15" },
     convention: { icon: "🎪", color: "text-purple-400 border-purple-500/40 bg-purple-500/10", gradient: "from-purple-500/15" },
@@ -69,7 +65,7 @@ export default async function AnimeEventDetailPage({ params }: Props) {
   };
 
   const config = TYPE_CONFIG[event.type] || TYPE_CONFIG.convention;
-  const heroImage = event.announcements.find((a) => a.posterUrl)?.posterUrl || event.image;
+  const heroImage = eventImageSrc(event.announcements.find((a) => a.posterUrl)?.posterUrl || event.image);
 
   return (
     <div className="min-h-screen">
@@ -93,107 +89,18 @@ export default async function AnimeEventDetailPage({ params }: Props) {
         )}
 
         <div className="relative mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-1 text-xs text-white/60 hover:text-[var(--color-cyan)] transition-colors mb-6 backdrop-blur-sm bg-black/20 px-3 py-1.5 rounded-full"
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Back to Events
-          </Link>
-
-          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 flex-wrap mb-3">
-                <span className="text-2xl">{config.icon}</span>
-                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize ${config.color}`}>
-                  {event.type}
-                </span>
-                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize ${STATUS_COLORS[event.status]}`}>
-                  {event.status}
-                </span>
-              </div>
-              <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
-                <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tight leading-tight mb-2">
-                  {event.name}
-                </h1>
-              </div>
-              <p className="text-sm text-white/70">{event.location}</p>
-              <p className="text-xs font-mono text-[var(--color-cyan)]/80 mt-1">{dateStr}</p>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              {!isPast && (
-                <span className={`text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm ${
-                  event.status === "ongoing"
-                    ? "text-blue-400 bg-blue-500/20 border border-blue-500/30"
-                    : daysUntil <= 14
-                      ? "text-amber-400 bg-amber-500/20 border border-amber-500/30"
-                      : "text-green-400 bg-green-500/20 border border-green-500/30"
-                }`}>
-                  {countdownText}
-                </span>
-              )}
-              <a
-                href={event.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-lg bg-[var(--color-cyan)] px-5 py-2.5 text-xs font-semibold text-black hover:opacity-80 transition-opacity"
-              >
-                Official Website ↗
-              </a>
-            </div>
-          </div>
+          <EventDetailHero
+            event={event}
+            dateStr={dateStr}
+            countdownText={countdownText}
+            isPast={isPast}
+          />
         </div>
       </section>
 
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        {/* Info Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="neon-premium neon-rgb-border rounded-2xl">
-            <div className="neon-premium-track" />
-            <div className="neon-premium-overlay" />
-            <div className="neon-premium-content rounded-2xl p-5">
-              <p className="text-[10px] font-mono text-[var(--color-mute)]/50 uppercase tracking-wider mb-1.5">Dates</p>
-              <p className="text-sm font-medium leading-snug">{dateStr}</p>
-            </div>
-          </div>
-          <div className="neon-premium neon-rgb-border rounded-2xl">
-            <div className="neon-premium-track" />
-            <div className="neon-premium-overlay" />
-            <div className="neon-premium-content rounded-2xl p-5">
-              <p className="text-[10px] font-mono text-[var(--color-mute)]/50 uppercase tracking-wider mb-1.5">Location</p>
-              <p className="text-sm font-medium leading-snug">{event.location}, {event.country}</p>
-            </div>
-          </div>
-          <div className="neon-premium neon-rgb-border rounded-2xl">
-            <div className="neon-premium-track" />
-            <div className="neon-premium-overlay" />
-            <div className="neon-premium-content rounded-2xl p-5">
-              <p className="text-[10px] font-mono text-[var(--color-mute)]/50 uppercase tracking-wider mb-1.5">Expected Attendance</p>
-              <p className="text-sm font-medium leading-snug">{event.attendance ? `${event.attendance.toLocaleString("en-US")}+` : "TBA"}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* About */}
-        <div className="neon-premium neon-rgb-border rounded-2xl mb-8">
-          <div className="neon-premium-track" />
-          <div className="neon-premium-overlay" />
-          <div className="neon-premium-content rounded-2xl p-6 sm:p-8">
-            <h3 className="font-display font-bold text-sm mb-4 text-white/90">About This Event</h3>
-            <p className="text-sm text-white/70 leading-relaxed">{event.description}</p>
-            {event.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-5">
-                {event.tags.map((t) => (
-                  <span key={t} className="text-[10px] text-white/50 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Info Grid + About */}
+        <EventDetailInfo event={event} />
 
         {/* Announcements */}
         {event.announcements.length > 0 && (
@@ -209,8 +116,8 @@ export default async function AnimeEventDetailPage({ params }: Props) {
               {event.name}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {event.announcements.map((ann) => (
-                <EventAnnouncementCard key={ann.id} announcement={ann} />
+              {event.announcements.map((ann, i) => (
+                <EventAnnouncementCard key={ann.id} announcement={ann} index={i} />
               ))}
             </div>
           </section>

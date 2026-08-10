@@ -93,9 +93,6 @@ export const metadata: Metadata = {
     description: "India's #1 anime platform — filler guides for 200+ anime, Hindi/Tamil/Telugu dubs, AI recommendations & community. Free.",
   },
   robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
-  alternates: {
-    canonical: BASE_URL,
-  },
   icons: {
     icon: "/logo.png",
     apple: "/icons/icon-192.png",

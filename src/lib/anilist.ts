@@ -74,7 +74,8 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
         headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": USER_AGENT },
         body: JSON.stringify({ query, variables }),
         signal: controller.signal,
-        cache: "no-store",
+        cache: "force-cache",
+        next: { revalidate: 3600 },
       });
 
       clearTimeout(timer);

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import ListGrid from "./ListGrid";
 
 export const metadata = {
@@ -30,7 +31,9 @@ export default function ListsPage() {
         </Link>
       </div>
 
-      <ListGrid />
+      <Suspense fallback={null}>
+        <ListGrid />
+      </Suspense>
     </div>
   );
 }
