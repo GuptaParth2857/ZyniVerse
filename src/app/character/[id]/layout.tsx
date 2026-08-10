@@ -8,8 +8,8 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
   try {
-    const { id } = await params;
     const char = await getCharacter(id);
     const name = char.name?.full || "Unknown Character";
     const animeNames = (char.media?.edges || [])
@@ -47,6 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title: "Character Details — ZyniVerse",
       description: "Explore detailed anime character information including voice actors, appearances, and trivia. India's #1 free anime platform.",
+      alternates: { canonical: `${BASE_URL}/character/${id}` },
       robots: { index: true, follow: true },
     };
   }

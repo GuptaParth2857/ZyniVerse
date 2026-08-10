@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import MessagesClient from "./MessagesClient";
 
 export const metadata: Metadata = {
@@ -9,5 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function MessagesPage() {
-  return <MessagesClient />;
+  return (
+    <Suspense fallback={null}>
+      <MessagesClient />
+    </Suspense>
+  );
 }

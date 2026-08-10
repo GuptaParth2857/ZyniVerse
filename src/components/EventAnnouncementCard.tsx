@@ -1,6 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { useRef, useCallback, useState } from "react";
+import { eventImageSrc } from "@/lib/event-images";
+import TrailerModal from "@/components/TrailerModal";
 import type { AnimeAnnouncement } from "@/lib/anime-events";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -14,6 +18,19 @@ const CATEGORY_COLORS: Record<string, string> = {
   casting: "text-indigo-400 border-indigo-500/40 bg-indigo-500/10",
   merchandise: "text-rose-400 border-rose-500/40 bg-rose-500/10",
   other: "text-gray-400 border-gray-500/30 bg-gray-500/10",
+};
+
+const CATEGORY_ACCENTS: Record<string, string> = {
+  "anime-reveal": "#22d3ee",
+  "season-announcement": "#4ade80",
+  "movie-reveal": "#a78bfa",
+  "game-reveal": "#60a5fa",
+  collab: "#f472b6",
+  trailer: "#fbbf24",
+  "key-visual": "#fb923c",
+  casting: "#818cf8",
+  merchandise: "#fb7185",
+  other: "#9ca3af",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -38,83 +55,101 @@ function extractYouTubeId(url: string): string | null {
 
 export default function EventAnnouncementCard({
   announcement,
+  index = 0,
 }: {
   announcement: AnimeAnnouncement;
+  index?: number;
 }) {
   const ytId = announcement.trailerUrl
     ? extractYouTubeId(announcement.trailerUrl)
     : null;
+  const accent = CATEGORY_ACCENTS[announcement.category] || CATEGORY_ACCENTS.other;
+  const color = CATEGORY_COLORS[announcement.category] || CATEGORY_COLORS.other;
+  const label = CATEGORY_LABELS[announcement.category] || announcement.category;
+  const ref = useRef<HTMLDivElement>(null);
+  const [trailerOpen, setTrailerOpen] = useState(false);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const px = (e.clientX - cx) / (rect.width / 2);
+    const py = (e.clientY - cy) / (rect.height / 2);
+    el.style.transform = `perspective(900px) rotateY(${px * 5}deg) rotateX(${-py * 5}deg) scale(1.02)`;
+  }, []);
+
+  const handlePointerLeave = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg) scale(1)";
+  }, []);
 
   return (
-    <div className="neon-premium rounded-[18px] group overflow-hidden">
+    <>
+      <motion.div
+        ref={ref}
+      initial={{ opacity: 0, y: 26, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.45, delay: (index % 9) * 0.07, ease: [0.22, 1, 0.36, 1] }}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className="neon-premium rounded-[18px] group overflow-hidden h-full"
+      style={{ transition: "transform 0.2s ease-out" }}
+    >
       <div className="neon-premium-track" />
-      <div className="neon-premium-overlay" />
-      <div className="neon-premium-content rounded-[18px] overflow-hidden flex flex-col">
+      <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+      <div className="neon-premium-content rounded-[18px] overflow-hidden flex flex-col h-full">
         {/* Video / Poster */}
         {ytId ? (
-          <div className="relative aspect-video w-full bg-black overflow-hidden">
+          <div className="relative aspect-video w-full bg-black overflow-hidden shrink-0">
             <Image
               src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`}
               alt={announcement.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              className="object-cover"
+              loading="lazy"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
             <div className="absolute inset-0 bg-black/20" />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <a
-                href={announcement.trailerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => setTrailerOpen(true)}
                 className="w-14 h-14 rounded-full bg-red-600/90 flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg shadow-red-600/30"
+                aria-label={`Watch trailer for ${announcement.title}`}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
                   <path d="M8 5v14l11-7z" />
                 </svg>
-              </a>
-            </div>
-            {/* Category badge */}
-            <div className="absolute top-3 left-3">
-              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border backdrop-blur-sm bg-black/40 ${
-                CATEGORY_COLORS[announcement.category] || CATEGORY_COLORS.other
-              }`}>
-                {CATEGORY_LABELS[announcement.category] || announcement.category}
-              </span>
+              </button>
             </div>
           </div>
         ) : announcement.posterUrl ? (
-          <div className="relative aspect-[16/7] w-full bg-black overflow-hidden">
+          <div className="relative aspect-[16/7] w-full bg-black overflow-hidden shrink-0">
             <Image
-              src={announcement.posterUrl}
+              src={eventImageSrc(announcement.posterUrl) ?? ""}
               alt={announcement.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              className="object-cover"
+              loading="lazy"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,0.8)] to-transparent" />
-            <div className="absolute top-3 left-3">
-              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border backdrop-blur-sm bg-black/40 ${
-                CATEGORY_COLORS[announcement.category] || CATEGORY_COLORS.other
-              }`}>
-                {CATEGORY_LABELS[announcement.category] || announcement.category}
-              </span>
-            </div>
           </div>
         ) : null}
 
         {/* Content */}
         <div className="p-5 flex flex-col flex-1">
-          {!ytId && !announcement.posterUrl && (
-            <div className="mb-2">
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                CATEGORY_COLORS[announcement.category] || CATEGORY_COLORS.other
-              }`}>
-                {CATEGORY_LABELS[announcement.category] || announcement.category}
-              </span>
-            </div>
-          )}
+          {/* Accent bar row (voice-lines style) */}
+          <div className="mb-2.5 flex items-center gap-2">
+            <span className="h-1.5 w-8 rounded-full" style={{ background: accent, boxShadow: `0 0 10px ${accent}88` }} />
+            <span className={`rounded-full border px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${color}`}>
+              {label}
+            </span>
+          </div>
 
-          <h4 className="font-display text-base font-bold mb-2 leading-tight">
+          <h4 className="font-display text-base font-bold mb-2 leading-tight group-hover:text-[var(--color-cyan)] transition-colors">
             {announcement.title}
           </h4>
 
@@ -122,19 +157,17 @@ export default function EventAnnouncementCard({
             {announcement.description}
           </p>
 
-          <div className="flex items-center gap-3 mt-4 pt-3 border-t border-white/5">
+          <div className="flex items-center gap-3 mt-4 pt-3 border-t border-[var(--color-line)]">
             {announcement.trailerUrl && (
-              <a
-                href={announcement.trailerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => setTrailerOpen(true)}
                 className="inline-flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 transition-colors"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
                 Watch Trailer
-              </a>
+              </button>
             )}
             {announcement.sourceUrl && (
               <a
@@ -154,6 +187,11 @@ export default function EventAnnouncementCard({
           </div>
         </div>
       </div>
-    </div>
+      </motion.div>
+      <TrailerModal
+        url={trailerOpen ? announcement.trailerUrl ?? null : null}
+        onClose={() => setTrailerOpen(false)}
+      />
+    </>
   );
 }

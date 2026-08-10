@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   getTrending, getPopular, getUpcoming, getTopRated, getAiringSchedule,
 } from "@/lib/anilist";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in",
+  },
+};
 import Section from "@/components/Section";
 import MediaCarousel from "@/components/MediaCarousel";
 import OnAirTicker from "@/components/OnAirTicker";
@@ -34,7 +41,7 @@ function AnimatedSection({ children, className = "" }: { children: React.ReactNo
   );
 }
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 export default async function Home() {
   const [trending, popular, upcoming, topRated] = await Promise.allSettled([

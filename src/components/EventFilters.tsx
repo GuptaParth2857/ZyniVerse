@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { AnimeEvent } from "@/lib/anime-events";
 import EventCard from "./EventCard";
 
@@ -108,56 +109,63 @@ export default function EventFilters({
         </div>
       </div>
 
+      <AnimatePresence mode="popLayout">
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-[var(--color-mute)]/60">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="text-center py-16 text-[var(--color-mute)]/60"
+        >
           <p className="text-lg mb-1">No events found</p>
           <p className="text-sm">Try adjusting your filters or search.</p>
-        </div>
+        </motion.div>
       ) : (
-        <div className="space-y-8">
+        <motion.div layout className="space-y-8">
           {ongoing.length > 0 && (
-            <section>
+            <motion.section layout initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
               <h2 className="font-display text-lg font-bold text-blue-400 mb-3 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
                 Happening Now ({ongoing.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {ongoing.map((e) => (
-                  <EventCard key={e.id} event={e} />
+                {ongoing.map((e, i) => (
+                  <EventCard key={e.id} event={e} index={i} />
                 ))}
               </div>
-            </section>
+            </motion.section>
           )}
 
           {upcoming.length > 0 && (
-            <section>
+            <motion.section layout initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
               <h2 className="font-display text-lg font-bold text-green-400 mb-3 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-green-400" />
                 Upcoming ({upcoming.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {upcoming.map((e) => (
-                  <EventCard key={e.id} event={e} />
+                {upcoming.map((e, i) => (
+                  <EventCard key={e.id} event={e} index={i} />
                 ))}
               </div>
-            </section>
+            </motion.section>
           )}
 
           {past.length > 0 && (
-            <section>
+            <motion.section layout initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
               <h2 className="font-display text-lg font-bold text-gray-400 mb-3 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-gray-400" />
                 Past ({past.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {past.map((e) => (
-                  <EventCard key={e.id} event={e} />
+                {past.map((e, i) => (
+                  <EventCard key={e.id} event={e} index={i} />
                 ))}
               </div>
-            </section>
+            </motion.section>
           )}
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }

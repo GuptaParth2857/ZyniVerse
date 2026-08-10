@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import MangaBrowseClient from "./client";
 
 export const metadata: Metadata = {
@@ -22,5 +23,9 @@ export const metadata: Metadata = {
 };
 
 export default function MangaPage() {
-  return <MangaBrowseClient />;
+  return (
+    <Suspense fallback={null}>
+      <MangaBrowseClient />
+    </Suspense>
+  );
 }

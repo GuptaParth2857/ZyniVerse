@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { eventImageSrc } from "@/lib/event-images";
+import TrailerModal from "@/components/TrailerModal";
 import type { AnimeEvent } from "@/lib/anime-events";
 
 const CATEGORIES = [
@@ -27,11 +30,202 @@ const CATEGORY_COLORS: Record<string, string> = {
   other: "text-gray-400 border-gray-500/30 bg-gray-500/10",
 };
 
+const CATEGORY_ACCENTS: Record<string, string> = {
+  "anime-reveal": "#22d3ee",
+  "season-announcement": "#4ade80",
+  "movie-reveal": "#a78bfa",
+  "game-reveal": "#60a5fa",
+  collab: "#f472b6",
+  trailer: "#fbbf24",
+  "key-visual": "#fb923c",
+  casting: "#818cf8",
+  merchandise: "#fb7185",
+  other: "#9ca3af",
+};
+
 function extractYouTubeId(url: string): string | null {
   const match = url.match(
     /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
   );
   return match ? match[1] : null;
+}
+
+function ThumbImg({
+  src,
+  ytId,
+  alt,
+}: {
+  src: string;
+  ytId: string | null;
+  alt: string;
+}) {
+  const [srcState, setSrcState] = useState(src);
+  const [hidden, setHidden] = useState(false);
+
+  if (hidden) {
+    return <div className="h-full w-full bg-gradient-to-br from-[#00ffe0]/10 via-[rgba(10,10,15,1)] to-[#ff00e6]/10" />;
+  }
+
+  return (
+    <Image
+      src={srcState}
+      alt={alt}
+      fill
+      className="object-cover"
+      loading="lazy"
+      sizes="(max-width: 768px) 100vw, 500px"
+      onError={() => {
+        if (ytId && srcState.includes("maxresdefault")) {
+          setSrcState(`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`);
+        } else {
+          setHidden(true);
+        }
+      }}
+    />
+  );
+}
+
+interface AnnouncementCardData {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  trailerUrl?: string;
+  posterUrl?: string;
+  eventSlug: string;
+  eventName: string;
+  eventDate: string;
+  eventImage?: string;
+}
+
+function AnnouncementCard({ item, index }: { item: AnnouncementCardData; index: number }) {
+  const ytId = item.trailerUrl ? extractYouTubeId(item.trailerUrl) : null;
+  const thumbUrl = ytId
+    ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
+    : eventImageSrc(item.posterUrl || item.eventImage);
+  const color = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.other;
+  const accent = CATEGORY_ACCENTS[item.category] || CATEGORY_ACCENTS.other;
+  const ref = useRef<HTMLAnchorElement>(null);
+  const [trailerOpen, setTrailerOpen] = useState(false);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLAnchorElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const px = (e.clientX - cx) / (rect.width / 2);
+    const py = (e.clientY - cy) / (rect.height / 2);
+    el.style.transform = `perspective(900px) rotateY(${px * 5}deg) rotateX(${-py * 5}deg) scale(1.02)`;
+  }, []);
+
+  const handlePointerLeave = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg) scale(1)";
+  }, []);
+
+  return (
+    <>
+      <motion.a
+        ref={ref}
+        key={item.id}
+        href={`/events/${item.eventSlug}`}
+      initial={{ opacity: 0, y: 26, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -12, scale: 0.96 }}
+      transition={{ duration: 0.45, delay: (index % 9) * 0.07, ease: [0.22, 1, 0.36, 1] }}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className="neon-premium rounded-[18px] group overflow-hidden"
+      style={{ transition: "transform 0.2s ease-out" }}
+    >
+      <div className="neon-premium-track" />
+      <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+      <div className="neon-premium-content rounded-[18px] overflow-hidden flex flex-col">
+        {/* Thumbnail / Poster */}
+        {thumbUrl && (
+          <div className="relative h-40 w-full overflow-hidden shrink-0">
+            <ThumbImg src={thumbUrl} ytId={ytId} alt={item.title} />
+            <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,1)] via-[rgba(10,10,15,0.3)] to-transparent" />
+            {/* Play button for trailers */}
+            {ytId && (
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setTrailerOpen(true);
+                  }}
+                  className="w-12 h-12 rounded-full bg-red-600/90 flex items-center justify-center shadow-lg shadow-red-600/30 hover:bg-red-600 transition-colors"
+                  aria-label={`Watch trailer for ${item.title}`}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </button>
+              </div>
+            )}
+            {/* Category badge on image */}
+            <div className="absolute top-3 left-3">
+              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border backdrop-blur-sm bg-black/40 ${color}`}>
+                {item.category.replace(/-/g, " ")}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* No image fallback header */}
+        {!thumbUrl && (
+          <div className="px-4 pt-4">
+            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${color}`}>
+              {item.category.replace(/-/g, " ")}
+            </span>
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="p-4 flex flex-col flex-1">
+          {/* Accent bar row (voice-lines style) */}
+          <div className="mb-2.5 flex items-center gap-2">
+            <span className="h-1.5 w-8 rounded-full" style={{ background: accent, boxShadow: `0 0 10px ${accent}88` }} />
+            <span className={`rounded-full border px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${color}`}>
+              {item.category.replace(/-/g, " ")}
+            </span>
+          </div>
+
+          <h4 className="font-display text-sm font-bold mb-1.5 leading-tight line-clamp-2 group-hover:text-[var(--color-cyan)] transition-colors">
+            {item.title}
+          </h4>
+
+          <p className="text-xs text-[var(--color-mute)]/60 line-clamp-2 mb-3 flex-1">
+            {item.description}
+          </p>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-2.5 border-t border-[var(--color-line)]">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-[9px] text-[var(--color-mute)]/40">at</span>
+              <span className="text-[10px] text-[var(--color-cyan)]/70 font-medium truncate">
+                {item.eventName}
+              </span>
+            </div>
+            <span className="text-[9px] font-mono text-[var(--color-mute)]/40 shrink-0">
+              {new Date(item.eventDate).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+        </div>
+      </div>
+      </motion.a>
+      <TrailerModal
+        url={trailerOpen ? item.trailerUrl ?? null : null}
+        onClose={() => setTrailerOpen(false)}
+      />
+    </>
+  );
 }
 
 export default function AnnouncementsSection({
@@ -126,97 +320,13 @@ export default function AnnouncementsSection({
           <p className="text-sm">No announcements found for this filter.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((a) => {
-            const ytId = a.trailerUrl ? extractYouTubeId(a.trailerUrl) : null;
-            const thumbUrl = ytId
-              ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
-              : a.posterUrl || a.eventImage;
-
-            return (
-              <a
-                key={a.id}
-                href={`/events/${a.eventSlug}`}
-                className="neon-premium rounded-[18px] group overflow-hidden"
-              >
-                <div className="neon-premium-track" />
-                <div className="neon-premium-overlay" />
-                <div className="neon-premium-content rounded-[18px] overflow-hidden flex flex-col">
-                  {/* Thumbnail / Poster */}
-                  {thumbUrl && (
-                    <div className="relative h-40 w-full overflow-hidden shrink-0">
-                      <Image
-                        src={thumbUrl}
-                        alt={a.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                        sizes="(max-width: 768px) 100vw, 500px"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,10,15,1)] via-[rgba(10,10,15,0.3)] to-transparent" />
-                      {/* Play button for trailers */}
-                      {ytId && (
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="w-12 h-12 rounded-full bg-red-600/90 flex items-center justify-center shadow-lg shadow-red-600/30">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </div>
-                        </div>
-                      )}
-                      {/* Category badge on image */}
-                      <div className="absolute top-3 left-3">
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border backdrop-blur-sm bg-black/40 ${
-                          CATEGORY_COLORS[a.category] || CATEGORY_COLORS.other
-                        }`}>
-                          {a.category.replace(/-/g, " ")}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* No image fallback header */}
-                  {!thumbUrl && (
-                    <div className="px-4 pt-4">
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-                        CATEGORY_COLORS[a.category] || CATEGORY_COLORS.other
-                      }`}>
-                        {a.category.replace(/-/g, " ")}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Content */}
-                  <div className="p-4 flex flex-col flex-1">
-                    <h4 className="font-display text-sm font-bold mb-1.5 leading-tight line-clamp-2 group-hover:text-[var(--color-cyan)] transition-colors">
-                      {a.title}
-                    </h4>
-
-                    <p className="text-xs text-[var(--color-mute)]/60 line-clamp-2 mb-3 flex-1">
-                      {a.description}
-                    </p>
-
-                    {/* Footer */}
-                    <div className="flex items-center justify-between pt-2.5 border-t border-white/5">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-[9px] text-[var(--color-mute)]/40">at</span>
-                        <span className="text-[10px] text-[var(--color-cyan)]/70 font-medium truncate">
-                          {a.eventName}
-                        </span>
-                      </div>
-                      <span className="text-[9px] font-mono text-[var(--color-mute)]/40 shrink-0">
-                        {new Date(a.eventDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            );
-          })}
-        </div>
+        <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((a, i) => (
+              <AnnouncementCard key={a.id} item={a} index={i} />
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
     </div>
   );

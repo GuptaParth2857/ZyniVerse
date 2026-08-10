@@ -15,7 +15,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: BASE_URL, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${BASE_URL}/filler`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/characters`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${BASE_URL}/search`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/manga`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/seasonal`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/watch-order`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
@@ -97,39 +96,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch (e) { logError(e); }
 
-  // Dynamic: Cosplay entries
-  let cosplayPages: MetadataRoute.Sitemap = [];
-  try {
-    const entries = await prisma.cosplay.findMany({
-      where: {},
-      select: { id: true, updatedAt: true },
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    });
-    cosplayPages = entries.map((e) => ({
-      url: `${BASE_URL}/cosplay/${e.id}`,
-      lastModified: e.updatedAt,
-      changeFrequency: "monthly" as const,
-      priority: 0.3,
-    }));
-  } catch (e) { logError(e); }
+  // Dynamic: Cosplay entries (UGC, low value — exclude from sitemap to focus crawl on SEO pages)
 
-  // Dynamic: Forum threads
-  let forumPages: MetadataRoute.Sitemap = [];
-  try {
-    const threads = await prisma.forumThread.findMany({
-      where: { isDeleted: false },
-      select: { id: true, updatedAt: true, createdAt: true },
-      orderBy: { createdAt: "desc" },
-      take: 500,
-    });
-    forumPages = threads.map((t) => ({
-      url: `${BASE_URL}/forum/thread/${t.id}`,
-      lastModified: t.updatedAt || t.createdAt || now,
-      changeFrequency: "weekly" as const,
-      priority: 0.5,
-    }));
-  } catch (e) { logError(e); }
+  // Dynamic: Forum threads (UGC, low value — exclude from sitemap to focus crawl on SEO pages)
 
   // Dynamic: Events
   let eventPages: MetadataRoute.Sitemap = [];
@@ -267,14 +236,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch (e) { logError(e); }
 
-  return [
+  const allPages: MetadataRoute.Sitemap = [
     ...staticPages,
     ...blogPages,
     ...wikiPages,
     ...wikiSeedPages,
     ...watchOrderPages,
-    ...cosplayPages,
-    ...forumPages,
     ...eventPages,
     ...fillerPages,
     ...fillerSlugPages,
@@ -284,4 +251,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...popularMangaPages,
     ...popularCharacterPages,
   ];
+
+  const seen = new Set<string>();
+  return allPages.filter((p) => {
+    const url = p.url.replace(/\/$/, "");
+    if (seen.has(url)) return false;
+    seen.add(url);
+    return true;
+  });
 }

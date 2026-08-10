@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, useSyncExternalStore } from "react";
+import { useRef, useState, useEffect, useSyncExternalStore, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
@@ -203,7 +203,7 @@ function CheckoutButton() {
   );
 }
 
-export default function PremiumPage() {
+function PremiumInner() {
   const searchParams = useSearchParams();
   const success = searchParams.get("success");
   const canceled = searchParams.get("canceled");
@@ -338,5 +338,13 @@ export default function PremiumPage() {
         </div>
       </div>
     </PageTransition>
+  );
+}
+
+export default function PremiumPage() {
+  return (
+    <Suspense fallback={null}>
+      <PremiumInner />
+    </Suspense>
   );
 }

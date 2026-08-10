@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `${baseUrl}/genre/${name}`,
     },
     alternates: { canonical: `${baseUrl}/genre/${name}` },
-    robots: { index: true, follow: true },
+    robots: { index: false, follow: true },
   };
 }
 

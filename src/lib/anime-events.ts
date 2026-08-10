@@ -3,9 +3,18 @@ import { Prisma } from "@prisma/client";
 
 export const ANIME_EVENTS_META = {
   disclaimer: "Anime event data is curated from public sources. Dates, announcements, and details may change — verify with official event websites.",
-  lastUpdated: new Date().toISOString().split("T")[0],
   source: "curated",
 } as const;
+
+export function computeEventStatus(startDate: Date, endDate: Date): AnimeEvent["status"] {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+  const endDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+  if (endDay < today) return "past";
+  if (startDay <= today) return "ongoing";
+  return "upcoming";
+}
 
 export interface AnimeAnnouncement {
   id: string;
@@ -63,7 +72,7 @@ function mapEvent(e: AnimeEventRecord): AnimeEvent {
     website: e.website,
     image: e.image ?? undefined,
     description: e.description,
-    status: e.status as AnimeEvent["status"],
+    status: computeEventStatus(e.startDate, e.endDate),
     attendance: e.attendance ?? undefined,
     tags: e.tags ?? [],
     announcements: (e.announcements ?? []).map((a) => ({
@@ -91,9 +100,6 @@ export async function getAnimeEvents(filters?: {
   if (filters?.type && filters.type !== "all") {
     where.type = filters.type;
   }
-  if (filters?.status && filters.status !== "all") {
-    where.status = filters.status;
-  }
   if (filters?.country) {
     where.country = { contains: filters.country, mode: "insensitive" };
   }
@@ -117,7 +123,13 @@ export async function getAnimeEvents(filters?: {
     orderBy: { startDate: "desc" },
   });
 
-  return results.map(mapEvent);
+  let events = results.map(mapEvent);
+
+  if (filters?.status && filters.status !== "all") {
+    events = events.filter((e) => e.status === filters.status);
+  }
+
+  return events;
 }
 
 export async function getAnimeEventBySlug(
@@ -151,20 +163,18 @@ export async function getCountries(): Promise<string[]> {
 
 export async function getUpcomingEvents(): Promise<AnimeEvent[]> {
   const results = await prisma.animeEvent.findMany({
-    where: { status: "upcoming" },
     include: { announcements: true },
     orderBy: { startDate: "asc" },
   });
-  return results.map(mapEvent);
+  return results.map(mapEvent).filter((e) => e.status === "upcoming");
 }
 
 export async function getPastEvents(): Promise<AnimeEvent[]> {
   const results = await prisma.animeEvent.findMany({
-    where: { status: "past" },
     include: { announcements: true },
     orderBy: { startDate: "desc" },
   });
-  return results.map(mapEvent);
+  return results.map(mapEvent).filter((e) => e.status === "past");
 }
 
 export async function getAllAnnouncements(): Promise<(AnimeAnnouncement & {
@@ -204,10 +214,19 @@ export async function getAnnouncementCategories(): Promise<string[]> {
 }
 
 export async function getAnimeEventsMeta() {
-  const count = await prisma.animeEvent.count();
+  const [count, lastUpdated] = await Promise.all([
+    prisma.animeEvent.count(),
+    prisma.animeEvent.findFirst({
+      orderBy: { updatedAt: "desc" },
+      select: { updatedAt: true },
+    }),
+  ]);
   return {
     ...ANIME_EVENTS_META,
     totalEvents: count,
+    lastUpdated: lastUpdated
+      ? lastUpdated.updatedAt.toISOString().split("T")[0]
+      : "N/A",
   };
 }
 
