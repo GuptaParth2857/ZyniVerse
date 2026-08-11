@@ -24,10 +24,14 @@ const SOCIAL_PATHS: Record<string, string> = {
   twitter: "M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z",
 };
 
-const LINK_COLUMNS = [
+interface FooterLink { href: string; label: string; icon: string; external?: boolean; }
+interface FooterColumn { title: string; links: FooterLink[]; }
+
+const LINK_COLUMNS: FooterColumn[] = [
   {
     title: "Browse",
     links: [
+      { href: "/about", label: "About ZyniVerse", icon: "book" },
       { href: "/search", label: "Explore Anime", icon: "search" },
       { href: "/top-anime", label: "Top Anime", icon: "award" },
       { href: "/manga", label: "Manga", icon: "book" },
@@ -69,12 +73,14 @@ const LINK_COLUMNS = [
       { href: "/conventions", label: "Conventions", icon: "calendar" },
       { href: "/characters", label: "Characters", icon: "users" },
       { href: "/leaderboard", label: "Leaderboard", icon: "bar-chart" },
+      { href: process.env.NEXT_PUBLIC_DISCORD_INVITE || "/community", label: "Discord Server", icon: "message-circle", external: true },
     ],
   },
   {
     title: "Account",
     links: [
       { href: "/watchlist", label: "My List", icon: "list" },
+      { href: "/manga-list", label: "My Manga", icon: "book" },
       { href: "/profile", label: "Profile", icon: "user" },
       { href: "/saved", label: "Saved Posts", icon: "bookmark" },
       { href: "/login", label: "Login", icon: "log-in" },
@@ -169,14 +175,26 @@ export default function Footer() {
               <ul className="space-y-0.5">
                 {col.links.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href}
-                      className="flex items-center gap-2 text-[11px] text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 rounded-md px-2 py-1.5 transition-all duration-200 group/link"
-                    >
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 opacity-50 group-hover/link:opacity-100 transition-opacity">
-                        <path d={ICON_PATHS[link.icon]} />
-                      </svg>
-                      {link.label}
-                    </Link>
+                    {link.external ? (
+                      <a href={link.href} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-[11px] text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 rounded-md px-2 py-1.5 transition-all duration-200 group/link"
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 opacity-50 group-hover/link:opacity-100 transition-opacity">
+                          <path d={ICON_PATHS[link.icon]} />
+                        </svg>
+                        {link.label}
+                        <span className="opacity-50">↗</span>
+                      </a>
+                    ) : (
+                      <Link href={link.href}
+                        className="flex items-center gap-2 text-[11px] text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 rounded-md px-2 py-1.5 transition-all duration-200 group/link"
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 opacity-50 group-hover/link:opacity-100 transition-opacity">
+                          <path d={ICON_PATHS[link.icon]} />
+                        </svg>
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

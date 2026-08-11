@@ -23,6 +23,19 @@ interface ListEntryData {
   progress: number;
   total: number;
   score: number | null;
+  scoreStory?: number | null;
+  scoreArt?: number | null;
+  scoreSound?: number | null;
+  scoreCharacters?: number | null;
+  scoreEnjoyment?: number | null;
+}
+
+export interface SubScores {
+  story?: number | null;
+  art?: number | null;
+  sound?: number | null;
+  characters?: number | null;
+  enjoyment?: number | null;
 }
 
 interface WatchlistCtx {
@@ -34,7 +47,8 @@ interface WatchlistCtx {
   setStatus: (mediaId: number, status: ListStatus, type?: string) => void;
   getProgress: (mediaId: number) => number;
   getScore: (mediaId: number) => number | null;
-  rate: (mediaId: number, score: number | null, type?: string) => void;
+  getSubScores: (mediaId: number) => SubScores;
+  rate: (mediaId: number, score: number | null, type?: string, subScores?: SubScores) => number | null;
 }
 
 const WatchlistContext = createContext<WatchlistCtx | null>(null);
@@ -140,24 +154,68 @@ export function WatchlistProvider({ children }: { children: React.ReactNode }) {
     return entry?.score ?? null;
   }, [entries]);
 
-  const rate = useCallback((mediaId: number, score: number | null, type = "ANIME") => {
+  const getSubScores = useCallback((mediaId: number): SubScores => {
+    const entry = entries.find((e) => e.mediaId === mediaId);
+    if (!entry) return {};
+    return {
+      story: entry.scoreStory ?? null,
+      art: entry.scoreArt ?? null,
+      sound: entry.scoreSound ?? null,
+      characters: entry.scoreCharacters ?? null,
+      enjoyment: entry.scoreEnjoyment ?? null,
+    };
+  }, [entries]);
+
+  const computeScore = useCallback((score: number | null, subScores?: SubScores): number | null => {
+    const vals = [
+      subScores?.story,
+      subScores?.art,
+      subScores?.sound,
+      subScores?.characters,
+      subScores?.enjoyment,
+    ].filter((s): s is number => typeof s === "number" && s >= 1 && s <= 10);
+
+    if (vals.length > 0) {
+      const avg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+      if (vals.length === 5) return avg;
+      if (typeof score === "number" && score >= 1 && score <= 10) return score;
+      return avg;
+    }
+    if (typeof score === "number" && score >= 1 && score <= 10) return score;
+    return null;
+  }, []);
+
+  const rate = useCallback((mediaId: number, score: number | null, type = "ANIME", subScores?: SubScores): number | null => {
+    const computed = computeScore(score, subScores);
     if (session?.user?.id) {
       fetch("/api/watchlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "rate", mediaId, type, score }),
+        body: JSON.stringify({ action: "rate", mediaId, type, score: computed, subScores }),
       }).catch(() => {});
     }
     setEntries((prev) => {
       const existing = prev.find((e) => e.mediaId === mediaId);
+      const updated = {
+        score: computed,
+        scoreStory: subScores?.story ?? null,
+        scoreArt: subScores?.art ?? null,
+        scoreSound: subScores?.sound ?? null,
+        scoreCharacters: subScores?.characters ?? null,
+        scoreEnjoyment: subScores?.enjoyment ?? null,
+      };
       if (existing) {
-        return prev.map((e) => e.mediaId === mediaId ? { ...e, score } : e);
+        return prev.map((e) => e.mediaId === mediaId ? { ...e, ...updated } : e);
       }
-      return [...prev, { mediaId, type, status: "PLANNING", progress: 0, total: 0, score }];
+      return [...prev, { mediaId, type, status: "PLANNING", progress: 0, total: 0, ...updated }];
     });
-  }, [session]);
+    return computed;
+  }, [session, computeScore]);
 
-  const value = useMemo(() => ({ items, entries, isSaved, getStatus, toggle, setStatus, getProgress, getScore, rate }), [items, entries, isSaved, getStatus, toggle, setStatus, getProgress, getScore, rate]);
+  const value = useMemo(
+    () => ({ items, entries, isSaved, getStatus, toggle, setStatus, getProgress, getScore, getSubScores, rate }),
+    [items, entries, isSaved, getStatus, toggle, setStatus, getProgress, getScore, getSubScores, rate]
+  );
 
   return (
     <WatchlistContext.Provider value={value}>

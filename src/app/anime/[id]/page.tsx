@@ -32,6 +32,7 @@ import RecRelationships from "@/components/RecRelationships";
 import DiscussionLinks from "@/components/DiscussionLinks";
 import CharacterVoteWidget from "@/components/CharacterVoteWidget";
 import EpisodeRatingsCard from "@/components/EpisodeRatingsCard";
+import EpisodeDiscussion from "@/components/EpisodeDiscussion";
 import DubNotifyButton from "@/components/DubNotifyButton";
 import type { MediaAnimeFull } from "@/lib/anilist";
 
@@ -441,6 +442,9 @@ export default function AnimeDetailsPage() {
 
           {/* Filler Guide */}
           <FillerGuide anilistId={anime.id} animeTitle={title} />
+
+          {/* Episode Discussions */}
+          <EpisodeDiscussion mediaId={anime.id} />
 
           {/* Ad Placement */}
           <AdBanner placement="anime-detail" type="sidebar" />
