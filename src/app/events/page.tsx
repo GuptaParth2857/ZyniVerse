@@ -15,7 +15,7 @@ import FeaturedEventCard from "@/components/FeaturedEventCard";
 export const metadata: Metadata = {
   title: "Anime Events & Announcements — Conventions, Expo, Premieres | ZyniVerse",
   description:
-    "Track anime events worldwide — Anime Expo, Jump Festa, Crunchyroll Expo, SDCC and more. See all announcements, trailers, reveals, and key visuals from major anime events.",
+    "Track anime events worldwide — Anime Expo, AnimeJapan, Jump Festa, Comic Market, Anime NYC and more. See all announcements, trailers, reveals, and key visuals from major anime events.",
   openGraph: {
     title: "Anime Events & Announcements | ZyniVerse",
     description:

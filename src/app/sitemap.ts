@@ -13,6 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: BASE_URL, lastModified: now, changeFrequency: "daily", priority: 1 },
+    { url: `${BASE_URL}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE_URL}/filler`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/characters`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE_URL}/manga`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
@@ -50,6 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/achievements`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
     { url: `${BASE_URL}/activity`, lastModified: now, changeFrequency: "daily", priority: 0.4 },
     { url: `${BASE_URL}/watch-party`, lastModified: now, changeFrequency: "weekly", priority: 0.4 },
+    { url: `${BASE_URL}/manga-list`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE_URL}/premium`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/tv-schedule`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/live-action`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },

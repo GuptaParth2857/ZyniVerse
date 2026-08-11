@@ -21,6 +21,7 @@ const PRIMARY_LINKS = [
   { to: "/schedule", label: "Schedule" },
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/watchlist", label: "My List" },
+  { to: "/manga-list", label: "My Manga" },
   { to: "/reels", label: "Reels", accent: true },
 ];
 
@@ -77,6 +78,7 @@ const MORE_CATEGORIES = [
     icon: "📚",
     items: [
       { to: "/manga", label: "Manga" },
+      { to: "/manga-list", label: "My Manga List" },
       { to: "/light-novels", label: "Light Novels" },
       { to: "/doujinshi", label: "Doujinshi" },
     ],

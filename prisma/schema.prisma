@@ -29,6 +29,7 @@ model User {
   entries                ListEntry[]
   progress               EpisodeProgress[]
   reviews                Review[]
+  episodeThreadComments  EpisodeThreadComment[]
   dubRequests            DubRequest[]
   posts                  Post[]
   comments               Comment[]
@@ -128,19 +129,24 @@ model Follow {
 }
 
 model ListEntry {
-  id          String    @id @default(cuid())
-  userId      String
-  mediaId     Int
-  type        String
-  status      String    @default("PLANNING")
-  progress    Int       @default(0)
-  total       Int       @default(0)
-  score       Int?
-  startedAt   DateTime?
-  completedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String    @id @default(cuid())
+  userId          String
+  mediaId         Int
+  type            String
+  status          String    @default("PLANNING")
+  progress        Int       @default(0)
+  total           Int       @default(0)
+  score           Int?
+  scoreStory      Int?
+  scoreArt        Int?
+  scoreSound      Int?
+  scoreCharacters Int?
+  scoreEnjoyment  Int?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, mediaId])
   @@index([userId, status])
@@ -173,6 +179,20 @@ model Review {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, mediaId])
+}
+
+model EpisodeThreadComment {
+  id        String   @id @default(cuid())
+  mediaId   Int
+  episode   Int
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([mediaId, episode])
+  @@index([mediaId, createdAt])
 }
 
 model DubRequest {
