@@ -487,6 +487,52 @@ const SECTIONS = [
     ),
   },
   {
+    id: "scrobble",
+    title: "Auto-Tracking (Scrobble)",
+    endpoint: { method: "POST", path: "/api/v1/scrobble" },
+    content: (
+      <>
+        <p className="text-sm leading-relaxed text-[var(--color-mute)]">
+          Report what you're watching and ZyniVerse matches it (via AniList), sets it to{" "}
+          <b className="text-[var(--color-ink)]">Currently Watching</b>, and records episode progress.
+          This powers the official{" "}
+          <Link href="/extension" className="text-[var(--color-cyan)] hover:underline">Chrome extension</Link>.
+        </p>
+        <div className="mt-5">
+          <SubHeading>Request Body</SubHeading>
+          <ParamTable rows={[
+            ["title", "string", "Anime title to match (either title or mediaId is required)"],
+            ["mediaId", "number", "AniList media ID (skips title matching)"],
+            ["episode", "number", "Episode number watched (default: 1)"],
+          ]} />
+        </div>
+        <div className="mt-5">
+          <SubHeading>Example Request</SubHeading>
+          <CodeBlock copyValue={'curl -X POST -H "Authorization: Bearer zvn_your_key_here" -H "Content-Type: application/json" \\\n  -d \'{"title": "Naruto", "episode": 3}\' \\\n  https://zyverse.in/api/v1/scrobble'}>
+            <span className="text-[var(--color-ink)]">curl</span> -X POST -H <span className="text-[var(--color-magenta)]">&quot;Authorization: Bearer zvn_your_key_here&quot;</span> -H <span className="text-[var(--color-magenta)]">&quot;Content-Type: application/json&quot;</span> \<br />
+            &nbsp;&nbsp;-d <span className="text-[var(--color-magenta)]">&apos;&#123;&quot;title&quot;: &quot;Naruto&quot;, &quot;episode&quot;: 3&#125;&apos;</span> \<br />
+            &nbsp;&nbsp;https://zyverse.in/api/v1/scrobble
+          </CodeBlock>
+        </div>
+        <div className="mt-5">
+          <SubHeading>Example Response</SubHeading>
+          <JsonBlock json={{
+            ok: true,
+            title: "Naruto",
+            episode: 3,
+            status: "CURRENT",
+            matched: true,
+          }} />
+        </div>
+        <div className="mt-5 space-y-4">
+          <SubHeading>Related Endpoints</SubHeading>
+          <EndpointCard method="GET" path="/api/v1/me/stats" desc="Get your stats: entries by status, average score, episodes watched, activity count." />
+          <EndpointCard method="GET" path="/api/v1/me/watchlist" desc="Get your watchlist entries (filter with ?status=CURRENT)." />
+        </div>
+      </>
+    ),
+  },
+  {
     id: "errors",
     title: "Error Handling",
     endpoint: null,

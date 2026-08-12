@@ -55,6 +55,7 @@ const LINK_COLUMNS: FooterColumn[] = [
       { href: "/filler", label: "Filler Guides", icon: "edit" },
       { href: "/watch-order", label: "Watch Orders", icon: "list" },
       { href: "/tools", label: "Tools", icon: "bar-chart" },
+      { href: "/extension", label: "Chrome Extension", icon: "code" },
       { href: "/toons", label: "Toons & Cartoons", icon: "tv" },
       { href: "/tv-schedule", label: "TV Channels", icon: "globe" },
       { href: "/dub-schedule", label: "Dub Schedule", icon: "clock" },

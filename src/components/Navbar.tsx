@@ -25,7 +25,10 @@ const PRIMARY_LINKS = [
   { to: "/reels", label: "Reels", accent: true },
 ];
 
-const MORE_CATEGORIES = [
+interface MoreLink { to: string; label: string; external?: boolean; }
+interface MoreCategory { title: string; icon: string; items: MoreLink[]; }
+
+const MORE_CATEGORIES: MoreCategory[] = [
   {
     title: "Discover",
     icon: "🔍",
@@ -109,6 +112,7 @@ const MORE_CATEGORIES = [
       { to: "/tierlist", label: "Tier Lists" },
       { to: "/lists", label: "Lists" },
       { to: "/feedback", label: "Feedback" },
+      { to: process.env.NEXT_PUBLIC_DISCORD_INVITE || "https://discord.gg", label: "Discord", external: true },
     ],
   },
   {
@@ -116,6 +120,7 @@ const MORE_CATEGORIES = [
     icon: "✨",
     items: [
       { to: "/tools", label: "Tools" },
+      { to: "/extension", label: "Chrome Extension" },
       { to: "/merch", label: "Merch Store" },
       { to: "/premium", label: "Premium" },
       { to: "/figures", label: "My Collection" },
@@ -127,6 +132,7 @@ const MORE_CATEGORIES = [
       { to: "/docs", label: "API Docs" },
       { to: "/developer", label: "Developer" },
       { to: "/wiki", label: "Wiki" },
+      { to: "/about", label: "About" },
       { to: "/status", label: "Status" },
     ],
   },
@@ -256,19 +262,29 @@ export default function Navbar() {
                   {MORE_CATEGORIES.filter((cat) => cat.title === moreTab).map((cat) => (
                     <div key={cat.title}>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
-                        {cat.items.map((l) => (
-                          <Link key={l.to} href={l.to}
-                            onClick={() => setMoreOpen(false)}
-                            className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
-                              pathname === l.to
-                                ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/10 font-semibold"
-                                : "text-[var(--color-mute)] hover:bg-white/5 hover:text-[var(--color-text)]"
-                            }`}
-                          >
-                            {pathname === l.to && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-cyan)] shrink-0" />}
-                            {l.label}
-                          </Link>
-                        ))}
+                        {cat.items.map((l) =>
+                          l.external ? (
+                            <a key={l.to} href={l.to} target="_blank" rel="noopener noreferrer"
+                              onClick={() => setMoreOpen(false)}
+                              className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[var(--color-mute)] hover:bg-white/5 hover:text-[var(--color-text)] transition-all duration-200"
+                            >
+                              {l.label}
+                              <span className="ml-auto text-[10px] opacity-50">↗</span>
+                            </a>
+                          ) : (
+                            <Link key={l.to} href={l.to}
+                              onClick={() => setMoreOpen(false)}
+                              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
+                                pathname === l.to
+                                  ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/10 font-semibold"
+                                  : "text-[var(--color-mute)] hover:bg-white/5 hover:text-[var(--color-text)]"
+                              }`}
+                            >
+                              {pathname === l.to && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-cyan)] shrink-0" />}
+                              {l.label}
+                            </Link>
+                          )
+                        )}
                       </div>
                       {cat.title === "More" && session && (
                         <div className="mt-2 pt-2 border-t border-[var(--color-line)]/50">
@@ -466,16 +482,25 @@ export default function Navbar() {
                   </button>
                   {isOpen && (
                     <div className="grid grid-cols-2 gap-1 px-2 pb-2">
-                      {cat.items.map((l) => (
-                        <Link key={l.to} href={l.to} onClick={() => setOpen(false)}
-                          className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                            pathname === l.to ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/10" : "text-[var(--color-mute)] hover:text-[var(--color-cyan)]"
-                          }`}
-                        >
-                          {pathname === l.to && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-cyan)] shrink-0" />}
-                          {l.label}
-                        </Link>
-                      ))}
+                      {cat.items.map((l) =>
+                        l.external ? (
+                          <a key={l.to} href={l.to} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}
+                            className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all"
+                          >
+                            {l.label}
+                            <span className="ml-auto text-[10px] opacity-50">↗</span>
+                          </a>
+                        ) : (
+                          <Link key={l.to} href={l.to} onClick={() => setOpen(false)}
+                            className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                              pathname === l.to ? "text-[var(--color-cyan)] bg-[var(--color-cyan)]/10" : "text-[var(--color-mute)] hover:text-[var(--color-cyan)]"
+                            }`}
+                          >
+                            {pathname === l.to && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-cyan)] shrink-0" />}
+                            {l.label}
+                          </Link>
+                        )
+                      )}
                     </div>
                   )}
                 </div>
