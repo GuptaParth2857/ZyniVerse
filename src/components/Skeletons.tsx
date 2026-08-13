@@ -24,7 +24,7 @@ export function CardGridSkeleton({ count = 12 }: { count?: number }) {
 
 export function HeroSkeleton() {
   return (
-    <div className="relative min-h-[70vh] w-full animate-pulse bg-[var(--color-panel)]">
+    <div className="relative h-[90vh] min-h-[400px] sm:min-h-[600px] w-full animate-pulse bg-[var(--color-panel)]">
       <div className="absolute bottom-0 left-0 right-0 p-8 space-y-4">
         <div className="h-4 w-24 rounded bg-white/10" />
         <div className="h-10 w-2/3 rounded bg-white/10" />
