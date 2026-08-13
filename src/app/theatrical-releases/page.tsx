@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { PageTransition } from "@/components/PageTransition";
 import TrailerModal from "@/components/TrailerModal";
+import TheaterBookingModal from "@/components/TheaterBookingModal";
 import type { TheatricalRelease } from "@/lib/theatrical-releases";
 
 const STATUS_FILTERS = ["All", "Released", "Upcoming"] as const;
@@ -31,6 +32,7 @@ export default function TheatricalReleasesPage() {
   const [stats, setStats] = useState<TheatricalStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
+  const [bookingMovie, setBookingMovie] = useState<TheatricalRelease | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -172,7 +174,7 @@ export default function TheatricalReleasesPage() {
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {releases.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} onPlayTrailer={() => setTrailerUrl(movie.trailerUrl ?? null)} />
+              <MovieCard key={movie.id} movie={movie} onPlayTrailer={() => setTrailerUrl(movie.trailerUrl ?? null)} onBookTickets={() => setBookingMovie(movie)} />
             ))}
           </div>
         )}
@@ -185,11 +187,25 @@ export default function TheatricalReleasesPage() {
         )}
       </div>
       <TrailerModal url={trailerUrl} onClose={() => setTrailerUrl(null)} />
+      {bookingMovie && (
+        <TheaterBookingModal
+          movieTitle={bookingMovie.displayTitle}
+          onClose={() => setBookingMovie(null)}
+        />
+      )}
     </PageTransition>
   );
 }
 
-function MovieCard({ movie, onPlayTrailer }: { movie: TheatricalRelease; onPlayTrailer: () => void }) {
+function MovieCard({
+  movie,
+  onPlayTrailer,
+  onBookTickets,
+}: {
+  movie: TheatricalRelease;
+  onPlayTrailer: () => void;
+  onBookTickets: () => void;
+}) {
   return (
     <div className="theorem-card group cursor-pointer transition-all duration-500">
       <div className="theorem-glow" />
@@ -305,6 +321,12 @@ function MovieCard({ movie, onPlayTrailer }: { movie: TheatricalRelease; onPlayT
                 MAL
               </a>
             )}
+            <button
+              onClick={onBookTickets}
+              className="flex-1 rounded-lg bg-gradient-to-r from-[var(--color-cyan)] to-[var(--color-violet)] px-3 py-2 text-center text-xs font-bold text-black transition-all hover:shadow-lg hover:shadow-[var(--color-cyan)]/20 hover:scale-[1.02]"
+            >
+              Book Tickets
+            </button>
           </div>
         </div>
       </div>
