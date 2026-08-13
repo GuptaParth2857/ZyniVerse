@@ -47,7 +47,7 @@ export default function Hero3D({ items, stats }: { items: Media[]; stats?: HeroS
   return (
     <section className="relative h-[90vh] min-h-[400px] sm:min-h-[600px] flex items-center overflow-hidden border-b border-[var(--color-line)]">
       {/* Background layers */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={hero?.id}
           initial={{ opacity: 0, scale: 1.1 }}
@@ -76,7 +76,7 @@ export default function Hero3D({ items, stats }: { items: Media[]; stats?: HeroS
             Skip Filler. Find the Right Watch Order. Track Indian TV &amp; Dubs. All in One Place.
           </p>
 
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={hero?.id}
               initial={{ opacity: 0, y: 20 }}

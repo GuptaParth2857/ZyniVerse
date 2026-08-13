@@ -50,7 +50,7 @@ const emptySubscribe = () => () => {};
 function getSplashSeen(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    return sessionStorage.getItem(SPLASH_SEEN_KEY) === "1";
+    return localStorage.getItem(SPLASH_SEEN_KEY) === "1";
   } catch {
     return false;
   }
@@ -67,7 +67,7 @@ export default function SplashScreen() {
 
   useEffect(() => {
     try {
-      sessionStorage.setItem(SPLASH_SEEN_KEY, "1");
+      localStorage.setItem(SPLASH_SEEN_KEY, "1");
     } catch {
       /* ignore */
     }
