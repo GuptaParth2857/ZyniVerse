@@ -47,10 +47,15 @@ const SPLASH_SEEN_KEY = "zyniverse_splash_seen";
 
 const emptySubscribe = () => () => {};
 
+function todayKey(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
 function getSplashSeen(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    return localStorage.getItem(SPLASH_SEEN_KEY) === "1";
+    return localStorage.getItem(SPLASH_SEEN_KEY) === todayKey();
   } catch {
     return false;
   }
@@ -67,7 +72,7 @@ export default function SplashScreen() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(SPLASH_SEEN_KEY, "1");
+      localStorage.setItem(SPLASH_SEEN_KEY, todayKey());
     } catch {
       /* ignore */
     }
