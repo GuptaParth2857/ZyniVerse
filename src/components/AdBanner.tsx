@@ -212,7 +212,7 @@ export default function AdBanner({
         ref={containerRef}
         onClick={handleClick}
         className={`relative w-full overflow-hidden rounded-xl ${className}`}
-        style={{ minHeight: 200 }}
+        style={{ minHeight: 280 }}
       >
         <AdLabel />
         <NativeAsyncAd containerId={containerId} />

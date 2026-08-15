@@ -124,7 +124,7 @@ export default function HorizontalScroll({
               <div className="relative z-10 ml-[30px]">
                 <div className="relative aspect-[2/3] overflow-hidden rounded-[8px] bg-[#161616] transition-all duration-500 group-hover/card:scale-[1.02] group-hover/card:shadow-[0_0_40px_-8px_var(--color-magenta)]">
                   <Image
-                    src={item.coverImage?.extraLarge || item.coverImage?.large || ""}
+                    src={item.coverImage?.large || item.coverImage?.extraLarge || ""}
                     alt=""
                     fill
                     className="object-cover transition-transform duration-700 group-hover/card:scale-105"

@@ -97,7 +97,6 @@ export default function AnimeRatingInput({ mediaId, type = "ANIME" }: { mediaId:
 
       <div className="space-y-3">
         {CATEGORIES.map((cat) => {
-          const val = hovering[cat.key] ?? draft[cat.key];
           const display = hovering[cat.key] ?? draft[cat.key];
           return (
             <div key={cat.key}>

@@ -21,7 +21,7 @@ export default function ExpandingFlexCard({ items }: { items: Media[] }) {
           >
             <div className="relative h-[210px] w-full">
               <Image
-                src={item.coverImage?.extraLarge || item.coverImage?.large || ""}
+                src={item.coverImage?.large || item.coverImage?.extraLarge || ""}
                 alt=""
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -71,7 +71,7 @@ export default function ExpandingFlexCard({ items }: { items: Media[] }) {
                 className="relative block h-full w-full"
               >
                 <Image
-                  src={item.coverImage?.extraLarge || item.coverImage?.large || ""}
+                  src={item.coverImage?.large || item.coverImage?.extraLarge || ""}
                   alt=""
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"

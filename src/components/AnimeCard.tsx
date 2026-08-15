@@ -55,7 +55,7 @@ export default function AnimeCard({ anime, no3D = false }: { anime: Media; no3D?
         <div className="glass-content">
           <div className="relative aspect-[2/3] overflow-hidden rounded-t-xl bg-[var(--color-panel)]">
             <Image
-              src={anime.coverImage?.extraLarge || anime.coverImage?.large || anime.coverImage?.medium || ""}
+              src={anime.coverImage?.large || anime.coverImage?.extraLarge || anime.coverImage?.medium || ""}
               alt={title}
               fill
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"

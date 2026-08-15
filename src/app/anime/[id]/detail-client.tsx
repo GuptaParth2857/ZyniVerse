@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { bestTitle } from "@/lib/anilist";
-import { ErrorState } from "@/components/Loader";
 import CountdownChip from "@/components/CountdownChip";
 import { useWatchlist } from "@/components/WatchlistProvider";
 import { DynamicCarousel3D as Carousel3D } from "@/components/lazy";
@@ -49,18 +48,19 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
   const [trailerOpen, setTrailerOpen] = useState(false);
   const [momentMakerOpen, setMomentMakerOpen] = useState(false);
   const [showAllStaff, setShowAllStaff] = useState(false);
-  const [dubLangs, setDubLangs] = useState<string[] | null>(null);
+  const [dubLangsById, setDubLangsById] = useState<Record<number, string[] | null>>({});
   const { isSaved, toggle } = useWatchlist();
 
   useEffect(() => {
-    setDubLangs(null);
     if (anime.idMal) {
       fetch(`/api/anime-dub-status?malId=${anime.idMal}`)
         .then((r) => r.json())
-        .then((res) => { if (res.success) setDubLangs(res.available); })
+        .then((res) => { if (res.success) setDubLangsById((prev) => ({ ...prev, [anime.id]: res.available })); })
         .catch(() => {});
     }
   }, [anime.id, anime.idMal]);
+
+  const dubLangs = dubLangsById[anime.id] ?? null;
 
   const title = bestTitle(anime.title);
   const saved = isSaved(anime.id);

@@ -1,12 +1,5 @@
 import type { Metadata } from "next";
-import {
-  getAnimeEvents,
-  getEventTypes,
-  getCountries,
-  getAnimeEventsMeta,
-  getAllAnnouncements,
-  getUpcomingEvents,
-} from "@/lib/anime-events";
+import { getEventsPageData } from "@/lib/anime-events";
 import EventFilters from "@/components/EventFilters";
 import AnnouncementsSection from "@/components/AnnouncementsSection";
 import EventHero from "@/components/EventHero";
@@ -24,22 +17,17 @@ export const metadata: Metadata = {
 };
 
 export default async function AnimeEventsPage() {
-  let events: Awaited<ReturnType<typeof getAnimeEvents>> = [];
-  let types: Awaited<ReturnType<typeof getEventTypes>> = [];
-  let countries: Awaited<ReturnType<typeof getCountries>> = [];
-  let meta: Awaited<ReturnType<typeof getAnimeEventsMeta>> = { totalEvents: 0, disclaimer: "Anime event data is curated from public sources. Dates, announcements, and details may change — verify with official event websites.", lastUpdated: "N/A", source: "curated" };
-  let announcements: Awaited<ReturnType<typeof getAllAnnouncements>> = [];
-  let upcoming: Awaited<ReturnType<typeof getUpcomingEvents>> = [];
+  let {
+    events = [],
+    types = [],
+    countries = [],
+    meta = { totalEvents: 0, disclaimer: "Anime event data is curated from public sources. Dates, announcements, and details may change — verify with official event websites.", lastUpdated: "N/A", source: "curated" as const },
+    announcements = [],
+    upcoming = [],
+  } = {} as Awaited<ReturnType<typeof getEventsPageData>>;
 
   try {
-    [events, types, countries, meta, announcements, upcoming] = await Promise.all([
-      getAnimeEvents(),
-      getEventTypes(),
-      getCountries(),
-      getAnimeEventsMeta(),
-      getAllAnnouncements(),
-      getUpcomingEvents(),
-    ]);
+    ({ events, types, countries, meta, announcements, upcoming } = await getEventsPageData());
   } catch {
     // Fallback to empty arrays — page renders with zero data
   }

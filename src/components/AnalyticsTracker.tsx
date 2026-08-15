@@ -64,7 +64,7 @@ export default function AnalyticsTracker() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId }),
       }).catch(() => {});
-    }, 30000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [sessionId]);

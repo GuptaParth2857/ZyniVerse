@@ -14,6 +14,8 @@ import NotificationBell from "./NotificationBell";
 import LanguageSwitcher from "./LanguageSwitcher";
 import SubscriptionBadge from "./SubscriptionBadge";
 
+const DISCORD_INVITE = process.env.NEXT_PUBLIC_DISCORD_INVITE;
+
 const PRIMARY_LINKS = [
   { to: "/", label: "Home" },
   { to: "/search", label: "Explore" },
@@ -112,7 +114,9 @@ const MORE_CATEGORIES: MoreCategory[] = [
       { to: "/tierlist", label: "Tier Lists" },
       { to: "/lists", label: "Lists" },
       { to: "/feedback", label: "Feedback" },
-      { to: process.env.NEXT_PUBLIC_DISCORD_INVITE || "https://discord.gg", label: "Discord", external: true },
+      ...(DISCORD_INVITE
+        ? [{ to: DISCORD_INVITE, label: "Discord", external: true }]
+        : []),
     ],
   },
   {

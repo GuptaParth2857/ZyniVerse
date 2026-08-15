@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import Image from "next/image";
 import { logError } from "@/lib/logger";
-import { amazonProductUrl } from "@/lib/affiliate-config";
+import { amazonProductUrl, amazonSearchUrl } from "@/lib/affiliate-config";
 
 interface MerchItem {
   id: string;
@@ -48,7 +48,7 @@ const MERCH_ITEMS: MerchItem[] = [
     image: "https://m.media-amazon.com/images/I/71Y2ot9ofXL._AC_SL1500_.jpg",
     price: "₹1,319",
     originalPrice: "₹2,889",
-    affiliateUrl: amazonUrl("B0DKXKNWVP"),
+    affiliateUrl: amazonUrl("B0F5BR9483"),
     platform: "Amazon",
     category: "Figurines",
     rating: 4.5,
@@ -58,11 +58,11 @@ const MERCH_ITEMS: MerchItem[] = [
   },
   {
     id: "figurine-gojo-funfob",
-    name: "Jujutsu Kaisen Gojo Satoru Eye Mask Figure (21cm)",
+    name: "Jujutsu Kaisen Gojo Satoru Action Figure (21.5cm)",
     image: "https://m.media-amazon.com/images/I/31LNc8YzeUL._AC_SL1500_.jpg",
     price: "₹642",
     originalPrice: "₹2,999",
-    affiliateUrl: amazonUrl("B0D97XD6VP"),
+    affiliateUrl: amazonUrl("B0GVPTQ45G"),
     platform: "Amazon",
     category: "Figurines",
     rating: 4.4,
@@ -76,7 +76,7 @@ const MERCH_ITEMS: MerchItem[] = [
     image: "https://m.media-amazon.com/images/I/61op+F7QRuL._AC_SL1500_.jpg",
     price: "₹1,329",
     originalPrice: "₹3,999",
-    affiliateUrl: amazonUrl("B0B6JKFCX3"),
+    affiliateUrl: amazonUrl("B0GNJRFDV2"),
     platform: "Amazon",
     category: "Figurines",
     rating: 4.3,
@@ -90,7 +90,7 @@ const MERCH_ITEMS: MerchItem[] = [
     image: "https://m.media-amazon.com/images/I/71FQLUqipWL._AC_SL1500_.jpg",
     price: "₹2,499",
     originalPrice: "₹3,499",
-    affiliateUrl: amazonUrl("B0C8J3V6WQ"),
+    affiliateUrl: amazonUrl("B0DFCNGSC9"),
     platform: "Amazon",
     category: "Figurines",
     rating: 4.6,
@@ -104,7 +104,7 @@ const MERCH_ITEMS: MerchItem[] = [
     image: "https://m.media-amazon.com/images/I/61FHv4KFEpL._AC_SL1500_.jpg",
     price: "₹1,599",
     originalPrice: "₹4,499",
-    affiliateUrl: amazonUrl("B0BVHLH6HY"),
+    affiliateUrl: amazonUrl("B0HCRS42YK"),
     platform: "Amazon",
     category: "Figurines",
     rating: 4.2,
@@ -164,7 +164,7 @@ const MERCH_ITEMS: MerchItem[] = [
     image: "https://m.media-amazon.com/images/I/51V0uVw4DpL._AC_SL1500_.jpg",
     price: "₹649",
     originalPrice: "₹999",
-    affiliateUrl: amazonUrl("B0C1WTS2TY"),
+    affiliateUrl: amazonUrl("B0C1WTNNKK"),
     platform: "Amazon",
     category: "Clothing",
     rating: 4.2,
@@ -192,7 +192,7 @@ const MERCH_ITEMS: MerchItem[] = [
     image: "https://m.media-amazon.com/images/I/5108uMOHuiL._AC_SL1500_.jpg",
     price: "₹549",
     originalPrice: "₹999",
-    affiliateUrl: amazonUrl("B0D4GQCFV8"),
+    affiliateUrl: amazonUrl("B0D9HBJS7L"),
     platform: "Amazon",
     category: "Clothing",
     rating: 4.1,
@@ -206,11 +206,11 @@ const MERCH_ITEMS: MerchItem[] = [
   // ══════════════════════════════════════════════
   {
     id: "accessory-ds-keychain",
-    name: "Demon Slayer Action Figure Keychain Set (6 pcs)",
+    name: "Demon Slayer Anime Keychain Set (Pack of 4)",
     image: "https://m.media-amazon.com/images/I/51IH34aVMaL._AC_SL1500_.jpg",
     price: "₹899",
     originalPrice: "₹2,499",
-    affiliateUrl: amazonUrl("B0BVJLQY7C"),
+    affiliateUrl: amazonUrl("B0H23F1KMT"),
     platform: "Amazon",
     category: "Accessories",
     rating: 4.2,
@@ -224,7 +224,7 @@ const MERCH_ITEMS: MerchItem[] = [
     image: "https://m.media-amazon.com/images/I/51Jro8V58ZL._AC_SL1500_.jpg",
     price: "₹450",
     originalPrice: "₹999",
-    affiliateUrl: amazonUrl("B0CRQJ7MY8"),
+    affiliateUrl: amazonUrl("B0CW1R53VD"),
     platform: "Amazon",
     category: "Accessories",
     rating: 4.4,
@@ -234,11 +234,11 @@ const MERCH_ITEMS: MerchItem[] = [
   },
   {
     id: "accessory-anime-lamp",
-    name: "Anime Action Figure LED Lamp with Cursed Necklace (28cm)",
+    name: "Anime LED Action Figure Lamp with Glow Effect",
     image: "https://m.media-amazon.com/images/I/71bjCUqejNL._AC_SL1500_.jpg",
     price: "₹1,399",
     originalPrice: "₹2,999",
-    affiliateUrl: amazonUrl("B0CYH8QFV9"),
+    affiliateUrl: amazonUrl("B0H9S3B93B"),
     platform: "Amazon",
     category: "Accessories",
     rating: 4.5,
@@ -252,7 +252,7 @@ const MERCH_ITEMS: MerchItem[] = [
     image: "https://m.media-amazon.com/images/I/719XtED7rbL._AC_SL1500_.jpg",
     price: "₹849",
     originalPrice: "₹1,499",
-    affiliateUrl: amazonUrl("B0CYM2YWFL"),
+    affiliateUrl: amazonUrl("B0D14Z6GSS"),
     platform: "Amazon",
     category: "Accessories",
     rating: 4.3,
@@ -358,6 +358,12 @@ export default function MerchStore() {
   const [platformFilter, setPlatformFilter] = useState<string>("All");
   const [search, setSearch] = useState("");
 
+  const handleSearchAmazon = useCallback(() => {
+    const q = search.trim();
+    if (!q) return;
+    window.open(amazonSearchUrl(q), "_blank", "noopener,noreferrer");
+  }, [search]);
+
   const filtered = MERCH_ITEMS.filter((item) => {
     if (category !== "All" && item.category !== category) return false;
     if (platformFilter !== "All" && item.platform !== platformFilter) return false;
@@ -418,14 +424,25 @@ export default function MerchStore() {
         <div className="mb-6 flex flex-col gap-3">
           {/* Search Bar */}
           <div className="relative">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-mute)]">
+            <button
+              type="button"
+              onClick={handleSearchAmazon}
+              title="Search on Amazon"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-mute)] transition-colors hover:text-[var(--color-cyan)]"
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </span>
+            </button>
             <input
               type="text"
-              placeholder="Search anime merch — figures, tees, manga, accessories..."
+              placeholder="Search anime merch — press Enter to search on Amazon"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSearchAmazon();
+                }
+              }}
               className="merch-search neon-border w-full rounded-xl bg-[var(--color-surface1)] pl-12 pr-4 py-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-mute)] focus:outline-none focus:ring-0 focus:border-transparent"
             />
           </div>

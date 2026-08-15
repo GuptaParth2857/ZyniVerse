@@ -34,7 +34,7 @@ export default function MyMangaListClient() {
   const { data: session, status: sessionStatus } = useSession();
   const [entries, setEntries] = useState<MangaListEntry[]>([]);
   const [filter, setFilter] = useState("ALL");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchList = useCallback(async (status: string) => {
@@ -56,11 +56,15 @@ export default function MyMangaListClient() {
 
   useEffect(() => {
     if (sessionStatus === "loading") return;
-    if (!session?.user) {
-      setLoading(false);
-      return;
+    if (session?.user) {
+      let cancelled = false;
+      (async () => {
+        await Promise.resolve();
+        if (cancelled) return;
+        await fetchList(filter);
+      })();
+      return () => { cancelled = true; };
     }
-    fetchList(filter);
   }, [session, sessionStatus, filter, fetchList]);
 
   async function changeStatus(mediaId: number, status: string) {

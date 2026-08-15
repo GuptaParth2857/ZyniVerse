@@ -28,6 +28,24 @@ export function registerAniListCache(adapter: AniListCacheAdapter): void {
 const responseCache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000;
 
+let degradedUntil = 0;
+const DEGRADED_COOLDOWN_MS = 5 * 60 * 1000;
+
+export class AniListUnavailableError extends Error {
+  constructor() {
+    super("AniList is temporarily unavailable");
+    this.name = "AniListUnavailableError";
+  }
+}
+
+function isDegraded(): boolean {
+  return Date.now() < degradedUntil;
+}
+
+function enterDegradedMode(): void {
+  degradedUntil = Date.now() + DEGRADED_COOLDOWN_MS;
+}
+
 function getCacheKey(query: string, variables: Record<string, unknown>): string {
   return `${query}|${JSON.stringify(variables)}`;
 }
@@ -64,58 +82,62 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
 
   let lastError: Error | null = null;
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+  if (!isDegraded()) {
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
-      const res = await fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": USER_AGENT },
-        body: JSON.stringify({ query, variables }),
-        signal: controller.signal,
-        cache: "force-cache",
-        next: { revalidate: 3600 },
-      });
+        const res = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": USER_AGENT },
+          body: JSON.stringify({ query, variables }),
+          signal: controller.signal,
+          cache: "force-cache",
+          next: { revalidate: 3600 },
+        });
 
-      clearTimeout(timer);
+        clearTimeout(timer);
 
-      if (!res.ok) {
-        if (res.status === 429) {
+        if (!res.ok) {
+          if (res.status === 429) {
+            if (attempt < MAX_RETRIES) {
+              await new Promise((r) => setTimeout(r, 1000));
+              continue;
+            }
+            throw new Error("Rate limited by AniList — try again later.");
+          }
+          enterDegradedMode();
+          const body = await res.text().catch(() => "");
+          throw new Error(`AniList request failed (${res.status}): ${body.slice(0, 200)}`);
+        }
+
+        const json = await res.json();
+        if (json.errors) {
+          const msg = json.errors[0]?.message || "AniList returned an error";
           if (attempt < MAX_RETRIES) {
-            await new Promise((r) => setTimeout(r, 1000));
+            await new Promise((r) => setTimeout(r, 500));
             continue;
           }
-          throw new Error("Rate limited by AniList — try again later.");
+          enterDegradedMode();
+          throw new Error(msg);
         }
-        const body = await res.text().catch(() => "");
-        throw new Error(`AniList request failed (${res.status}): ${body.slice(0, 200)}`);
-      }
 
-      const json = await res.json();
-      if (json.errors) {
-        const msg = json.errors[0]?.message || "AniList returned an error";
+        setCache(cacheKey, json.data);
+        const activeAdapter = getActiveAdapter();
+        if (activeAdapter) {
+          await activeAdapter.persist(cacheKey, json.data).catch(() => {});
+        }
+        return json.data;
+      } catch (e) {
+        lastError = e instanceof Error ? e : new Error(String(e));
+        if (lastError.name === "AbortError") {
+          lastError = new Error("AniList request timed out — try again.");
+        }
         if (attempt < MAX_RETRIES) {
-          await new Promise((r) => setTimeout(r, 500));
+          await new Promise((r) => setTimeout(r, 800));
           continue;
         }
-        throw new Error(msg);
-      }
-
-      setCache(cacheKey, json.data);
-      const activeAdapter = getActiveAdapter();
-      if (activeAdapter) {
-        await activeAdapter.persist(cacheKey, json.data).catch(() => {});
-      }
-      return json.data;
-    } catch (e) {
-      lastError = e instanceof Error ? e : new Error(String(e));
-      if (lastError.name === "AbortError") {
-        lastError = new Error("AniList request timed out — try again.");
-      }
-      if (attempt < MAX_RETRIES) {
-        await new Promise((r) => setTimeout(r, 800));
-        continue;
       }
     }
   }
@@ -131,6 +153,10 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
     } catch {
       // ignore persistence errors
     }
+  }
+
+  if (isDegraded()) {
+    throw new AniListUnavailableError();
   }
 
   throw lastError || new Error("AniList request failed");
@@ -872,6 +898,7 @@ export interface Media {
   volumes?: number;
   countryOfOrigin?: string;
   isLicensed?: boolean;
+  isAdult?: boolean;
   source?: string;
   genres?: string[];
   averageScore?: number;

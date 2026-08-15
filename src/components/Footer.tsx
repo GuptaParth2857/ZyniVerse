@@ -27,6 +27,8 @@ const SOCIAL_PATHS: Record<string, string> = {
 interface FooterLink { href: string; label: string; icon: string; external?: boolean; }
 interface FooterColumn { title: string; links: FooterLink[]; }
 
+const DISCORD_INVITE = process.env.NEXT_PUBLIC_DISCORD_INVITE;
+
 const LINK_COLUMNS: FooterColumn[] = [
   {
     title: "Browse",
@@ -74,7 +76,9 @@ const LINK_COLUMNS: FooterColumn[] = [
       { href: "/conventions", label: "Conventions", icon: "calendar" },
       { href: "/characters", label: "Characters", icon: "users" },
       { href: "/leaderboard", label: "Leaderboard", icon: "bar-chart" },
-      { href: process.env.NEXT_PUBLIC_DISCORD_INVITE || "/community", label: "Discord Server", icon: "message-circle", external: true },
+      ...(DISCORD_INVITE
+        ? [{ href: DISCORD_INVITE, label: "Discord Server", icon: "message-circle", external: true }]
+        : []),
     ],
   },
   {

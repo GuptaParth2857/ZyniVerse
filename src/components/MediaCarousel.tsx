@@ -128,7 +128,7 @@ function CarouselCard({ item }: { item: Media }) {
     >
       <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300 group-hover/card:border-[var(--color-magenta)] group-hover/card:shadow-[0_0_35px_-10px_var(--color-magenta)]">
         <Image
-          src={item.coverImage?.extraLarge || item.coverImage?.large || item.coverImage?.medium || ""}
+          src={item.coverImage?.large || item.coverImage?.extraLarge || item.coverImage?.medium || ""}
           alt={title}
           fill
           className="object-cover transition-transform duration-500 group-hover/card:scale-110"

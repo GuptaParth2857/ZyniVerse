@@ -48,7 +48,7 @@ export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
               onClick={goPrev}
             >
               <div className="relative h-64 w-40 overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl">
-                <Image src={item.coverImage?.extraLarge || item.coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
+                <Image src={item.coverImage?.large || item.coverImage?.extraLarge || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent p-3 flex items-end">
                   <p className="text-xs font-bold truncate">{bestTitle(item.title)}</p>
                 </div>
@@ -110,7 +110,7 @@ export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
               onClick={goNext}
             >
               <div className="relative h-64 w-40 overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-xl">
-                <Image src={item.coverImage?.extraLarge || item.coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
+                <Image src={item.coverImage?.large || item.coverImage?.extraLarge || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent p-3 flex items-end">
                   <p className="text-xs font-bold truncate">{bestTitle(item.title)}</p>
                 </div>
