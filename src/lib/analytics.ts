@@ -91,13 +91,9 @@ export async function startSession(params: {
 
 export async function updateSessionActivity(sessionId: string) {
   try {
-    const existing = await prisma.userSession.findUnique({ where: { sessionId }, select: { sessionId: true } });
-    if (!existing) return;
-    await prisma.userSession.update({
+    await prisma.userSession.updateMany({
       where: { sessionId },
-      data: {
-        lastActiveAt: new Date(),
-      },
+      data: { lastActiveAt: new Date() },
     });
   } catch (error) {
     console.error("Failed to update session activity:", error);

@@ -18,5 +18,26 @@ export const DynamicWatchlistCarousel3D = dynamic(() => import("./WatchlistCarou
 
 export const DynamicHorizontalScroll = dynamic(() => import("./HorizontalScroll"), {
   ssr: true,
-  loading: () => <div className="h-40 animate-pulse bg-[var(--color-panel)] rounded-xl mx-4" />,
+  loading: () => (
+    <div className="relative overflow-hidden border-b border-[var(--color-line)] animate-pulse">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14">
+        <div className="mb-6 flex items-end justify-between">
+          <div className="space-y-2">
+            <div className="h-3 w-24 rounded bg-white/10" />
+            <div className="h-8 w-56 rounded bg-white/10" />
+          </div>
+          <div className="h-4 w-16 rounded bg-white/5" />
+        </div>
+        <div className="flex gap-1 overflow-hidden">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="shrink-0" style={{ width: 200 }}>
+              <div className="ml-[30px]">
+                <div className="aspect-[2/3] rounded-[8px] bg-white/5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  ),
 });

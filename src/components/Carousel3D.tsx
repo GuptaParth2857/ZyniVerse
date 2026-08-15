@@ -145,7 +145,7 @@ function CarouselCard({
         <Link href={href} className="block group">
           <div className="relative aspect-[2/3] overflow-hidden">
             <Image
-              src={item.coverImage?.extraLarge || item.coverImage?.large || ""}
+              src={item.coverImage?.large || item.coverImage?.extraLarge || ""}
               alt={bestTitle(item.title)}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"

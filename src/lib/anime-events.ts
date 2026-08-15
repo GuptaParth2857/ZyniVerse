@@ -1,6 +1,20 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
+const ttlCache = new Map<string, { promise: Promise<unknown>; expiresAt: number }>();
+
+async function cached<T>(key: string, ttlSeconds: number, fn: () => Promise<T>): Promise<T> {
+  const now = Date.now();
+  const hit = ttlCache.get(key);
+  if (hit && hit.expiresAt > now) return hit.promise as Promise<T>;
+  const promise = fn().catch((err) => {
+    ttlCache.delete(key);
+    throw err;
+  });
+  ttlCache.set(key, { promise, expiresAt: now + ttlSeconds * 1000 });
+  return promise;
+}
+
 export const ANIME_EVENTS_META = {
   disclaimer: "Anime event data is curated from public sources. Dates, announcements, and details may change — verify with official event websites.",
   source: "curated",
@@ -117,11 +131,13 @@ export async function getAnimeEvents(filters?: {
     ];
   }
 
-  const results = await prisma.animeEvent.findMany({
-    where,
-    include: { announcements: true },
-    orderBy: { startDate: "desc" },
-  });
+  const results = await cached("anime-events:" + JSON.stringify(filters ?? {}), 60, () =>
+    prisma.animeEvent.findMany({
+      where,
+      include: { announcements: true },
+      orderBy: { startDate: "desc" },
+    })
+  );
 
   let events = results.map(mapEvent);
 
@@ -135,45 +151,55 @@ export async function getAnimeEvents(filters?: {
 export async function getAnimeEventBySlug(
   slug: string
 ): Promise<AnimeEvent | undefined> {
-  const result = await prisma.animeEvent.findUnique({
-    where: { slug },
-    include: { announcements: true },
-  });
+  const result = await cached("anime-event:" + slug, 60, () =>
+    prisma.animeEvent.findUnique({
+      where: { slug },
+      include: { announcements: true },
+    })
+  );
   if (!result) return undefined;
   return mapEvent(result);
 }
 
 export async function getEventTypes(): Promise<string[]> {
-  const results = await prisma.animeEvent.findMany({
-    select: { type: true },
-    distinct: ["type"],
-    orderBy: { type: "asc" },
-  });
+  const results = await cached("anime-events-types", 60, () =>
+    prisma.animeEvent.findMany({
+      select: { type: true },
+      distinct: ["type"],
+      orderBy: { type: "asc" },
+    })
+  );
   return results.map((r) => r.type);
 }
 
 export async function getCountries(): Promise<string[]> {
-  const results = await prisma.animeEvent.findMany({
-    select: { country: true },
-    distinct: ["country"],
-    orderBy: { country: "asc" },
-  });
+  const results = await cached("anime-events-countries", 60, () =>
+    prisma.animeEvent.findMany({
+      select: { country: true },
+      distinct: ["country"],
+      orderBy: { country: "asc" },
+    })
+  );
   return results.map((r) => r.country);
 }
 
 export async function getUpcomingEvents(): Promise<AnimeEvent[]> {
-  const results = await prisma.animeEvent.findMany({
-    include: { announcements: true },
-    orderBy: { startDate: "asc" },
-  });
+  const results = await cached("anime-events-upcoming", 60, () =>
+    prisma.animeEvent.findMany({
+      include: { announcements: true },
+      orderBy: { startDate: "asc" },
+    })
+  );
   return results.map(mapEvent).filter((e) => e.status === "upcoming");
 }
 
 export async function getPastEvents(): Promise<AnimeEvent[]> {
-  const results = await prisma.animeEvent.findMany({
-    include: { announcements: true },
-    orderBy: { startDate: "desc" },
-  });
+  const results = await cached("anime-events-past", 60, () =>
+    prisma.animeEvent.findMany({
+      include: { announcements: true },
+      orderBy: { startDate: "desc" },
+    })
+  );
   return results.map(mapEvent).filter((e) => e.status === "past");
 }
 
@@ -182,10 +208,12 @@ export async function getAllAnnouncements(): Promise<(AnimeAnnouncement & {
   eventName: string;
   eventDate: string;
 })[]> {
-  const results = await prisma.animeAnnouncement.findMany({
-    include: { event: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const results = await cached("anime-events-announcements", 60, () =>
+    prisma.animeAnnouncement.findMany({
+      include: { event: true },
+      orderBy: { createdAt: "desc" },
+    })
+  );
 
   return results.map((a) => ({
     id: a.id,
@@ -214,13 +242,15 @@ export async function getAnnouncementCategories(): Promise<string[]> {
 }
 
 export async function getAnimeEventsMeta() {
-  const [count, lastUpdated] = await Promise.all([
-    prisma.animeEvent.count(),
-    prisma.animeEvent.findFirst({
-      orderBy: { updatedAt: "desc" },
-      select: { updatedAt: true },
-    }),
-  ]);
+  const [count, lastUpdated] = await cached("anime-events-meta", 60, () =>
+    Promise.all([
+      prisma.animeEvent.count(),
+      prisma.animeEvent.findFirst({
+        orderBy: { updatedAt: "desc" },
+        select: { updatedAt: true },
+      }),
+    ])
+  );
   return {
     ...ANIME_EVENTS_META,
     totalEvents: count,
@@ -228,6 +258,67 @@ export async function getAnimeEventsMeta() {
       ? lastUpdated.updatedAt.toISOString().split("T")[0]
       : "N/A",
   };
+}
+
+export interface EventsPageData {
+  events: AnimeEvent[];
+  types: string[];
+  countries: string[];
+  upcoming: AnimeEvent[];
+  announcements: (AnimeAnnouncement & {
+    eventSlug: string;
+    eventName: string;
+    eventDate: string;
+  })[];
+  meta: {
+    disclaimer: string;
+    source: string;
+    totalEvents: number;
+    lastUpdated: string;
+  };
+}
+
+export async function getEventsPageData(): Promise<EventsPageData> {
+  return cached("events-page-data", 60, async () => {
+    const [records, last] = await Promise.all([
+      prisma.animeEvent.findMany({
+        include: { announcements: true },
+        orderBy: { startDate: "asc" },
+      }),
+      prisma.animeEvent.findFirst({
+        orderBy: { updatedAt: "desc" },
+        select: { updatedAt: true },
+      }),
+    ]);
+
+    const events = records.map(mapEvent);
+    const types = [...new Set(events.map((e) => e.type))].sort();
+    const countries = [...new Set(events.map((e) => e.country))].sort();
+    const upcoming = events.filter((e) => e.status === "upcoming");
+    const announcements = events
+      .flatMap((e) =>
+        (e.announcements ?? []).map((a) => ({
+          ...a,
+          eventSlug: e.slug,
+          eventName: e.name,
+          eventDate: e.startDate,
+        }))
+      )
+      .sort((a, b) => b.eventDate.localeCompare(a.eventDate));
+
+    return {
+      events,
+      types,
+      countries,
+      upcoming,
+      announcements,
+      meta: {
+        ...ANIME_EVENTS_META,
+        totalEvents: events.length,
+        lastUpdated: last ? last.updatedAt.toISOString().split("T")[0] : "N/A",
+      },
+    };
+  });
 }
 
 export type { AnimeEvent as AnimeEventFull };

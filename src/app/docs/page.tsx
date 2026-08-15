@@ -493,7 +493,7 @@ const SECTIONS = [
     content: (
       <>
         <p className="text-sm leading-relaxed text-[var(--color-mute)]">
-          Report what you're watching and ZyniVerse matches it (via AniList), sets it to{" "}
+          Report what you&apos;re watching and ZyniVerse matches it (via AniList), sets it to{" "}
           <b className="text-[var(--color-ink)]">Currently Watching</b>, and records episode progress.
           This powers the official{" "}
           <Link href="/extension" className="text-[var(--color-cyan)] hover:underline">Chrome extension</Link>.

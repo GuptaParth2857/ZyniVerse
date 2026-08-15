@@ -40,22 +40,29 @@ export default function EpisodeDiscussion({ mediaId }: { mediaId: number }) {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async (ep: number) => {
-    setLoading(true);
-    setError(null);
     try {
       const res = await fetch(`/api/anime/${mediaId}/episode-discussions?episode=${ep}`);
       if (!res.ok) throw new Error("Failed to load");
       const data = await res.json();
       setComments(data.comments || []);
+      setError(null);
     } catch (e) {
       logError(e);
       setError("Could not load discussions.");
-    } finally {
-      setLoading(false);
     }
   }, [mediaId]);
 
-  useEffect(() => { load(episode); }, [episode, load]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+      setLoading(true);
+      await load(episode);
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [episode, load]);
 
   async function submit() {
     if (!draft.trim()) return;

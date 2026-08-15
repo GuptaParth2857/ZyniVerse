@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CITIES, nearestCity, bookingLinks, SEAT_CLASSES, type City, type Theater } from "@/lib/theaters";
+import { CITIES, nearestCity, bookingLinks, SEAT_CLASSES, type Theater } from "@/lib/theaters";
 import SeatMap from "./SeatMap";
 
 interface TheaterBookingModalProps {
