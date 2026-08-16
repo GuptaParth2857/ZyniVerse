@@ -85,7 +85,7 @@ export default function MangaSearch({ onAdd }: Props) {
             return (
               <div key={m.id} className="flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors border-b border-[var(--color-line)] last:border-0">
                 <div className="relative h-14 w-10 rounded overflow-hidden border border-[var(--color-line)] shrink-0">
-                  <Image src={m.coverImage?.extraLarge || m.coverImage?.large || ""} alt={title} fill className="object-cover" sizes="40px" />
+                  <Image src={m.coverImage?.large || m.coverImage?.extraLarge || ""} alt={title} fill className="object-cover" sizes="40px" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">{title}</p>

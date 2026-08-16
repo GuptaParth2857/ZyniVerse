@@ -88,7 +88,7 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
         {anime.bannerImage && (
           <div className="absolute inset-0">
             <div className="relative h-full w-full">
-              <Image src={anime.bannerImage} alt="" fill className="object-cover opacity-25" sizes="100vw" />
+              <Image src={anime.bannerImage} alt="" fill loading="eager" fetchPriority="high" className="object-cover opacity-25" sizes="100vw" />
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-[var(--color-void)]/70 to-[var(--color-void)]/20" />
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-void)]/80 via-transparent to-[var(--color-void)]/40" />
@@ -118,7 +118,7 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
             <div className="shrink-0 -mb-16 sm:-mb-20 z-20">
               <div className="relative h-64 w-44 sm:h-80 sm:w-56">
                 <Image
-                  src={anime.coverImage?.extraLarge || anime.coverImage?.large || ""}
+                  src={anime.coverImage?.large || anime.coverImage?.extraLarge || ""}
                   alt={title}
                   fill
                   className="rounded-xl border-2 border-[var(--color-magenta)]/30 object-cover shadow-2xl shadow-[var(--color-magenta)]/10"

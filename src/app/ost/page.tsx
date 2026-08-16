@@ -17,9 +17,9 @@ export default function OSTPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <div className="relative mb-10 overflow-hidden rounded-2xl neon-rgb-border bg-[var(--color-panel)]/40 backdrop-blur-sm p-6 sm:p-10">
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 left-1/4 w-64 h-64 bg-[var(--color-magenta)] rounded-full blur-[120px]" />
-          <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-[var(--color-cyan)] rounded-full blur-[120px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[var(--color-violet)] rounded-full blur-[100px]" />
+          <div className="absolute top-0 left-1/4 w-64 h-64 rounded-full" style={{ background: "radial-gradient(circle, var(--color-magenta), transparent 70%)" }} />
+          <div className="absolute bottom-0 right-1/4 w-64 h-64 rounded-full" style={{ background: "radial-gradient(circle, var(--color-cyan), transparent 70%)" }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full" style={{ background: "radial-gradient(circle, var(--color-violet), transparent 70%)" }} />
         </div>
 
         <div className="relative z-10">

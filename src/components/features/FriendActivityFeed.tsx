@@ -167,7 +167,22 @@ export default function FriendActivityFeed() {
     );
   }
 
-  if (activities.length === 0) return null;
+  if (activities.length === 0) {
+    return (
+      <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="relative flex h-2 w-2">
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#29f2e0]/40" />
+          </span>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#29f2e0]/70">Live</p>
+          <h3 className="font-display text-xl font-bold ml-2">Friend Activity</h3>
+        </div>
+        <p className="text-sm text-[var(--color-mute)]/60 py-6 text-center">
+          No activity yet — start watching or update your list to show up here.
+        </p>
+      </div>
+    );
+  }
 
   const groups = groupByUser(activities);
 

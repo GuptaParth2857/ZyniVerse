@@ -14,7 +14,17 @@ export default function QuoteOfTheDay() {
       .catch(() => {});
   }, []);
 
-  if (!line) return null;
+  if (!line) {
+    return (
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+        <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)]/60 p-6 sm:p-8 animate-pulse">
+          <div className="h-3 w-32 rounded bg-white/10" />
+          <div className="mt-4 h-6 w-3/4 rounded bg-white/5" />
+          <div className="mt-4 h-4 w-40 rounded bg-white/5" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 py-8">

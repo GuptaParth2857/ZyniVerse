@@ -901,12 +901,12 @@ body {
    Apply .neon-rgb-border to any element for animated RGB border
    ═══════════════════════════════════════════════════════ */
 @keyframes globalNeonRgbBorder {
-  0%   { border-color: #ff00ff; box-shadow: 0 0 6px #ff00ff44, inset 0 0 6px #ff00ff0a; }
-  20%  { border-color: #00ffff; box-shadow: 0 0 6px #00ffff44, inset 0 0 6px #00ffff0a; }
-  40%  { border-color: #ff3366; box-shadow: 0 0 6px #ff336644, inset 0 0 6px #ff33660a; }
-  60%  { border-color: #ffff00; box-shadow: 0 0 6px #ffff0044, inset 0 0 6px #ffff000a; }
-  80%  { border-color: #ff0066; box-shadow: 0 0 6px #ff006644, inset 0 0 6px #ff00660a; }
-  100% { border-color: #ff00ff; box-shadow: 0 0 6px #ff00ff44, inset 0 0 6px #ff00ff0a; }
+  0%   { border-color: #ff00ff; }
+  20%  { border-color: #00ffff; }
+  40%  { border-color: #ff3366; }
+  60%  { border-color: #ffff00; }
+  80%  { border-color: #ff0066; }
+  100% { border-color: #ff00ff; }
 }
 @keyframes globalNeonRgbBorderHover {
   0%   { border-color: #ff00ff; box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff88; }
@@ -920,6 +920,7 @@ body {
   .neon-rgb-border {
     border-width: 1px;
     border-style: solid;
+    box-shadow: 0 0 6px #ff00ff22, inset 0 0 6px #ff00ff0a;
     animation: globalNeonRgbBorder 4s linear infinite;
     transition: transform 0.2s, box-shadow 0.2s;
   }
