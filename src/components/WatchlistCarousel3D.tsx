@@ -70,7 +70,7 @@ export default function WatchlistCarousel3D({ items }: { items: Media[] }) {
           >
             <Link href={`/anime/${items[active].id}`} className="block">
               <div className="relative h-80 w-52 overflow-hidden rounded-2xl border-2 border-[var(--color-magenta)]/50 bg-[var(--color-panel)] shadow-2xl shadow-[var(--color-magenta)]/20">
-                <Image src={items[active].coverImage?.extraLarge || items[active].coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
+                <Image src={items[active].coverImage?.large || items[active].coverImage?.extraLarge || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-4">
                 <p className="font-display text-lg font-bold leading-tight">{bestTitle(items[active].title)}</p>

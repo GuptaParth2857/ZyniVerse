@@ -36,7 +36,7 @@ export default function MangaCard({ manga, entry, showProgress = true, href, ind
   const title = isEntry(manga) ? manga.title : bestTitle(manga.title);
   const cover = isEntry(manga)
     ? (manga.coverImage || "")
-    : (manga.coverImage?.extraLarge || manga.coverImage?.large || "");
+    : (manga.coverImage?.large || manga.coverImage?.extraLarge || "");
   const status = entry?.status || "PLANNING";
   const chapters = entry?.chapters ?? 0;
   const total = entry?.totalChapters ?? (!isEntry(manga) ? manga.chapters : undefined);

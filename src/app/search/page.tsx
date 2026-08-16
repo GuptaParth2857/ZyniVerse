@@ -258,7 +258,7 @@ function SearchInner() {
 
   return (
     <PageTransition>
-      {isLanding && popularAnime.length > 0 ? (
+      {isLanding ? (
         <ErrorBoundary label="Search"><div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-16">
           {/* Neon Search Bar */}
           <div className="mb-10 max-w-2xl mx-auto text-center relative" ref={suggestRef}>
@@ -327,7 +327,24 @@ function SearchInner() {
               View all
             </Link>
           </div>
-          <ExpandingFlexCard items={popularAnime} />
+          {popularAnime.length > 0 ? (
+            <ExpandingFlexCard items={popularAnime} />
+          ) : (
+            <>
+              <div className="flex gap-3 overflow-x-auto pb-2 md:hidden -mx-4 px-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={`ph-${i}`} className="relative w-[140px] shrink-0 rounded-2xl bg-[var(--color-panel)] animate-pulse overflow-hidden">
+                    <div className="h-[210px]" />
+                  </div>
+                ))}
+              </div>
+              <div className="hidden md:flex h-[400px] gap-2 w-full">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={`phd-${i}`} className="flex-1 rounded-2xl bg-[var(--color-panel)] animate-pulse overflow-hidden" />
+                ))}
+              </div>
+            </>
+          )}
         </div></ErrorBoundary>
       ) : (
         <ErrorBoundary label="Search"><div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">

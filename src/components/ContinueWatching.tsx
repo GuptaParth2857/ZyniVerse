@@ -22,6 +22,7 @@ interface ItemWithMeta extends InProgressItem {
 export default function ContinueWatching() {
   const { data: session } = useSession();
   const [items, setItems] = useState<ItemWithMeta[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -33,16 +34,36 @@ export default function ContinueWatching() {
             (e: InProgressItem) => e.status === "CURRENT" && e.progress > 0
           ).slice(0, 6);
           const ids = entries.map((e) => e.mediaId);
-          if (ids.length === 0) return;
+          if (ids.length === 0) { setLoaded(true); return; }
           const mediaList = await getMediaBatch(ids);
           const map = new Map(mediaList.map((m) => [m.id, m]));
           setItems(entries.map((e) => ({ ...e, meta: map.get(e.mediaId) || null })));
         }
+        setLoaded(true);
       })
-      .catch(() => {});
+      .catch(() => setLoaded(true));
   }, [session]);
 
-  if (!session || items.length === 0) return null;
+  if (!session) return null;
+  if (!loaded) {
+    return (
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <div className="mb-4">
+          <div className="h-3 w-28 rounded bg-white/10 animate-pulse" />
+          <div className="mt-2 h-6 w-48 rounded bg-white/5 animate-pulse" />
+        </div>
+        <div className="flex gap-3 overflow-hidden">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="shrink-0 w-40 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 animate-pulse">
+              <div className="aspect-[3/4] rounded-lg bg-white/5" />
+              <div className="mt-2 h-3 w-3/4 rounded bg-white/5" />
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+  if (items.length === 0) return null;
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">

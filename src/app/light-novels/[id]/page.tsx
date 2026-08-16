@@ -195,7 +195,7 @@ export default function LightNovelDetailsPage() {
         {ln.bannerImage && (
           <div className="absolute inset-0">
             <div className="relative h-full w-full">
-              <Image src={ln.bannerImage} alt="" fill className="object-cover opacity-20" sizes="100vw" />
+              <Image src={ln.bannerImage} alt="" fill loading="eager" fetchPriority="high" className="object-cover opacity-20" sizes="100vw" />
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-[var(--color-void)]/80 to-[var(--color-void)]/30" />
           </div>
@@ -204,7 +204,7 @@ export default function LightNovelDetailsPage() {
         <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:px-6 sm:py-14">
           <div className="relative shrink-0 h-64 w-44 sm:h-80 sm:w-56 rounded-xl border border-[var(--color-line)] shadow-2xl overflow-hidden">
             <Image
-              src={ln.coverImage?.extraLarge || ln.coverImage?.large || ""}
+              src={ln.coverImage?.large || ln.coverImage?.extraLarge || ""}
               alt={title}
               fill
               className="object-cover"

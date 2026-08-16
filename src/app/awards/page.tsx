@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence, animate } from "framer-motion";
@@ -83,14 +83,14 @@ function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
   );
 }
 
-function NeonBorder({ children }: { children: React.ReactNode }) {
+function NeonBorder({ children, accent = "#00ffe0" }: { children: React.ReactNode; accent?: string }) {
   return (
     <div className="relative rounded-[20px]">
       <div className="absolute inset-0 rounded-[20px] overflow-hidden pointer-events-none">
         <div
           className="absolute inset-0"
           style={{
-            background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)",
+            background: `conic-gradient(from 0deg, transparent, ${accent}, transparent, #ff00e6, transparent, #7000ff, transparent, ${accent})`,
             animation: "spin 6s linear infinite",
             willChange: "transform",
           }}
@@ -102,8 +102,72 @@ function NeonBorder({ children }: { children: React.ReactNode }) {
   );
 }
 
-function UpcomingAwardCard({ award }: { award: UpcomingAward }) {
+const CATEGORY_LABEL: Record<UpcomingAward["category"], string> = {
+  annual: "Annual",
+  seasonal: "Seasonal",
+  film: "Film",
+};
+
+function getAwardMeta(name: string): { icon: string; accent: string; gradient: string } {
+  if (name.includes("Crunchyroll")) return { icon: "🥑", accent: "#ff6b35", gradient: "from-orange-500 to-amber-600" };
+  if (name.includes("Anime Trending")) return { icon: "📈", accent: "#22d3ee", gradient: "from-cyan-500 to-blue-600" };
+  if (name.includes("Newtype")) return { icon: "🎌", accent: "#f472b6", gradient: "from-pink-500 to-rose-600" };
+  if (name.includes("Tsugi")) return { icon: "📖", accent: "#34d399", gradient: "from-emerald-500 to-green-600" };
+  if (name.includes("News Network")) return { icon: "🗞️", accent: "#a3e635", gradient: "from-lime-500 to-green-600" };
+  if (name.includes("TAAF") || name.includes("Tokyo")) return { icon: "🏮", accent: "#facc15", gradient: "from-yellow-500 to-amber-600" };
+  if (name.includes("r/anime")) return { icon: "👁️", accent: "#a78bfa", gradient: "from-violet-500 to-purple-600" };
+  return { icon: "🏆", accent: "#00ffe0", gradient: "from-cyan-500 to-teal-600" };
+}
+
+function FlipUnit({ value, label, accent }: { value: number; label: string; accent: string }) {
+  const digits = String(value).padStart(2, "0").split("");
+  return (
+    <div className="flex-1 text-center">
+      <div
+        className="flex justify-center gap-1 rounded-xl border bg-black/50 px-2 py-2.5 backdrop-blur-sm"
+        style={{ borderColor: `${accent}33`, boxShadow: `inset 0 0 24px -12px ${accent}55` }}
+      >
+        {digits.map((d, i) => (
+          <motion.span
+            key={`${label}-${i}-${d}`}
+            initial={{ y: -16, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            className="font-mono text-2xl font-extrabold tabular-nums text-white"
+            style={{ textShadow: `0 0 18px ${accent}66` }}
+          >
+            {d}
+          </motion.span>
+        ))}
+      </div>
+      <span className="mt-1.5 block text-[9px] font-semibold uppercase tracking-[0.2em]" style={{ color: `${accent}cc` }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function UpcomingAwardCard({ award, index = 0 }: { award: UpcomingAward; index?: number }) {
   const [countdown, setCountdown] = useState(getCountdown(award.date));
+  const ref = useRef<HTMLDivElement>(null);
+  const meta = getAwardMeta(award.name);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const px = (e.clientX - cx) / (rect.width / 2);
+    const py = (e.clientY - cy) / (rect.height / 2);
+    el.style.transform = `perspective(900px) rotateY(${px * 5}deg) rotateX(${-py * 5}deg) scale(1.02)`;
+  }, []);
+
+  const handlePointerLeave = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg) scale(1)";
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setCountdown(getCountdown(award.date)), 60000);
@@ -142,21 +206,34 @@ function UpcomingAwardCard({ award }: { award: UpcomingAward }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      ref={ref}
+      initial={{ opacity: 0, y: 28, scale: 0.96 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.5, delay: (index % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      style={{ transition: "transform 0.2s ease-out" }}
       className={`min-w-[300px] max-w-[340px] flex-shrink-0 ${status.glow}`}
     >
-      <NeonBorder>
-        <div className={`relative rounded-[20px] p-5 flex flex-col h-full bg-gradient-to-br from-gray-900/80 to-gray-950/80 backdrop-blur-sm ${status.border} transition-all duration-300 group`}>
+      <NeonBorder accent={meta.accent}>
+        <div className={`relative rounded-[20px] p-5 flex flex-col h-full bg-gradient-to-br from-gray-900/85 to-gray-950/85 backdrop-blur-sm transition-all duration-300 group`}>
+          {/* Accent corner glow */}
+          <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full opacity-20 blur-2xl group-hover:opacity-40 transition-opacity duration-300 pointer-events-none" style={{ background: meta.accent }} />
+
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
-            <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full border ${status.color}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
-              {status.label}
-            </span>
-            <span className="text-[10px] font-medium text-[rgba(255,255,255,0.25)] uppercase tracking-[0.15em]">
-              {award.category}
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl text-lg" style={{ background: `${meta.accent}1a`, border: `1px solid ${meta.accent}40`, boxShadow: `0 0 20px -6px ${meta.accent}66` }}>
+                {meta.icon}
+              </span>
+              <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full border ${status.color}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+                {status.label}
+              </span>
+            </div>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.15em] rounded-full border px-2 py-1" style={{ color: `${meta.accent}cc`, borderColor: `${meta.accent}30` }}>
+              {CATEGORY_LABEL[award.category]}
             </span>
           </div>
 
@@ -167,20 +244,11 @@ function UpcomingAwardCard({ award }: { award: UpcomingAward }) {
           {/* Countdown */}
           {!countdown.expired && award.status !== "live" && (
             <div className="flex gap-3 mb-4 p-3 rounded-[14px] bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
-              {[
-                { value: countdown.days, label: "days" },
-                { value: countdown.hours, label: "hrs" },
-                { value: countdown.minutes, label: "min" },
-              ].map((item) => (
-                <div key={item.label} className="flex-1 text-center">
-                  <span className="text-white font-mono text-xl font-bold bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
-                    {String(item.value).padStart(2, "0")}
-                  </span>
-                  <span className="text-[rgba(255,255,255,0.25)] text-[10px] block mt-0.5 uppercase tracking-wider">
-                    {item.label}
-                  </span>
-                </div>
-              ))}
+              <FlipUnit value={countdown.days} label="days" accent={meta.accent} />
+              <div className="w-px self-stretch bg-[rgba(255,255,255,0.06)]" />
+              <FlipUnit value={countdown.hours} label="hrs" accent={meta.accent} />
+              <div className="w-px self-stretch bg-[rgba(255,255,255,0.06)]" />
+              <FlipUnit value={countdown.minutes} label="min" accent={meta.accent} />
             </div>
           )}
 
@@ -194,7 +262,8 @@ function UpcomingAwardCard({ award }: { award: UpcomingAward }) {
             href={award.url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`block w-full rounded-[12px] bg-gradient-to-r ${status.gradient} px-4 py-2.5 text-center text-xs font-bold text-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] active:scale-[0.98]`}
+            className={`block w-full rounded-[12px] bg-gradient-to-r ${meta.gradient} px-4 py-2.5 text-center text-xs font-bold text-white shadow-lg transition-all duration-300 hover:scale-[1.03] hover:brightness-110 active:scale-[0.98]`}
+            style={{ boxShadow: `0 8px 28px -10px ${meta.accent}66` }}
           >
             Visit Official Site →
           </a>
@@ -206,15 +275,37 @@ function UpcomingAwardCard({ award }: { award: UpcomingAward }) {
 
 function AwardCard({ award, index }: { award: AwardEntry; index: number }) {
   const typeInfo = TYPE_LABELS[award.type] || { label: award.type, icon: "🏅", color: "from-gray-500 to-gray-600" };
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const px = (e.clientX - cx) / (rect.width / 2);
+    const py = (e.clientY - cy) / (rect.height / 2);
+    el.style.transform = `perspective(900px) rotateY(${px * 5}deg) rotateX(${-py * 5}deg) scale(1.02)`;
+  }, []);
+
+  const handlePointerLeave = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg) scale(1)";
+  }, []);
 
   return (
     <motion.div
       key={`${award.year}-${award.category}-${award.platform}-${index}`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      ref={ref}
+      initial={{ opacity: 0, y: 24, scale: 0.96 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.3, delay: index * 0.03 }}
-      whileHover={{ y: -6, boxShadow: "0 20px 60px -20px rgba(255,0,230,0.35)" }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.45, delay: (index % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      style={{ transition: "transform 0.2s ease-out" }}
       className="neon-rgb-border bg-gray-800/60 backdrop-blur-sm rounded-2xl overflow-hidden transition-all group"
     >
       {/* Poster */}
@@ -669,8 +760,8 @@ export default function AwardsPage() {
                   className="flex gap-5 overflow-x-auto pb-6 px-2 scrollbar-hide"
                   style={{ scrollbarWidth: "none", maskImage: "linear-gradient(to right, transparent, black 3%, black 97%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 3%, black 97%, transparent)" }}
                 >
-                  {display.map((award) => (
-                    <UpcomingAwardCard key={`${award.name}-${award.year}`} award={award} />
+                  {display.map((award, idx) => (
+                    <UpcomingAwardCard key={`${award.name}-${award.year}`} award={award} index={idx} />
                   ))}
                 </div>
               </div>
