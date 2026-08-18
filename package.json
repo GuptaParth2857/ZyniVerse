@@ -40,6 +40,9 @@
     "socket.io-client": "^4.8.3",
     "stripe": "^22.3.1"
   },
+  "overrides": {
+    "encoding-sniffer": "^1.0.2"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
