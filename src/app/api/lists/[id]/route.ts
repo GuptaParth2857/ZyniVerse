@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { isAdminEmail } from "@/lib/admin";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -50,6 +51,9 @@ export async function PUT(
 
   const { title, description, type, isPublic, isFeatured, sortOrder, items } = await req.json();
 
+  // Featuring is a curation action — only admins may set it.
+  const featuredAllowed = isAdminEmail(session.user?.email);
+
   const list = await prisma.$transaction(async (tx) => {
     if (items) {
       await tx.userListItem.deleteMany({ where: { listId: id } });
@@ -62,7 +66,7 @@ export async function PUT(
         description: description !== undefined ? (description?.trim() || null) : existing.description,
         type: type ?? existing.type,
         isPublic: isPublic ?? existing.isPublic,
-        isFeatured: isFeatured ?? existing.isFeatured,
+        isFeatured: featuredAllowed ? (isFeatured ?? existing.isFeatured) : existing.isFeatured,
         sortOrder: sortOrder ?? existing.sortOrder,
         items: items ? {
           create: (items as Array<{ mediaId: number; mediaTitle: string; mediaImage?: string; mediaType: string; note?: string }>).map((item, i) => ({

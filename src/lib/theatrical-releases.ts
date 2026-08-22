@@ -448,6 +448,15 @@ function parseBoxOfficeToCrore(value?: string): number {
   return num;
 }
 
+// Recompute release status from actual dates so an entry never keeps a stale
+// "upcoming" badge after its release date has passed.
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
+for (const release of THEATRICAL_RELEASES) {
+  if (release.status === "upcoming" && release.releaseDate && release.releaseDate <= TODAY_ISO) {
+    release.status = "released";
+  }
+}
+
 export const THEATRICAL_STATS = {
   totalReleases: THEATRICAL_RELEASES.length,
   releasedInIndia: THEATRICAL_RELEASES.filter(r => r.status === "released").length,

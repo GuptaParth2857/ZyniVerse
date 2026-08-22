@@ -11,6 +11,7 @@ export interface TvChannel {
   type: "tv" | "youtube";
   subscriberCount?: string;
   logoUrl?: string;
+  logoInvert?: boolean;
 }
 
 export interface TimeSlot {
@@ -44,7 +45,7 @@ export interface TvAnimeEntry {
   image?: string;
 }
 
-export const TV_CHANNELS: Record<string, TvChannel> = {
+const RAW_TV_CHANNELS: Record<string, TvChannel> = {
   cn: {
     id: "cn",
     name: "Cartoon Network",
@@ -54,6 +55,7 @@ export const TV_CHANNELS: Record<string, TvChannel> = {
     website: "https://www.cartoonnetwork.in",
     dthNumbers: "Tata Play 667, Airtel 666",
     type: "tv",
+    logoInvert: true,
     logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Cartoon_Network_2010_logo.svg/250px-Cartoon_Network_2010_logo.svg.png",
   },
   sony_yay: {
@@ -120,7 +122,7 @@ export const TV_CHANNELS: Record<string, TvChannel> = {
     website: "https://www.nickindia.com",
     dthNumbers: "Tata Play 661, Airtel 662",
     type: "tv",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Nick_Jr._logo.svg/250px-Nick_Jr._logo.svg.png",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Nick_Jr._logo_2023_%28horizontal%29.svg/250px-Nick_Jr._logo_2023_%28horizontal%29.svg.png",
   },
   sonic: {
     id: "sonic",
@@ -131,7 +133,7 @@ export const TV_CHANNELS: Record<string, TvChannel> = {
     website: "https://www.nickindia.com",
     dthNumbers: "Tata Play 663, Airtel 663",
     type: "tv",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Nickelodeon_Sonic_logo.svg/250px-Nickelodeon_Sonic_logo.svg.png",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Sonic-india-channel.png/250px-Sonic-india-channel.png",
   },
   disney_channel: {
     id: "disney_channel",
@@ -142,7 +144,7 @@ export const TV_CHANNELS: Record<string, TvChannel> = {
     website: "https://www.hotstar.com",
     dthNumbers: "Tata Play 650, Airtel 650",
     type: "tv",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Disney_Channel_%282024%29_logo.svg/250px-Disney_Channel_%282024%29_logo.svg.png",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/2019_Disney_Channel_logo.svg/250px-2019_Disney_Channel_logo.svg.png",
   },
   disney_junior: {
     id: "disney_junior",
@@ -153,7 +155,7 @@ export const TV_CHANNELS: Record<string, TvChannel> = {
     website: "https://www.hotstar.com",
     dthNumbers: "Tata Play 651, Airtel 651",
     type: "tv",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Disney_Junior_%282024%29_logo.svg/250px-Disney_Junior_%282024%29_logo.svg.png",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/2019_Disney_Junior_logo.svg/250px-2019_Disney_Junior_logo.svg.png",
   },
   epic_kids: {
     id: "epic_kids",
@@ -164,7 +166,7 @@ export const TV_CHANNELS: Record<string, TvChannel> = {
     website: "https://www.epicon.in",
     dthNumbers: "Tata Play 652",
     type: "tv",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Epic_TV_logo.svg/250px-Epic_TV_logo.svg.png",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Epic_TV_channel.jpg/250px-Epic_TV_channel.jpg",
   },
   animax: {
     id: "animax",
@@ -175,7 +177,7 @@ export const TV_CHANNELS: Record<string, TvChannel> = {
     website: "https://www.sonyliv.com",
     dthNumbers: "Tata Play 665, Airtel 660",
     type: "tv",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Animax_2024_logo.svg/250px-Animax_2024_logo.svg.png",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Animax_Logo.svg/250px-Animax_Logo.svg.png",
   },
   discovery_kids: {
     id: "discovery_kids",
@@ -206,7 +208,7 @@ export const TV_CHANNELS: Record<string, TvChannel> = {
     region: "India",
     website: "https://www.hotstar.com",
     type: "youtube",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/JioHotstar_logo.svg/250px-JioHotstar_logo.svg.png",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Disney%2B_Hotstar_2024.svg/250px-Disney%2B_Hotstar_2024.svg.png",
   },
   muse_asia: {
     id: "muse_asia",
@@ -264,6 +266,17 @@ export const TV_CHANNELS: Record<string, TvChannel> = {
     logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Amazon_Prime_Video_example_screenshot.png/250px-Amazon_Prime_Video_example_screenshot.png",
   },
 };
+
+// Wikimedia throttles direct hotlink bursts (429), so every channel logo
+// loads through our cached /api/proxy-image (in-memory + CDN cached).
+export const TV_CHANNELS: Record<string, TvChannel> = Object.fromEntries(
+  Object.entries(RAW_TV_CHANNELS).map(([id, ch]) => [
+    id,
+    ch.logoUrl
+      ? { ...ch, logoUrl: `/api/proxy-image?url=${encodeURIComponent(ch.logoUrl)}` }
+      : ch,
+  ])
+);
 
 const MUSE_ASIA_WEEKLY: Record<string, TimeSlot[]> = {
   Monday: [],
@@ -442,108 +455,33 @@ const JIO_HOTSTAR_WEEKLY: Record<string, TimeSlot[]> = {
   Sunday: [],
 };
 
+// SonyLIV has no static lineup â€” slots come live from AniList airing
+// detection (streaming-live.ts) and merge into this channel entry.
+const SONY_LIV_WEEKLY: Record<string, TimeSlot[]> = {
+  Monday: [],
+  Tuesday: [],
+  Wednesday: [],
+  Thursday: [],
+  Friday: [],
+  Saturday: [],
+  Sunday: [],
+};
+
 // Indian TV channel schedules are fetched live from INTV Schedule CDN (see epg-scraper.ts)
 // Streaming platform schedules remain hardcoded here
 
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+// Sonic India — live EPG comes from INTV CDN (epg-scraper.ts).
+// Static grid removed: previous hardcoded lineup was inaccurate.
 const SONIC_WEEKLY: Record<string, TimeSlot[]> = {
-  Monday: [
-    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
-    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
-    { show: "Chhota Bheem", start: "08:00", end: "09:00", duration: 60 },
-    { show: "Motu Patlu", start: "09:00", end: "12:00", duration: 180 },
-    { show: "Gattu Aur Battu", start: "12:00", end: "13:00", duration: 60 },
-    { show: "Motu Patlu", start: "13:00", end: "15:00", duration: 120 },
-    { show: "Chhota Bheem", start: "15:00", end: "16:00", duration: 60 },
-    { show: "Motu Patlu", start: "16:00", end: "18:00", duration: 120 },
-    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
-    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
-    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
-    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
-  ],
-  Tuesday: [
-    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
-    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
-    { show: "Chhota Bheem", start: "08:00", end: "09:00", duration: 60 },
-    { show: "Motu Patlu", start: "09:00", end: "12:00", duration: 180 },
-    { show: "Gattu Aur Battu", start: "12:00", end: "13:00", duration: 60 },
-    { show: "Motu Patlu", start: "13:00", end: "15:00", duration: 120 },
-    { show: "Chhota Bheem", start: "15:00", end: "16:00", duration: 60 },
-    { show: "Motu Patlu", start: "16:00", end: "18:00", duration: 120 },
-    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
-    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
-    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
-    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
-  ],
-  Wednesday: [
-    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
-    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
-    { show: "Chhota Bheem", start: "08:00", end: "09:00", duration: 60 },
-    { show: "Motu Patlu", start: "09:00", end: "12:00", duration: 180 },
-    { show: "Gattu Aur Battu", start: "12:00", end: "13:00", duration: 60 },
-    { show: "Motu Patlu", start: "13:00", end: "15:00", duration: 120 },
-    { show: "Chhota Bheem", start: "15:00", end: "16:00", duration: 60 },
-    { show: "Motu Patlu", start: "16:00", end: "18:00", duration: 120 },
-    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
-    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
-    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
-    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
-  ],
-  Thursday: [
-    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
-    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
-    { show: "Chhota Bheem", start: "08:00", end: "09:00", duration: 60 },
-    { show: "Motu Patlu", start: "09:00", end: "12:00", duration: 180 },
-    { show: "Gattu Aur Battu", start: "12:00", end: "13:00", duration: 60 },
-    { show: "Motu Patlu", start: "13:00", end: "15:00", duration: 120 },
-    { show: "Chhota Bheem", start: "15:00", end: "16:00", duration: 60 },
-    { show: "Motu Patlu", start: "16:00", end: "18:00", duration: 120 },
-    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
-    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
-    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
-    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
-  ],
-  Friday: [
-    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
-    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
-    { show: "Chhota Bheem", start: "08:00", end: "09:00", duration: 60 },
-    { show: "Motu Patlu", start: "09:00", end: "12:00", duration: 180 },
-    { show: "Gattu Aur Battu", start: "12:00", end: "13:00", duration: 60 },
-    { show: "Motu Patlu", start: "13:00", end: "15:00", duration: 120 },
-    { show: "Chhota Bheem", start: "15:00", end: "16:00", duration: 60 },
-    { show: "Motu Patlu", start: "16:00", end: "18:00", duration: 120 },
-    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
-    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
-    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
-    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
-  ],
-  Saturday: [
-    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
-    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
-    { show: "Chhota Bheem", start: "08:00", end: "10:00", duration: 120 },
-    { show: "Motu Patlu", start: "10:00", end: "13:00", duration: 180 },
-    { show: "Gattu Aur Battu", start: "13:00", end: "14:00", duration: 60 },
-    { show: "Motu Patlu", start: "14:00", end: "16:00", duration: 120 },
-    { show: "Chhota Bheem", start: "16:00", end: "18:00", duration: 120 },
-    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
-    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
-    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
-    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
-  ],
-  Sunday: [
-    { show: "Motu Patlu", start: "06:00", end: "07:00", duration: 60 },
-    { show: "Gattu Aur Battu", start: "07:00", end: "08:00", duration: 60 },
-    { show: "Chhota Bheem", start: "08:00", end: "10:00", duration: 120 },
-    { show: "Motu Patlu", start: "10:00", end: "13:00", duration: 180 },
-    { show: "Gattu Aur Battu", start: "13:00", end: "14:00", duration: 60 },
-    { show: "Motu Patlu", start: "14:00", end: "16:00", duration: 120 },
-    { show: "Chhota Bheem", start: "16:00", end: "18:00", duration: 120 },
-    { show: "Gattu Aur Battu", start: "18:00", end: "19:00", duration: 60 },
-    { show: "Motu Patlu", start: "19:00", end: "21:00", duration: 120 },
-    { show: "Chhota Bheem", start: "21:00", end: "22:00", duration: 60 },
-    { show: "Motu Patlu", start: "22:00", end: "06:00", duration: 480 },
-  ],
+  Monday: [],
+  Tuesday: [],
+  Wednesday: [],
+  Thursday: [],
+  Friday: [],
+  Saturday: [],
+  Sunday: [],
 };
 
 export const CHANNEL_SCHEDULES: ChannelSchedule[] = [
@@ -570,6 +508,10 @@ export const CHANNEL_SCHEDULES: ChannelSchedule[] = [
   {
     channelId: "jio_hotstar",
     schedules: ALL_DAYS.map((d) => ({ day: d, slots: JIO_HOTSTAR_WEEKLY[d] || [] })),
+  },
+  {
+    channelId: "sony_liv",
+    schedules: ALL_DAYS.map((d) => ({ day: d, slots: SONY_LIV_WEEKLY[d] || [] })),
   },
   {
     channelId: "animax",

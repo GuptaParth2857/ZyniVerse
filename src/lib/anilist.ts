@@ -81,6 +81,7 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
   if (cached) return cached;
 
   let lastError: Error | null = null;
+  let retried429 = false;
 
   if (!isDegraded()) {
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -101,8 +102,15 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
 
         if (!res.ok) {
           if (res.status === 429) {
-            if (attempt < MAX_RETRIES) {
-              await new Promise((r) => setTimeout(r, 1000));
+            // AniList rate limits per IP (~30 req/min). Serverless platforms
+            // share egress IPs, so bursts can 429 even at modest traffic.
+            // Ride out one short Retry-After window instead of failing hard.
+            const raSec = Number(res.headers.get("retry-after") || 0);
+            const waitMs = Math.min(Math.max(raSec, 2) * 1000, 8000);
+            if (!retried429 && waitMs < FETCH_TIMEOUT) {
+              retried429 = true;
+              attempt--;
+              await new Promise((r) => setTimeout(r, waitMs));
               continue;
             }
             throw new Error("Rate limited by AniList — try again later.");

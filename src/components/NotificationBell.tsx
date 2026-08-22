@@ -56,7 +56,10 @@ export default function NotificationBell() {
     if (!session?.user?.id) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 60000);
+    const interval = setInterval(() => {
+      if (document.hidden) return;
+      fetchUnreadCount();
+    }, 60000);
     return () => clearInterval(interval);
   }, [session]);
 

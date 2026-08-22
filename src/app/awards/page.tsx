@@ -724,8 +724,17 @@ export default function AwardsPage() {
 
           {/* UPCOMING AWARDS SECTION */}
           {(() => {
-            const upcoming = UPCOMING_AWARDS.filter((a) => a.status === "upcoming" || a.status === "live");
-            const recentCompleted = UPCOMING_AWARDS.filter((a) => a.status === "completed").slice(0, 2);
+            // Date-aware: an entry whose ceremony date has passed counts as
+            // completed regardless of its static status field.
+            const todayIso = new Date().toISOString().slice(0, 10);
+            const isPast = (a: UpcomingAward) => a.date < todayIso;
+            const upcoming = UPCOMING_AWARDS.filter((a) => !isPast(a) && (a.status === "upcoming" || a.status === "live"));
+            const recentCompleted = [
+              ...UPCOMING_AWARDS.filter((a) => a.status === "completed"),
+              ...UPCOMING_AWARDS.filter((a) => isPast(a) && a.status !== "completed"),
+            ]
+              .sort((a, b) => b.date.localeCompare(a.date))
+              .slice(0, 2);
             const display = [...upcoming, ...recentCompleted];
             if (display.length === 0) return null;
             return (

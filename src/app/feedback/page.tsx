@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -78,7 +79,8 @@ export default function FeedbackPage() {
   const [formType, setFormType] = useState("suggestion");
   const [formMessage, setFormMessage] = useState("");
   const [formEmail, setFormEmail] = useState("");
-  const [formPage, setFormPage] = useState(() => (typeof window !== "undefined" ? window.location.pathname : ""));
+  const pathname = usePathname();
+  const [formPage, setFormPage] = useState(pathname || "");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [formError, setFormError] = useState("");

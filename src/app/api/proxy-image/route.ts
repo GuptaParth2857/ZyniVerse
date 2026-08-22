@@ -7,9 +7,10 @@ const ALLOWED_HOSTS = [
   "img.anili.st",
   "i.ytimg.com",
   "upload.wikimedia.org",
+  "yt3.googleusercontent.com",
 ];
 
-const TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7d
 
 interface CacheEntry {
   data: ArrayBuffer;
@@ -84,13 +85,16 @@ export async function GET(req: NextRequest) {
 
     const now = Date.now();
     const cached = cache.get(url);
-    if (cached && cached.expires > now) {
+      if (cached && cached.expires > now) {
       return new NextResponse(cached.data, {
         status: 200,
         headers: {
           "Content-Type": cached.type,
           "Access-Control-Allow-Origin": "*",
-          "Cache-Control": "public, max-age=86400, s-maxage=86400",
+          // Poster/cover URLs are content-hashed upstream, so long-lived
+          // edge caching is safe and keeps image bytes off Functions.
+          "Cache-Control":
+            "public, max-age=604800, s-maxage=2592000, stale-while-revalidate=604800, immutable",
         },
       });
     }
@@ -118,7 +122,8 @@ export async function GET(req: NextRequest) {
       headers: {
         "Content-Type": type,
         "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "public, max-age=86400, s-maxage=86400",
+        "Cache-Control":
+          "public, max-age=604800, s-maxage=2592000, stale-while-revalidate=604800, immutable",
       },
     });
   } catch (e) {

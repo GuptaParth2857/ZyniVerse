@@ -1,8 +1,6 @@
 import { NextRequest } from "next/server";
 import { isAllowedAvatarHost } from "@/lib/avatar-src";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(req: NextRequest) {
   const raw = req.nextUrl.searchParams.get("url");
   if (!raw) return new Response("Bad Request", { status: 400 });
@@ -40,7 +38,8 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers: {
         "content-type": contentType,
-        "cache-control": "public, max-age=86400, stale-while-revalidate=604800",
+        "cache-control":
+          "public, max-age=604800, s-maxage=1209600, stale-while-revalidate=2592000",
         "x-avatar-source": url.origin,
       },
     });

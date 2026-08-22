@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
+import { resolveUserId } from "@/lib/resolve-user";
 
 const ANON_USERNAME = "anonymous";
 
@@ -72,16 +73,16 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId: requestedUserId, animeId, animeTitle, animeCover, quote, character, episode, timestamp, style } = body;
+    const { animeId, animeTitle, animeCover, quote, character, episode, timestamp, style } = body;
 
     if (!animeId || !animeTitle || !quote || !character) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    let userId = requestedUserId;
-    if (!userId || userId === "current-user") {
-      userId = await getOrCreateAnonymousUser();
-    }
+    // Always derive the author from the session; fall back to the shared
+    // anonymous user for guests. Never trust a client-supplied userId.
+    const sessionUserId = await resolveUserId();
+    const userId = sessionUserId || (await getOrCreateAnonymousUser());
 
     const moment = await prisma.moment.create({
       data: {

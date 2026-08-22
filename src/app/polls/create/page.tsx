@@ -6,20 +6,30 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { PageTransition } from "@/components/PageTransition";
 
+interface PollOption {
+  id: string;
+  text: string;
+}
+
+let optionIdCounter = 0;
+function newOption(): PollOption {
+  return { id: `opt-${++optionIdCounter}`, text: "" };
+}
+
 export default function CreatePollPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [options, setOptions] = useState(["", ""]);
+  const [options, setOptions] = useState<PollOption[]>(() => [newOption(), newOption()]);
   const [submitting, setSubmitting] = useState(false);
 
   function addOption() {
-    if (options.length < 10) setOptions([...options, ""]);
+    if (options.length < 10) setOptions([...options, newOption()]);
   }
 
-  function removeOption(i: number) {
-    if (options.length > 2) setOptions(options.filter((_, idx) => idx !== i));
+  function removeOption(id: string) {
+    if (options.length > 2) setOptions(options.filter((opt) => opt.id !== id));
   }
 
   if (!session) {
@@ -38,7 +48,7 @@ export default function CreatePollPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title || options.filter(Boolean).length < 2) return;
+    if (!title || options.map((o) => o.text).filter(Boolean).length < 2) return;
     setSubmitting(true);
     try {
       const res = await fetch("/api/polls", {
@@ -47,7 +57,7 @@ export default function CreatePollPage() {
         body: JSON.stringify({
           title,
           description: description || undefined,
-          options: options.filter(Boolean),
+          options: options.map((o) => o.text).filter(Boolean),
         }),
       });
       const data = await res.json();
@@ -88,16 +98,16 @@ export default function CreatePollPage() {
             <label className="block text-xs font-semibold text-[var(--color-mute)] mb-1.5">Options ({options.length}/10)</label>
             <div className="space-y-2">
               {options.map((opt, i) => (
-                <div key={i} className="flex gap-2">
-                  <input value={opt} onChange={(e) => {
+                <div key={opt.id} className="flex gap-2">
+                  <input value={opt.text} onChange={(e) => {
                     const next = [...options];
-                    next[i] = e.target.value;
+                    next[i] = { ...opt, text: e.target.value };
                     setOptions(next);
                   }} placeholder={`Option ${i + 1}`} required={i < 2}
                     className="flex-1 rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-2 text-sm text-white outline-none focus:border-[var(--color-cyan)] transition-colors"
                   />
                   {options.length > 2 && (
-                    <button type="button" onClick={() => removeOption(i)}
+                    <button type="button" onClick={() => removeOption(opt.id)}
                       className="rounded-lg neon-rgb-border px-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
                     >✕</button>
                   )}

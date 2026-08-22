@@ -25,6 +25,13 @@ export async function GET(req: Request) {
   const id = url.searchParams.get("id") ? Number(url.searchParams.get("id")) : undefined;
   const exclude = url.searchParams.get("exclude")?.split(",").map(Number).filter(Boolean) || [];
 
+  // Session-dependent types must stay dynamic; everything else is
+  // public and identical per query, so let the CDN absorb repeat hits.
+  const cacheable = !["ai", "personalized"].includes(type);
+  const headers: HeadersInit = cacheable
+    ? { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600" }
+    : { "Cache-Control": "private, no-store" };
+
   try {
     let recommendations;
 
@@ -68,7 +75,7 @@ export async function GET(req: Request) {
       }
     }
 
-    return Response.json({ recommendations });
+    return Response.json({ recommendations }, { headers });
   } catch (e) {
     return Response.json({ recommendations: [], error: (e as Error).message }, { status: 500 });
   }

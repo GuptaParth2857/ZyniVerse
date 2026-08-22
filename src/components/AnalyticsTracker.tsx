@@ -59,6 +59,7 @@ export default function AnalyticsTracker() {
     if (typeof window === "undefined" || !sessionId) return;
 
     const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
       fetch("/api/analytics/heartbeat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

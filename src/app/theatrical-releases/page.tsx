@@ -70,7 +70,7 @@ export default function TheatricalReleasesPage() {
             </h1>
           </div>
           <p className="mx-auto mt-3 max-w-2xl text-sm text-[var(--color-mute)]">
-            Complete list of anime movies released in Indian theatres with verified box office data and streaming info.
+            Curated list of anime movies released in Indian theatres with box office information and streaming info.
           </p>
           {stats?.lastUpdated && (
             <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-[var(--color-mute)]">

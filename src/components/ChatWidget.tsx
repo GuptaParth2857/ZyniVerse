@@ -83,7 +83,10 @@ export default function ChatWidget() {
     if (!session?.user?.id) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUnreadTotal();
-    const interval = setInterval(fetchUnreadTotal, 30000);
+    const interval = setInterval(() => {
+      if (document.hidden) return;
+      fetchUnreadTotal();
+    }, 30000);
     return () => clearInterval(interval);
   }, [session, fetchUnreadTotal]);
 
@@ -121,6 +124,7 @@ export default function ChatWidget() {
     markAsRead(activeConvo);
 
     const interval = setInterval(() => {
+      if (document.hidden) return;
       fetchMessages(activeConvo);
     }, 20000);
     return () => clearInterval(interval);
@@ -144,10 +148,14 @@ export default function ChatWidget() {
         setActiveConvo(null);
       }
     }
+    let timer: ReturnType<typeof setTimeout> | undefined;
     if (open) {
-      setTimeout(() => document.addEventListener("mousedown", handleClick), 0);
+      timer = setTimeout(() => document.addEventListener("mousedown", handleClick), 0);
     }
-    return () => document.removeEventListener("mousedown", handleClick);
+    return () => {
+      if (timer) clearTimeout(timer);
+      document.removeEventListener("mousedown", handleClick);
+    };
   }, [open]);
 
   async function handleSelectConvo(convo: ConversationSummary) {
