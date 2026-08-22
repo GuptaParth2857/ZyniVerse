@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import Loader, { ErrorState } from "@/components/Loader";
@@ -36,6 +37,7 @@ function timeAgo(date: string) {
 
 export default function CosplayDetailPage({ id, initialData }: { id: string; initialData?: CosplayDetail }) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [cosplay, setCosplay] = useState<CosplayDetail | null>(initialData || null);
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export default function CosplayDetailPage({ id, initialData }: { id: string; ini
     try {
       const res = await fetch(`/api/cosplay/${id}`, { method: "DELETE" });
       if (res.ok) {
-        window.location.href = "/cosplay";
+        router.push("/cosplay");
       }
     } finally {
       setDeleting(false);

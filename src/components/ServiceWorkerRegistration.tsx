@@ -21,7 +21,26 @@ export default function ServiceWorkerRegistration() {
     navigator.serviceWorker
       .register("/sw.js")
       .then((reg) => {
-        console.log("SW registered:", reg.scope);
+        // When a new SW is waiting, activate it right away and reload once
+        // so users land on the fresh deploy instead of a stale mix.
+        if (reg.waiting && navigator.serviceWorker.controller) {
+          reg.waiting.postMessage("SKIP_WAITING");
+        }
+        reg.addEventListener("updatefound", () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener("statechange", () => {
+            if (nw.state === "installed" && navigator.serviceWorker.controller) {
+              nw.postMessage("SKIP_WAITING");
+            }
+          });
+        });
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (reloaded) return;
+          reloaded = true;
+          window.location.reload();
+        });
       })
       .catch((err) => {
         console.error("SW registration failed:", err);

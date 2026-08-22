@@ -18,6 +18,7 @@ const INTV_SCHEDULE_MAP: Record<string, string> = {
   pogo: "pogo",
   nick: "nick",
   nick_jr: "nick-junior",
+  sonic: "sonic",
   discovery_kids: "discovery-kids",
   disney_channel: "disney-channel",
   disney_junior: "disney-junior",

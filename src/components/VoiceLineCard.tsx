@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import type { VoiceLine } from "@/lib/voice-lines";
 import MomentMaker from "./MomentMaker";
@@ -33,6 +34,7 @@ const langLabels: Record<string, string> = {
 };
 
 export default function VoiceLineCard({ line, index = 0 }: { line: VoiceLine; index?: number }) {
+  const router = useRouter();
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(line.likes);
   const [likeBusy, setLikeBusy] = useState(false);
@@ -120,7 +122,7 @@ export default function VoiceLineCard({ line, index = 0 }: { line: VoiceLine; in
         setLiked(prevLiked);
         setLikes(prevLikes);
         if (res.status === 401) {
-          window.location.href = "/login";
+          router.push("/login");
         }
         return;
       }

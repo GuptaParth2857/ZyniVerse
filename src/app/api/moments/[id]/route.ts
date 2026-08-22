@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
+import { auth } from "@/lib/auth";
+import { isAdminEmail } from "@/lib/admin";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -31,7 +33,23 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
+    const moment = await prisma.moment.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+    if (!moment) {
+      return NextResponse.json({ error: "Moment not found" }, { status: 404 });
+    }
+    if (moment.userId !== session.user.id && !isAdminEmail(session.user?.email)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     await prisma.moment.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (e) {

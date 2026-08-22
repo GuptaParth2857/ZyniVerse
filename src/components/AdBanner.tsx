@@ -22,6 +22,41 @@ interface ApiPlacement {
 }
 
 /**
+ * Detects whether the ad network is reachable. On PCs running an ad blocker
+ * (uBlock, Brave Shields, DNS-level blockers) the invoke.js request fails or
+ * hangs — in that case we collapse the slot instead of leaving an empty
+ * "Advertisement" box.
+ */
+function useAdNetworkAvailable(code: string): boolean | null {
+  const invokeUrl = code.match(/https:\/\/[^"'<\s]+invoke\.js/)?.[0] ??
+    code.match(/https:\/\/[^"'<\s]+\.js/)?.[0];
+  const key = invokeUrl ?? "";
+  const [available, setAvailable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!key) return;
+    let settled = false;
+    const settle = (v: boolean) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      setAvailable(v);
+    };
+    // If the request hangs (blockers sometimes stall), assume blocked.
+    const timer = setTimeout(() => settle(false), 7000);
+    fetch(key, { mode: "no-cors", cache: "no-store" })
+      .then(() => settle(true))
+      .catch(() => settle(false));
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [key]);
+
+  // No script URL to probe (e.g. custom code) — assume reachable.
+  return key ? available : true;
+}
+
+/**
  * Renders an Adsterra iframe-sync ad inside a sandboxed iframe.
  * The ad scripts are injected into srcdoc so they execute in isolation.
  */
@@ -145,6 +180,11 @@ export default function AdBanner({
 
   const showAds = adsEnabled() && shouldShowAds(user);
 
+  // Probe the ad network once per slot; if an ad blocker on the visitor's PC
+  // blocks/hangs invoke.js, the whole slot (box + label) is collapsed.
+  const candidateAd = getAdsForLocation(placement, liveAds)[0];
+  const networkAvailable = useAdNetworkAvailable(candidateAd?.code ?? "");
+
   // Track impressions
   useEffect(() => {
     if (!showAds || impressionTracked) return;
@@ -202,6 +242,11 @@ export default function AdBanner({
 
   // ── No ad configured for this placement ───────────────────────────────
   if (!ad) {
+    return null;
+  }
+
+  // ── Ad blocker detected: hide the slot entirely ───────────────────────
+  if (networkAvailable === false) {
     return null;
   }
 

@@ -76,6 +76,9 @@ const MANUAL_PLATFORM_MAP: Record<string, string[]> = {
   "trapped in a dating sim": ["sony_liv", "crunchyroll"],
   "the oblivious saint": ["sony_liv", "crunchyroll"],
   "liar game": ["sony_liv", "crunchyroll"],
+  "dr. stone": ["sony_liv", "crunchyroll"],
+  "call of the night": ["sony_liv", "crunchyroll"],
+  "rising of the shield hero": ["sony_liv", "crunchyroll"],
   // JioHotstar - library content (Hindi/Tamil/Telugu dubs, already completed shows)
   "demon slayer": ["jio_hotstar"],
   "my hero academia": ["jio_hotstar"],
@@ -124,6 +127,13 @@ const MANUAL_PLATFORM_MAP: Record<string, string[]> = {
   "classroom of the elite": ["jio_hotstar"],
   "black butler": ["jio_hotstar"],
   "the fable": ["jio_hotstar"],
+  "doraemon": ["jio_hotstar"],
+  "shinchan": ["jio_hotstar"],
+  "crayon shin": ["jio_hotstar"],
+  "beyblade": ["jio_hotstar"],
+  "summer time rendering": ["jio_hotstar"],
+  "ranking of kings": ["jio_hotstar"],
+  "haikyu": ["jio_hotstar"],
 };
 
 // Platform IDs that are streaming (not linear TV)
@@ -166,15 +176,17 @@ export async function fetchLiveStreamingSchedules(): Promise<PlatformSchedule[]>
     };
 
     // Auto-detect platforms from AniList externalLinks
-    let platforms = detectPlatformsFromLinks(entry.media.externalLinks);
+    const platforms = detectPlatformsFromLinks(entry.media.externalLinks);
 
-    // Fallback to manual map if no platforms detected
-    if (platforms.length === 0) {
-      for (const [key, manualPlatforms] of Object.entries(MANUAL_PLATFORM_MAP)) {
-        if (titleLower.includes(key) || key.includes(titleLower)) {
-          platforms = manualPlatforms;
-          break;
+    // Always cross-check the manual India-streaming map: AniList external
+    // links routinely omit regional platforms (JioHotstar, Sony LIV), and
+    // skipping the map whenever ANY link matched left those platforms empty.
+    for (const [key, manualPlatforms] of Object.entries(MANUAL_PLATFORM_MAP)) {
+      if (titleLower.includes(key) || key.includes(titleLower)) {
+        for (const p of manualPlatforms) {
+          if (!platforms.includes(p)) platforms.push(p);
         }
+        break;
       }
     }
 

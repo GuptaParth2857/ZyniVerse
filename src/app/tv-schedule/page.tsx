@@ -117,7 +117,7 @@ function ChannelLogo({
       width={size}
       height={size}
       className="rounded-xl shrink-0 shadow-lg"
-      style={{ border: `1.5px solid ${channel.color}44`, objectFit: "contain", background: "rgba(0,0,0,0.3)" }}
+      style={{ border: `1.5px solid ${channel.color}44`, objectFit: "contain", background: "rgba(0,0,0,0.3)", width: size, height: size }}
       onError={() => setImgError(true)}
     />
   );
@@ -293,6 +293,7 @@ function NowPlayingBanner({ liveData }: { liveData?: LiveScheduleData | null }) 
                     fill
                     className="object-cover opacity-30"
                     sizes="(max-width: 640px) 100vw, 300px"
+                    style={channel.logoInvert ? { filter: "brightness(0) invert(1)" } : undefined}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-[10px] font-bold text-white/60 text-center px-2 leading-tight">{slot.show}</span>
@@ -450,16 +451,20 @@ function TimeSlotRow({
   showDescription,
   isStreaming,
   channelLogoUrl,
+  channelShortName,
 }: {
   slot: TimeSlot;
   channelColor: string;
   showDescription: boolean;
   isStreaming?: boolean;
   channelLogoUrl?: string;
+  channelShortName?: string;
 }) {
+  const [logoFailed, setLogoFailed] = useState(false);
   const isAlwaysAvailable = isStreaming && slot.start === "00:00" && slot.end === "00:00";
   const airing = !isAlwaysAvailable && isCurrentlyAiring(slot);
   const past = !isAlwaysAvailable && isPast(slot);
+  const showLogo = !!channelLogoUrl && !logoFailed;
 
   return (
     <div
@@ -508,15 +513,24 @@ function TimeSlotRow({
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          {channelLogoUrl && (airing || (!past && !isAlwaysAvailable)) && (
+          {showLogo ? (
             <Image
-              src={channelLogoUrl}
+              src={channelLogoUrl || ""}
               alt={slot.show}
               width={32}
               height={32}
-              className="rounded-md object-cover shrink-0 border border-white/10"
+              className="rounded-md shrink-0 border border-white/10"
+              style={{ objectFit: "contain", background: "rgba(0,0,0,0.3)", width: 32, height: 32 }}
+              onError={() => setLogoFailed(true)}
             />
-          )}
+          ) : channelShortName ? (
+            <div
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/10 text-[9px] font-bold text-white"
+              style={{ background: `${channelColor}cc` }}
+            >
+              {channelShortName}
+            </div>
+          ) : null}
           <p
             className={`text-sm font-semibold truncate ${
               airing
@@ -592,6 +606,19 @@ function ChannelScheduleCard({
         s.show.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : effectiveSlots, [effectiveSlots, searchQuery]);
+
+  // When today is empty, point users to the next day that has episodes
+  const nextDayWithSlots = useMemo(() => {
+    if (filteredSlots.length > 0) return null;
+    const order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const startIdx = order.indexOf(day);
+    if (startIdx === -1) return null;
+    for (let i = 1; i <= 6; i++) {
+      const d = order[(startIdx + i) % 7];
+      if ((liveSchedule?.days[d]?.length ?? 0) > 0) return d;
+    }
+    return null;
+  }, [filteredSlots, liveSchedule, day]);
 
   // Auto-scroll to currently airing slot within card (no page scroll)
   useEffect(() => {
@@ -687,7 +714,11 @@ function ChannelScheduleCard({
                 <div className="flex items-center justify-center py-6 text-center">
                   <div>
                     <p className="text-xs text-[var(--color-mute)] font-medium">No schedule data available</p>
-                    <p className="text-[10px] text-[var(--color-mute)]/60 mt-1">EPG data pending — check back later</p>
+                    {nextDayWithSlots ? (
+                      <p className="text-[10px] text-cyan-400/80 mt-1 font-semibold">Next new episodes: {nextDayWithSlots}</p>
+                    ) : (
+                      <p className="text-[10px] text-[var(--color-mute)]/60 mt-1">EPG data pending — check back later</p>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -699,6 +730,7 @@ function ChannelScheduleCard({
                     showDescription={showDesc}
                     isStreaming={channel.type !== "tv"}
                     channelLogoUrl={channel.logoUrl}
+                    channelShortName={channel.shortName}
                   />
                 ))
               )}

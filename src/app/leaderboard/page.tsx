@@ -181,7 +181,7 @@ function AnimeCard({ item, rank, index }: { item: Media; rank: number; index: nu
             alt={title}
             fill
             loading="lazy"
-            onLoadingComplete={() => setImgLoaded(true)}
+            onLoad={() => setImgLoaded(true)}
             className={`object-cover transition-all duration-500 group-hover:scale-110 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />

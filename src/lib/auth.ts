@@ -42,6 +42,17 @@ const providers = [
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   providers,
+  cookies: {
+    pkceCodeVerifier: {
+      name: "authjs.pkce.code_verifier",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: false,
+      },
+    },
+  },
   callbacks: {
     async signIn({ account, profile }) {
       if (account?.provider === "google" || account?.provider === "github" || account?.provider === "discord") {

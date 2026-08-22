@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
+import { resolveUserId } from "@/lib/resolve-user";
 
-async function resolveUserId(userId: string) {
-  if (!userId || userId === "current-user") {
-    const anon = await prisma.user.findUnique({ where: { username: "anonymous" } });
-    return anon?.id || null;
-  }
-  return userId;
+async function getEffectiveUserId() {
+  const sessionUserId = await resolveUserId();
+  if (sessionUserId) return sessionUserId;
+  const anon = await prisma.user.findUnique({ where: { username: "anonymous" } });
+  return anon?.id || null;
 }
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { userId: rawUserId } = await req.json();
-    const userId = await resolveUserId(rawUserId);
+    // Derive the actor from the session (guests share the anonymous user).
+    // Never trust a client-supplied userId.
+    const userId = await getEffectiveUserId();
 
     if (!userId) {
       return NextResponse.json({ error: "userId required" }, { status: 400 });

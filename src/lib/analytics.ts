@@ -67,12 +67,14 @@ export async function startSession(params: {
   os?: string | null;
   country?: string | null;
 }) {
+  const sessionId = params.sessionId || crypto.randomUUID();
   try {
-    const sessionId = params.sessionId || crypto.randomUUID();
-    const existing = await prisma.userSession.findUnique({ where: { sessionId }, select: { sessionId: true } });
-    if (existing) return sessionId;
-    await prisma.userSession.create({
-      data: {
+    // Atomic create-or-ignore: concurrent session+pageview requests can race
+    // here, so never rely on findUnique-then-create.
+    await prisma.userSession.upsert({
+      where: { sessionId },
+      update: { lastActiveAt: new Date() },
+      create: {
         sessionId,
         userId: params.userId || null,
         device: params.device || null,
@@ -84,6 +86,8 @@ export async function startSession(params: {
     });
     return sessionId;
   } catch (error) {
+    // Lost an insert race — the session row exists, that's fine.
+    if ((error as { code?: string })?.code === "P2002") return sessionId;
     console.error("Failed to start session:", error);
     return null;
   }

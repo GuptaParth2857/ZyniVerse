@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { logError } from "@/lib/logger";
 
 function trackActivity(action: string, data?: Record<string, unknown>) {
@@ -53,20 +54,26 @@ function detectAction(pathname: string, searchParams: URLSearchParams): { action
 export default function ActivityTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
   const lastTracked = useRef<string>("");
   const achievementCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!pathname) return;
     const key = `${pathname}?${searchParams.toString()}`;
-    if (key === lastTracked.current) return;
-    lastTracked.current = key;
-    const { action, data } = detectAction(pathname, searchParams);
-    trackActivity(action, data);
+    if (key !== lastTracked.current) {
+      lastTracked.current = key;
+      const { action, data } = detectAction(pathname, searchParams);
+      trackActivity(action, data);
+    }
 
+    // Achievements only exist for signed-in users — skip the round-trip
+    // for guests entirely.
+    if (!userId) return;
     if (achievementCheckTimer.current) clearTimeout(achievementCheckTimer.current);
     achievementCheckTimer.current = setTimeout(checkAchievements, 3000);
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, userId]);
 
   useEffect(() => {
     return () => {

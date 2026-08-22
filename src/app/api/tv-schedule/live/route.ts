@@ -87,7 +87,7 @@ export async function GET() {
     const allDayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
     const epgChannelIds = [
       "cn", "sony_yay", "hungama", "super_hungama", "pogo", "nick",
-      "nick_jr", "discovery_kids", "disney_channel",
+      "nick_jr", "sonic", "discovery_kids", "disney_channel",
       "disney_junior", "epic_kids",
     ];
 

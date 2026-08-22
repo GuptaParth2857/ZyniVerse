@@ -7,7 +7,6 @@
 (() => {
   if (window.top !== window) return; // only top frame
 
-  const API_BASE = "https://zyverse.in";
   const STATE_KEY = "zv_last_scrobble";
 
   let lastReported = "";
