@@ -7,6 +7,7 @@ import { PageTransition } from "@/components/PageTransition";
 import MessageBubble, { type MessageView } from "@/components/MessageBubble";
 import { logError } from "@/lib/logger";
 import { useDmSocket } from "@/hooks/useDmSocket";
+import { useOnlineUsers } from "@/hooks/useOnlineUsers";
 import type { DmReactionEvent, DmSeenEvent, DmDeleteEvent, DmTypingEvent } from "@/lib/socket";
 
 const EMOJIS = ["❤️", "👍", "😂", "🔥", "😮", "😢", "😡"];
@@ -53,6 +54,7 @@ export default function MessagesClient() {
   const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSent = useRef(0);
   const tempIdCounter = useRef(0);
+  const onlineUsers = useOnlineUsers(myId);
 
   const fetchConversations = useCallback(async () => {
     setLoadingConvos(true);
@@ -391,8 +393,17 @@ export default function MessagesClient() {
                         activeConvoId === convo.id ? "bg-white/[0.04]" : ""
                       }`}
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-violet)] to-[var(--color-magenta)] text-sm font-bold text-black">
-                        {(convo.otherUser?.username ?? "?").charAt(0).toUpperCase()}
+                      <div className="relative shrink-0">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-violet)] to-[var(--color-magenta)] text-sm font-bold text-black">
+                          {(convo.otherUser?.username ?? "?").charAt(0).toUpperCase()}
+                        </div>
+                        {convo.otherUser && onlineUsers.has(convo.otherUser.id) && (
+                          <span
+                            className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[var(--color-bg,#0b0614)] bg-green-400"
+                            title="Online"
+                            aria-label="Online"
+                          />
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between">
@@ -435,15 +446,24 @@ export default function MessagesClient() {
                   <button onClick={() => { setActiveConvoId(null); router.replace("/messages"); }} className="sm:hidden shrink-0 mr-1 flex items-center justify-center h-8 w-8 rounded-lg text-sm text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 transition-colors" aria-label="Back to conversations">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
                   </button>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-violet)] to-[var(--color-magenta)] text-xs font-bold text-black">
-                    {(activeConvo.otherUser?.username ?? "?").charAt(0).toUpperCase()}
+                  <div className="relative shrink-0 mr-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-violet)] to-[var(--color-magenta)] text-xs font-bold text-black">
+                      {(activeConvo.otherUser?.username ?? "?").charAt(0).toUpperCase()}
+                    </div>
+                    {activeConvo.otherUser && onlineUsers.has(activeConvo.otherUser.id) && (
+                      <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--color-bg,#0b0614)] bg-green-400" />
+                    )}
                   </div>
                   <div className="min-w-0">
                     <span className="block text-sm font-semibold text-[var(--color-ink)] truncate">
                       {activeConvo.otherUser?.username ?? "Chat"}
                     </span>
                     <span className="block text-[11px] text-[var(--color-cyan)]">
-                      {otherTyping ? "typing..." : ""}
+                      {otherTyping
+                        ? "typing..."
+                        : activeConvo.otherUser && onlineUsers.has(activeConvo.otherUser.id)
+                          ? "online"
+                          : ""}
                     </span>
                   </div>
                 </div>

@@ -58,6 +58,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   try {
     const anime = await getAnimeDetailFull(id);
     const title = anime.title?.english || anime.title?.romaji || "Anime";
+    const ogImage = `${BASE_URL}/api/og/anime/${id}`;
     return {
       title,
       description: (anime.description || "").replace(/<[^>]*>/g, "").slice(0, 160),
@@ -66,7 +67,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         description: (anime.description || "").replace(/<[^>]*>/g, "").slice(0, 160),
         type: "website",
         url: `${BASE_URL}/anime/${id}`,
-        images: [{ url: anime.coverImage?.extraLarge || anime.coverImage?.large || `${BASE_URL}/logo.png`, alt: title }],
+        images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
+      },
+      twitter: {
+        card: "summary_large_image" as const,
+        title: `${title} | ZyniVerse`,
+        images: [ogImage],
       },
     };
   } catch {

@@ -177,6 +177,7 @@ async function fetchCharactersBatch(animeIds: number[]): Promise<Map<number, { n
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({ query, variables: { ids: animeIds } }),
+      next: { revalidate: 21600 },
     });
     const data = (await res.json()) as { Page?: { media?: AniListMedia[] } };
     const map = new Map<number, { name: string; image?: string }[]>();
@@ -197,6 +198,7 @@ async function generateQuestionsFromAnime(count: number): Promise<QuizQuestion[]
         query: `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: POPULARITY_DESC, type: ANIME, isAdult: false) { id title { romaji english } coverImage { large } studios(isMain: true) { nodes { id name } } episodes duration format source(version: 2) genres startDate { year } averageScore } } }`,
         variables: { p: count + 10 },
       }),
+      next: { revalidate: 21600 },
     });
     const data = (await res.json()) as { Page?: { media?: AniListMedia[] } };
     const mediaList = data.Page?.media || [];
@@ -355,26 +357,37 @@ export function generateQuiz(difficulty?: string, category?: string, count = 10)
   });
 }
 
+let dailyQuizCache: { dateStr: string; questions: QuizQuestion[] } | null = null;
+
 export async function getDailyQuizDynamic(): Promise<QuizQuestion[]> {
   const today = new Date();
   const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+
+  if (dailyQuizCache && dailyQuizCache.dateStr === dateStr) {
+    return dailyQuizCache.questions;
+  }
+
   const rng = seededRandom(dateStr);
 
   const questions = await generateQuestionsFromAnime(8);
   const selected = shuffleArray(questions, rng).slice(0, 5);
 
+  let final: QuizQuestion[];
   if (selected.length < 5) {
     const fallback = shuffleArray(QUESTIONS, rng).slice(0, 5 - selected.length);
-    return [...selected, ...fallback].map((q) => {
+    final = [...selected, ...fallback].map((q) => {
+      const options = shuffleArray([...q.options], rng);
+      return { ...q, options };
+    });
+  } else {
+    final = selected.map((q) => {
       const options = shuffleArray([...q.options], rng);
       return { ...q, options };
     });
   }
 
-  return selected.map((q) => {
-    const options = shuffleArray([...q.options], rng);
-    return { ...q, options };
-  });
+  dailyQuizCache = { dateStr, questions: final };
+  return final;
 }
 
 export function getDailyQuiz(): QuizQuestion[] {
