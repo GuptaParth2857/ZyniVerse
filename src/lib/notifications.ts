@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { sendPushToUser } from "@/lib/push";
 
 interface NotificationCreate {
   userId: string;
@@ -9,7 +10,14 @@ interface NotificationCreate {
 }
 
 export async function createNotification(data: NotificationCreate) {
-  return prisma.notification.create({ data });
+  const notification = await prisma.notification.create({ data });
+  void sendPushToUser(data.userId, {
+    title: data.title,
+    body: data.body,
+    link: data.link,
+    tag: notification.id,
+  }).catch(() => {});
+  return notification;
 }
 
 export async function getNotifications(userId: string, limit = 50, offset = 0) {

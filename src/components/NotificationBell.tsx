@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { logError } from "@/lib/logger";
+import PushOptIn from "./PushOptIn";
 
 interface Notification {
   id: string;
@@ -150,6 +151,7 @@ export default function NotificationBell() {
                 ))
               )}
             </div>
+            <PushOptIn />
             <Link
               href="/notifications"
               onClick={() => setOpen(false)}
