@@ -48,6 +48,7 @@ const MORE_CATEGORIES: MoreCategory[] = [
     title: "Discover",
     icon: "🔍",
     items: [
+      { to: "/ai", label: "Zyni AI ✨" },
       { to: "/news", label: "News" },
       { to: "/guides", label: "Guides & Articles" },
       { to: "/live-action", label: "Live Action" },

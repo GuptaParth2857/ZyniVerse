@@ -681,6 +681,25 @@ model PushSubscription {
   @@index([userId])
 }
 
+model AiCache {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  kind      String // chat | identify | vibe
+  response  String
+  createdAt DateTime @default(now())
+
+  @@index([kind, createdAt])
+}
+
+model AiUsageDaily {
+  id     String @id @default(cuid())
+  day    String // YYYY-MM-DD (UTC)
+  userId String // real userId or "__global__"
+  count  Int    @default(0)
+
+  @@unique([day, userId])
+}
+
 model ThemeSong {
   id           String   @id @default(cuid())
   mediaId      Int
