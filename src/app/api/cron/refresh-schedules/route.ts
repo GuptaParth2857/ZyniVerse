@@ -70,7 +70,27 @@ export async function GET(request: Request) {
     }
   }
 
-  // 4. Update live-action anime data
+  // 4. Prune stale AniList + Podcast cache rows (keeps DB under quota)
+  try {
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const [anilist, podcast] = await Promise.all([
+      prisma.aniListCache.deleteMany({ where: { updatedAt: { lt: cutoff } } }),
+      prisma.podcastCache.deleteMany({ where: { updatedAt: { lt: cutoff } } }).catch(() => ({ count: 0 })),
+    ]);
+    results.push({
+      task: "cache-prune",
+      status: 200,
+      detail: `AniListCache -${anilist.count}, PodcastCache -${podcast.count} (older than 7d)`,
+    });
+  } catch (error) {
+    results.push({
+      task: "cache-prune",
+      status: 500,
+      detail: error instanceof Error ? error.message : "Failed to prune caches",
+    });
+  }
+
+  // 5. Update live-action anime data
   try {
     const { fetchLiveActionUpdates } = await import("@/lib/live-action-updater");
     const updateResult = await fetchLiveActionUpdates();
@@ -88,7 +108,7 @@ export async function GET(request: Request) {
     });
   }
 
-  // 5. Sync live-action catalog from Wikipedia (+ AniList enrichment)
+  // 6. Sync live-action catalog from Wikipedia (+ AniList enrichment)
   try {
     const { syncLiveActionCatalog } = await import("@/lib/live-action-catalog");
     const catalogResult = await syncLiveActionCatalog();

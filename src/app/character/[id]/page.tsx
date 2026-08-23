@@ -5,6 +5,10 @@ import CharacterDetailClient from "./character-client";
 
 export const revalidate = 3600;
 
+export async function generateStaticParams() {
+  return [];
+}
+
 const getCharacterCached = cache(getCharacter);
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { isR2Configured, r2Put, r2PublicUrl } from "@/lib/r2";
 
 const ALLOWED_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
-const MAX_SIZE = 50 * 1024 * 1024; // 50MB — Supabase free plan storage limit
+const MAX_SIZE = 50 * 1024 * 1024; // 50MB â€” Supabase free plan storage limit
 const BUCKET = "reels";
 
 export async function POST(req: NextRequest) {
@@ -30,6 +31,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File too large. Max 50MB." }, { status: 400 });
     }
 
+    if (isR2Configured()) {
+      const timestamp = Date.now();
+      const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_").slice(0, 50);
+      const ext = file.name.split(".").pop() || "mp4";
+      const path = `${session.user.id}/${timestamp}-${safeName}.${ext}`;
+      await r2Put(path, Buffer.from(await file.arrayBuffer()), file.type);
+      let thumbnailUrl: string | null = null;
+      if (thumbnail) {
+        const thumbExt = thumbnail.name.split(".").pop() || "jpg";
+        const thumbPath = `${session.user.id}/${timestamp}-thumb.${thumbExt}`;
+        await r2Put(thumbPath, Buffer.from(await thumbnail.arrayBuffer()), thumbnail.type);
+        thumbnailUrl = r2PublicUrl(thumbPath);
+      }
+      return NextResponse.json({
+        url: r2PublicUrl(path),
+        thumbnailUrl,
+        fileName: file.name,
+        fileSize: file.size,
+      });
+    }
+
     const supabase = getSupabaseAdmin();
 
     const { data: buckets } = await supabase.storage.listBuckets();
@@ -44,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
-      .upload(path, file, { upsert: false, contentType: file.type });
+      .upload(path, file, { upsert: false, contentType: file.type, cacheControl: '31536000' });
 
     if (uploadError) {
       console.error("[/api/upload/reel] Supabase error:", uploadError);
@@ -59,7 +81,7 @@ export async function POST(req: NextRequest) {
       const thumbPath = `${session.user.id}/${timestamp}-thumb.${thumbExt}`;
       const { error: thumbError } = await supabase.storage
         .from(BUCKET)
-        .upload(thumbPath, thumbnail, { upsert: false, contentType: thumbnail.type });
+        .upload(thumbPath, thumbnail, { upsert: false, contentType: thumbnail.type, cacheControl: '31536000' });
       if (!thumbError) {
         const { data: t } = supabase.storage.from(BUCKET).getPublicUrl(thumbPath);
         thumbnailUrl = t.publicUrl;

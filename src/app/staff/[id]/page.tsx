@@ -5,6 +5,10 @@ import StaffDetailClient from "./staff-client";
 
 export const revalidate = 3600;
 
+export async function generateStaticParams() {
+  return [];
+}
+
 const getStaffBasicCached = cache(getStaffBasic);
 const getStaffMediaCached = cache(getStaffMedia);
 

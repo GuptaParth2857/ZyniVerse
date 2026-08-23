@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { isR2Configured, r2Put, r2PublicUrl } from "@/lib/r2";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -21,12 +22,17 @@ export async function POST(req: NextRequest) {
     const uniqueId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     const path = `blog/${session.user.id}/${uniqueId}.${ext}`;
 
+    if (isR2Configured()) {
+      await r2Put(path, Buffer.from(await file.arrayBuffer()), file.type);
+      return NextResponse.json({ url: r2PublicUrl(path) });
+    }
+
     const supabase = getSupabaseAdmin();
     const BUCKET = "profiles";
 
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
-      .upload(path, file, { upsert: false, contentType: file.type });
+      .upload(path, file, { upsert: false, contentType: file.type, cacheControl: '31536000' });
 
     if (uploadError) {
       console.error("[/api/upload/blog] Supabase error:", uploadError);

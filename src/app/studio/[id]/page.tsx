@@ -5,6 +5,10 @@ import StudioDetailClient from "./studio-client";
 
 export const revalidate = 3600;
 
+export async function generateStaticParams() {
+  return [];
+}
+
 const getStudioCached = cache(getStudio);
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {

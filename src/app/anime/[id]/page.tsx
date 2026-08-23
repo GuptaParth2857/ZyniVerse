@@ -4,6 +4,10 @@ import AnimeDetailClient from "./detail-client";
 
 export const revalidate = 3600;
 
+export async function generateStaticParams() {
+  return [];
+}
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 function buildAnimeJsonLd(anime: MediaAnimeFull) {

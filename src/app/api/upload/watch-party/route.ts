@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { isR2Configured, r2Put, r2PublicUrl } from "@/lib/r2";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -28,6 +29,11 @@ export async function POST(req: NextRequest) {
     const timestamp = Date.now();
     const path = `watch-party/${id}-${timestamp}.${ext}`;
 
+    if (isR2Configured()) {
+      await r2Put(path, Buffer.from(await file.arrayBuffer()), file.type);
+      return NextResponse.json({ url: r2PublicUrl(path) });
+    }
+
     const supabase = getSupabaseAdmin();
 
     const { data: buckets } = await supabase.storage.listBuckets();
@@ -37,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
-      .upload(path, file, { upsert: false, contentType: file.type });
+      .upload(path, file, { upsert: false, contentType: file.type, cacheControl: '31536000' });
 
     if (uploadError) {
       console.error("[/api/upload/watch-party] Supabase error:", uploadError);

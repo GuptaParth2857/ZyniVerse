@@ -4,6 +4,11 @@ import LiveActionDetailClient from "./detail-client";
 
 export const revalidate = 3600;
 
+export async function generateStaticParams() {
+  const list = await getAllLiveAction();
+  return list.map((a) => ({ id: a.id }));
+}
+
 export default async function LiveActionDetailPage({
   params,
 }: {

@@ -119,22 +119,47 @@ export default function ReelUpload() {
       if (!presignRes.ok) throw new Error((presign.error as string) || "Failed to start upload");
       setProgress(30);
 
-      const supabase = getSupabase();
-      const { error: uploadErr } = await supabase.storage
-        .from("reels")
-        .uploadToSignedUrl(presign.path as string, presign.token as string, file);
-      if (uploadErr) throw new Error(uploadErr.message || "Upload failed");
+      const isR2 = presign.mode === "r2";
+      if (isR2) {
+        const put = await fetch(presign.signedUrl as string, {
+          method: "PUT",
+          body: file,
+          headers: { "Content-Type": file.type },
+        });
+        if (!put.ok) throw new Error("Upload failed");
+      } else {
+        const supabase = getSupabase();
+        const { error: uploadErr } = await supabase.storage
+          .from("reels")
+          .uploadToSignedUrl(presign.path as string, presign.token as string, file);
+        if (uploadErr) throw new Error(uploadErr.message || "Upload failed");
+      }
       setProgress(60);
 
       let thumbnailUrl: string | null = null;
-      const thumb = presign.thumb as { path: string; token: string; publicUrl: string } | null | undefined;
+      const thumb = presign.thumb as {
+        path: string;
+        token?: string;
+        signedUrl?: string;
+        publicUrl: string;
+      } | null | undefined;
       if (thumbnail && thumb) {
         const thumbFile =
           thumbnail instanceof File ? thumbnail : new File([thumbnail], "thumb.jpg", { type: "image/jpeg" });
-        const { error: thumbErr } = await supabase.storage
-          .from("reels")
-          .uploadToSignedUrl(thumb.path, thumb.token, thumbFile);
-        if (thumbErr) throw new Error(thumbErr.message || "Upload failed");
+        if (isR2 && thumb.signedUrl) {
+          const putThumb = await fetch(thumb.signedUrl, {
+            method: "PUT",
+            body: thumbFile,
+            headers: { "Content-Type": "image/jpeg" },
+          });
+          if (!putThumb.ok) throw new Error("Upload failed");
+        } else if (thumb.token) {
+          const supabase = getSupabase();
+          const { error: thumbErr } = await supabase.storage
+            .from("reels")
+            .uploadToSignedUrl(thumb.path, thumb.token, thumbFile);
+          if (thumbErr) throw new Error(thumbErr.message || "Upload failed");
+        }
         thumbnailUrl = thumb.publicUrl;
       }
 

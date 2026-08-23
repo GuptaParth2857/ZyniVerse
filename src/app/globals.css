@@ -95,6 +95,85 @@ body {
   animation-play-state: paused;
 }
 
+/* On-Air neon ticker */
+.on-air-ticker::before,
+.on-air-ticker::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #00fff0, #ff2fd6, #8b5cf6, #00fff0);
+  background-size: 200% 100%;
+  animation: ticker-flow 6s linear infinite;
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 1;
+}
+.on-air-ticker::before { top: -1px; }
+.on-air-ticker::after { bottom: -1px; }
+
+@keyframes ticker-flow {
+  to { background-position: -200% 0; }
+}
+
+.on-air-badge {
+  padding: 0 1rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #ff9df0;
+  text-shadow:
+    0 0 8px rgba(255, 47, 214, 0.8),
+    0 0 20px rgba(255, 47, 214, 0.4);
+  background: linear-gradient(90deg, rgba(255, 47, 214, 0.14), transparent);
+  border-right: 1px solid rgba(255, 47, 214, 0.3);
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.on-air-dot {
+  box-shadow: 0 0 6px rgba(255, 47, 214, 0.9);
+}
+
+.neon-tick-title {
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+.group:hover .neon-tick-title {
+  color: #baffff;
+  text-shadow:
+    0 0 6px rgba(0, 255, 240, 0.9),
+    0 0 18px rgba(0, 255, 240, 0.45);
+}
+
+.neon-tick-ep {
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+  transition: text-shadow 0.3s ease;
+}
+.group:hover .neon-tick-ep {
+  text-shadow:
+    0 0 4px rgba(0, 229, 255, 1),
+    0 0 14px rgba(0, 229, 255, 0.7);
+}
+
+.ticker-window {
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 48px,
+    #000 calc(100% - 48px),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 48px,
+    #000 calc(100% - 48px),
+    transparent
+  );
+}
+
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
@@ -1149,7 +1228,8 @@ body {
   .ticker-track, .pulse-dot, .logo-text, .card-flip-inner,
   .neon-btn::after, .neon-card::before,
   .login-btn span, .particle-dot,
-  .neon-glow-text, .animate-ripple {
+  .neon-glow-text, .animate-ripple,
+  .on-air-ticker::before, .on-air-ticker::after {
     animation: none !important;
   }
   .neon-btn:hover::after {

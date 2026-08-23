@@ -3,8 +3,9 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 import { registerAniListCache, type AniListCacheAdapter } from "./anilist";
 
-const MAX_CACHE_AGE_MS = 14 * 24 * 60 * 60 * 1000;
+const MAX_CACHE_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 const MIN_PAYLOAD_CHARS = 50;
+const MAX_PAYLOAD_BYTES = 32 * 1024;
 const PRUNE_PROBABILITY = 0.02;
 
 function hashKey(key: string): string {
@@ -14,7 +15,8 @@ function hashKey(key: string): string {
 function isUsablePayload(data: unknown): boolean {
   if (data === null || data === undefined) return false;
   try {
-    return JSON.stringify(data).length >= MIN_PAYLOAD_CHARS;
+    const len = JSON.stringify(data).length;
+    return len >= MIN_PAYLOAD_CHARS && len <= MAX_PAYLOAD_BYTES;
   } catch {
     return false;
   }
