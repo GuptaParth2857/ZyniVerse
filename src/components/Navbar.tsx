@@ -7,8 +7,21 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { isAdminEmail } from "@/lib/admin-identity";
 import { useWatchlist } from "./WatchlistProvider";
-import { getSuggestions } from "@/lib/anilist";
-import type { Suggestion } from "@/lib/anilist";
+
+interface UnifiedMediaResult { id: number; title: string; titleRomaji?: string | null; poster?: string | null; format: string | null; year: number | null; type: "ANIME" | "MANGA"; }
+interface UnifiedUser { id: string; username: string; avatar: string | null; }
+interface UnifiedWiki { slug: string; title: string; summary: string | null; category: string; }
+interface UnifiedForum { id: string; title: string; animeTitle: string | null; viewCount: number; postCount: number; }
+interface UnifiedBlog { slug: string; title: string; excerpt: string | null; }
+interface UnifiedResults {
+  anime: UnifiedMediaResult[];
+  manga: UnifiedMediaResult[];
+  users: UnifiedUser[];
+  wiki: UnifiedWiki[];
+  forum: UnifiedForum[];
+  blog: UnifiedBlog[];
+}
+const EMPTY_RESULTS: UnifiedResults = { anime: [], manga: [], users: [], wiki: [], forum: [], blog: [] };
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -142,13 +155,135 @@ const MORE_CATEGORIES: MoreCategory[] = [
   },
 ];
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-3 pt-2.5 pb-1 text-[10px] font-mono uppercase tracking-wider text-[var(--color-mute)]">
+      {children}
+    </p>
+  );
+}
+
+const SEARCH_ITEM_CLS =
+  "flex items-center gap-3 px-3 py-2 hover:bg-white/5 transition-colors border-b border-[var(--color-line)] last:border-0";
+
+function MediaResultItem({ item, href, onNavigate }: { item: UnifiedMediaResult; href: string; onNavigate: () => void }) {
+  return (
+    <Link href={href} onClick={onNavigate} className={SEARCH_ITEM_CLS}>
+      {item.poster && (
+        <div className="relative h-10 w-7 rounded overflow-hidden border border-[var(--color-line)] shrink-0">
+          <Image src={item.poster} alt="" fill className="object-cover" sizes="28px" />
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium truncate">{item.title}</p>
+        <div className="flex items-center gap-2 text-[10px] text-[var(--color-mute)]">
+          {item.format && <span>{item.format}</span>}
+          {item.year && <span>{item.year}</span>}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function SearchResults({ results, onNavigate }: { results: UnifiedResults; onNavigate: () => void }) {
+  const iconBox = "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-sm";
+  return (
+    <div className="max-h-[65vh] overflow-y-auto">
+      {results.anime.length > 0 && (
+        <>
+          <SectionLabel>Anime</SectionLabel>
+          {results.anime.map((s) => (
+            <MediaResultItem key={`anime-${s.id}`} item={s} href={`/anime/${s.id}`} onNavigate={onNavigate} />
+          ))}
+        </>
+      )}
+      {results.manga.length > 0 && (
+        <>
+          <SectionLabel>Manga</SectionLabel>
+          {results.manga.map((s) => (
+            <MediaResultItem key={`manga-${s.id}`} item={s} href={`/manga/${s.id}`} onNavigate={onNavigate} />
+          ))}
+        </>
+      )}
+      {results.users.length > 0 && (
+        <>
+          <SectionLabel>Users</SectionLabel>
+          {results.users.map((u) => (
+            <Link key={`user-${u.id}`} href={`/u/${u.username}`} onClick={onNavigate} className={SEARCH_ITEM_CLS}>
+              {u.avatar ? (
+                <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-[var(--color-line)]">
+                  <Image src={u.avatar} alt="" fill className="object-cover" sizes="32px" />
+                </div>
+              ) : (
+                <span className={`${iconBox} font-bold text-[var(--color-cyan)]`}>
+                  {u.username.charAt(0).toUpperCase()}
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{u.username}</p>
+                <p className="truncate text-[10px] text-[var(--color-mute)]">@{u.username}</p>
+              </div>
+              <span className={iconBox}>👤</span>
+            </Link>
+          ))}
+        </>
+      )}
+      {results.wiki.length > 0 && (
+        <>
+          <SectionLabel>Wiki</SectionLabel>
+          {results.wiki.map((w) => (
+            <Link key={`wiki-${w.slug}`} href={`/wiki/${w.slug}`} onClick={onNavigate} className={SEARCH_ITEM_CLS}>
+              <span className={iconBox}>📖</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{w.title}</p>
+                {w.summary && <p className="truncate text-[10px] text-[var(--color-mute)]">{w.summary}</p>}
+              </div>
+            </Link>
+          ))}
+        </>
+      )}
+      {results.forum.length > 0 && (
+        <>
+          <SectionLabel>Forum</SectionLabel>
+          {results.forum.map((t) => (
+            <Link key={`forum-${t.id}`} href={`/forum/thread/${t.id}`} onClick={onNavigate} className={SEARCH_ITEM_CLS}>
+              <span className={iconBox}>💬</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{t.title}</p>
+                <div className="flex items-center gap-2 text-[10px] text-[var(--color-mute)]">
+                  {t.animeTitle && <span className="truncate">{t.animeTitle}</span>}
+                  <span>{t.postCount} replies</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </>
+      )}
+      {results.blog.length > 0 && (
+        <>
+          <SectionLabel>Blog</SectionLabel>
+          {results.blog.map((b) => (
+            <Link key={`blog-${b.slug}`} href={`/blog/${b.slug}`} onClick={onNavigate} className={SEARCH_ITEM_CLS}>
+              <span className={iconBox}>✍️</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{b.title}</p>
+                {b.excerpt && <p className="truncate text-[10px] text-[var(--color-mute)]">{b.excerpt}</p>}
+              </div>
+            </Link>
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function Navbar() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [moreTab, setMoreTab] = useState(MORE_CATEGORIES[0].title);
   const [mobileOpenCats, setMobileOpenCats] = useState<string[]>([]);
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [results, setResults] = useState<UnifiedResults>(EMPTY_RESULTS);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
@@ -159,13 +294,16 @@ export default function Navbar() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (!query.trim()) { setSuggestions([]); setShowSuggestions(false); return; }
+    if (!query.trim()) { setResults(EMPTY_RESULTS); setShowSuggestions(false); return; }
     const timer = setTimeout(async () => {
       try {
-        const res = await getSuggestions(query.trim());
-        setSuggestions(res);
-        setShowSuggestions(res.length > 0);
-      } catch { setSuggestions([]); setShowSuggestions(false); }
+        const res = await fetch(`/api/search/unified?q=${encodeURIComponent(query.trim())}`);
+        if (!res.ok) throw new Error("search failed");
+        const data: UnifiedResults = await res.json();
+        setResults(data);
+        const total = data.anime.length + data.manga.length + data.users.length + data.wiki.length + data.forum.length + data.blog.length;
+        setShowSuggestions(total > 0);
+      } catch { setResults(EMPTY_RESULTS); setShowSuggestions(false); }
     }, 250);
     return () => clearTimeout(timer);
   }, [query]);
@@ -185,11 +323,18 @@ export default function Navbar() {
 
   const primaryLinks = PRIMARY_LINKS;
 
+  function clearSearch() {
+    setShowSuggestions(false);
+    setQuery("");
+    setResults(EMPTY_RESULTS);
+  }
+
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
       setOpen(false);
+      clearSearch();
     }
   }
 
@@ -357,34 +502,14 @@ export default function Navbar() {
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                  onFocus={() => showSuggestions && setShowSuggestions(true)}
                   placeholder="Search..."
                   className="w-28 xl:w-36 bg-transparent text-sm outline-none placeholder:text-[var(--color-mute)]"
                 />
               </div>
               {showSuggestions && (
-                <div className="absolute top-full right-0 mt-1 w-72 rounded-xl bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl overflow-hidden z-50">
-                  {suggestions.map((s) => (
-                    <Link key={s.id} href={`/anime/${s.id}`}
-                      onClick={() => { setShowSuggestions(false); setQuery(""); }}
-                      className="flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors border-b border-[var(--color-line)] last:border-0"
-                    >
-                      {s.poster && (
-                        <div className="relative h-10 w-7 rounded overflow-hidden border border-[var(--color-line)] shrink-0">
-                          <Image src={s.poster} alt="" fill className="object-cover" sizes="28px" />
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">{s.title}</p>
-                        <div className="flex items-center gap-2 text-[10px] text-[var(--color-mute)]">
-                          {s.format && <span>{s.format}</span>}
-                          {s.year && <span>{s.year}</span>}
-                          {s.episodes && <span>{s.episodes} ep</span>}
-                          {s.status && <span className="capitalize">{s.status.replace(/_/g, " ")}</span>}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+                <div className="absolute top-full right-0 mt-1 w-80 rounded-xl bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl overflow-hidden z-50">
+                  <SearchResults results={results} onNavigate={clearSearch} />
                 </div>
               )}
             </div>
@@ -428,6 +553,15 @@ export default function Navbar() {
               className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-mute)]"
             />
           </form>
+
+          {showSuggestions && (
+            <div className="mb-3 rounded-xl bg-[var(--color-panel)] shadow-2xl overflow-hidden">
+              <SearchResults
+                results={results}
+                onNavigate={() => { clearSearch(); setOpen(false); }}
+              />
+            </div>
+          )}
 
           {session && (
             <div className="flex items-center gap-3 mb-3 px-3 py-2 rounded-lg bg-[var(--color-panel)] border border-[var(--color-line)]">

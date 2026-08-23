@@ -291,7 +291,7 @@ function QuestionTransition({ children, questionKey }: { children: React.ReactNo
   );
 }
 
-export default function QuizGame() {
+export default function QuizGame({ isDaily = false }: { isDaily?: boolean }) {
   const [phase, setPhase] = useState<Phase>("start");
   const [category, setCategory] = useState("all");
   const [difficulty, setDifficulty] = useState("all");
@@ -587,7 +587,7 @@ export default function QuizGame() {
           totalQuestions: questions.length,
           timeTaken: Math.floor((Date.now() - (startTime?.getTime() || Date.now())) / 1000),
           xpEarned,
-          isDaily: false,
+          isDaily,
         }),
       }).catch(() => {});
     }

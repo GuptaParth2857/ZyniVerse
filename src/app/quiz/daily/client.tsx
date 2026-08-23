@@ -23,5 +23,5 @@ export default function DailyQuizClient() {
     );
   }
 
-  return <QuizGame />;
+  return <QuizGame isDaily />;
 }

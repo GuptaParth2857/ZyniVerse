@@ -818,6 +818,55 @@ export async function getSuggestions(query: string) {
   })) as Suggestion[];
 }
 
+export interface UnifiedSuggestion {
+  id: number;
+  title: string;
+  titleRomaji?: string | null;
+  poster?: string | null;
+  format: string | null;
+  year: number | null;
+  type: "ANIME" | "MANGA";
+}
+
+export async function getUnifiedSuggestions(query: string): Promise<{ anime: UnifiedSuggestion[]; manga: UnifiedSuggestion[] }> {
+  const q = `
+    query ($s: String) {
+      anime: Page(page: 1, perPage: 6) {
+        media(search: $s, type: ANIME, sort: SEARCH_MATCH, isAdult: false) {
+          id
+          title { romaji english }
+          coverImage { large }
+          format
+          startDate { year }
+        }
+      }
+      manga: Page(page: 1, perPage: 4) {
+        media(search: $s, type: MANGA, sort: SEARCH_MATCH, isAdult: false) {
+          id
+          title { romaji english }
+          coverImage { large }
+          format
+          startDate { year }
+        }
+      }
+    }`;
+  const data = await gql(q, { s: query });
+  const map = (items: Media[], type: "ANIME" | "MANGA"): UnifiedSuggestion[] =>
+    (items || []).map((item) => ({
+      id: item.id,
+      title: item.title.english || item.title.romaji || "",
+      titleRomaji: item.title.romaji ?? null,
+      poster: item.coverImage?.large ?? null,
+      format: item.format ?? null,
+      year: item.startDate?.year ?? null,
+      type,
+    }));
+  return {
+    anime: map(data.anime.media, "ANIME"),
+    manga: map(data.manga.media, "MANGA"),
+  };
+}
+
 export async function getAiringAnime(perPage = 50) {
   const q = `
     query ($pp: Int) {
