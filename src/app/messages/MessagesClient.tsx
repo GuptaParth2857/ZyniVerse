@@ -50,7 +50,7 @@ export default function MessagesClient() {
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState<{ id: string; username: string; avatar: string | null }[]>([]);
   const [searching, setSearching] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollBoxRef = useRef<HTMLDivElement>(null);
   const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSent = useRef(0);
   const tempIdCounter = useRef(0);
@@ -118,7 +118,11 @@ export default function MessagesClient() {
   }, [activeConvoId, fetchMessages, conversations, markAsRead]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Scroll INSIDE the messages box only — scrollIntoView() would also yank
+    // the whole page when new messages arrive.
+    const el = scrollBoxRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages, otherTyping]);
 
   useDmSocket(myId, {
@@ -467,7 +471,7 @@ export default function MessagesClient() {
                     </span>
                   </div>
                 </div>
-                <div className="flex-1 overflow-y-auto px-4 py-3">
+                <div ref={scrollBoxRef} className="flex-1 overflow-y-auto px-4 py-3">
                   {visibleMessages.length === 0 ? (
                     <div className="flex items-center justify-center h-full text-sm text-[var(--color-mute)]">
                       No messages yet. Say hello!
@@ -499,7 +503,6 @@ export default function MessagesClient() {
                       </div>
                     </div>
                   )}
-                  <div ref={messagesEndRef} />
                 </div>
                 <div className="relative border-t border-[var(--color-line)] p-3">
                   {replyTo && (

@@ -49,7 +49,7 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const [unreadTotal, setUnreadTotal] = useState(0);
   const [loadingConvos, setLoadingConvos] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollBoxRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -131,7 +131,11 @@ export default function ChatWidget() {
   }, [activeConvo, open, fetchMessages, markAsRead]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Scroll INSIDE the messages box only — scrollIntoView() would also yank
+    // the whole page when new messages arrive.
+    const el = scrollBoxRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
@@ -244,7 +248,7 @@ export default function ChatWidget() {
                     <p className="text-[10px] text-[var(--color-mute)]">Online</p>
                   </div>
                 </div>
-                <div className="overflow-y-auto space-y-1 px-4 py-3" style={{ height: "350px" }}>
+                <div ref={scrollBoxRef} className="overflow-y-auto space-y-1 px-4 py-3" style={{ height: "350px" }}>
                   {messages.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center text-center">
                       <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white/5 text-[var(--color-mute)]">
@@ -265,10 +269,9 @@ export default function ChatWidget() {
                         isDeleted={msg.isDeleted}
                       />
                     ))
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-                <div className="flex gap-2 border-t border-[var(--color-line)] bg-white/[0.02] p-3">
+                   )}
+                 </div>
+                 <div className="flex gap-2 border-t border-[var(--color-line)] bg-white/[0.02] p-3">
                   <input
                     ref={inputRef}
                     type="text"

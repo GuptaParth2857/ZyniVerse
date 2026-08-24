@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getCharacter } from "@/lib/anilist";
 import CharacterDetailClient from "./character-client";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   return [];

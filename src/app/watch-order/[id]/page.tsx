@@ -6,7 +6,7 @@ import WatchOrderDetail from "./WatchOrderDetail";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   return [];

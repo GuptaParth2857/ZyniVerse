@@ -52,7 +52,7 @@ async function fetchUpstream(url: string): Promise<{ data: ArrayBuffer; type: st
   try {
     const res = await fetch(url, {
       headers: { "User-Agent": "ZyniVerse/1.0" },
-      next: { revalidate: TTL_MS / 1000 },
+      cache: "no-store",
     });
     if (!res.ok) {
       throw new Error(`Upstream ${res.status} for ${url}`);

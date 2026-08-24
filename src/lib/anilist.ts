@@ -95,7 +95,7 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
           body: JSON.stringify({ query, variables }),
           signal: controller.signal,
           cache: "force-cache",
-          next: { revalidate: 3600 },
+          next: { revalidate: 86400 },
         });
 
         clearTimeout(timer);

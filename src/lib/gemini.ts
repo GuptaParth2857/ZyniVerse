@@ -93,7 +93,10 @@ export async function geminiGenerate(opts: {
     contents,
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 1024,
+      maxOutputTokens: 2048,
+      // 2.5 models burn hidden "thought" tokens from maxOutputTokens by
+      // default — long prompts then return EMPTY text. Disable thinking.
+      thinkingConfig: { thinkingBudget: 0 },
       ...(opts.json ? { responseMimeType: "application/json" } : {}),
     },
   };

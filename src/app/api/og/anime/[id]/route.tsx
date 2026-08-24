@@ -1,8 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getMediaBatch, bestTitle } from "@/lib/anilist";
 
-export const revalidate = 86400;
-
 const BRAND = "#a855f7";
 
 export async function GET(

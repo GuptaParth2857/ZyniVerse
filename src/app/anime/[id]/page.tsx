@@ -2,7 +2,7 @@ import { getAnimeDetailFull, type MediaAnimeFull } from "@/lib/anilist";
 import { notFound } from "next/navigation";
 import AnimeDetailClient from "./detail-client";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   return [];
