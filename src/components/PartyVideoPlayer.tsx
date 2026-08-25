@@ -29,14 +29,21 @@ function detectPlatform(url: string): { name: string; icon: string; color: strin
   if (url.match(/bilibili\.com|b23\.tv/)) return { name: "Bilibili", icon: "BL", color: "#00A1D6", embeddable: true };
   if (url.match(/dailymotion\.com|dai\.ly/)) return { name: "Dailymotion", icon: "DM", color: "#0066DC", embeddable: true };
   if (url.match(/twitch\.tv/)) return { name: "Twitch", icon: "TW", color: "#9146FF", embeddable: true };
-  if (url.match(/crunchyroll\.com/)) return { name: "Crunchyroll", icon: "CR", color: "#F47521", embeddable: false };
-  if (url.match(/funimation\.com/)) return { name: "Funimation", icon: "FN", color: "#F98B00", embeddable: false };
-  if (url.match(/netflix\.com/)) return { name: "Netflix", icon: "NX", color: "#E50914", embeddable: false };
-  if (url.match(/primevideo\.com|amazon\..*\/video/)) return { name: "Prime Video", icon: "PV", color: "#00A8E1", embeddable: false };
-  if (url.match(/disneyplus\.com|hotstar\./)) return { name: "Disney+", icon: "D+", color: "#113CCF", embeddable: false };
+  if (url.match(/sanjianime\.tv|sanji\.tv/)) return { name: "SanjiAnime", icon: "SA", color: "#FF6B35", embeddable: true };
+  if (url.match(/watchanimeworld\.one|animeworld\.to/)) return { name: "AnimeWorld", icon: "AW", color: "#E91E63", embeddable: true };
+  if (url.match(/9anime\.|9animetow\.|aniwatch\.to|hianime\./)) return { name: "9Anime", icon: "9A", color: "#6C63FF", embeddable: true };
+  if (url.match(/gogoanime\.|anitaku\.|gogoanimehd\./)) return { name: "GogoAnime", icon: "GG", color: "#00BCD4", embeddable: true };
+  if (url.match(/zoro\.to|aniwatch\.to/)) return { name: "Zoro", icon: "ZR", color: "#FF5722", embeddable: true };
+  if (url.match(/crunchyroll\.com/)) return { name: "Crunchyroll", icon: "CR", color: "#F47521", embeddable: true };
+  if (url.match(/funimation\.com/)) return { name: "Funimation", icon: "FN", color: "#F98B00", embeddable: true };
+  if (url.match(/netflix\.com/)) return { name: "Netflix", icon: "NX", color: "#E50914", embeddable: true };
+  if (url.match(/primevideo\.com|amazon\..*\/video/)) return { name: "Prime Video", icon: "PV", color: "#00A8E1", embeddable: true };
+  if (url.match(/disneyplus\.com|hotstar\./)) return { name: "Disney+", icon: "D+", color: "#113CCF", embeddable: true };
   if (url.match(/\.mp4($|\?)/)) return { name: "MP4 Video", icon: "MP", color: "#00ffe0", embeddable: true };
   if (url.match(/\.m3u8($|\?)/)) return { name: "HLS Stream", icon: "HL", color: "#7000ff", embeddable: true };
   if (url.match(/\.webm($|\?)/)) return { name: "WebM Video", icon: "WB", color: "#FF6B00", embeddable: true };
+  if (url.match(/\.ogg($|\?)/)) return { name: "OGG Video", icon: "OG", color: "#8BC34A", embeddable: true };
+  if (url.startsWith("http")) return { name: "External Site", icon: "EXT", color: "#78909C", embeddable: true };
   return null;
 }
 
@@ -249,11 +256,19 @@ export default function PartyVideoPlayer({
     );
   }
 
-  // --- Embeddable platform (YouTube, Vimeo, Bilibili, etc.) ---
-  if (embedUrl && !isNativeVideo) {
+  // --- Any URL: try iframe embed (known platforms + any site) ---
+  if (!isNativeVideo) {
+    const src = embedUrl || videoUrl;
     return (
       <div className="relative aspect-video w-full rounded-[20px] border border-[rgba(255,255,255,0.06)] bg-black overflow-hidden">
-        <iframe src={embedUrl} className="absolute inset-0 w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
+        <iframe
+          key={videoUrl}
+          src={src}
+          className="absolute inset-0 w-full h-full"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; microphone"
+          allowFullScreen
+        />
         {platform && (
           <div className="absolute top-3 left-3 z-20 flex items-center gap-2 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 px-2.5 py-1">
             <span className="text-[10px] font-bold" style={{ color: platform.color }}>{platform.icon}</span>
@@ -350,44 +365,22 @@ export default function PartyVideoPlayer({
   // --- Non-embeddable external link ---
   return (
     <div className="relative aspect-video w-full rounded-[20px] border border-[rgba(255,255,255,0.06)] bg-[rgba(18,17,30,0.6)] backdrop-blur-md overflow-hidden flex flex-col items-center justify-center gap-4">
-      {platform ? (
-        <>
-          <div className="flex h-20 w-20 items-center justify-center rounded-full border" style={{ background: `${platform.color}10`, borderColor: `${platform.color}25` }}>
-            <span className="text-2xl font-black" style={{ color: platform.color }}>{platform.icon}</span>
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-semibold text-white/70 mb-1">{platform.name}</p>
-            <p className="text-xs text-white/30 mb-3 max-w-xs">This platform doesn&apos;t support embedded playback. Open it in a new tab, then sync with your party using the timer.</p>
-            <div className="flex items-center gap-2">
-              <a href={videoUrl} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2.5 text-xs font-bold text-white transition-all hover:scale-[1.02]"
-                style={{ background: `${platform.color}18`, border: `1px solid ${platform.color}35` }}
-              >
-                Open on {platform.name}
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
-              </a>
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[rgba(0,255,224,0.05)] border border-[rgba(0,255,224,0.1)]">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(0,255,224,0.4)" strokeWidth="1.5">
-              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
-            </svg>
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-semibold text-white/50 mb-1">External Video</p>
-            <p className="text-xs text-white/25 mb-3">Click the link below to watch, then sync with your party</p>
-            <a href={videoUrl} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-[10px] bg-gradient-to-r from-[rgba(0,255,224,0.12)] to-[rgba(0,255,224,0.06)] border border-[rgba(0,255,224,0.2)] px-5 py-2.5 text-xs font-bold text-[#00ffe0] hover:border-[rgba(0,255,224,0.4)] hover:shadow-[0_0_20px_-5px_rgba(0,255,224,0.25)] transition-all"
-            >
-              Open Video Link
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
-            </a>
-          </div>
-        </>
-      )}
+      <div className="flex h-20 w-20 items-center justify-center rounded-full border" style={{ background: `${platform?.color || "#00ffe0"}10`, borderColor: `${platform?.color || "#00ffe0"}25` }}>
+        <span className="text-2xl font-black" style={{ color: platform?.color || "#00ffe0" }}>{platform?.icon || "EXT"}</span>
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-semibold text-white/70 mb-1">{platform?.name || "External Site"}</p>
+        <p className="text-xs text-white/30 mb-3 max-w-xs">This site may not support embedded playback. Open it in a new tab, then sync with your party using the timer.</p>
+        <div className="flex items-center gap-2 justify-center">
+          <a href={videoUrl} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2.5 text-xs font-bold text-white transition-all hover:scale-[1.02]"
+            style={{ background: `${platform?.color || "#00ffe0"}18`, border: `1px solid ${platform?.color || "#00ffe0"}35` }}
+          >
+            Open on {platform?.name || "Site"}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

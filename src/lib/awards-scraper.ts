@@ -1,7 +1,5 @@
-import RssParser from "rss-parser";
+import { fetchRss } from "@/lib/rss-fetch";
 import * as cheerio from "cheerio";
-
-const rssParser = new RssParser();
 
 export interface ScrapedAward {
   year: number;
@@ -80,7 +78,7 @@ function inferYearFromTitle(title: string): number | null {
 export async function scrapeAnimeNewsNetwork(): Promise<ScrapedAward[]> {
   const awards: ScrapedAward[] = [];
   try {
-    const feed = await rssParser.parseURL("https://www.animenewsnetwork.com/encyclopedia/rss.xml");
+    const feed = await fetchRss("https://www.animenewsnetwork.com/encyclopedia/rss.xml");
     for (const item of feed.items.slice(0, 50)) {
       const title = item.title || "";
       const lower = title.toLowerCase();

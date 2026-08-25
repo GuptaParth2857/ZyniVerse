@@ -2,17 +2,8 @@ import { getTrending, getAiringAnime, bestTitle, getSeasonal } from "@/lib/anili
 import { prisma } from "@/lib/prisma";
 import { dedupedFetch } from "@/lib/wiki-cache";
 import { enrichActivities } from "@/lib/activity";
-import RssParser from "rss-parser";
+import { fetchRss } from "@/lib/rss-fetch";
 import type { Media } from "@/lib/anilist";
-
-const rssParser = new RssParser({
-  customFields: {
-    item: [
-      ["media:thumbnail", "mediaThumbnail"],
-      ["media:content", "mediaContent"],
-    ],
-  },
-});
 
 export interface NewsItem {
   id: string;
@@ -261,7 +252,7 @@ export async function getActivityFeed(userId?: string): Promise<NewsItem[]> {
 export async function getANNNews(): Promise<NewsItem[]> {
   return dedupedFetch("news:ann", async () => {
     try {
-      const feed = await rssParser.parseURL("https://www.animenewsnetwork.com/all/rss.xml?ann-hierarchical");
+      const feed = await fetchRss("https://www.animenewsnetwork.com/all/rss.xml?ann-hierarchical");
       const items = feed.items.slice(0, 20).map((item) => {
         const content = item.content || item.contentSnippet || "";
         const guid = item.guid || item.link || "";
@@ -298,7 +289,7 @@ export async function getANNNews(): Promise<NewsItem[]> {
 export async function getMALNews(): Promise<NewsItem[]> {
   return dedupedFetch("news:mal", async () => {
     try {
-      const feed = await rssParser.parseURL("https://myanimelist.net/rss/news.xml");
+      const feed = await fetchRss("https://myanimelist.net/rss/news.xml");
       const items = feed.items.slice(0, 20).map((item) => {
         const content = item.content || item.contentSnippet || "";
         const thumb = (item as unknown as Record<string, string>).mediaThumbnail || "";

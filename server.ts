@@ -221,6 +221,34 @@ io.on("connection", (socket) => {
     socket.to(`party:${partyId}`).emit("screen-share-stopped-viewers", { partyId });
   });
 
+  // Voice chat signaling
+  socket.on("voice-join", ({ partyId, user }) => {
+    socket.data = { ...socket.data, voiceUser: user };
+    io.to(`party:${partyId}`).emit("voice-user-joined", { user, socketId: socket.id });
+    console.log(`[Voice] ${user.username} joined voice in party ${partyId}`);
+  });
+
+  socket.on("voice-leave", ({ partyId, user }) => {
+    io.to(`party:${partyId}`).emit("voice-user-left", { user, socketId: socket.id });
+    console.log(`[Voice] ${user.username} left voice in party ${partyId}`);
+  });
+
+  socket.on("voice-offer", ({ partyId, targetId, offer, fromUser }) => {
+    io.to(targetId).emit("voice-offer", { offer, fromUser, fromSocketId: socket.id, partyId });
+  });
+
+  socket.on("voice-answer", ({ partyId, targetId, answer }) => {
+    io.to(targetId).emit("voice-answer", { answer, fromSocketId: socket.id, partyId });
+  });
+
+  socket.on("voice-ice-candidate", ({ partyId, targetId, candidate }) => {
+    io.to(targetId).emit("voice-ice-candidate", { candidate, fromSocketId: socket.id, partyId });
+  });
+
+  socket.on("voice-speaking", ({ partyId, user, isSpeaking }) => {
+    socket.to(`party:${partyId}`).emit("voice-speaking", { user, isSpeaking, socketId: socket.id });
+  });
+
   socket.on("webrtc-viewer-ready", ({ partyId }) => {
     const hostSocket = Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || [])
       .map((id) => io.sockets.sockets.get(id))

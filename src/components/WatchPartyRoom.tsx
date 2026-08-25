@@ -8,10 +8,12 @@ import { motion } from "framer-motion";
 import Loader from "@/components/Loader";
 import PartyVideoPlayer from "@/components/PartyVideoPlayer";
 import PartyChat from "@/components/PartyChat";
+import VoiceChat from "@/components/VoiceChat";
 import FloatingReactions from "@/components/FloatingReactions";
 import InviteModal from "@/components/InviteModal";
 import ScreenShare from "@/components/ScreenShare";
 import { useWatchPartySocket } from "@/hooks/useWatchPartySocket";
+import { useVoiceChat } from "@/hooks/useVoiceChat";
 import type { ChatMessage, SyncState } from "@/lib/socket";
 import type { WatchPartyData } from "@/lib/watch-party";
 import { logError } from "@/lib/logger";
@@ -168,6 +170,12 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
   useEffect(() => { playbackPosRef.current = playbackPos; }, [playbackPos]);
   const lastAppliedRef = useRef(0);
 
+  const voiceChat = useVoiceChat({
+    partyId,
+    user: userId ? { id: userId, username: session?.user?.name || "User", avatar: null } : null,
+    isMember: !!isMember,
+  });
+
   useEffect(() => {
     if (connected) return;
     const interval = setInterval(async () => {
@@ -227,7 +235,7 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
   async function handleSetVideo() {
     if (!videoUrlInput.trim()) return;
     const url = videoUrlInput.trim();
-    let type = "external";
+    let type = "iframe";
     if (url.match(/\.mp4($|\?)/)) type = "mp4";
     else if (url.match(/\.m3u8($|\?)/)) type = "hls";
     else if (url.match(/\.webm($|\?)/)) type = "webm";
@@ -236,6 +244,11 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
     else if (url.match(/bilibili\.com|b23\.tv/)) type = "bilibili";
     else if (url.match(/dailymotion\.com|dai\.ly/)) type = "dailymotion";
     else if (url.match(/twitch\.tv/)) type = "twitch";
+    else if (url.match(/sanjianime\.tv|sanji\.tv/)) type = "iframe";
+    else if (url.match(/watchanimeworld\.one|animeworld\.to/)) type = "iframe";
+    else if (url.match(/9anime\.|9animetow\.|aniwatch\.to|hianime\./)) type = "iframe";
+    else if (url.match(/gogoanime\.|anitaku\./)) type = "iframe";
+    else if (url.match(/zoro\.to/)) type = "iframe";
 
     await fetch(`/api/watch-party/${partyId}`, {
       method: "PUT",
@@ -681,6 +694,22 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
 
             {isMember && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
+                className="rounded-[16px] neon-rgb-border bg-[rgba(18,17,30,0.5)] backdrop-blur-md p-4"
+              >
+                <VoiceChat
+                  voiceActive={voiceChat.voiceActive}
+                  muted={voiceChat.muted}
+                  participants={voiceChat.participants}
+                  speakingMap={voiceChat.speakingMap}
+                  onJoin={voiceChat.startVoice}
+                  onLeave={voiceChat.stopVoice}
+                  onToggleMute={voiceChat.toggleMute}
+                />
+              </motion.div>
+            )}
+
+            {isMember && (
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
                 className="rounded-[16px] neon-rgb-border bg-[rgba(18,17,30,0.5)] backdrop-blur-md p-4"
               >
                 <PartyChat
