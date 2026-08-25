@@ -232,32 +232,62 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
     await fetchParty();
   }
 
+  const [videoExtracting, setVideoExtracting] = useState(false);
+
   async function handleSetVideo() {
     if (!videoUrlInput.trim()) return;
     const url = videoUrlInput.trim();
-    let type = "iframe";
-    if (url.match(/\.mp4($|\?)/)) type = "mp4";
-    else if (url.match(/\.m3u8($|\?)/)) type = "hls";
-    else if (url.match(/\.webm($|\?)/)) type = "webm";
-    else if (url.match(/youtube\.com|youtu\.be/)) type = "youtube";
-    else if (url.match(/vimeo\.com/)) type = "vimeo";
-    else if (url.match(/bilibili\.com|b23\.tv/)) type = "bilibili";
-    else if (url.match(/dailymotion\.com|dai\.ly/)) type = "dailymotion";
-    else if (url.match(/twitch\.tv/)) type = "twitch";
-    else if (url.match(/sanjianime\.tv|sanji\.tv/)) type = "iframe";
-    else if (url.match(/watchanimeworld\.one|animeworld\.to/)) type = "iframe";
-    else if (url.match(/9anime\.|9animetow\.|aniwatch\.to|hianime\./)) type = "iframe";
-    else if (url.match(/gogoanime\.|anitaku\./)) type = "iframe";
-    else if (url.match(/zoro\.to/)) type = "iframe";
+    setVideoExtracting(true);
 
-    await fetch(`/api/watch-party/${partyId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ videoUrl: url, videoType: type }),
-    });
-    emitVideoSource(url, type);
-    setVideoUrlInput("");
-    await fetchParty();
+    try {
+      // Try server-side extraction first (for anime sites)
+      const extractRes = await fetch("/api/media-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+
+      if (extractRes.ok) {
+        const extractData = await extractRes.json();
+        if (extractData.success && extractData.sources?.length > 0) {
+          // Use extracted video URL
+          const best = extractData.sources[0];
+          const type = best.format === "hls" ? "hls" : best.format === "mp4" ? "mp4" : "iframe";
+
+          await fetch(`/api/watch-party/${partyId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ videoUrl: best.url, videoType: type }),
+          });
+          emitVideoSource(best.url, type);
+          setVideoUrlInput("");
+          await fetchParty();
+          return;
+        }
+      }
+
+      // Fallback: direct URL or iframe embed
+      let type = "iframe";
+      if (url.match(/\.mp4($|\?)/)) type = "mp4";
+      else if (url.match(/\.m3u8($|\?)/)) type = "hls";
+      else if (url.match(/\.webm($|\?)/)) type = "webm";
+      else if (url.match(/youtube\.com|youtu\.be/)) type = "youtube";
+      else if (url.match(/vimeo\.com/)) type = "vimeo";
+      else if (url.match(/bilibili\.com|b23\.tv/)) type = "bilibili";
+      else if (url.match(/dailymotion\.com|dai\.ly/)) type = "dailymotion";
+      else if (url.match(/twitch\.tv/)) type = "twitch";
+
+      await fetch(`/api/watch-party/${partyId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoUrl: url, videoType: type }),
+      });
+      emitVideoSource(url, type);
+      setVideoUrlInput("");
+      await fetchParty();
+    } finally {
+      setVideoExtracting(false);
+    }
   }
 
   async function handleVideoUpload(file: File) {
@@ -509,10 +539,10 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
                       placeholder="https://... or paste any video link"
                       className="flex-1 rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(10,10,15,0.6)] px-3 py-2.5 text-xs text-white outline-none focus:border-[rgba(0,255,224,0.3)] transition-colors placeholder:text-white/20"
                     />
-                    <button onClick={handleSetVideo}
-                      className="rounded-[10px] bg-gradient-to-r from-[rgba(0,255,224,0.12)] to-[rgba(0,255,224,0.06)] border border-[rgba(0,255,224,0.2)] px-4 py-2.5 text-xs font-bold text-[#00ffe0] hover:border-[rgba(0,255,224,0.4)] transition-all"
+                    <button onClick={handleSetVideo} disabled={videoExtracting}
+                      className="rounded-[10px] bg-gradient-to-r from-[rgba(0,255,224,0.12)] to-[rgba(0,255,224,0.06)] border border-[rgba(0,255,224,0.2)] px-4 py-2.5 text-xs font-bold text-[#00ffe0] hover:border-[rgba(0,255,224,0.4)] transition-all disabled:opacity-50"
                     >
-                      Set
+                      {videoExtracting ? "Extracting..." : "Set"}
                     </button>
                   </div>
                 </div>

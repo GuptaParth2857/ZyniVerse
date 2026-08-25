@@ -98,22 +98,24 @@ END:VCALENDAR`;
 
   if (!nextEpisode) {
     return (
-      <div className={`rounded-xl border border-[var(--color-surface2)] bg-[var(--color-surface1)] p-4 ${className}`}>
+      <div className={`rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 ${className}`}>
         <p className="text-sm text-[var(--color-mute)]">No upcoming episode scheduled.</p>
       </div>
     );
   }
 
   return (
-    <div className={`rounded-xl border border-[var(--color-surface2)] bg-[var(--color-surface1)] p-4 ${className}`}>
+    <div className={`rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 ${className}`}>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-bold">Calendar Sync</h3>
+        <h3 className="font-display text-sm font-bold flex items-center gap-1.5">
+          <span className="text-xs">📅</span> Calendar Sync
+        </h3>
         {synced && (
           <span className="text-xs text-green-400">✓ Synced!</span>
         )}
       </div>
       
-      <div className="mb-3 rounded-lg bg-[var(--color-surface2)] p-3">
+      <div className="mb-3 rounded-lg bg-[var(--color-void)] p-3">
         <p className="text-xs text-[var(--color-mute)]">Next Episode</p>
         <p className="text-sm font-medium">Episode {nextEpisode.episode}</p>
         <p className="text-xs text-[var(--color-mute)]">

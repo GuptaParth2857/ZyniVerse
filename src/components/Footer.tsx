@@ -75,6 +75,8 @@ const LINK_COLUMNS: FooterColumn[] = [
       { href: "/activity", label: "Activity Feed", icon: "zap" },
       { href: "/conventions", label: "Conventions", icon: "calendar" },
       { href: "/characters", label: "Characters", icon: "users" },
+      { href: "/characters/battle", label: "Character Battle", icon: "zap" },
+      { href: "/fanart", label: "Fan Art", icon: "palette" },
       { href: "/leaderboard", label: "Leaderboard", icon: "bar-chart" },
       ...(DISCORD_INVITE
         ? [{ href: DISCORD_INVITE, label: "Discord Server", icon: "message-circle", external: true }]
@@ -88,6 +90,8 @@ const LINK_COLUMNS: FooterColumn[] = [
       { href: "/manga-list", label: "My Manga", icon: "book" },
       { href: "/profile", label: "Profile", icon: "user" },
       { href: "/saved", label: "Saved Posts", icon: "bookmark" },
+      { href: "/stats", label: "My Stats", icon: "bar-chart" },
+      { href: "/stats/wrapped", label: "Wrapped", icon: "sparkles" },
       { href: "/login", label: "Login", icon: "log-in" },
       { href: "/register", label: "Register", icon: "user-plus" },
       { href: "/premium", label: "Premium", icon: "award" },

@@ -119,8 +119,13 @@ export default function StatsPage() {
           </div>
         )}
 
-        <div className="mt-8 text-center">
-          <Link href="/profile" className="text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)]">← Back to Profile</Link>
+        <div className="mt-8 text-center flex flex-col sm:flex-row gap-3 justify-center">
+          <Link href="/stats/wrapped"
+            className="inline-flex items-center justify-center gap-2 rounded-xl neon-rgb-border bg-[var(--color-magenta)]/10 px-6 py-3 text-sm font-bold text-[var(--color-magenta)] hover:bg-[var(--color-magenta)]/20 transition-all"
+          >
+            🎌 Generate Wrapped
+          </Link>
+          <Link href="/profile" className="text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] self-center">← Back to Profile</Link>
         </div>
       </div>
     </PageTransition>

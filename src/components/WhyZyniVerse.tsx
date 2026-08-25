@@ -43,6 +43,13 @@ const features = [
     link: "/cosplay",
     color: "#29f2e0",
   },
+  {
+    icon: "🎨",
+    title: "Fan Art Gallery",
+    desc: "Share your creations",
+    link: "/fanart",
+    color: "#ff6b35",
+  },
 ];
 
 export default function WhyZyniVerse() {

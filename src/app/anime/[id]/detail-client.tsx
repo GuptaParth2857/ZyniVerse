@@ -29,6 +29,7 @@ import MomentMaker from "@/components/MomentMaker";
 import RecRelationships from "@/components/RecRelationships";
 import DiscussionLinks from "@/components/DiscussionLinks";
 import CharacterVoteWidget from "@/components/CharacterVoteWidget";
+import CalendarSync from "@/components/CalendarSync";
 import EpisodeRatingsCard from "@/components/EpisodeRatingsCard";
 import EpisodeDiscussion from "@/components/EpisodeDiscussion";
 import DubNotifyButton from "@/components/DubNotifyButton";
@@ -218,6 +219,20 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
 
               {anime.nextAiringEpisode && (
                 <div className="mt-4"><CountdownChip target={anime.nextAiringEpisode} /></div>
+              )}
+              {anime.nextAiringEpisode && (
+                <CalendarSync
+                  animeId={anime.id}
+                  title={title}
+                  nextEpisode={{
+                    episode: anime.nextAiringEpisode.episode,
+                    airDate: new Date(anime.nextAiringEpisode.airingAt * 1000).toISOString(),
+                    timeUntil: anime.nextAiringEpisode.timeUntilAiring
+                      ? `${Math.floor(anime.nextAiringEpisode.timeUntilAiring / 86400)}d ${Math.floor((anime.nextAiringEpisode.timeUntilAiring % 86400) / 3600)}h`
+                      : undefined,
+                  }}
+                  className="mt-3"
+                />
               )}
             </div>
           </div>

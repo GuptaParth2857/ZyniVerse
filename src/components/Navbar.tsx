@@ -86,6 +86,7 @@ const MORE_CATEGORIES: MoreCategory[] = [
       { to: "/themes", label: "Theme Songs" },
       { to: "/ost", label: "OST" },
       { to: "/characters", label: "Characters" },
+      { to: "/characters/battle", label: "Character Battle" },
       { to: "/voice-actors", label: "Voice Actors" },
       { to: "/voice-actors/indian", label: "Indian VAs" },
       { to: "/voice-lines", label: "Quotes" },
@@ -107,6 +108,7 @@ const MORE_CATEGORIES: MoreCategory[] = [
     icon: "🎪",
     items: [
       { to: "/cosplay", label: "Cosplay" },
+      { to: "/fanart", label: "Fan Art" },
       { to: "/quiz", label: "Quiz" },
       { to: "/challenges", label: "Challenges" },
       { to: "/watch-party", label: "Watch Party" },
@@ -143,6 +145,7 @@ const MORE_CATEGORIES: MoreCategory[] = [
       { to: "/premium", label: "Premium" },
       { to: "/figures", label: "My Collection" },
       { to: "/stats", label: "My Stats" },
+      { to: "/stats/wrapped", label: "Wrapped" },
       { to: "/achievements", label: "Achievements" },
       { to: "/awards", label: "Awards" },
       { to: "/compare", label: "Compare" },

@@ -198,7 +198,7 @@ export default async function Home() {
               { href: "/challenges", emoji: "🏆", title: "Challenges", desc: "Seasonal & yearly", color: "#ff2d78" },
               { href: "/forum", emoji: "💬", title: "Forums", desc: "Discuss anime", color: "#29f2e0" },
               { href: "/quiz", emoji: "🧠", title: "Quiz", desc: "100+ questions", color: "#8a5cff" },
-              { href: "/polls", emoji: "📊", title: "Polls", desc: "Vote & decide", color: "#22c55e" },
+              { href: "/characters/battle", emoji: "⚔️", title: "Character Battle", desc: "Daily matchup", color: "#ff6b35" },
               { href: "/critiques", emoji: "📝", title: "Critiques", desc: "Deep reviews", color: "#f59e0b" },
             ].map((card) => (
               <Link key={card.title} href={card.href} className="overflow-hidden rounded-xl neon-feature-card group text-center">
@@ -222,6 +222,7 @@ export default async function Home() {
               { href: "/clubs", emoji: "👥", label: "Clubs" },
               { href: "/conventions", emoji: "📅", label: "Conventions" },
               { href: "/cosplay", emoji: "📸", label: "Cosplay" },
+              { href: "/fanart", emoji: "🎨", label: "Fan Art" },
               { href: "/watch-party", emoji: "🎬", label: "Watch Parties" },
               { href: "/messages", emoji: "💬", label: "Chat" },
             ].map((link) => (

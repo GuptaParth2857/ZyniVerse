@@ -208,6 +208,14 @@ export default function StatsDashboard() {
           Add items to your list to see stats.
         </p>
       )}
+
+      <div className="text-center pt-4">
+        <a href="/stats/wrapped"
+          className="inline-flex items-center gap-2 rounded-xl neon-rgb-border bg-[var(--color-magenta)]/10 px-5 py-2.5 text-sm font-bold text-[var(--color-magenta)] hover:bg-[var(--color-magenta)]/20 transition-all"
+        >
+          🎌 Generate Wrapped
+        </a>
+      </div>
     </div>
   );
 }
