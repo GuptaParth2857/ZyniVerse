@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getToonsWithImages } from "@/lib/toons-images";
 import ToonsBrowseClient from "./client";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Indian & International Cartoons — Chhota Bheem, Doraemon, Shin-chan & More",

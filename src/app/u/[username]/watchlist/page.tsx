@@ -62,7 +62,7 @@ async function fetchAnimeDetails(mediaIds: number[]): Promise<Map<number, AniLis
             query: `query ($id: Int) { Media(id: $id, type: ANIME) { id title { romaji english native } coverImage { large extraLarge } } }`,
             variables: { id },
           }),
-          next: { revalidate: 60 },
+next: { revalidate: 3600 },
         });
         const json: AniListResponse = await res.json();
         if (json.data?.Media) map.set(id, json.data.Media);

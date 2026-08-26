@@ -4,7 +4,7 @@ import { ALL_AWARDS, AWARD_YEARS, AWARD_PLATFORMS, AWARD_TYPES, getAwardsByFilte
 import { resolveImage } from "@/lib/image-resolver";
 import { logError } from "@/lib/logger";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);

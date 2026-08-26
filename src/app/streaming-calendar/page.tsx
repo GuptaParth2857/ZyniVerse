@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 // Re-render at most once an hour so the schedule always reflects the current week.
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export default async function StreamingCalendarPage() {
   // Live AniList data only — no hardcoded fallback, so a stale week of

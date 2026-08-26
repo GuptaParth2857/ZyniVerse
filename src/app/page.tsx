@@ -41,7 +41,7 @@ function AnimatedSection({ children, className = "" }: { children: React.ReactNo
   );
 }
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export default async function Home() {
   const [trending, popular, upcoming, topRated] = await Promise.allSettled([
