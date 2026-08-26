@@ -3,11 +3,7 @@ import { notFound } from "next/navigation";
 import { getStudio } from "@/lib/anilist";
 import StudioDetailClient from "./studio-client";
 
-export const revalidate = 86400;
-
-export async function generateStaticParams() {
-  return [];
-}
+export const dynamic = "force-dynamic";
 
 const getStudioCached = cache(getStudio);
 

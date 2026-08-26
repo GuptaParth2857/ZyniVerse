@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { getMangaDetailFull, bestTitle } from "@/lib/anilist";
+
+const getMangaDetailCached = cache(getMangaDetailFull);
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
@@ -10,7 +13,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   try {
-    const manga = await getMangaDetailFull(id);
+    const manga = await getMangaDetailCached(id);
     const title = bestTitle(manga.title);
     const desc = manga.description
       ? manga.description.replace(/<[^>]*>/g, "").slice(0, 200)

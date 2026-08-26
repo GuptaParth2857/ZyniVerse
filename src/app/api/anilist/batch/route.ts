@@ -8,7 +8,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "ids array required" }, { status: 400 });
     }
     const media = await getMediaBatch(ids.slice(0, 50));
-    return NextResponse.json({ media });
+    return NextResponse.json(
+      { media },
+      { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });

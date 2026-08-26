@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { getCharacter, bestTitle } from "@/lib/anilist";
+
+const getCharacterCached = cache(getCharacter);
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
@@ -10,7 +13,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   try {
-    const char = await getCharacter(id);
+    const char = await getCharacterCached(id);
     const name = char.name?.full || "Unknown Character";
     const animeNames = (char.media?.edges || [])
       .slice(0, 3)

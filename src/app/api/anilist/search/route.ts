@@ -8,13 +8,23 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q");
-  if (!q?.trim()) return Response.json({ results: [] });
+  if (!q?.trim())
+    return Response.json(
+      { results: [] },
+      { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+    );
 
   try {
     const data = await searchAll(q.trim());
     const results = [...data.anime, ...data.manga].slice(0, 20);
-    return Response.json({ results });
+    return Response.json(
+      { results },
+      { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+    );
   } catch {
-    return Response.json({ results: [] });
+    return Response.json(
+      { results: [] },
+      { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+    );
   }
 }

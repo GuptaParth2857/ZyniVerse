@@ -10,8 +10,13 @@ export async function GET(req: NextRequest) {
   const perPage = Math.min(Number(url.searchParams.get("perPage")) || 50, 100);
   try {
     const data = await getPopularCharacters(page, perPage);
-    return Response.json(data);
+    return Response.json(data, {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+    });
   } catch {
-    return Response.json({ pageInfo: { total: 0, hasNextPage: false }, characters: [] });
+    return Response.json(
+      { pageInfo: { total: 0, hasNextPage: false }, characters: [] },
+      { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+    );
   }
 }

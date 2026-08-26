@@ -7,5 +7,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const perPage = Math.min(Number(url.searchParams.get("perPage")) || 18, 50);
   const data = await getTrending(perPage);
-  return Response.json(data);
+  return Response.json(data, {
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+  });
 }

@@ -1,12 +1,11 @@
+import { cache } from "react";
 import { getAnimeDetailFull, type MediaAnimeFull } from "@/lib/anilist";
 import { notFound } from "next/navigation";
 import AnimeDetailClient from "./detail-client";
 
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
-export async function generateStaticParams() {
-  return [];
-}
+const getAnimeDetailCached = cache(getAnimeDetailFull);
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
@@ -56,7 +55,7 @@ function buildAnimeJsonLd(anime: MediaAnimeFull) {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    const anime = await getAnimeDetailFull(id);
+    const anime = await getAnimeDetailCached(id);
     const title = anime.title?.english || anime.title?.romaji || "Anime";
     const ogImage = `${BASE_URL}/api/og/anime/${id}`;
     return {

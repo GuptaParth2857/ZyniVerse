@@ -10,22 +10,10 @@ const ALLOWED_HOSTS = [
   "yt3.googleusercontent.com",
 ];
 
-const TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7d
+const CACHE_CONTROL =
+  "public, max-age=604800, s-maxage=2592000, stale-while-revalidate=604800, immutable";
 
-interface CacheEntry {
-  data: ArrayBuffer;
-  type: string;
-  expires: number;
-}
-
-// In-memory cache — avoids hammering upstream CDNs (which rate-limit
-// hotlinking) on repeated/first loads, including in dev where Next's
-// fetch cache is disabled.
-const cache = new Map<string, CacheEntry>();
-const inflight = new Map<string, Promise<{ data: ArrayBuffer; type: string }>>();
-
-// Simple upstream concurrency limiter so cold bursts (e.g. a page with
-// 20+ posters) don't trigger upstream rate limits.
+// Simple upstream concurrency limiter.
 let active = 0;
 const queue: (() => void)[] = [];
 const MAX_CONCURRENT = 2;
@@ -47,24 +35,6 @@ function release() {
   }
 }
 
-async function fetchUpstream(url: string): Promise<{ data: ArrayBuffer; type: string }> {
-  await acquire();
-  try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": "ZyniVerse/1.0" },
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      throw new Error(`Upstream ${res.status} for ${url}`);
-    }
-    const type = res.headers.get("content-type") || "image/jpeg";
-    const data = await res.arrayBuffer();
-    return { data, type };
-  } finally {
-    release();
-  }
-}
-
 export async function GET(req: NextRequest) {
   try {
     const url = req.nextUrl.searchParams.get("url");
@@ -83,49 +53,30 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Host not allowed" }, { status: 403 });
     }
 
-    const now = Date.now();
-    const cached = cache.get(url);
-      if (cached && cached.expires > now) {
-      return new NextResponse(cached.data, {
+    await acquire();
+    try {
+      const res = await fetch(url, {
+        headers: { "User-Agent": "ZyniVerse/1.0" },
+      });
+      if (!res.ok) {
+        return NextResponse.json({ error: `Upstream ${res.status}` }, { status: 502 });
+      }
+
+      const type = res.headers.get("content-type") || "image/jpeg";
+
+      // Stream the response instead of buffering into ArrayBuffer.
+      // This keeps memory usage low and reduces Fast Origin Transfer.
+      return new NextResponse(res.body, {
         status: 200,
         headers: {
-          "Content-Type": cached.type,
+          "Content-Type": type,
           "Access-Control-Allow-Origin": "*",
-          // Poster/cover URLs are content-hashed upstream, so long-lived
-          // edge caching is safe and keeps image bytes off Functions.
-          "Cache-Control":
-            "public, max-age=604800, s-maxage=2592000, stale-while-revalidate=604800, immutable",
+          "Cache-Control": CACHE_CONTROL,
         },
       });
+    } finally {
+      release();
     }
-
-    // Deduplicate concurrent requests for the same URL.
-    let pending = inflight.get(url);
-    if (!pending) {
-      pending = fetchUpstream(url).then(
-        (result) => {
-          cache.set(url, { data: result.data, type: result.type, expires: now + TTL_MS });
-          return result;
-        },
-        (err) => {
-          inflight.delete(url);
-          throw err;
-        }
-      );
-      inflight.set(url, pending);
-    }
-    const { data, type } = await pending;
-    inflight.delete(url);
-
-    return new NextResponse(data, {
-      status: 200,
-      headers: {
-        "Content-Type": type,
-        "Access-Control-Allow-Origin": "*",
-        "Cache-Control":
-          "public, max-age=604800, s-maxage=2592000, stale-while-revalidate=604800, immutable",
-      },
-    });
   } catch (e) {
     logError(e);
     return NextResponse.json({ error: "Proxy failed" }, { status: 502 });
