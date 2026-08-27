@@ -979,32 +979,45 @@ body {
    GLOBAL NEON RGB BORDER ANIMATION
    Apply .neon-rgb-border to any element for animated RGB border
    ═══════════════════════════════════════════════════════ */
-@keyframes globalNeonRgbBorder {
-  0%   { border-color: #ff00ff; }
-  20%  { border-color: #00ffff; }
-  40%  { border-color: #ff3366; }
-  60%  { border-color: #ffff00; }
-  80%  { border-color: #ff0066; }
-  100% { border-color: #ff00ff; }
+@property --neon-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
 }
-@keyframes globalNeonRgbBorderHover {
-  0%   { border-color: #ff00ff; box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff88; }
-  20%  { border-color: #00ffff; box-shadow: 0 0 12px #00ffff, 0 0 24px #00ffff88; }
-  40%  { border-color: #ff3366; box-shadow: 0 0 12px #ff3366, 0 0 24px #ff336688; }
-  60%  { border-color: #ffff00; box-shadow: 0 0 12px #ffff00, 0 0 24px #ffff0088; }
-  80%  { border-color: #ff0066; box-shadow: 0 0 12px #ff0066, 0 0 24px #ff006688; }
-  100% { border-color: #ff00ff; box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff88; }
+@keyframes globalNeonRgbBorderSpin {
+  to { --neon-border-angle: 360deg; }
 }
 @layer utilities {
   .neon-rgb-border {
-    border-width: 1px;
-    border-style: solid;
+    position: relative;
+    border: 1px solid transparent;
     box-shadow: 0 0 6px #ff00ff22, inset 0 0 6px #ff00ff0a;
-    animation: globalNeonRgbBorder 4s linear infinite;
     transition: transform 0.2s, box-shadow 0.2s;
   }
-  .neon-rgb-border:hover {
-    animation: globalNeonRgbBorderHover 1.5s linear infinite !important;
+  .neon-rgb-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--neon-border-angle),
+      #ff00ff, #00ffff, #ff3366, #ffff00, #ff0066, #ff00ff
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: globalNeonRgbBorderSpin 4s linear infinite;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .neon-rgb-border:hover::before {
+    animation-duration: 1.5s;
   }
   .neon-rgb-border:focus-visible {
     outline: none !important;
@@ -1229,7 +1242,8 @@ body {
   .neon-btn::after, .neon-card::before,
   .login-btn span, .particle-dot,
   .neon-glow-text, .animate-ripple,
-  .on-air-ticker::before, .on-air-ticker::after {
+  .on-air-ticker::before, .on-air-ticker::after,
+  .neon-rgb-border::before {
     animation: none !important;
   }
   .neon-btn:hover::after {

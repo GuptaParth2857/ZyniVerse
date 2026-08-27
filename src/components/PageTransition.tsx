@@ -1,16 +1,21 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export function PageTransition({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    requestAnimationFrame(() => setMounted(true));
+  }, []);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+    <div
+      className="transition-opacity duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+      style={{ opacity: mounted ? 1 : 0 }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 

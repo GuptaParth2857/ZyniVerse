@@ -21,8 +21,14 @@ const SHORT: Record<Language, string> = {
 export default function LanguageSwitcher() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const current = getCurrentLocale();
+  const [mounted, setMounted] = useState(false);
+  const [current, setCurrent] = useState<Language>("en");
   const locales = getAvailableLocales();
+
+  useEffect(() => {
+    setCurrent(getCurrentLocale());
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -37,6 +43,15 @@ export default function LanguageSwitcher() {
   function handleSelect(code: Language) {
     if (code === current) { setOpen(false); return; }
     setLocale(code);
+  }
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold text-[var(--color-mute)] neon-rgb-border">
+        <span className="text-sm leading-none">🇺🇸</span>
+        <span className="hidden sm:inline font-mono tracking-wide">EN</span>
+      </div>
+    );
   }
 
   return (

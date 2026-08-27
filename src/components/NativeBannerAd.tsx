@@ -48,11 +48,11 @@ export default function NativeBannerAd({ className = "" }: { className?: string 
   if (status !== "loading" && !showAds) return null;
 
   return (
-    <div className={`w-full overflow-hidden rounded-xl ${className}`} style={{ minHeight: 340 }}>
+    <div className={`w-full overflow-hidden rounded-xl ${className}`} style={{ height: 340, maxHeight: 340 }}>
       <span className="block text-center text-[9px] font-mono uppercase tracking-[0.2em] text-[var(--color-mute)] py-1 select-none">
         Advertisement
       </span>
-      <div ref={containerRef} className="w-full" />
+      <div ref={containerRef} className="w-full" style={{ height: 300, overflow: "hidden" }} />
     </div>
   );
 }

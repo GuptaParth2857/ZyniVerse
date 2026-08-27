@@ -63,14 +63,19 @@ function getSplashSeen(): boolean {
 
 export default function SplashScreen() {
   const seen = useSyncExternalStore(emptySubscribe, getSplashSeen, () => false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [isMounted, setIsMounted] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const dismiss = useCallback(() => {
     setIsVisible(false);
   }, []);
 
   useEffect(() => {
+    setIsMounted(true);
+    const hasSeen = localStorage.getItem(SPLASH_SEEN_KEY) === todayKey();
+    if (hasSeen) return;
+
+    setIsVisible(true);
     try {
       localStorage.setItem(SPLASH_SEEN_KEY, todayKey());
     } catch {
