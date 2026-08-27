@@ -979,45 +979,32 @@ body {
    GLOBAL NEON RGB BORDER ANIMATION
    Apply .neon-rgb-border to any element for animated RGB border
    ═══════════════════════════════════════════════════════ */
-@property --neon-border-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
+@keyframes globalNeonRgbBorder {
+  0%   { border-color: #ff00ff; }
+  20%  { border-color: #00ffff; }
+  40%  { border-color: #ff3366; }
+  60%  { border-color: #ffff00; }
+  80%  { border-color: #ff0066; }
+  100% { border-color: #ff00ff; }
 }
-@keyframes globalNeonRgbBorderSpin {
-  to { --neon-border-angle: 360deg; }
+@keyframes globalNeonRgbBorderHover {
+  0%   { border-color: #ff00ff; box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff88; }
+  20%  { border-color: #00ffff; box-shadow: 0 0 12px #00ffff, 0 0 24px #00ffff88; }
+  40%  { border-color: #ff3366; box-shadow: 0 0 12px #ff3366, 0 0 24px #ff336688; }
+  60%  { border-color: #ffff00; box-shadow: 0 0 12px #ffff00, 0 0 24px #ffff0088; }
+  80%  { border-color: #ff0066; box-shadow: 0 0 12px #ff0066, 0 0 24px #ff006688; }
+  100% { border-color: #ff00ff; box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff88; }
 }
 @layer utilities {
   .neon-rgb-border {
-    position: relative;
-    border: 1px solid transparent;
+    border-width: 1px;
+    border-style: solid;
     box-shadow: 0 0 6px #ff00ff22, inset 0 0 6px #ff00ff0a;
+    animation: globalNeonRgbBorder 4s linear infinite;
     transition: transform 0.2s, box-shadow 0.2s;
   }
-  .neon-rgb-border::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    background: conic-gradient(
-      from var(--neon-border-angle),
-      #ff00ff, #00ffff, #ff3366, #ffff00, #ff0066, #ff00ff
-    );
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    animation: globalNeonRgbBorderSpin 4s linear infinite;
-    z-index: -1;
-    pointer-events: none;
-  }
-  .neon-rgb-border:hover::before {
-    animation-duration: 1.5s;
+  .neon-rgb-border:hover {
+    animation: globalNeonRgbBorderHover 1.5s linear infinite !important;
   }
   .neon-rgb-border:focus-visible {
     outline: none !important;
@@ -1242,8 +1229,7 @@ body {
   .neon-btn::after, .neon-card::before,
   .login-btn span, .particle-dot,
   .neon-glow-text, .animate-ripple,
-  .on-air-ticker::before, .on-air-ticker::after,
-  .neon-rgb-border::before {
+  .on-air-ticker::before, .on-air-ticker::after {
     animation: none !important;
   }
   .neon-btn:hover::after {
@@ -2174,4 +2160,329 @@ img[src=""] { display: none; }
   html[data-admin-sidebar="open"] > body {
     padding-left: 14rem;
   }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+   Fix all hardcoded dark-mode colors for light theme
+   ═══════════════════════════════════════════════════════ */
+[data-theme="light"] ::selection {
+  background: var(--color-cyan);
+  color: var(--color-void);
+}
+
+/* ── Neon RGB border: subtler colors on light ── */
+[data-theme="light"] .neon-rgb-border {
+  box-shadow: 0 0 4px rgba(138,92,246,0.12), inset 0 0 4px rgba(138,92,246,0.05);
+  border-color: var(--color-line);
+}
+[data-theme="light"] .neon-rgb-border:hover {
+  box-shadow: 0 0 12px rgba(138,92,246,0.2), 0 0 24px rgba(138,92,246,0.1);
+  border-color: var(--color-violet);
+}
+
+/* ── Glass components: lighter shadows ── */
+[data-theme="light"] .glass-card {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+[data-theme="light"] .glass-card:hover {
+  box-shadow: 0 0 0 1px rgba(138,92,246,0.15), 0 8px 24px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .glass-card::before {
+  background: linear-gradient(135deg, rgba(138,92,246,0.04), rgba(59,130,246,0.03), rgba(236,72,153,0.03));
+}
+[data-theme="light"] .glass-strong {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+[data-theme="light"] .glass-panel {
+  background: rgba(255,255,255,0.85);
+}
+[data-theme="light"] .glass-badge {
+  background: rgba(0,0,0,0.06);
+  border-color: rgba(0,0,0,0.08);
+}
+[data-theme="light"] .glass-score {
+  background: rgba(0,0,0,0.06);
+  color: #3b82f6;
+}
+[data-theme="light"] .glass-input {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.08);
+}
+[data-theme="light"] .glass-tag {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.08);
+}
+
+/* ── Card glow: subtler on light ── */
+[data-theme="light"] .card-glow:hover {
+  box-shadow: 0 0 0 1px rgba(138,92,246,0.2), 0 4px 16px rgba(0,0,0,0.1);
+}
+
+/* ── Neon glow text: no glow on light ── */
+[data-theme="light"] .neon-glow-text {
+  text-shadow: none;
+  color: var(--color-magenta);
+}
+
+/* ── Neon button: subtler hover ── */
+[data-theme="light"] .neon-btn:hover {
+  color: var(--color-magenta);
+  text-shadow: none;
+}
+[data-theme="light"] .neon-btn::after {
+  background: linear-gradient(90deg, var(--color-cyan), var(--color-magenta), var(--color-violet));
+  opacity: 0.3;
+}
+
+/* ── Neon card: lighter border ── */
+[data-theme="light"] .neon-card::before {
+  background: conic-gradient(from 0deg, var(--color-magenta), var(--color-cyan), var(--color-violet), var(--color-magenta));
+  opacity: 0.5;
+}
+[data-theme="light"] .neon-card::after {
+  background: var(--color-panel);
+}
+
+/* ── Poster overlay: lighter gradient ── */
+[data-theme="light"] .neon-poster::after {
+  background: linear-gradient(to top, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.6) 40%, transparent 100%);
+}
+[data-theme="light"] .neon-premium-overlay {
+  background: rgba(255,255,255,0.6);
+}
+
+/* ── Banner card: fix dark gradient middle ── */
+[data-theme="light"] .neon-banner-card::after {
+  background: linear-gradient(135deg, var(--color-panel) 0%, rgba(245,243,247,0.95) 50%, var(--color-panel) 100%);
+}
+[data-theme="light"] .neon-banner-card::before {
+  opacity: 0.4;
+}
+[data-theme="light"] .neon-banner-btn {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+[data-theme="light"] .neon-banner-btn:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+[data-theme="light"] .neon-text-gradient {
+  animation: none;
+}
+
+/* ── Feature cards: subtler glow ── */
+[data-theme="light"] .neon-feature-card .neon-glow {
+  filter: blur(8px);
+  opacity: 0.3;
+}
+[data-theme="light"] .neon-feature-card:hover .neon-glow {
+  opacity: 0.4;
+}
+
+/* ── On-air badge: readable on light ── */
+[data-theme="light"] .on-air-badge {
+  color: #d946ef;
+  text-shadow: none;
+  background: rgba(217,70,239,0.08);
+  border-right-color: rgba(217,70,239,0.2);
+}
+[data-theme="light"] .neon-tick-title:hover {
+  color: var(--color-cyan);
+  text-shadow: none;
+}
+[data-theme="light"] .neon-tick-ep {
+  text-shadow: none;
+  color: var(--color-cyan);
+}
+
+/* ── Floating input: light bg ── */
+[data-theme="light"] .floating-input-wrap input {
+  background: rgba(0,0,0,0.04);
+  border-color: var(--color-line);
+  color: var(--color-ink);
+}
+[data-theme="light"] .floating-input-wrap input:focus {
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 0 2px rgba(41,242,224,0.15);
+}
+[data-theme="light"] .floating-input-wrap input:focus ~ label {
+  text-shadow: none;
+  color: var(--color-cyan);
+}
+
+/* ── Login button: light bg ── */
+[data-theme="light"] .login-btn span {
+  background: linear-gradient(135deg, var(--color-cyan), var(--color-magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+[data-theme="light"] .login-btn:hover {
+  color: var(--color-magenta);
+  text-shadow: none;
+}
+
+/* ── Input glow line: light ── */
+[data-theme="light"] .input-glow-line {
+  box-shadow: none;
+}
+[data-theme="light"] .input-glow-line:focus-within {
+  box-shadow: 0 0 8px rgba(41,242,224,0.2);
+}
+
+/* ── Wiki article links ── */
+[data-theme="light"] .wiki-article a:hover {
+  color: var(--color-magenta);
+}
+[data-theme="light"] .wiki-article th {
+  background: rgba(0,0,0,0.04);
+}
+
+/* ── OST card: lighter overlay ── */
+[data-theme="light"] .ost-neon-card::before {
+  opacity: 0.3;
+}
+[data-theme="light"] .ost-neon-card::after {
+  opacity: 0.2;
+}
+[data-theme="light"] .ost-neon-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  transform: translateY(-4px);
+}
+[data-theme="light"] .ost-card-overlay {
+  background: linear-gradient(to top, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
+}
+[data-theme="light"] .ost-play-btn {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+[data-theme="light"] .ost-play-btn:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+/* ── Voice actor cards: subtler rainbow ── */
+[data-theme="light"] .va-neon-card::before {
+  opacity: 0.25;
+}
+[data-theme="light"] .va-neon-card::after {
+  opacity: 0.15;
+}
+[data-theme="light"] .va-neon-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .va-neon-card:hover::after {
+  opacity: 0.25;
+}
+[data-theme="light"] .va-neon-search-border {
+  opacity: 0.25;
+}
+[data-theme="light"] .group:focus-within .va-neon-search-border {
+  opacity: 0.4;
+}
+
+/* ── Cookie banner ── */
+[data-theme="light"] .cookie-rgb-border {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .cookie-btn-accept {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .cookie-btn-accept:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+[data-theme="light"] .cookie-icon-ring {
+  background: linear-gradient(rgba(41,242,224,0.1), rgba(138,92,246,0.1));
+}
+[data-theme="light"] .cookie-btn-secondary:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+/* ── Activity neon cards ── */
+[data-theme="light"] .activity-neon-card:hover .activity-neon-glow {
+  opacity: 0.08;
+}
+
+/* ── Glow pulse / magnetic btn / border glow ── */
+[data-theme="light"] .btn-magnetic:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+[data-theme="light"] .glow-pulse {
+  box-shadow: 0 0 6px rgba(138,92,246,0.2);
+}
+[data-theme="light"] .border-glow {
+  box-shadow: 0 0 0 1px rgba(138,92,246,0.1);
+}
+[data-theme="light"] .border-glow:hover {
+  box-shadow: 0 0 0 1px rgba(138,92,246,0.2), 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ── Glass pulse dot / bookmark ── */
+[data-theme="light"] .glass-pulse-dot {
+  box-shadow: 0 0 6px 1px rgba(138,92,246,0.15);
+}
+[data-theme="light"] .glass-bookmark:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ── Theorem cards ── */
+[data-theme="light"] .theorem-card::before {
+  opacity: 0.3;
+}
+[data-theme="light"] .theorem-card:hover::before {
+  opacity: 0.5;
+}
+[data-theme="light"] .theorem-stat-card::before {
+  opacity: 0.3;
+}
+[data-theme="light"] .theorem-glow {
+  opacity: 0.15;
+}
+[data-theme="light"] .theorem-poster::after {
+  background: linear-gradient(to top, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 40%, transparent 100%);
+}
+
+/* ── Feature pill / award sheen ── */
+[data-theme="light"] .feature-pill {
+  background: rgba(0,0,0,0.04);
+}
+[data-theme="light"] .award-sheen {
+  background: rgba(0,0,0,0.04);
+}
+
+/* ── RGB search bar ── */
+[data-theme="light"] .rgb-border::before {
+  opacity: 0.2;
+}
+[data-theme="light"] .rgb-border:focus-within::before {
+  opacity: 0.35;
+}
+
+/* ── Toon card / neon input / neon premium ── */
+[data-theme="light"] .toon-card::before {
+  opacity: 0.25;
+}
+[data-theme="light"] .neon-input::before {
+  opacity: 0.2;
+}
+[data-theme="light"] .neon-premium-track {
+  opacity: 0.4;
+}
+[data-theme="light"] .neon-premium-track::before {
+  opacity: 0.3;
+}
+
+/* ── Shimmer animation: subtler on light ── */
+[data-theme="light"] .shimmer {
+  background: linear-gradient(90deg, var(--color-panel) 30%, rgba(138,92,246,0.06) 50%, var(--color-panel) 70%);
+}
+
+/* ── Neon banner (Hero CTA) lighter ── */
+[data-theme="light"] .neon-banner-card {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* ── Theorem badge colors ── */
+[data-theme="light"] .theorem-badge-released {
+  color: #16a34a;
+}
+[data-theme="light"] .theorem-badge-upcoming {
+  color: #d97706;
 }
