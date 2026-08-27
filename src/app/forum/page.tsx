@@ -15,7 +15,7 @@ export default function ForumPage() {
       {/* Hero Banner */}
       <div className="relative overflow-hidden border-b border-[var(--color-line)]">
         {/* Neon Background Effects */}
-        <div className="absolute inset-0 bg-[#0a0a0f]" />
+        <div className="absolute inset-0 bg-[var(--color-void)]" />
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-10 left-20 w-72 h-72 bg-[#ff00ff]/20 rounded-full blur-[120px] animate-pulse" />
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-[#00ffff]/15 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: "1s" }} />
@@ -40,11 +40,11 @@ export default function ForumPage() {
                 <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#ff00ff]" style={{ textShadow: "0 0 10px rgba(255,0,255,0.5)" }}>Community Hub</span>
               </div>
               <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
-                <h1 className="font-display text-4xl sm:text-5xl font-bold text-white" style={{ textShadow: "0 0 30px rgba(255,0,255,0.3), 0 0 60px rgba(0,255,255,0.2)" }}>
+                <h1 className="font-display text-4xl sm:text-5xl font-bold text-[var(--color-ink)]" style={{ textShadow: "0 0 30px rgba(255,0,255,0.3), 0 0 60px rgba(0,255,255,0.2)" }}>
                   <span className="text-[#ff00ff]">Zyni</span><span className="text-[#00ffff]">Verse</span> Forum
                 </h1>
               </div>
-              <p className="mt-3 text-base text-gray-400 max-w-lg">
+              <p className="mt-3 text-base text-[var(--color-mute)] max-w-lg">
                 Dive into structured discussions about your favorite anime, share theories, get recommendations, and connect with fellow otaku.
               </p>
               <a href="/community" className="mt-2 inline-flex items-center gap-1.5 text-xs text-[#00ffff] hover:underline">

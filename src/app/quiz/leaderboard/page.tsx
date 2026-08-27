@@ -85,13 +85,13 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-[var(--color-void)] text-[var(--color-ink)]">
       <div className="mx-auto max-w-3xl px-4 py-8">
         <div className="mb-6 text-center">
           <h1 className="font-display text-3xl font-bold mb-1">
             <span className="text-[#8a2be2]">Quiz</span> Leaderboard
           </h1>
-          <p className="text-sm text-gray-500">Top anime quiz players</p>
+          <p className="text-sm text-[var(--color-mute)]">Top anime quiz players</p>
         </div>
 
         <div className="flex gap-2 mb-6 justify-center">
@@ -101,9 +101,9 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
               href={`/quiz/leaderboard${t.key === "all" ? "" : `?tab=${t.key}`}`}
               className="rounded-lg border px-4 py-2 text-xs font-bold transition-all"
               style={{
-                borderColor: timeFilter === t.key ? "#8a2be2" : "rgba(255,255,255,0.1)",
+                borderColor: timeFilter === t.key ? "#8a2be2" : "var(--color-line)",
                 background: timeFilter === t.key ? "rgba(138,43,226,0.15)" : "transparent",
-                color: timeFilter === t.key ? "#8a2be2" : "#666",
+                color: timeFilter === t.key ? "#8a2be2" : "var(--color-mute)",
               }}
             >
               {t.label}
@@ -112,13 +112,13 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
         </div>
 
         {scores.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-[#0a0a0f] p-12 text-center">
+          <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-12 text-center">
             <p className="text-4xl mb-3">🎮</p>
-            <p className="text-sm text-gray-500">No scores yet. Be the first to play!</p>
+            <p className="text-sm text-[var(--color-mute)]">No scores yet. Be the first to play!</p>
           </div>
         ) : (
-          <div className="rounded-2xl border border-white/10 bg-[#0a0a0f] overflow-x-auto">
-            <div className="grid grid-cols-[48px_1fr_80px_100px_90px_90px] min-w-[640px] gap-2 px-4 py-3 text-[10px] uppercase tracking-wider text-gray-500 border-b border-white/5">
+          <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] overflow-x-auto">
+            <div className="grid grid-cols-[48px_1fr_80px_100px_90px_90px] min-w-[640px] gap-2 px-4 py-3 text-[10px] uppercase tracking-wider text-[var(--color-mute)] border-b border-[var(--color-line)]">
               <span>#</span>
               <span>Player</span>
               <span className="text-right">Score</span>
@@ -131,10 +131,10 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
               return (
                 <div
                   key={s.user.id}
-                  className="grid grid-cols-[48px_1fr_80px_100px_90px_90px] min-w-[640px] gap-2 px-4 py-3 items-center border-b border-white/5 last:border-0 transition-colors hover:bg-white/[0.02]"
+                  className="grid grid-cols-[48px_1fr_80px_100px_90px_90px] min-w-[640px] gap-2 px-4 py-3 items-center border-b border-[var(--color-line)] last:border-0 transition-colors hover:bg-[var(--color-line)]/40"
                   style={isMe ? { background: "rgba(138,43,226,0.08)" } : undefined}
                 >
-                  <span className={`font-mono text-sm font-bold ${i === 0 ? "text-[#ffd700]" : i === 1 ? "text-gray-300" : i === 2 ? "text-[#cd7f32]" : "text-gray-600"}`}>
+                  <span className={`font-mono text-sm font-bold ${i === 0 ? "text-[#ffd700]" : i === 1 ? "text-[var(--color-ink)]" : i === 2 ? "text-[#cd7f32]" : "text-[var(--color-mute)]"}`}>
                     {i + 1}
                   </span>
                   <div className="flex items-center gap-2 min-w-0">
@@ -155,7 +155,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
                   <div className="flex justify-center">
                     <DifficultyBadge difficulty={s.difficulty} />
                   </div>
-                  <span className="text-center text-[10px] text-gray-600">
+                  <span className="text-center text-[10px] text-[var(--color-mute)]">
                     {new Date(s.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </span>
                 </div>

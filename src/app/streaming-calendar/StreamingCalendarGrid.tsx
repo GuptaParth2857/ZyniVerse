@@ -49,8 +49,7 @@ function DayCard({ day, entries, isToday, index }: { day: string; entries: Strea
     >
       <div className="neon-premium-track rounded-[20px]" />
       <div
-        className="neon-premium-overlay rounded-[18.5px]"
-        style={{ background: isToday ? "rgba(24,8,30,0.94)" : "rgba(10,10,15,0.92)" }}
+        className={`neon-premium-overlay rounded-[18.5px] bg-[var(--color-panel)] ${isToday ? "ring-1 ring-[var(--color-cyan)]" : ""}`}
       />
       <div className="neon-premium-content rounded-[20px] overflow-hidden">
         <div className={`relative flex items-center justify-between px-4 py-3 ${isToday ? "bg-[var(--color-magenta)]/10" : "bg-white/[0.03]"}`}>
@@ -134,7 +133,7 @@ export default function StreamingCalendarGrid({ entries }: { entries: StreamingC
       {/* Full Where to Watch */}
       <div className="mt-12 neon-premium rounded-2xl">
         <div className="neon-premium-track rounded-2xl" />
-        <div className="neon-premium-overlay rounded-[14.5px]" style={{ background: "rgba(10,10,15,0.92)" }} />
+        <div className="neon-premium-overlay rounded-[14.5px]" />
         <div className="neon-premium-content rounded-2xl p-6">
           <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-bold">
             <span className="h-1 w-4 rounded-full bg-[var(--color-cyan)]" />
@@ -144,7 +143,7 @@ export default function StreamingCalendarGrid({ entries }: { entries: StreamingC
             {PLATFORMS.map((p) => (
               <div key={p.name} className="neon-premium rounded-lg">
                 <div className="neon-premium-track rounded-lg" />
-                <div className="neon-premium-overlay rounded-[6.5px]" style={{ background: "rgba(10,10,15,0.92)" }} />
+                <div className="neon-premium-overlay rounded-[6.5px]" />
                 <div className="neon-premium-content flex items-center gap-3 rounded-lg p-3">
                   <span className="flex h-9 w-20 shrink-0 items-center justify-center rounded-lg bg-black/40">
                     <Image

@@ -31,7 +31,7 @@ function NeonBorder({ children }: { children: React.ReactNode }) {
     <div className="relative rounded-2xl overflow-hidden">
       <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
         <div className="absolute inset-0" style={{ background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)", animation: "spin 6s linear infinite", willChange: "transform" }} />
-        <div className="absolute inset-[1.5px] rounded-[14.5px]" style={{ background: "rgba(10,10,15,0.92)" }} />
+        <div className="absolute inset-[1.5px] rounded-[14.5px] bg-[var(--color-panel)]" />
       </div>
       <div className="relative z-10">{children}</div>
     </div>

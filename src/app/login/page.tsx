@@ -127,7 +127,7 @@ function NeonBorder() {
           willChange: "transform",
         }}
       />
-      <div className="absolute inset-[1.5px] rounded-[22.5px]" style={{ background: "rgba(10,10,15,0.92)" }} />
+      <span className="absolute inset-[1.5px] rounded-[22.5px] neon-border-inner" />
     </div>
   );
 }
@@ -146,14 +146,14 @@ function GlowInput({ type, value, onChange, placeholder, icon, toggle }: {
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           required
-          className="w-full h-[56px] rounded-[16px] bg-transparent pl-12 pr-12 text-[14px] text-white placeholder-[rgba(255,255,255,0.2)] outline-none transition-all duration-300 neon-rgb-border focus:border-[#00ffe0] focus:shadow-[0_0_30px_-10px_rgba(0,255,224,0.4),inset_0_0_20px_-15px_rgba(0,255,224,0.15)]"
+          className="w-full h-[56px] rounded-[16px] bg-transparent pl-12 pr-12 text-[14px] text-[var(--color-ink)] placeholder-[var(--color-mute)] outline-none transition-all duration-300 neon-rgb-border focus:border-[#00ffe0] focus:shadow-[0_0_30px_-10px_rgba(0,255,224,0.4),inset_0_0_20px_-15px_rgba(0,255,224,0.15)]"
         />
         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#00ffe0] opacity-60 group-focus-within:opacity-100 transition-opacity">
           {icon}
         </div>
         {toggle && (
           <button type="button" onClick={toggle.onToggle}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-[rgba(255,255,255,0.2)] hover:text-[#00ffe0] transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-mute)] hover:text-[#00ffe0] transition-colors"
             tabIndex={-1}
           >
             {toggle.show ? (
@@ -235,11 +235,11 @@ export default function LoginPage() {
   return (
     <PageTransition><>
       <MouseGlow />
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0a0f] px-4">
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[var(--color-void)] px-4">
         {/* Background layers */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-void)] via-[var(--color-panel)] to-[var(--color-void)]" />
         <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
-          backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(color-mix(in srgb, var(--color-ink) 6%, transparent) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
         }} />
         <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.6)" }} />
@@ -272,7 +272,7 @@ export default function LoginPage() {
                     </div>
                   <div className="absolute inset-0 rounded-2xl animate-pulse" style={{ boxShadow: "0 0 30px rgba(0,255,224,0.4)" }} />
                 </motion.div>
-                <h1 className="font-display text-2xl font-bold tracking-tight text-white">ZyniVerse</h1>
+                <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--color-ink)]">ZyniVerse</h1>
               </div>
 
               {/* Header */}
@@ -282,7 +282,7 @@ export default function LoginPage() {
                     Login
                   </h2>
                 </div>
-                <p className="mt-2 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+                <p className="mt-2 text-sm text-[var(--color-mute)]">
                   Enter your credentials to access your account.
                 </p>
               </div>
@@ -310,13 +310,13 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <button type="button" onClick={() => setRemember(!remember)}
-                      className={`relative flex h-5 w-9 shrink-0 items-center rounded-full transition-all duration-300 ${remember ? "bg-[#00ffe0]" : "bg-[rgba(255,255,255,0.06)]"}`}
+                      className={`relative flex h-5 w-9 shrink-0 items-center rounded-full transition-all duration-300 ${remember ? "bg-[#00ffe0]" : "bg-[var(--color-panel)]/80"}`}
                     >
                       <motion.span layout transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm ${remember ? "ml-[19px]" : "ml-[3px]"}`}
+                        className={`inline-block h-3.5 w-3.5 rounded-full bg-[var(--color-ink)] shadow-sm ${remember ? "ml-[19px]" : "ml-[3px]"}`}
                       />
                     </button>
-                    <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.4)" }}>Remember me</span>
+                    <span className="text-[13px] text-[var(--color-mute)]">Remember me</span>
                   </div>
                   <Link href="/forgot-password"
                     className="text-[13px] font-medium text-[#00ffe0] hover:text-[#ff00e6] transition-colors">
@@ -353,9 +353,9 @@ export default function LoginPage() {
 
               {/* Divider */}
               <div className="mt-7 flex items-center gap-4">
-                <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.05)" }} />
-                <span className="text-[12px] font-medium" style={{ color: "rgba(255,255,255,0.25)" }}>or continue with</span>
-                <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.05)" }} />
+                <div className="h-px flex-1 bg-[var(--color-line)]" />
+                <span className="text-[12px] font-medium text-[var(--color-mute)]">or continue with</span>
+                <div className="h-px flex-1 bg-[var(--color-line)]" />
               </div>
 
               {/* Social */}
@@ -368,7 +368,7 @@ export default function LoginPage() {
                     whileHover={{ y: -2, scale: 1.03 }}
                     whileTap={{ scale: 0.96 }}
                     onClick={() => signIn(s.id, { callbackUrl: "/" })}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-[14px] neon-rgb-border bg-[rgba(255,255,255,0.02)] py-3 text-[13px] font-medium text-[rgba(255,255,255,0.4)] transition-all duration-300 hover:border-[#00ffe0]/30 hover:bg-[rgba(0,255,224,0.03)] hover:text-[#00ffe0] hover:shadow-[0_0_25px_-10px_rgba(0,255,224,0.15)]"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-[14px] neon-rgb-border bg-[var(--color-panel)]/50 py-3 text-[13px] font-medium text-[var(--color-mute)] transition-all duration-300 hover:border-[#00ffe0]/30 hover:bg-[rgba(0,255,224,0.03)] hover:text-[#00ffe0] hover:shadow-[0_0_25px_-10px_rgba(0,255,224,0.15)]"
                   >
                     {s.icon}
                     <span className="hidden sm:inline">{s.name}</span>
@@ -378,7 +378,7 @@ export default function LoginPage() {
 
               {/* Footer */}
               <div className="mt-8 text-center">
-                <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                <p className="text-[14px] text-[var(--color-mute)]">
                   Don&apos;t have an account?{" "}
                   <Link href="/register" className="font-semibold text-[#00ffe0] hover:text-[#ff00e6] transition-colors">
                     Sign Up
@@ -393,7 +393,7 @@ export default function LoginPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="mt-5 text-center font-mono text-[9px] tracking-[0.3em]" style={{ color: "rgba(255,255,255,0.06)" }}
+            className="mt-5 text-center font-mono text-[9px] tracking-[0.3em] text-[var(--color-mute)] opacity-40"
           >
             ZYNIVERSE • v2.4.1 • ENCRYPTED
           </motion.p>

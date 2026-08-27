@@ -32,7 +32,7 @@ export default function QuizPage() {
     <div className="min-h-screen animate-page-in">
       {/* Hero Banner */}
       <div className="relative overflow-hidden border-b border-[var(--color-line)]">
-        <div className="absolute inset-0 bg-[#0a0a0f]" />
+        <div className="absolute inset-0 bg-[var(--color-void)]" />
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-10 left-20 w-72 h-72 bg-[#8a2be2]/20 rounded-full blur-[120px] animate-pulse" />
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-[#ff00ff]/15 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: "1s" }} />
@@ -53,10 +53,10 @@ export default function QuizPage() {
                 </div>
                 <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#8a2be2]" style={{ textShadow: "0 0 10px rgba(138,43,226,0.5)" }}>Mini Game</span>
               </div>
-              <h1 className="font-display text-4xl sm:text-5xl font-bold text-white" style={{ textShadow: "0 0 30px rgba(138,43,226,0.3), 0 0 60px rgba(255,0,255,0.2)" }}>
+              <h1 className="font-display text-4xl sm:text-5xl font-bold text-[var(--color-ink)]" style={{ textShadow: "0 0 30px rgba(138,43,226,0.3), 0 0 60px rgba(255,0,255,0.2)" }}>
                 Anime <span className="text-[#8a2be2]">Quiz</span>
               </h1>
-              <p className="mt-3 text-base text-gray-400 max-w-lg">
+              <p className="mt-3 text-base text-[var(--color-mute)] max-w-lg">
                 Test your anime knowledge, earn XP, climb ranks, and become the ultimate quiz champion!
               </p>
             </div>
@@ -84,7 +84,7 @@ export default function QuizPage() {
                   <h2 className="font-display text-xl font-bold">Daily Challenge</h2>
                   <span className="text-[10px] font-bold bg-[#ff3366]/20 text-[#ff3366] border border-[#ff3366]/30 px-2 py-0.5 rounded-full">+50 XP BONUS</span>
                 </div>
-                <p className="text-sm text-gray-400">5 questions — same for everyone. Compete for the best score and earn bonus XP!</p>
+                <p className="text-sm text-[var(--color-mute)]">5 questions — same for everyone. Compete for the best score and earn bonus XP!</p>
               </div>
               <Link href="/quiz/daily" className="neon-rgb-border rounded-xl shrink-0 bg-[var(--color-panel)]/60 backdrop-blur-sm px-5 py-2.5 flex items-center gap-1.5 text-[13px] font-bold text-[#ffd700]">
                 Play Daily
@@ -103,7 +103,7 @@ export default function QuizPage() {
             <div key={rank.name} className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm p-3 text-center">
               <span className="text-2xl block mb-1">{rank.icon}</span>
               <p className="text-[11px] font-bold" style={{ color: rank.color }}>{rank.name}</p>
-              <p className="text-[9px] text-gray-500 mt-0.5">{rank.xp > 0 ? `${rank.xp} XP` : "Start"}</p>
+              <p className="text-[9px] text-[var(--color-mute)] mt-0.5">{rank.xp > 0 ? `${rank.xp} XP` : "Start"}</p>
             </div>
           ))}
         </div>
@@ -119,7 +119,7 @@ export default function QuizPage() {
                 <span className="text-lg">{cat.icon}</span>
                 <h3 className="font-display font-bold text-sm" style={{ color: cat.color }}>{cat.name}</h3>
               </div>
-              <p className="text-xs text-gray-500">{cat.desc}</p>
+              <p className="text-xs text-[var(--color-mute)]">{cat.desc}</p>
             </Link>
           ))}
         </div>
@@ -137,7 +137,7 @@ export default function QuizPage() {
             <div key={item.title} className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm p-4">
               <span className="text-lg mb-2 block">{item.icon}</span>
               <h3 className="font-display font-bold text-sm mb-1" style={{ color: item.color }}>{item.title}</h3>
-              <p className="text-xs text-gray-500">{item.desc}</p>
+              <p className="text-xs text-[var(--color-mute)]">{item.desc}</p>
             </div>
           ))}
         </div>

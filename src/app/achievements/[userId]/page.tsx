@@ -30,7 +30,7 @@ export default function UserAchievementsPage() {
   return (
     <PageTransition>
       <div className="relative overflow-hidden border-b border-[var(--color-line)]">
-        <div className="absolute inset-0 bg-[#0a0a0f]" />
+        <div className="absolute inset-0 bg-[var(--color-void)]" />
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-10 left-20 w-72 h-72 bg-[#8a2be2]/15 rounded-full blur-[120px] animate-pulse" />
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-[#ff00ff]/20 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: "1s" }} />
@@ -46,7 +46,7 @@ export default function UserAchievementsPage() {
             )}
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#8a2be2]" style={{ textShadow: "0 0 10px rgba(138,43,226,0.5)" }}>{/* Achievements */}</p>
-              <h1 className="font-display text-3xl font-bold sm:text-4xl text-white">
+              <h1 className="font-display text-3xl font-bold sm:text-4xl text-[var(--color-ink)]">
                 {user?.username ? `${user.username}&apos;s Achievements` : "User Achievements"}
               </h1>
             </div>

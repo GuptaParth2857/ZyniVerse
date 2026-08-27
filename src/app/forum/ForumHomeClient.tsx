@@ -61,8 +61,8 @@ export default function ForumHomeClient() {
                   onClick={() => { setSort(s.id); setPage(1); }}
                   className={`flex items-center gap-1 sm:gap-1.5 rounded-lg px-4 sm:px-5 py-2 sm:py-2.5 text-xs font-medium transition-all ${
                     sort === s.id
-                      ? "bg-white/10 text-white"
-                      : "text-gray-500 hover:text-white hover:bg-white/5"
+                      ? "bg-[var(--color-ink)]/10 text-[var(--color-ink)]"
+                      : "text-[var(--color-mute)] hover:text-[var(--color-ink)] hover:bg-[var(--color-ink)]/5"
                   }`}
                   style={sort === s.id ? {
                     color: s.color,
@@ -79,7 +79,7 @@ export default function ForumHomeClient() {
           </div>
           
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-[var(--color-mute)]">
               <span className="font-semibold text-[#ff00ff]" style={{ textShadow: "0 0 10px rgba(255,0,255,0.3)" }}>{total}</span> discussions
             </span>
           </div>
@@ -92,18 +92,18 @@ export default function ForumHomeClient() {
               <div className="h-10 w-10 rounded-full border-2 border-[#ff00ff] border-t-transparent animate-spin" style={{ boxShadow: "0 0 15px rgba(255,0,255,0.3)" }} />
               <div className="absolute inset-0 h-10 w-10 rounded-full border-2 border-[#00ffff] border-b-transparent animate-spin" style={{ animationDuration: "1.5s", boxShadow: "0 0 15px rgba(0,255,255,0.3)" }} />
             </div>
-            <p className="text-sm text-gray-500">Loading discussions...</p>
+            <p className="text-sm text-[var(--color-mute)]">Loading discussions...</p>
           </div>
         ) : threads.length === 0 ? (
           <div className="neon-rgb-border rounded-xl text-center bg-[var(--color-panel)]/60 backdrop-blur-sm">
             <div className="py-20 px-6 relative">
-              <div className="h-16 w-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4">
+              <div className="h-16 w-16 rounded-2xl bg-[var(--color-ink)]/5 flex items-center justify-center mx-auto mb-4">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff00ff" strokeWidth="2">
                   <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">No discussions yet</h3>
-              <p className="text-sm text-gray-500 mb-4">Be the first to start a conversation!</p>
+              <h3 className="text-lg font-semibold text-[var(--color-ink)] mb-2">No discussions yet</h3>
+              <p className="text-sm text-[var(--color-mute)] mb-4">Be the first to start a conversation!</p>
               <Link href="/forum/create" className="neon-rgb-border rounded-xl inline-flex bg-[var(--color-panel)]/60 backdrop-blur-sm">
                 <span className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#ff00ff] hover:text-white transition-colors rounded-xl">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -135,7 +135,7 @@ export default function ForumHomeClient() {
             <button 
               onClick={() => setPage((p) => Math.max(1, p - 1))} 
               disabled={page === 1}
-              className="flex items-center gap-1 rounded-xl bg-white/5 border border-white/10 px-4 py-2 text-xs font-medium disabled:opacity-30 hover:border-[#ff00ff]/30 hover:bg-white/5 transition-all text-gray-400 hover:text-[#ff00ff]"
+              className="flex items-center gap-1 rounded-xl bg-[var(--color-ink)]/5 border border-[var(--color-line)] px-4 py-2 text-xs font-medium disabled:opacity-30 hover:border-[#ff00ff]/30 hover:bg-[var(--color-ink)]/5 transition-all text-[var(--color-mute)] hover:text-[#ff00ff]"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M15 19l-7-7 7-7" />
@@ -159,7 +159,7 @@ export default function ForumHomeClient() {
                       boxShadow: "0 0 15px rgba(255,0,255,0.2)",
                       textShadow: "0 0 10px rgba(255,0,255,0.5)"
                     } : {
-                      color: "#666",
+                      color: "var(--color-mute)",
                       background: "transparent",
                       border: "1px solid transparent"
                     }}
@@ -185,7 +185,7 @@ export default function ForumHomeClient() {
             <button 
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))} 
               disabled={page === totalPages}
-              className="flex items-center gap-1 rounded-xl bg-white/5 border border-white/10 px-4 py-2 text-xs font-medium disabled:opacity-30 hover:border-[#00ffff]/30 hover:bg-white/5 transition-all text-gray-400 hover:text-[#00ffff]"
+              className="flex items-center gap-1 rounded-xl bg-[var(--color-ink)]/5 border border-[var(--color-line)] px-4 py-2 text-xs font-medium disabled:opacity-30 hover:border-[#00ffff]/30 hover:bg-[var(--color-ink)]/5 transition-all text-[var(--color-mute)] hover:text-[#00ffff]"
             >
               Next
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

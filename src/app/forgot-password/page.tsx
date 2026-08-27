@@ -112,7 +112,7 @@ function NeonBorder() {
         animate={{ rotate: 360 }}
         transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
       />
-      <div className="absolute inset-[1.5px] rounded-[22.5px]" style={{ background: "rgba(10,10,15,0.85)", backdropFilter: "blur(30px)" }} />
+      <div className="absolute inset-[1.5px] rounded-[22.5px] bg-[var(--color-panel)] backdrop-blur-[30px]" />
     </div>
   );
 }
@@ -131,14 +131,14 @@ function GlowInput({ type, value, onChange, placeholder, icon, toggle }: {
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           required
-          className="w-full h-[56px] rounded-[16px] bg-transparent pl-12 pr-12 text-[14px] text-white placeholder-[rgba(255,255,255,0.2)] outline-none transition-all duration-300 neon-rgb-border focus:border-[#00ffe0] focus:shadow-[0_0_30px_-10px_rgba(0,255,224,0.4),inset_0_0_20px_-15px_rgba(0,255,224,0.15)]"
+          className="w-full h-[56px] rounded-[16px] bg-transparent pl-12 pr-12 text-[14px] text-[var(--color-ink)] placeholder-[var(--color-mute)] outline-none transition-all duration-300 neon-rgb-border focus:border-[#00ffe0] focus:shadow-[0_0_30px_-10px_rgba(0,255,224,0.4),inset_0_0_20px_-15px_rgba(0,255,224,0.15)]"
         />
         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#00ffe0] opacity-60 group-focus-within:opacity-100 transition-opacity">
           {icon}
         </div>
         {toggle && (
           <button type="button" onClick={toggle.onToggle}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-[rgba(255,255,255,0.2)] hover:text-[#00ffe0] transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-mute)] hover:text-[#00ffe0] transition-colors"
             tabIndex={-1}
           >
             {toggle.show ? (
@@ -247,9 +247,9 @@ export default function ForgotPasswordPage() {
   return (
     <PageTransition><>
       <MouseGlow />
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0a0f] px-4">
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[var(--color-void)] px-4">
         {/* Background layers */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-void)] via-[var(--color-panel)] to-[var(--color-void)]" />
         <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
         }} />
@@ -283,7 +283,7 @@ export default function ForgotPasswordPage() {
                     </div>
                   <div className="absolute inset-0 rounded-2xl animate-pulse" style={{ boxShadow: "0 0 30px rgba(0,255,224,0.4)" }} />
                 </motion.div>
-                <h1 className="font-display text-2xl font-bold tracking-tight text-white">ZyniVerse</h1>
+                <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--color-ink)]">ZyniVerse</h1>
               </div>
 
               {/* Header */}
@@ -293,7 +293,7 @@ export default function ForgotPasswordPage() {
                     Reset Password
                   </h2>
                 </div>
-                <p className="mt-2 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+                <p className="mt-2 text-sm text-[var(--color-mute)]">
                   {step === "email" ? "Enter your email to receive an OTP." : "Enter the OTP sent to your email and a new password."}
                 </p>
               </div>
@@ -368,7 +368,7 @@ export default function ForgotPasswordPage() {
 
               {/* Footer */}
               <div className="mt-8 text-center">
-                <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                <p className="text-[14px] text-[var(--color-mute)]">
                   Remember your password?{" "}
                   <Link href="/login" className="font-semibold text-[#00ffe0] hover:text-[#ff00e6] transition-colors">
                     Sign In
@@ -383,7 +383,7 @@ export default function ForgotPasswordPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="mt-5 text-center font-mono text-[9px] tracking-[0.3em]" style={{ color: "rgba(255,255,255,0.06)" }}
+            className="mt-5 text-center font-mono text-[9px] tracking-[0.3em] text-[var(--color-mute)] opacity-40"
           >
             ZYNIVERSE • v2.4.1 • ENCRYPTED
           </motion.p>

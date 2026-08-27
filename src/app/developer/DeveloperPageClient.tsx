@@ -166,7 +166,7 @@ function KpiCard({ icon, label, value, color, sub }: { icon: string; label: stri
   return (
     <div className="neon-premium rounded-[20px]">
       <div className="neon-premium-track" />
-      <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+      <div className="neon-premium-overlay" />
       <div className="neon-premium-content rounded-[20px] p-5">
         <div className="flex items-center justify-between gap-2">
           <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-mute)]">{label}</p>
@@ -527,7 +527,7 @@ export default function DeveloperPageClient() {
             className="neon-premium rounded-[20px]"
           >
             <div className="neon-premium-track" />
-            <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+            <div className="neon-premium-overlay" />
             <div className="neon-premium-content rounded-[20px] p-8 text-center">
               <div className="text-4xl">🔑</div>
               <h3 className="mt-3 font-display text-xl font-bold text-[var(--color-ink)]">Sign in to manage your keys</h3>
@@ -551,7 +551,7 @@ export default function DeveloperPageClient() {
           <div className="space-y-4">
             <div className="neon-premium rounded-[20px]">
               <div className="neon-premium-track" />
-              <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+              <div className="neon-premium-overlay" />
               <div className="neon-premium-content rounded-[20px] p-6">
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <input
@@ -591,7 +591,7 @@ export default function DeveloperPageClient() {
             ) : keys.length === 0 ? (
               <div className="neon-premium rounded-[20px]">
                 <div className="neon-premium-track" />
-                <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+                <div className="neon-premium-overlay" />
                 <div className="neon-premium-content rounded-[20px] p-8 text-center text-sm text-[var(--color-mute)]">
                   No keys yet — create your first one above. ⚡
                 </div>
@@ -610,7 +610,7 @@ export default function DeveloperPageClient() {
                       className="neon-premium rounded-[20px]"
                     >
                       <div className="neon-premium-track" />
-                      <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.94)" }} />
+                      <div className="neon-premium-overlay" />
                       <div className="neon-premium-content rounded-[20px] p-5">
                         <div className="flex flex-wrap items-center gap-3">
                           <span className={`h-2.5 w-2.5 rounded-full ${k.active ? "bg-green-400 shadow-[0_0_8px_#4ade80]" : "bg-red-400"}`} />
@@ -667,7 +667,7 @@ export default function DeveloperPageClient() {
         />
         <div className="neon-premium rounded-[20px]">
           <div className="neon-premium-track" />
-          <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.94)" }} />
+          <div className="neon-premium-overlay" />
           <div className="neon-premium-content rounded-[20px] p-6">
             <div className="flex flex-wrap gap-2">
               {PRESETS.map((p, i) => (
@@ -838,8 +838,7 @@ export default function DeveloperPageClient() {
                 <div className="neon-premium rounded-[24px]">
                   <div className="neon-premium-track" />
                   <div
-                    className="neon-premium-overlay"
-                    style={{ background: isPro ? "rgba(20,10,18,0.94)" : "rgba(10,10,15,0.92)" }}
+                    className={`neon-premium-overlay ${isPro ? "ring-1 ring-[var(--color-magenta)]" : ""}`}
                   />
                   <div className="neon-premium-content relative rounded-[24px] p-6">
                     <div
@@ -914,7 +913,7 @@ export default function DeveloperPageClient() {
         />
         <div className="neon-premium rounded-[20px]">
           <div className="neon-premium-track" />
-          <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.94)" }} />
+          <div className="neon-premium-overlay" />
           <div className="neon-premium-content rounded-[20px] p-2 sm:p-4">
             <div className="divide-y divide-[var(--color-line)]">
               {QUERIES.map((q, i) => {
@@ -972,7 +971,7 @@ export default function DeveloperPageClient() {
             className="neon-premium rounded-[20px]"
           >
             <div className="neon-premium-track" />
-            <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.94)" }} />
+            <div className="neon-premium-overlay" />
             <div className="neon-premium-content rounded-[20px] p-5">
               <div className="flex items-center gap-3">
                 <StepBadge n={1} />
@@ -992,7 +991,7 @@ export default function DeveloperPageClient() {
             className="neon-premium rounded-[20px]"
           >
             <div className="neon-premium-track" />
-            <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.94)" }} />
+            <div className="neon-premium-overlay" />
             <div className="neon-premium-content rounded-[20px] p-5">
               <div className="flex items-center gap-3">
                 <StepBadge n={2} />
@@ -1013,7 +1012,7 @@ export default function DeveloperPageClient() {
             className="neon-premium rounded-[20px]"
           >
             <div className="neon-premium-track" />
-            <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.94)" }} />
+            <div className="neon-premium-overlay" />
             <div className="neon-premium-content rounded-[20px] p-5">
               <div className="flex items-center gap-3">
                 <StepBadge n={3} />
@@ -1036,7 +1035,7 @@ export default function DeveloperPageClient() {
             className="neon-premium rounded-[20px]"
           >
             <div className="neon-premium-track" />
-            <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.94)" }} />
+            <div className="neon-premium-overlay" />
             <div className="neon-premium-content rounded-[20px] p-5">
               <div className="flex items-center gap-3">
                 <StepBadge n={4} />
@@ -1064,7 +1063,7 @@ export default function DeveloperPageClient() {
         className="neon-premium rounded-[20px]"
       >
         <div className="neon-premium-track" />
-        <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.94)" }} />
+        <div className="neon-premium-overlay" />
         <div className="neon-premium-content rounded-[20px] p-6">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-2xl">🛟</span>

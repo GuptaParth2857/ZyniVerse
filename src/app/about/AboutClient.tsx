@@ -189,7 +189,7 @@ export default function AboutClient() {
       <section className="mb-14">
         <div className="neon-premium rounded-[20px]">
           <div className="neon-premium-track" />
-          <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+          <div className="neon-premium-overlay" />
           <div className="neon-premium-content rounded-[20px] p-6 sm:p-8">
             <motion.p
               initial={{ opacity: 0, y: 14 }}
@@ -318,7 +318,7 @@ export default function AboutClient() {
       <section>
         <div className="neon-premium rounded-[20px]">
           <div className="neon-premium-track" />
-          <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+          <div className="neon-premium-overlay" />
           <div className="neon-premium-content rounded-[20px] p-6 text-center sm:p-10">
             <motion.p
               initial={{ opacity: 0, y: 14 }}

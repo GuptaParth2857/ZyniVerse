@@ -76,7 +76,7 @@ function NeonBorder({ children, glowColor }: { children: React.ReactNode; glowCo
         <div className="absolute inset-0"
           style={{ background: `conic-gradient(from 0deg, transparent, ${glowColor || "#00ffe0"}, transparent, #ff00e6, transparent, #7000ff, transparent, ${glowColor || "#00ffe0"})`, animation: "spin 6s linear infinite", willChange: "transform" }}
         />
-        <div className="absolute inset-[1.5px] rounded-[22.5px]" style={{ background: "rgba(10,10,15,0.92)" }} />
+        <div className="neon-premium-overlay rounded-[22.5px]" />
       </div>
       <div className="relative z-10">{children}</div>
     </div>
@@ -286,7 +286,7 @@ function NowPlayingBanner({ liveData }: { liveData?: LiveScheduleData | null }) 
                   </div>
                 </div>
 
-                <div className="mt-3 rounded-xl overflow-hidden border border-white/5 relative h-28">
+                <div className="mt-3 rounded-xl overflow-hidden border border-[var(--color-line)] relative h-28">
                   <Image
                     src={channel.logoUrl ?? ""}
                     alt={channel.name}
@@ -296,11 +296,11 @@ function NowPlayingBanner({ liveData }: { liveData?: LiveScheduleData | null }) 
                     style={channel.logoInvert ? { filter: "brightness(0) invert(1)" } : undefined}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-[10px] font-bold text-white/60 text-center px-2 leading-tight">{slot.show}</span>
+                    <span className="text-[10px] font-bold text-[var(--color-ink)]/60 text-center px-2 leading-tight">{slot.show}</span>
                   </div>
                 </div>
 
-                <div className="relative mt-3 h-1 rounded-full bg-white/5 overflow-hidden">
+                <div className="relative mt-3 h-1 rounded-full bg-[var(--color-panel)] overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-1000"
                     style={{ width: `${progress}%`, boxShadow: "0 0 8px rgba(0,188,212,0.6)" }}
@@ -413,7 +413,7 @@ function LiveAiringSection({ selectedDay }: { selectedDay: string }) {
                         alt={title}
                         width={40}
                         height={40}
-                        className="rounded-lg object-cover shrink-0 border border-white/5"
+                        className="rounded-lg object-cover shrink-0 border border-[var(--color-line)]"
                         style={{ width: 40, height: 40 }}
                       />
                     ) : (
@@ -473,10 +473,10 @@ function TimeSlotRow({
         airing
           ? "border-[var(--color-cyan)]/50 bg-[var(--color-cyan)]/5"
           : isAlwaysAvailable
-          ? "border-[var(--color-line)] hover:border-white/10 hover:bg-white/[0.02]"
+          ? "border-[var(--color-line)] hover:border-[var(--color-line)] hover:bg-[var(--color-panel)]"
           : past
           ? "border-[var(--color-line)] opacity-50"
-          : "border-[var(--color-line)] hover:border-white/10 hover:bg-white/[0.02]"
+          : "border-[var(--color-line)] hover:border-[var(--color-line)] hover:bg-[var(--color-panel)]"
       }`}
     >
       <div className="w-20 shrink-0 text-right">
@@ -519,13 +519,13 @@ function TimeSlotRow({
               alt={slot.show}
               width={32}
               height={32}
-              className="rounded-md shrink-0 border border-white/10"
+              className="rounded-md shrink-0 border border-[var(--color-line)]"
               style={{ objectFit: "contain", background: "rgba(0,0,0,0.3)", width: 32, height: 32 }}
               onError={() => setLogoFailed(true)}
             />
           ) : channelShortName ? (
             <div
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/10 text-[9px] font-bold text-white"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[var(--color-line)] text-[9px] font-bold text-white"
               style={{ background: `${channelColor}cc` }}
             >
               {channelShortName}
@@ -888,13 +888,13 @@ function TvSchedulePage() {
 
   return (
     <PageTransition>
-      <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
+      <div className="relative min-h-screen overflow-hidden bg-[var(--color-void)]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-void)] via-[var(--color-panel)] to-[var(--color-void)]" />
         <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
-          backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(color-mix(in srgb, var(--color-ink) 6%, transparent) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
         }} />
-        <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.6)" }} />
+        <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px color-mix(in srgb, var(--color-void) 60%, transparent)" }} />
         <motion.div className="absolute top-[15%] left-[5%] w-[350px] h-[350px] rounded-full pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(0,255,224,0.06) 0%, transparent 70%)", filter: "blur(60px)" }}
           animate={{ x: [0, 40, 0], y: [0, -30, 0] }}

@@ -695,7 +695,7 @@ body {
 .neon-premium-overlay {
   position: absolute;
   inset: 1.5px;
-  background: rgba(10, 10, 15, 0.45);
+  background: rgba(10, 10, 15, 0.92);
 }
 .neon-premium-content {
   position: relative;
@@ -2160,6 +2160,18 @@ img[src=""] { display: none; }
   html[data-admin-sidebar="open"] > body {
     padding-left: 14rem;
   }
+}
+
+/* ── Neon-border inner surface (theme-aware card fill) ── */
+.neon-border-inner {
+  display: block;
+  background: rgba(10,10,15,0.92);
+}
+[data-theme="light"] .neon-border-inner {
+  background: rgba(255,255,255,0.9);
+}
+[data-theme="dim"] .neon-border-inner {
+  background: rgba(19,19,30,0.92);
 }
 
 /* ═══════════════════════════════════════════════════════

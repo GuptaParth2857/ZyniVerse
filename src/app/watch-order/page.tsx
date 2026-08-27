@@ -134,7 +134,7 @@ export default function WatchOrderPage() {
 
       {/* Search Bar */}
       <div ref={ref} className="relative mb-8 max-w-xl">
-        <div className="neon-rgb-border relative flex items-center rounded-full bg-[rgba(10,10,15,0.95)]">
+        <div className="neon-rgb-border relative flex items-center rounded-full bg-[var(--color-panel)]">
           <div className="pl-5 pr-1 flex items-center">
             {loading ? (
               <svg className="w-4 h-4 text-[var(--color-cyan)] animate-spin" fill="none" viewBox="0 0 24 24">

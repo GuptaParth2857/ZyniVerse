@@ -151,7 +151,7 @@ export default function LightNovelBrowseClient() {
     <div className="min-h-screen animate-page-in">
       {/* ═══════════════ HERO ═══════════════ */}
       <div className="relative overflow-hidden border-b border-[var(--color-line)]">
-        <div className="absolute inset-0 bg-[#0a0a0f]" />
+        <div className="absolute inset-0 bg-[var(--color-void)]" />
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-10 left-20 w-72 h-72 bg-[#00ffff]/15 rounded-full blur-[120px] animate-pulse" />
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-[#8a2be2]/20 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: "1s" }} />
@@ -171,11 +171,11 @@ export default function LightNovelBrowseClient() {
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#00ffff] mb-3" style={{ textShadow: "0 0 10px rgba(0,255,255,0.5)" }}>Light Novels</span>
 
             <div className="neon-rgb-border rounded-xl px-4 py-2">
-              <h1 className="font-display text-4xl sm:text-5xl font-bold text-white" style={{ textShadow: "0 0 30px rgba(0,255,255,0.3), 0 0 60px rgba(138,43,226,0.2)" }}>
+              <h1 className="font-display text-4xl sm:text-5xl font-bold text-[var(--color-ink)]" style={{ textShadow: "0 0 30px rgba(0,255,255,0.3), 0 0 60px rgba(138,43,226,0.2)" }}>
                 Track Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffff] via-[#8a2be2] to-[#ff00ff]">Reading Journey</span>
               </h1>
             </div>
-            <p className="mt-3 text-base text-gray-400 max-w-lg">
+            <p className="mt-3 text-base text-[var(--color-mute)] max-w-lg">
               Discover trending light novels, track your progress, and find your next favorite series.
             </p>
 
@@ -213,10 +213,10 @@ export default function LightNovelBrowseClient() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search light novels by title..."
-                className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-[var(--color-mute)]/50"
+                className="flex-1 bg-transparent text-sm text-[var(--color-ink)] outline-none placeholder:text-[var(--color-mute)]/50"
               />
               {query && (
-                <button type="button" onClick={() => { setQuery(""); setDebouncedQuery(""); }} className="text-[var(--color-mute)] hover:text-white transition-colors">
+                <button type="button" onClick={() => { setQuery(""); setDebouncedQuery(""); }} className="text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
                 </button>
               )}
@@ -229,11 +229,11 @@ export default function LightNovelBrowseClient() {
         <motion.div {...FADE_UP}>
           <div className="flex items-center gap-3 border-b border-[var(--color-line)] pb-3">
             <button onClick={() => { setShowMyList(false); setTab("trending"); setQuery(""); setDebouncedQuery(""); }}
-              className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all ${!showMyList ? "text-[#00ffff] border-b-2 border-[#00ffff] bg-[#00ffff]/5" : "text-[var(--color-mute)] hover:text-white"}`}
+              className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all ${!showMyList ? "text-[#00ffff] border-b-2 border-[#00ffff] bg-[#00ffff]/5" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}
             >Browse</button>
             {session?.user?.id && (
               <button onClick={() => setShowMyList(true)}
-                className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all ${showMyList ? "text-[#00ffff] border-b-2 border-[#00ffff] bg-[#00ffff]/5" : "text-[var(--color-mute)] hover:text-white"}`}
+                className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all ${showMyList ? "text-[#00ffff] border-b-2 border-[#00ffff] bg-[#00ffff]/5" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}
               >My List {myListTotal > 0 && <span className="ml-1 text-[10px] font-mono opacity-60">({myListTotal})</span>}</button>
             )}
             <Link href="/search?type=MANGA&format=NOVEL"

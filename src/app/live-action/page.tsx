@@ -132,12 +132,12 @@ function HorizontalCarousel({ items }: { items: LiveActionAnime[] }) {
         ))}
       </div>
       <button onClick={() => scroll("left")}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-black/80 text-white border border-[var(--color-line)] hover:border-[var(--color-magenta)] transition-all opacity-0 group-hover/row:opacity-100"
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-panel)] text-[var(--color-ink)] border border-[var(--color-line)] hover:border-[var(--color-magenta)] transition-all opacity-0 group-hover/row:opacity-100"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
       <button onClick={() => scroll("right")}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-black/80 text-white border border-[var(--color-line)] hover:border-[var(--color-magenta)] transition-all opacity-0 group-hover/row:opacity-100"
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-panel)] text-[var(--color-ink)] border border-[var(--color-line)] hover:border-[var(--color-magenta)] transition-all opacity-0 group-hover/row:opacity-100"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
       </button>
@@ -206,7 +206,7 @@ function MostPopularSection({ items, allData }: { items?: LiveActionAnime[]; all
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {anime.genres.slice(0, 3).map((g) => (
-                      <span key={g} className="rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[9px] backdrop-blur">{g}</span>
+                      <span key={g} className="rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] px-2 py-0.5 text-[9px] backdrop-blur">{g}</span>
                     ))}
                   </div>
                   <p className="mt-2 line-clamp-2 text-xs text-[var(--color-mute)] leading-relaxed">{anime.description.slice(0, 150)}...</p>
@@ -458,13 +458,13 @@ function LiveActionPage() {
           box-shadow: none !important;
         }
       `}</style>
-      <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
+      <div className="relative min-h-screen overflow-hidden bg-[var(--color-void)]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-void)] via-[var(--color-panel)] to-[var(--color-void)]" />
         <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
-          backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(rgba(240,238,248,0.06) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
         }} />
-        <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.6)" }} />
+        <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.25)" }} />
         <motion.div className="absolute top-[10%] left-[5%] w-[350px] h-[350px] rounded-full pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(229,9,20,0.06) 0%, transparent 70%)", filter: "blur(60px)" }}
           animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
@@ -512,7 +512,7 @@ function LiveActionPage() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="shrink-0 rounded-full p-1 hover:bg-white/10 transition-colors"
+                    className="shrink-0 rounded-full p-1 hover:bg-[var(--color-panel)] transition-colors"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-[var(--color-mute)]">
                       <path d="M18 6 6 18" /><path d="m6 6 12 12" />

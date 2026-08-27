@@ -40,7 +40,7 @@ function NeonBorder({ children, className = "" }: { children: React.ReactNode; c
           background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)",
           animation: "spin 6s linear infinite", willChange: "transform",
         }} />
-        <div className="absolute inset-[1.5px] rounded-[18.5px]" style={{ background: "rgba(10,10,15,0.95)" }} />
+        <div className="absolute inset-[1.5px] rounded-[18.5px]" style={{ background: "var(--color-panel)" }} />
       </div>
       <div className="relative z-10">{children}</div>
     </div>
@@ -71,19 +71,19 @@ function CategoryCard({
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       <NeonBorder>
-        <div className="p-5 rounded-[20px] bg-gradient-to-br from-gray-900/80 to-gray-950/80">
+        <div className="p-5 rounded-[20px] bg-gradient-to-br from-[var(--color-panel)]/80 to-[var(--color-panel)]/60">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <span className="text-xl">{emoji}</span>
-              <h3 className="text-white font-bold text-sm">{award.title}</h3>
+              <h3 className="text-[var(--color-ink)] font-bold text-sm">{award.title}</h3>
             </div>
-            <span className="text-[10px] font-mono text-[rgba(255,255,255,0.2)] uppercase tracking-wider">
+            <span className="text-[10px] font-mono text-[var(--color-mute)] uppercase tracking-wider">
               {award.nominees.length} nominees
             </span>
           </div>
 
           {award.nominees.length === 0 ? (
-            <p className="text-center py-6 text-[rgba(255,255,255,0.2)] text-xs">
+            <p className="text-center py-6 text-[var(--color-mute)] text-xs">
               No nominees yet. Be the first to nominate!
             </p>
           ) : (
@@ -96,7 +96,7 @@ function CategoryCard({
                     className={`w-full flex items-center gap-3 p-3 rounded-[14px] transition-all duration-300 group ${
                       votedId === n.id
                         ? "bg-gradient-to-r from-[#00ffe0]/15 to-[#7000ff]/15 border border-[#00ffe0]/30 shadow-[0_0_20px_-8px_rgba(0,255,224,0.3)]"
-                        : "bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.12)]"
+                        : "bg-[var(--color-panel)]/50 hover:bg-[var(--color-panel)] border border-[var(--color-line)] hover:border-[var(--color-line)]"
                     }`}
                   >
                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
@@ -113,15 +113,15 @@ function CategoryCard({
                         <span className="text-xs text-white/30">{n.title.charAt(0)}</span>
                       </div>
                     )}
-                    <span className="text-xs text-white/80 flex-1 text-left truncate">{n.title}</span>
+                              <span className="text-xs text-[var(--color-ink)]/80 flex-1 text-left truncate">{n.title}</span>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <div className="w-16 h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
+                      <div className="w-16 h-1.5 rounded-full bg-[var(--color-line)] overflow-hidden">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-[#00ffe0] to-[#7000ff]"
                           style={{ width: `${(n.votes / maxVotes) * 100}%` }}
                         />
                       </div>
-                      <span className="text-[10px] font-mono text-[rgba(255,255,255,0.3)] w-8 text-right">
+                      <span className="text-[10px] font-mono text-[var(--color-mute)] w-8 text-right">
                         {n.votes}
                       </span>
                     </div>
@@ -136,7 +136,7 @@ function CategoryCard({
                 <>
                   <button
                     onClick={() => setExpanded(!expanded)}
-                    className="w-full mt-3 py-2 text-[10px] text-[rgba(255,255,255,0.25)] hover:text-[rgba(255,255,255,0.4)] transition-colors"
+                    className="w-full mt-3 py-2 text-[10px] text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
                   >
                     {expanded ? "Show less" : `+${rest.length} more nominees`}
                   </button>
@@ -156,7 +156,7 @@ function CategoryCard({
                               className={`w-full flex items-center gap-3 p-3 rounded-[14px] transition-all duration-300 ${
                                 votedId === n.id
                                   ? "bg-gradient-to-r from-[#00ffe0]/15 to-[#7000ff]/15 border border-[#00ffe0]/30"
-                                  : "bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.06)]"
+                                  : "bg-[var(--color-panel)]/50 hover:bg-[var(--color-panel)] border border-[var(--color-line)]"
                               }`}
                             >
                               {n.image ? (
@@ -166,8 +166,8 @@ function CategoryCard({
                                   <span className="text-xs text-white/30">{n.title.charAt(0)}</span>
                                 </div>
                               )}
-                              <span className="text-xs text-white/80 flex-1 text-left truncate">{n.title}</span>
-                              <span className="text-[10px] font-mono text-[rgba(255,255,255,0.3)]">{n.votes} votes</span>
+                    <span className="text-xs text-[var(--color-ink)]/80 flex-1 text-left truncate">{n.title}</span>
+                              <span className="text-[10px] font-mono text-[var(--color-mute)]">{n.votes} votes</span>
                               {votedId === n.id && (
                                 <span className="text-[10px] text-[#00ffe0] font-bold">VOTED</span>
                               )}
@@ -252,11 +252,12 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
 
   return (
     <PageTransition>
-      <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
-        <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
-          backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
+      <div className="relative min-h-screen overflow-hidden bg-[var(--color-void)]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-void)] via-[var(--color-panel)] to-[var(--color-void)]" />
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: "radial-gradient(var(--color-ink) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
+          opacity: "0.06",
         }} />
         <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.6)" }} />
 
@@ -278,11 +279,11 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
           {/* Breadcrumb */}
           <nav className="text-sm mb-8" aria-label="Breadcrumb">
             <ol className="flex items-center gap-2">
-              <li><Link href="/" className="hover:text-white transition-colors" style={{ color: "rgba(255,255,255,0.35)" }}>Home</Link></li>
-              <li style={{ color: "rgba(255,255,255,0.15)" }}>/</li>
-              <li><Link href="/awards" className="hover:text-white transition-colors" style={{ color: "rgba(255,255,255,0.35)" }}>Awards</Link></li>
-              <li style={{ color: "rgba(255,255,255,0.15)" }}>/</li>
-              <li className="text-white">Nominees {year}</li>
+              <li><Link href="/" className="hover:text-[var(--color-ink)] transition-colors text-[var(--color-mute)]">Home</Link></li>
+              <li className="text-[var(--color-mute)]">/</li>
+              <li><Link href="/awards" className="hover:text-[var(--color-ink)] transition-colors text-[var(--color-mute)]">Awards</Link></li>
+              <li className="text-[var(--color-mute)]">/</li>
+              <li className="text-[var(--color-ink)]">Nominees {year}</li>
             </ol>
           </nav>
 
@@ -299,7 +300,7 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
               </motion.h1>
             </div>
             <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-              className="mt-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+              className="mt-3 text-[var(--color-mute)]">
               Vote for your favorites. {totalNominees} nominees across {awards.length} categories.
             </motion.p>
           </div>
@@ -307,13 +308,13 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
           {/* Stats + Import */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
             <div className="flex gap-4">
-              <div className="px-4 py-2 rounded-[14px] bg-[rgba(255,255,255,0.03)] neon-rgb-border">
-                <span className="text-white font-bold text-lg">{totalNominees}</span>
-                <span className="text-[rgba(255,255,255,0.25)] text-xs ml-1.5">nominees</span>
+              <div className="px-4 py-2 rounded-[14px] bg-[var(--color-panel)]/50 neon-rgb-border">
+                <span className="text-[var(--color-ink)] font-bold text-lg">{totalNominees}</span>
+                <span className="text-[var(--color-mute)] text-xs ml-1.5">nominees</span>
               </div>
-              <div className="px-4 py-2 rounded-[14px] bg-[rgba(255,255,255,0.03)] neon-rgb-border">
+              <div className="px-4 py-2 rounded-[14px] bg-[var(--color-panel)]/50 neon-rgb-border">
                 <span className="text-[#00ffe0] font-bold text-lg">{totalVotes}</span>
-                <span className="text-[rgba(255,255,255,0.25)] text-xs ml-1.5">votes</span>
+                <span className="text-[var(--color-mute)] text-xs ml-1.5">votes</span>
               </div>
             </div>
             <button
@@ -335,7 +336,7 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
 
           {importResult && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-              className="mb-6 mx-auto max-w-md text-center px-4 py-3 rounded-[14px] bg-[rgba(255,255,255,0.03)] neon-rgb-border text-xs text-[rgba(255,255,255,0.5)]">
+              className="mb-6 mx-auto max-w-md text-center px-4 py-3 rounded-[14px] bg-[var(--color-panel)]/50 neon-rgb-border text-xs text-[var(--color-mute)]">
               {importResult}
             </motion.div>
           )}
@@ -348,7 +349,7 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
                 className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
                   !selectedCat
                     ? "bg-white text-gray-900 shadow-lg shadow-white/10"
-                    : "bg-[rgba(255,255,255,0.03)] text-[rgba(255,255,255,0.4)] neon-rgb-border hover:bg-[rgba(255,255,255,0.06)]"
+                    : "bg-[var(--color-panel)]/50 text-[var(--color-mute)] neon-rgb-border hover:bg-[var(--color-panel)]"
                 }`}
               >
                 All Categories
@@ -360,7 +361,7 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
                   className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
                     selectedCat === a.category
                       ? "bg-gradient-to-r from-[#00ffe0]/20 to-[#7000ff]/20 text-white neon-rgb-border"
-                      : "bg-[rgba(255,255,255,0.03)] text-[rgba(255,255,255,0.4)] neon-rgb-border hover:bg-[rgba(255,255,255,0.06)]"
+                      : "bg-[var(--color-panel)]/50 text-[var(--color-mute)] neon-rgb-border hover:bg-[var(--color-panel)]"
                   }`}
                 >
                   {CATEGORY_EMOJIS[a.category] || "🏆"} {a.title}
@@ -373,12 +374,12 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
           {loading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="h-64 rounded-[20px] bg-[rgba(255,255,255,0.03)] animate-pulse" />
+                <div key={i} className="h-64 rounded-[20px] bg-[var(--color-panel)] animate-pulse" />
               ))}
             </div>
           ) : filteredAwards.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-[rgba(255,255,255,0.3)] text-lg mb-4">No nominees found for {year}</p>
+              <p className="text-[var(--color-mute)] text-lg mb-4">No nominees found for {year}</p>
               <button
                 onClick={handleImport}
                 className="px-6 py-3 rounded-[14px] bg-gradient-to-r from-[#00ffe0] to-[#7000ff] text-white text-sm font-bold neon-rgb-border"
@@ -402,8 +403,7 @@ export default function NomineesPage({ params }: { params: Promise<{ year: strin
 
           {/* Footer */}
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
-            className="mt-16 text-center font-mono text-[9px] tracking-[0.3em]"
-            style={{ color: "rgba(255,255,255,0.06)" }}>
+            className="mt-16 text-center font-mono text-[9px] tracking-[0.3em] text-[var(--color-mute)] opacity-30">
             ZYNIVERSE • v2.4.1 • ENCRYPTED
           </motion.p>
         </div>

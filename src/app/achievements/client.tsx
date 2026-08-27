@@ -52,7 +52,7 @@ function XPProgressRing({ progress, size = 160, strokeWidth = 8 }: { progress: n
 
   return (
     <svg width={size} height={size} className="transform -rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={strokeWidth} />
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--color-line)" strokeWidth={strokeWidth} />
       <circle
         cx={size / 2} cy={size / 2} r={radius} fill="none"
         stroke="url(#xpGradient)" strokeWidth={strokeWidth}
@@ -129,7 +129,7 @@ function AchievementCard({ a }: { a: AchievementItem }) {
                 <span>Progress</span>
                 <span>{a.progress}%</span>
               </div>
-              <div className="h-1 w-full rounded-full bg-white/5 overflow-hidden">
+              <div className="h-1 w-full rounded-full bg-[var(--color-panel)] overflow-hidden">
                 <div className="h-full rounded-full transition-all duration-500" style={{ width: `${a.progress}%`, background: color }} />
               </div>
             </div>
@@ -231,7 +231,7 @@ export default function AchievementClient() {
     <div className="min-h-screen animate-page-in">
       {/* ═══════════════ HERO ═══════════════ */}
       <div className="relative overflow-hidden border-b border-[var(--color-line)]">
-        <div className="absolute inset-0 bg-[#0a0a0f]" />
+        <div className="absolute inset-0 bg-[var(--color-void)]" />
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-10 left-20 w-72 h-72 bg-[#8a2be2]/15 rounded-full blur-[120px] animate-pulse" />
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-[#ff00ff]/20 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: "1s" }} />
@@ -271,10 +271,10 @@ export default function AchievementClient() {
                 </div>
                 <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#8a2be2]" style={{ textShadow: "0 0 10px rgba(138,43,226,0.5)" }}>Achievements</span>
               </div>
-              <h1 className="font-display text-4xl sm:text-5xl font-bold text-white" style={{ textShadow: "0 0 30px rgba(138,43,226,0.3), 0 0 60px rgba(255,0,255,0.2)" }}>
+              <h1 className="font-display text-4xl sm:text-5xl font-bold text-[var(--color-ink)]" style={{ textShadow: "0 0 30px rgba(138,43,226,0.3), 0 0 60px rgba(255,0,255,0.2)" }}>
                 Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff00ff] via-[#8a2be2] to-[#00ffff]">Journey</span>
               </h1>
-              <p className="mt-3 text-base text-gray-400 max-w-lg">
+              <p className="mt-3 text-base text-[var(--color-mute)] max-w-lg">
                 Track your anime adventures, unlock badges, and level up as you explore the world of anime and manga.
               </p>
               {!session?.user && (
@@ -296,7 +296,7 @@ export default function AchievementClient() {
                 <span className="text-[var(--color-mute)]"> / {(data?.nextLevel?.needed || 0).toLocaleString()} XP</span>
               </div>
               <div className="mt-2 text-[10px] text-[var(--color-mute)]">to next level</div>
-              <div className="mt-1 text-2xl font-bold font-mono text-white">{stats.totalPoints.toLocaleString()}</div>
+              <div className="mt-1 text-2xl font-bold font-mono text-[var(--color-ink)]">{stats.totalPoints.toLocaleString()}</div>
               <div className="text-[10px] text-[var(--color-mute)] uppercase tracking-widest">Total Points</div>
             </div>
           </div>
@@ -383,7 +383,7 @@ export default function AchievementClient() {
                     </span>
                     {counts && (
                       <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full" style={{
-                        background: isActive ? `${CATEGORY_COLORS[c.key]}20` : "rgba(255,255,255,0.05)",
+                        background: isActive ? `${CATEGORY_COLORS[c.key]}20` : "var(--color-panel)",
                         color: isActive ? CATEGORY_COLORS[c.key] : "var(--color-mute)",
                       }}>
                         {counts.earned}/{counts.total}
@@ -417,9 +417,9 @@ export default function AchievementClient() {
             <div className="neon-premium-overlay rounded-[14.5px]" />
             <div className="neon-premium-content px-8 py-6">
               <p className="text-sm text-[var(--color-mute)]">
-                <span className="font-bold text-white">{stats.totalPoints.toLocaleString()}</span> total points earned •{" "}
-                <span className="font-bold text-white">{stats.completionPct}%</span> completion rate •{" "}
-                <span className="font-bold text-white">{stats.earnedCount}</span> badges collected
+                <span className="font-bold text-[var(--color-ink)]">{stats.totalPoints.toLocaleString()}</span> total points earned •{" "}
+                <span className="font-bold text-[var(--color-ink)]">{stats.completionPct}%</span> completion rate •{" "}
+                <span className="font-bold text-[var(--color-ink)]">{stats.earnedCount}</span> badges collected
               </p>
             </div>
           </div>

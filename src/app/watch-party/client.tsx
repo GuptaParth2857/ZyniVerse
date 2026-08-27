@@ -206,13 +206,13 @@ export default function WatchPartyClient() {
 
   return (
     <PageTransition>
-      <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
+      <div className="relative min-h-screen overflow-hidden bg-[var(--color-void)]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-void)] via-[var(--color-panel)] to-[var(--color-void)]" />
         <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
-          backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(rgba(240,238,248,0.06) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
         }} />
-        <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.6)" }} />
+        <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.25)" }} />
         <NeonOrbs />
         <Particles />
 
@@ -243,8 +243,7 @@ export default function WatchPartyClient() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="mt-3 max-w-md mx-auto"
-              style={{ color: "rgba(255,255,255,0.35)" }}
+              className="mt-3 max-w-md mx-auto text-[var(--color-mute)]"
             >
               Host or join watch parties. Watch anime episodes together with friends in real-time sync.
             </motion.p>
@@ -306,26 +305,26 @@ export default function WatchPartyClient() {
                 className="mb-10 overflow-hidden"
               >
                 <div className="neon-rgb-border mx-auto max-w-lg rounded-[20px] bg-[var(--color-panel)]/60 backdrop-blur-md p-6 space-y-4">
-                  <h3 className="font-display text-lg font-bold text-white">Create a Party</h3>
+                  <h3 className="font-display text-lg font-bold text-[var(--color-ink)]">Create a Party</h3>
 
                   {/* Anime search */}
                   <div className="relative" ref={dropdownRef}>
-                    <div className="flex items-center gap-2 rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(10,10,15,0.6)] px-3 py-2.5 focus-within:border-[rgba(0,255,224,0.3)] transition-colors">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2">
+                    <div className="flex items-center gap-2 rounded-[12px] border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-2.5 focus-within:border-[rgba(0,255,224,0.3)] transition-colors">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)]">
                         <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                       </svg>
                       <input
                         value={searchQuery}
                         onChange={(e) => handleSearch(e.target.value)}
                         placeholder="Search anime to watch..."
-                        className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/25"
+                        className="flex-1 bg-transparent text-sm text-[var(--color-ink)] outline-none placeholder:text-[var(--color-mute)]"
                         disabled={!!selectedAnime}
                       />
                       {searching && (
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#00ffe0] border-t-transparent" />
                       )}
                       {selectedAnime && (
-                        <button onClick={clearSelection} className="text-white/30 hover:text-white/60 transition-colors">
+                        <button onClick={clearSelection} className="text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                           </svg>
@@ -340,7 +339,7 @@ export default function WatchPartyClient() {
                           initial={{ opacity: 0, y: -5 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -5 }}
-                          className="absolute z-50 mt-2 w-full rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[rgba(18,17,30,0.98)] backdrop-blur-xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] overflow-hidden max-h-80 overflow-y-auto"
+                          className="absolute z-50 mt-2 w-full rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] backdrop-blur-xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.5)] overflow-hidden max-h-80 overflow-y-auto"
                         >
                           {searchResults.map((anime) => (
                             <button
@@ -350,23 +349,23 @@ export default function WatchPartyClient() {
                                 e.preventDefault();
                                 selectAnime(anime);
                               }}
-                              className="flex items-center gap-3 w-full px-4 py-3 hover:bg-[rgba(0,255,224,0.05)] transition-colors text-left border-b border-[rgba(255,255,255,0.04)] last:border-b-0"
+                              className="flex items-center gap-3 w-full px-4 py-3 hover:bg-[rgba(0,255,224,0.05)] transition-colors text-left border-b border-[var(--color-line)] last:border-b-0"
                             >
-                              <div className="relative h-12 w-9 shrink-0 overflow-hidden rounded-lg bg-[rgba(255,255,255,0.03)]">
+                              <div className="relative h-12 w-9 shrink-0 overflow-hidden rounded-lg bg-[var(--color-void)]">
                                 {anime.image ? (
                                   <Image src={anime.image} alt="" fill className="object-cover" sizes="36px" />
                                 ) : (
-                                  <div className="flex h-full items-center justify-center text-[8px] text-white/20">No img</div>
+                                  <div className="flex h-full items-center justify-center text-[8px] text-[var(--color-mute)]">No img</div>
                                 )}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-white truncate">{anime.title}</p>
-                                <p className="text-[11px] text-white/30">
+                                <p className="text-sm font-medium text-[var(--color-ink)] truncate">{anime.title}</p>
+                                <p className="text-[11px] text-[var(--color-mute)]">
                                   {anime.episodes ? `${anime.episodes} episodes` : "Ongoing"}
                                   {anime.year ? ` • ${anime.year}` : ""}
                                 </p>
                               </div>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-mute)]">
                                 <polyline points="9 18 15 12 9 6" />
                               </svg>
                             </button>
@@ -377,8 +376,8 @@ export default function WatchPartyClient() {
 
                     {/* No results message */}
                     {!searching && searchQuery.length >= 2 && searchResults.length === 0 && !selectedAnime && (
-                      <div className="absolute z-50 mt-2 w-full rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[rgba(18,17,30,0.98)] backdrop-blur-xl p-4 text-center">
-                        <p className="text-xs text-white/30">No anime found. Try a different search.</p>
+                      <div className="absolute z-50 mt-2 w-full rounded-[14px] border border-[var(--color-line)] bg-[var(--color-panel)] backdrop-blur-xl p-4 text-center">
+                        <p className="text-xs text-[var(--color-mute)]">No anime found. Try a different search.</p>
                       </div>
                     )}
                   </div>
@@ -398,8 +397,8 @@ export default function WatchPartyClient() {
                           ) : null}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-white truncate">{selectedAnime.title}</p>
-                          <p className="text-[11px] text-white/40">
+                          <p className="text-sm font-semibold text-[var(--color-ink)] truncate">{selectedAnime.title}</p>
+                          <p className="text-[11px] text-[var(--color-mute)]">
                             {selectedAnime.episodes ? `${selectedAnime.episodes} episodes` : "Ongoing"}
                             {selectedAnime.year ? ` • ${selectedAnime.year}` : ""}
                           </p>
@@ -437,7 +436,7 @@ export default function WatchPartyClient() {
                     className={`w-full rounded-[12px] py-3 text-sm font-bold transition-all duration-300 ${
                       selectedAnime && !creating
                         ? "bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] text-white shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] hover:shadow-[0_0_50px_-6px_rgba(0,255,224,0.5)] hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
-                        : "bg-[rgba(255,255,255,0.04)] text-white/20 cursor-not-allowed border border-[rgba(255,255,255,0.06)]"
+                        : "bg-[var(--color-panel)] text-[var(--color-mute)] cursor-not-allowed border border-[var(--color-line)]"
                     }`}
                   >
                     {creating ? (
@@ -464,7 +463,7 @@ export default function WatchPartyClient() {
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#00ffe0] to-[#7000ff]" />
-                <h2 className="font-display text-xl font-bold text-white">Your Parties</h2>
+                <h2 className="font-display text-xl font-bold text-[var(--color-ink)]">Your Parties</h2>
                 <span className="rounded-full bg-[rgba(0,255,224,0.1)] border border-[rgba(0,255,224,0.2)] px-2 py-0.5 text-[10px] font-bold text-[#00ffe0]">
                   {userParties.length}
                 </span>
@@ -485,7 +484,7 @@ export default function WatchPartyClient() {
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#ff00e6] to-[#7000ff]" />
-              <h2 className="font-display text-xl font-bold text-white">Active Parties</h2>
+              <h2 className="font-display text-xl font-bold text-[var(--color-ink)]">Active Parties</h2>
               {activeParties.length > 0 && (
                 <span className="rounded-full bg-[rgba(255,0,230,0.1)] border border-[rgba(255,0,230,0.2)] px-2 py-0.5 text-[10px] font-bold text-[#ff00e6]">
                   {activeParties.length}
@@ -498,14 +497,14 @@ export default function WatchPartyClient() {
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#00ffe0] border-t-transparent" />
               </div>
             ) : activeParties.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 rounded-[20px] border border-[rgba(255,255,255,0.04)] bg-[rgba(18,17,30,0.3)]">
+              <div className="flex flex-col items-center justify-center py-20 rounded-[20px] border border-[var(--color-line)] bg-[var(--color-panel)]">
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(0,255,224,0.05)] border border-[rgba(0,255,224,0.1)]">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(0,255,224,0.4)" strokeWidth="1.5">
                     <polygon points="5 3 19 12 5 21 5 3" />
                   </svg>
                 </div>
-                <p className="text-sm font-semibold text-white/50 mb-1">No active parties right now</p>
-                <p className="text-xs text-white/25">Create one and invite your friends to watch together!</p>
+                <p className="text-sm font-semibold text-[var(--color-mute)] mb-1">No active parties right now</p>
+                <p className="text-xs text-[var(--color-mute)]/70">Create one and invite your friends to watch together!</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -521,8 +520,7 @@ export default function WatchPartyClient() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5 }}
-            className="mt-16 text-center font-mono text-[9px] tracking-[0.3em]"
-            style={{ color: "rgba(255,255,255,0.06)" }}
+            className="mt-16 text-center font-mono text-[9px] tracking-[0.3em] text-[var(--color-mute)]"
           >
             ZYNIVERSE • WATCH PARTY
           </motion.p>

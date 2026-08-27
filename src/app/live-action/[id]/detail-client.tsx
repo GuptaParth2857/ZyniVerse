@@ -133,7 +133,7 @@ export default function LiveActionDetailClient({ id, initialList }: { id: string
               </div>
             )}
             {(!anime.posterUrl || anime.status === "upcoming" || posterError) && (
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-void)] via-[#0d0d1a] to-[#050510]" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-void)] via-[var(--color-panel)] to-[var(--color-void)]" />
             )}
 
             {/* Content */}
@@ -192,7 +192,7 @@ export default function LiveActionDetailClient({ id, initialList }: { id: string
 
                   <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
                     {anime.genres.map((g) => (
-                      <span key={g} className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs text-white/70 backdrop-blur">
+                      <span key={g} className="rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-1 text-xs text-[var(--color-mute)] backdrop-blur">
                         {g}
                       </span>
                     ))}
@@ -234,14 +234,14 @@ export default function LiveActionDetailClient({ id, initialList }: { id: string
                     {anime.trailerUrl && (
                       <button
                         onClick={() => setTrailerOpen(true)}
-                        className="rounded-full border border-white/20 bg-white/5 px-6 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-cyan)]/10 hover:border-[var(--color-cyan)] transition-all backdrop-blur"
+                        className="rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-2.5 text-sm font-semibold text-[var(--color-ink)] hover:bg-[var(--color-cyan)]/10 hover:border-[var(--color-cyan)] transition-all backdrop-blur"
                       >
                         ▶ Trailer
                       </button>
                     )}
                     <Link
                       href="/live-action"
-                      className="rounded-full border border-white/10 px-6 py-2.5 text-sm text-white/50 hover:text-white transition-all"
+                      className="rounded-full border border-[var(--color-line)] px-6 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-all"
                     >
                       ← All Live-Action
                     </Link>

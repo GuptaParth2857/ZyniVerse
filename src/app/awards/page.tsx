@@ -76,7 +76,7 @@ function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
   }, [value]);
 
   return (
-    <span className="font-mono tabular-nums text-2xl font-bold bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
+    <span className="font-mono tabular-nums text-2xl font-bold bg-gradient-to-b from-[var(--color-ink)] to-[var(--color-mute)] bg-clip-text text-transparent">
       {display}
       {suffix}
     </span>
@@ -95,7 +95,7 @@ function NeonBorder({ children, accent = "#00ffe0" }: { children: React.ReactNod
             willChange: "transform",
           }}
         />
-        <div className="absolute inset-[1.5px] rounded-[18.5px]" style={{ background: "rgba(10,10,15,0.92)" }} />
+        <div className="absolute inset-[1.5px] rounded-[18.5px]" style={{ background: "var(--color-panel)" }} />
       </div>
       <div className="relative z-10">{children}</div>
     </div>
@@ -124,7 +124,7 @@ function FlipUnit({ value, label, accent }: { value: number; label: string; acce
   return (
     <div className="flex-1 text-center">
       <div
-        className="flex justify-center gap-1 rounded-xl border bg-black/50 px-2 py-2.5 backdrop-blur-sm"
+        className="flex justify-center gap-1 rounded-xl border bg-[var(--color-void)]/50 px-2 py-2.5 backdrop-blur-sm"
         style={{ borderColor: `${accent}33`, boxShadow: `inset 0 0 24px -12px ${accent}55` }}
       >
         {digits.map((d, i) => (
@@ -133,7 +133,7 @@ function FlipUnit({ value, label, accent }: { value: number; label: string; acce
             initial={{ y: -16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="font-mono text-2xl font-extrabold tabular-nums text-white"
+            className="font-mono text-2xl font-extrabold tabular-nums text-[var(--color-ink)]"
             style={{ textShadow: `0 0 18px ${accent}66` }}
           >
             {d}
@@ -193,7 +193,7 @@ function UpcomingAwardCard({ award, index = 0 }: { award: UpcomingAward; index?:
     },
     completed: {
       label: "Completed",
-      color: "bg-gray-500/10 text-gray-400 border-gray-600/30",
+      color: "bg-gray-500/10 text-[var(--color-mute)] border-gray-600/30",
       dot: "bg-gray-500",
       glow: "",
       border: "hover:border-gray-500/40",
@@ -217,7 +217,7 @@ function UpcomingAwardCard({ award, index = 0 }: { award: UpcomingAward; index?:
       className={`min-w-[300px] max-w-[340px] flex-shrink-0 ${status.glow}`}
     >
       <NeonBorder accent={meta.accent}>
-        <div className={`relative rounded-[20px] p-5 flex flex-col h-full bg-gradient-to-br from-gray-900/85 to-gray-950/85 backdrop-blur-sm transition-all duration-300 group`}>
+        <div className={`relative rounded-[20px] p-5 flex flex-col h-full bg-gradient-to-br from-[var(--color-panel)]/85 to-[var(--color-panel)]/60 backdrop-blur-sm transition-all duration-300 group`}>
           {/* Accent corner glow */}
           <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full opacity-20 blur-2xl group-hover:opacity-40 transition-opacity duration-300 pointer-events-none" style={{ background: meta.accent }} />
 
@@ -238,22 +238,22 @@ function UpcomingAwardCard({ award, index = 0 }: { award: UpcomingAward; index?:
           </div>
 
           {/* Title + Date */}
-          <h3 className="text-white font-bold text-base mb-1.5 leading-tight">{award.name}</h3>
-          <p className="text-[rgba(255,255,255,0.35)] text-xs mb-4">{formattedDate} · {award.location}</p>
+          <h3 className="text-[var(--color-ink)] font-bold text-base mb-1.5 leading-tight">{award.name}</h3>
+          <p className="text-[var(--color-mute)] text-xs mb-4">{formattedDate} · {award.location}</p>
 
           {/* Countdown */}
           {!countdown.expired && award.status !== "live" && (
-            <div className="flex gap-3 mb-4 p-3 rounded-[14px] bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
+            <div className="flex gap-3 mb-4 p-3 rounded-[14px] bg-[var(--color-panel)]/60 border border-[var(--color-line)]">
               <FlipUnit value={countdown.days} label="days" accent={meta.accent} />
-              <div className="w-px self-stretch bg-[rgba(255,255,255,0.06)]" />
+              <div className="w-px self-stretch bg-[var(--color-line)]" />
               <FlipUnit value={countdown.hours} label="hrs" accent={meta.accent} />
-              <div className="w-px self-stretch bg-[rgba(255,255,255,0.06)]" />
+              <div className="w-px self-stretch bg-[var(--color-line)]" />
               <FlipUnit value={countdown.minutes} label="min" accent={meta.accent} />
             </div>
           )}
 
           {/* Description */}
-          <p className="text-[rgba(255,255,255,0.4)] text-xs leading-relaxed mb-4 line-clamp-2 flex-1">
+          <p className="text-[var(--color-mute)] text-xs leading-relaxed mb-4 line-clamp-2 flex-1">
             {award.description}
           </p>
 
@@ -306,7 +306,7 @@ function AwardCard({ award, index }: { award: AwardEntry; index: number }) {
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       style={{ transition: "transform 0.2s ease-out" }}
-      className="neon-rgb-border bg-gray-800/60 backdrop-blur-sm rounded-2xl overflow-hidden transition-all group"
+      className="neon-rgb-border bg-[var(--color-panel)]/60 backdrop-blur-sm rounded-2xl overflow-hidden transition-all group"
     >
       {/* Poster */}
       <div className="relative h-52 overflow-hidden">
@@ -320,18 +320,18 @@ function AwardCard({ award, index }: { award: AwardEntry; index: number }) {
           />
         ) : (
           <div className={`award-gradient-letter w-full h-full bg-gradient-to-br ${getGradient(award.winner)} flex items-center justify-center`}>
-            <span className="text-5xl font-black text-white/25 select-none">
+            <span className="text-5xl font-black text-[var(--color-ink)]/25 select-none">
               {award.winner.charAt(0)}
             </span>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)]/80 via-[var(--color-void)]/30 to-transparent" />
         <span className={`absolute top-3 left-3 text-xs font-medium px-2 py-1 rounded-full bg-gradient-to-r ${typeInfo.color} text-white shadow-lg`}>
           {typeInfo.icon} {typeInfo.label}
         </span>
         <span className="absolute top-3 right-3 text-xs font-mono text-white bg-black/50 backdrop-blur-sm px-2 py-1 rounded-full">{award.year}</span>
         <div className="absolute bottom-3 left-3 right-3">
-          <h3 className="text-white font-bold text-lg leading-tight drop-shadow-lg line-clamp-2">
+          <h3 className="text-[var(--color-ink)] font-bold text-lg leading-tight drop-shadow-lg line-clamp-2">
             {award.winner}
           </h3>
         </div>
@@ -340,7 +340,7 @@ function AwardCard({ award, index }: { award: AwardEntry; index: number }) {
 
       {/* Info */}
       <div className="p-4">
-        <p className="text-gray-400 text-sm mb-3">{award.category}</p>
+        <p className="text-[var(--color-mute)] text-sm mb-3">{award.category}</p>
         <Link
           href={`/search?q=${encodeURIComponent(award.winner)}`}
           className="inline-flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 transition-colors"
@@ -402,7 +402,7 @@ function CommunityPicks({ currentYear }: { currentYear: number }) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-2 text-[rgba(255,255,255,0.35)] text-sm"
+          className="mt-2 text-[var(--color-mute)] text-sm"
         >
           What our community thinks is the best of {currentYear}
         </motion.p>
@@ -413,7 +413,7 @@ function CommunityPicks({ currentYear }: { currentYear: number }) {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.5 }}
-          className="rounded-2xl border border-dashed border-[rgba(255,255,255,0.14)] bg-white/[0.02] p-8 sm:p-10 text-center max-w-2xl mx-auto mb-6"
+          className="rounded-2xl border border-dashed border-[var(--color-line)] bg-[var(--color-panel)]/60 p-8 sm:p-10 text-center max-w-2xl mx-auto mb-6"
         >
           <div className="flex justify-center gap-3 mb-5 text-3xl">
             {["🏆", "⚔️", "💕", "🎵", "🎬"].map((e, i) => (
@@ -422,8 +422,8 @@ function CommunityPicks({ currentYear }: { currentYear: number }) {
               </span>
             ))}
           </div>
-          <h3 className="text-white font-bold text-lg mb-2">No community picks yet for {currentYear}</h3>
-          <p className="text-[rgba(255,255,255,0.4)] text-sm mb-6 max-w-md mx-auto leading-relaxed">
+          <h3 className="text-[var(--color-ink)] font-bold text-lg mb-2">No community picks yet for {currentYear}</h3>
+          <p className="text-[var(--color-mute)] text-sm mb-6 max-w-md mx-auto leading-relaxed">
             Nominations and voting open soon. Be the first to crown the best anime, characters, and songs of {currentYear}.
           </p>
           <Link
@@ -444,11 +444,11 @@ function CommunityPicks({ currentYear }: { currentYear: number }) {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * i, duration: 0.4 }}
-            className="rounded-[16px] bg-gradient-to-br from-[rgba(255,255,255,0.03)] to-[rgba(255,255,255,0.01)] p-4 transition-all group"
+            className="rounded-[16px] bg-gradient-to-br from-[var(--color-panel)]/60 to-[var(--color-panel)]/20 p-4 transition-all group"
           >
             <div className="flex items-center gap-2 mb-3">
               <span className="text-lg">{pick.emoji}</span>
-              <span className="text-[11px] text-[rgba(255,255,255,0.35)] uppercase tracking-wider font-medium">{pick.title}</span>
+              <span className="text-[11px] text-[var(--color-mute)] uppercase tracking-wider font-medium">{pick.title}</span>
             </div>
             {pick.winner ? (
               <div className="flex items-center gap-3">
@@ -456,12 +456,12 @@ function CommunityPicks({ currentYear }: { currentYear: number }) {
                   <span className="text-sm font-bold text-[#00ffe0]">#{1}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-bold truncate">{pick.winner.title}</p>
-                  <p className="text-[rgba(255,255,255,0.25)] text-[10px] font-mono">{pick.winner.votes} votes</p>
+                  <p className="text-[var(--color-ink)] text-sm font-bold truncate">{pick.winner.title}</p>
+                  <p className="text-[var(--color-mute)] text-[10px] font-mono">{pick.winner.votes} votes</p>
                 </div>
               </div>
             ) : (
-              <p className="text-[rgba(255,255,255,0.15)] text-xs">No votes yet</p>
+              <p className="text-[var(--color-mute)] text-xs">No votes yet</p>
             )}
           </motion.div>
         ))}
@@ -513,7 +513,7 @@ const FilterButton = ({
   <button
     onClick={onClick}
     className={`relative px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
-      active ? activeClassName : `bg-gray-800 text-gray-300 hover:bg-gray-700 ${className}`
+      active ? activeClassName : `bg-[var(--color-panel)] text-[var(--color-mute)] hover:text-[var(--color-ink)] ${className}`
     }`}
   >
     {active && layoutId && (
@@ -580,12 +580,13 @@ export default function AwardsPage() {
 
   return (
     <PageTransition>
-      <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]">
+      <div className="relative min-h-screen overflow-hidden bg-[var(--color-void)]">
         {/* Background layers */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
-        <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
-          backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-void)] via-[var(--color-panel)] to-[var(--color-void)]" />
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: "radial-gradient(var(--color-ink) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
+          opacity: "0.06",
         }} />
         <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.6)" }} />
 
@@ -614,9 +615,9 @@ export default function AwardsPage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-20">
           <nav className="text-sm mb-8" aria-label="Breadcrumb">
             <ol className="flex items-center gap-2">
-              <li><Link href="/" className="hover:text-white transition-colors" style={{ color: "rgba(255,255,255,0.35)" }}>Home</Link></li>
-              <li style={{ color: "rgba(255,255,255,0.15)" }}>/</li>
-              <li className="text-white">Anime Awards</li>
+              <li><Link href="/" className="hover:text-[var(--color-ink)] transition-colors text-[var(--color-mute)]">Home</Link></li>
+              <li className="text-[var(--color-mute)]">/</li>
+              <li className="text-[var(--color-ink)]">Anime Awards</li>
             </ol>
           </nav>
 
@@ -638,7 +639,7 @@ export default function AwardsPage() {
                   animate={{ rotate: 360 }}
                   transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                 />
-                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#1a1a2e] to-[#0d0d1a] border border-white/10 flex items-center justify-center shadow-[0_0_40px_-8px_rgba(255,0,230,0.5)]">
+                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] border border-[var(--color-line)] flex items-center justify-center shadow-[0_0_40px_-8px_rgba(255,0,230,0.5)]">
                   <span className="text-4xl float-anim">🏆</span>
                 </div>
               </div>
@@ -653,7 +654,7 @@ export default function AwardsPage() {
                 <motion.h1
                   className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text"
                   style={{
-                    backgroundImage: "linear-gradient(90deg, #ffffff 0%, #00ffe0 25%, #7000ff 50%, #ff00e6 75%, #ffffff 100%)",
+                    backgroundImage: "linear-gradient(90deg, var(--color-ink) 0%, #00ffe0 25%, #7000ff 50%, #ff00e6 75%, var(--color-ink) 100%)",
                     backgroundSize: "200% auto",
                   }}
                   animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
@@ -668,7 +669,7 @@ export default function AwardsPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25, duration: 0.5 }}
-              className="text-gray-400 text-lg max-w-2xl mx-auto"
+              className="text-[var(--color-mute)] text-lg max-w-2xl mx-auto"
             >
               Real winners from the biggest anime award ceremonies — every platform, every category, every year.
             </motion.p>
@@ -677,7 +678,7 @@ export default function AwardsPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="text-gray-500 text-xs mt-2"
+                className="text-[var(--color-mute)] text-xs mt-2"
               >
                 Last updated: {lastUpdated.toLocaleTimeString()} · Source: {source}
               </motion.p>
@@ -696,10 +697,10 @@ export default function AwardsPage() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.35 + i * 0.08, duration: 0.5 }}
-                  className="min-w-[96px] px-5 py-3 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm"
+                  className="min-w-[96px] px-5 py-3 rounded-2xl bg-[var(--color-panel)]/60 border border-[var(--color-line)] backdrop-blur-sm"
                 >
                   <Counter value={s.value} suffix={s.suffix} />
-                  <p className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.3)] mt-1">{s.label}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-[var(--color-mute)] mt-1">{s.label}</p>
                 </motion.div>
               ))}
             </div>
@@ -713,7 +714,7 @@ export default function AwardsPage() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.55 + i * 0.06 }}
-                    className={`text-[11px] font-semibold px-3 py-1.5 rounded-full border ${PLATFORM_COLORS[p] || "bg-gray-800 text-gray-300 border-gray-600"}`}
+                    className={`text-[11px] font-semibold px-3 py-1.5 rounded-full border ${PLATFORM_COLORS[p] || "bg-[var(--color-panel)] text-[var(--color-mute)] border-[var(--color-line)]"}`}
                   >
                     {p}
                   </motion.span>
@@ -760,7 +761,7 @@ export default function AwardsPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="mt-2 text-[rgba(255,255,255,0.35)] text-sm"
+                    className="mt-2 text-[var(--color-mute)] text-sm"
                   >
                     Countdown to the biggest anime award ceremonies
                   </motion.p>
@@ -782,9 +783,9 @@ export default function AwardsPage() {
 
           {loading ? (
             <div className="space-y-6">
-              <div className="flex flex-wrap gap-2 justify-center">{[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="h-9 w-24 bg-gray-800 rounded-full animate-pulse" />)}</div>
-              <div className="flex flex-wrap gap-2 justify-center">{[1, 2, 3, 4, 5].map((i) => <div key={i} className="h-9 w-28 bg-gray-800 rounded-full animate-pulse" />)}</div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="bg-gray-800/50 rounded-2xl h-80 animate-pulse" />)}</div>
+              <div className="flex flex-wrap gap-2 justify-center">{[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="h-9 w-24 bg-[var(--color-panel)] rounded-full animate-pulse" />)}</div>
+              <div className="flex flex-wrap gap-2 justify-center">{[1, 2, 3, 4, 5].map((i) => <div key={i} className="h-9 w-28 bg-[var(--color-panel)] rounded-full animate-pulse" />)}</div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="bg-[var(--color-panel)] rounded-2xl h-80 animate-pulse" />)}</div>
             </div>
           ) : (
             <>
@@ -818,7 +819,7 @@ export default function AwardsPage() {
                     onClick={() => setSelectedPlatform(selectedPlatform === p ? null : p)}
                     layoutId="platform"
                     activeClassName="text-white border shadow-lg"
-                    pillClassName={`${PLATFORM_COLORS[p] || "bg-gray-700"}`}
+                    pillClassName={`${PLATFORM_COLORS[p] || "bg-[var(--color-panel)]"}`}
                   >
                     {p}
                   </FilterButton>
@@ -836,11 +837,11 @@ export default function AwardsPage() {
               {/* RESULTS COUNT */}
               {activeFilterCount > 0 && (
                 <div className="flex items-center justify-between mb-6">
-                  <p className="text-gray-400 text-sm">
-                    Showing <span className="text-white font-semibold">{awards.length}</span> awards
-                    {selectedYear !== null && <> from <span className="text-white">{selectedYear}</span></>}
-                    {selectedPlatform !== null && <> on <span className="text-white">{selectedPlatform}</span></>}
-                    {selectedType !== null && <> in <span className="text-white">{TYPE_LABELS[selectedType]?.label || selectedType}</span></>}
+                  <p className="text-[var(--color-mute)] text-sm">
+                    Showing <span className="text-[var(--color-ink)] font-semibold">{awards.length}</span> awards
+                    {selectedYear !== null && <> from <span className="text-[var(--color-ink)]">{selectedYear}</span></>}
+                    {selectedPlatform !== null && <> on <span className="text-[var(--color-ink)]">{selectedPlatform}</span></>}
+                    {selectedType !== null && <> in <span className="text-[var(--color-ink)]">{TYPE_LABELS[selectedType]?.label || selectedType}</span></>}
                   </p>
                   <button
                     onClick={() => { setSelectedYear(null); setSelectedPlatform(null); setSelectedType(null); }}
@@ -854,7 +855,7 @@ export default function AwardsPage() {
               {/* RESULTS */}
               {awards.length === 0 ? (
                 <div className="text-center py-20">
-                  <p className="text-gray-400 text-lg">No awards found for this selection.</p>
+                  <p className="text-[var(--color-mute)] text-lg">No awards found for this selection.</p>
                   <button onClick={() => { setSelectedYear(null); setSelectedPlatform(null); setSelectedType(null); }} className="mt-4 text-purple-400 hover:text-purple-300 text-sm cursor-pointer">
                     Clear all filters
                   </button>
@@ -864,10 +865,10 @@ export default function AwardsPage() {
                   {Object.entries(grouped).map(([platform, platformAwards]) => (
                     <div key={platform}>
                       <div className="flex items-center gap-3 mb-6">
-                        <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold border ${PLATFORM_COLORS[platform] || "bg-gray-700 text-white border-gray-600"}`}>
+                        <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold border ${PLATFORM_COLORS[platform] || "bg-[var(--color-panel)] text-[var(--color-ink)] border-[var(--color-line)]"}`}>
                           {platform}
                         </span>
-                        <span className="text-gray-500 text-sm">{platformAwards.length} awards</span>
+                        <span className="text-[var(--color-mute)] text-sm">{platformAwards.length} awards</span>
                       </div>
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <AnimatePresence mode="popLayout">
@@ -883,9 +884,9 @@ export default function AwardsPage() {
             </>
           )}
 
-          <div className="mt-20 text-center border-t border-[rgba(255,255,255,0.06)] pt-10">
-            <h2 className="text-2xl font-bold text-white mb-4">About ZyniVerse Awards</h2>
-            <p className="max-w-2xl mx-auto text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <div className="mt-20 text-center border-t border-[var(--color-line)] pt-10">
+            <h2 className="text-2xl font-bold text-[var(--color-ink)] mb-4">About ZyniVerse Awards</h2>
+            <p className="max-w-2xl mx-auto text-sm leading-relaxed text-[var(--color-mute)]">
               ZyniVerse tracks verified winners from real award ceremonies — Crunchyroll Anime Awards, Anime Trending Awards, Anime News Network Readers&apos; Choice, Newtype Anime Awards, Tsugi ni Kuru Manga, and the Japan Academy Prize.
               Every winner is confirmed against official ceremony records. Filter by year, platform, or type to find exactly what you need.
             </p>
@@ -902,8 +903,8 @@ export default function AwardsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5 }}
-            className="mt-10 text-center font-mono text-[9px] tracking-[0.3em]"
-            style={{ color: "rgba(255,255,255,0.06)" }}
+            className="mt-10 text-center font-mono text-[9px] tracking-[0.3em] text-[var(--color-mute)] opacity-30"
+            
           >
             ZYNIVERSE • v2.4.1 • ENCRYPTED
           </motion.p>

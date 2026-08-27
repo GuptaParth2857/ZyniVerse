@@ -202,7 +202,7 @@ export default function DoujinshiBrowseClient() {
     <div className="min-h-screen animate-page-in">
       {/* ═══════════════ HERO ═══════════════ */}
       <div className="relative overflow-hidden border-b border-[var(--color-line)]">
-        <div className="absolute inset-0 bg-[#0a0a0f]" />
+        <div className="absolute inset-0 bg-[var(--color-void)]" />
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-10 left-20 w-72 h-72 bg-[#ff00ff]/15 rounded-full blur-[120px] animate-pulse" />
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-[#8a2be2]/20 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: "1s" }} />
@@ -222,11 +222,11 @@ export default function DoujinshiBrowseClient() {
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#ff00ff] mb-3" style={{ textShadow: "0 0 10px rgba(255,0,255,0.5)" }}>Doujinshi</span>
 
             <div className="neon-rgb-border rounded-xl px-4 py-2">
-              <h1 className="font-display text-4xl sm:text-5xl font-bold text-white" style={{ textShadow: "0 0 30px rgba(255,0,255,0.3), 0 0 60px rgba(138,43,226,0.2)" }}>
+              <h1 className="font-display text-4xl sm:text-5xl font-bold text-[var(--color-ink)]" style={{ textShadow: "0 0 30px rgba(255,0,255,0.3), 0 0 60px rgba(138,43,226,0.2)" }}>
                 Fan Works & <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff00ff] via-[#8a2be2] to-[#00ffff]">Creations</span>
               </h1>
             </div>
-            <p className="mt-3 text-base text-gray-400 max-w-lg">
+            <p className="mt-3 text-base text-[var(--color-mute)] max-w-lg">
               Discover, track, and explore doujinshi from MangaDex. Fan-made masterpieces from your favorite series.
             </p>
 
@@ -332,10 +332,10 @@ export default function DoujinshiBrowseClient() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search doujinshi by title..."
-                    className="w-full rounded-xl neon-rgb-border bg-[var(--color-void)]/90 backdrop-blur-sm py-3.5 pl-12 pr-10 text-sm text-white placeholder-[var(--color-mute)]/50 outline-none transition-all duration-300 focus:border-[var(--color-magenta)]"
+                    className="w-full rounded-xl neon-rgb-border bg-[var(--color-void)]/90 backdrop-blur-sm py-3.5 pl-12 pr-10 text-sm text-[var(--color-ink)] placeholder-[var(--color-mute)]/50 outline-none transition-all duration-300 focus:border-[var(--color-magenta)]"
                   />
                   {search && (
-                    <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-mute)] hover:text-white">
+                    <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-mute)] hover:text-[var(--color-ink)]">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
                     </button>
                   )}

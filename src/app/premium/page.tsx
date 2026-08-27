@@ -159,7 +159,7 @@ function NeonBorder({ children }: { children: React.ReactNode; highlighted?: boo
         <div className="absolute inset-0"
           style={{ background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)", animation: "spin 6s linear infinite", willChange: "transform" }}
         />
-        <div className="absolute inset-[1.5px] rounded-[22.5px]" style={{ background: "rgba(10,10,15,0.92)" }} />
+        <span className="absolute inset-[1.5px] rounded-[22.5px] neon-border-inner" />
       </div>
       <div className="relative z-10">{children}</div>
     </div>
@@ -211,11 +211,12 @@ function PremiumInner() {
   return (
     <PageTransition>
       <MouseGlow />
-      <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
+      <div className="relative min-h-screen overflow-hidden bg-[var(--color-void)]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-void)] via-[var(--color-panel)] to-[var(--color-void)]" />
         <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
-          backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(var(--color-ink) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
+          opacity: 0.06,
         }} />
         <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.6)" }} />
         <NeonOrbs />
@@ -234,7 +235,7 @@ function PremiumInner() {
               </motion.h1>
             </div>
             <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-              className="mt-3" style={{ color: "rgba(255,255,255,0.4)" }}>
+              className="mt-3 text-[var(--color-mute)]">
               From API access for developers to ad-free browsing for fans. Choose what fits you.
             </motion.p>
           </div>
@@ -281,15 +282,15 @@ function PremiumInner() {
                       </span>
                     )}
                     <div className="mb-6">
-                      <h2 className="font-display text-xl font-bold text-white">{plan.name}</h2>
+                      <h2 className="font-display text-xl font-bold text-[var(--color-ink)]">{plan.name}</h2>
                       <div className="mt-3 flex items-baseline gap-1">
-                        <span className="text-4xl font-bold text-white">{plan.price}</span>
-                        <span style={{ color: "rgba(255,255,255,0.3)" }} className="text-sm">{plan.period}</span>
+                        <span className="text-4xl font-bold text-[var(--color-ink)]">{plan.price}</span>
+                        <span className="text-sm text-[var(--color-mute)]">{plan.period}</span>
                       </div>
                     </div>
                     <ul className="mb-8 space-y-3 flex-1">
                       {plan.features.map((f) => (
-                        <li key={f} className="flex items-center gap-3 text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
+                        <li key={f} className="flex items-center gap-3 text-sm text-[var(--color-mute)]">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={plan.highlighted ? "#ff00e6" : "#00ffe0"} strokeWidth="2">
                             <polyline points="20 6 9 17 4 12" />
                           </svg>
@@ -298,12 +299,12 @@ function PremiumInner() {
                       ))}
                     </ul>
                     {plan.cta === "Current Plan" ? (
-                      <div className="block w-full rounded-[16px] border border-[rgba(0,255,224,0.15)] px-5 py-3 text-center text-sm font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      <div className="block w-full rounded-[16px] border border-[rgba(0,255,224,0.15)] px-5 py-3 text-center text-sm font-bold text-[var(--color-mute)]">
                         {plan.cta}
                       </div>
                     ) : plan.cta === "Contact Us" ? (
                       <a href="mailto:contact.zenvyx@gmail.com"
-                        className="block w-full rounded-[16px] border border-[rgba(0,255,224,0.2)] px-5 py-3 text-center text-sm font-bold text-white hover:border-[#00ffe0]/40 hover:bg-[rgba(0,255,224,0.03)] transition-all"
+                        className="block w-full rounded-[16px] border border-[rgba(0,255,224,0.2)] px-5 py-3 text-center text-sm font-bold text-[var(--color-ink)] hover:border-[#00ffe0]/40 hover:bg-[rgba(0,255,224,0.03)] transition-all"
                       >{plan.cta}</a>
                     ) : (
                       <CheckoutButton />
@@ -316,23 +317,23 @@ function PremiumInner() {
 
           <div className="mt-20 pt-10">
             <motion.h2 initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-              className="font-display text-2xl font-bold mb-8 text-center text-white">Frequently Asked</motion.h2>
+              className="font-display text-2xl font-bold mb-8 text-center text-[var(--color-ink)]">Frequently Asked</motion.h2>
             <div className="grid gap-4 max-w-2xl mx-auto">
               {FAQS.map((faq, i) => (
                 <motion.div key={faq.q}
                   initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                   transition={{ delay: i * 0.05 }}
-                  className="rounded-[16px] border border-[rgba(0,255,224,0.06)] bg-[rgba(18,17,30,0.5)] backdrop-blur-sm p-5"
+                  className="rounded-[16px] border border-[var(--color-line)] bg-[var(--color-panel)] backdrop-blur-sm p-5"
                 >
-                  <h3 className="font-semibold text-sm mb-1 text-white">{faq.q}</h3>
-                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{faq.a}</p>
+                  <h3 className="font-semibold text-sm mb-1 text-[var(--color-ink)]">{faq.q}</h3>
+                  <p className="text-xs text-[var(--color-mute)]">{faq.a}</p>
                 </motion.div>
               ))}
             </div>
           </div>
 
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
-            className="mt-10 text-center font-mono text-[9px] tracking-[0.3em]" style={{ color: "rgba(255,255,255,0.06)" }}>
+            className="mt-10 text-center font-mono text-[9px] tracking-[0.3em] text-[var(--color-mute)]">
             ZYNIVERSE • v2.4.1 • ENCRYPTED
           </motion.p>
         </div>

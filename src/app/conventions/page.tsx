@@ -33,10 +33,10 @@ export const metadata: Metadata = {
 
 export default function ConventionsPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0a0a0f]">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d0d1a] to-[#050510]" />
+    <div className="relative min-h-screen overflow-hidden bg-[var(--color-void)]">
+      <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-void)] via-[var(--color-panel)] to-[var(--color-void)]" />
       <div className="absolute inset-0 opacity-[0.35] pointer-events-none" style={{
-        backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)",
+        backgroundImage: "radial-gradient(var(--color-ink) 1px, transparent 1px)",
         backgroundSize: "24px 24px",
       }} />
       <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 40px rgba(0,0,0,0.6)" }} />
@@ -51,7 +51,7 @@ export default function ConventionsPage() {
               Anime Conventions in India
             </h1>
           </div>
-          <p className="mt-3 text-sm max-w-2xl mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
+          <p className="mt-3 text-sm max-w-2xl mx-auto text-[var(--color-mute)]">
             Find anime conventions, comic cons, and otaku events near you. Upcoming events, ticket info, and community meetups across India.
           </p>
         </div>
@@ -62,8 +62,8 @@ export default function ConventionsPage() {
 
         <div className="border-t border-[rgba(0,255,224,0.06)] pt-10">
           <div className="text-center mb-8">
-            <h2 className="font-display text-2xl font-bold text-white">Conventions by Location</h2>
-            <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Browse conventions grouped by state and city</p>
+            <h2 className="font-display text-2xl font-bold text-[var(--color-ink)]">Conventions by Location</h2>
+            <p className="text-sm mt-1 text-[var(--color-mute)]">Browse conventions grouped by state and city</p>
           </div>
           <ConventionMap />
         </div>
