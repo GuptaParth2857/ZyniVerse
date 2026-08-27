@@ -74,7 +74,7 @@ function ProgramCard({ p, index }: { p: Program; index: number }) {
         style={{ transition: "transform 0.2s ease-out" }}
       >
         <div className="neon-premium-track" />
-        <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+        <div className="neon-premium-overlay" />
         <div className="neon-premium-content rounded-[20px] p-5">
           <div className="mb-4 flex items-center gap-2">
             <span className="h-1.5 w-8 rounded-full" style={{ background: p.color, boxShadow: `0 0 10px ${p.color}88` }} />
@@ -104,7 +104,7 @@ export default function PoweredBy() {
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
       <div className="neon-premium rounded-[20px]">
         <div className="neon-premium-track" />
-        <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
+        <div className="neon-premium-overlay" />
         <div className="neon-premium-content rounded-[20px] p-5 sm:p-6">
           <div className="mb-5 flex items-end justify-between">
             <div className="rounded-xl px-4 py-2">

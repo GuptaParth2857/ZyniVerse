@@ -2249,7 +2249,7 @@ img[src=""] { display: none; }
   background: linear-gradient(to top, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.6) 40%, transparent 100%);
 }
 [data-theme="light"] .neon-premium-overlay {
-  background: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.6) !important;
 }
 
 /* ── Banner card: fix dark gradient middle ── */
