@@ -60,7 +60,7 @@ export default function NotificationBell() {
     const interval = setInterval(() => {
       if (document.hidden) return;
       fetchUnreadCount();
-    }, 60000);
+    }, 300000);
     return () => clearInterval(interval);
   }, [session]);
 

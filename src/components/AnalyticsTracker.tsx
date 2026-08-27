@@ -58,21 +58,6 @@ export default function AnalyticsTracker() {
   useEffect(() => {
     if (typeof window === "undefined" || !sessionId) return;
 
-    const interval = setInterval(() => {
-      if (typeof document !== "undefined" && document.hidden) return;
-      fetch("/api/analytics/heartbeat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId }),
-      }).catch(() => {});
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, [sessionId]);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !sessionId) return;
-
     const handleUnload = () => {
       navigator.sendBeacon(
         "/api/analytics/heartbeat",

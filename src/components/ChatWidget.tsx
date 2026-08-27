@@ -86,7 +86,7 @@ export default function ChatWidget() {
     const interval = setInterval(() => {
       if (document.hidden) return;
       fetchUnreadTotal();
-    }, 30000);
+    }, 120000);
     return () => clearInterval(interval);
   }, [session, fetchUnreadTotal]);
 

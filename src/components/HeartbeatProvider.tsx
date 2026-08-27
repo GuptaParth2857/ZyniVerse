@@ -17,7 +17,7 @@ export default function HeartbeatProvider() {
     const id = setInterval(() => {
       if (document.hidden) return;
       ping();
-    }, 60000);
+    }, 300000);
     return () => clearInterval(id);
   }, [session?.user]);
 
