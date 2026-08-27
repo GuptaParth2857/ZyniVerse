@@ -10,8 +10,6 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export const revalidate = 86400;
-
 export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">

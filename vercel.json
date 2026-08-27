@@ -5,23 +5,23 @@
   "crons": [
     {
       "path": "/api/cron/refresh-schedules",
-      "schedule": "0 0 * * 0"
+      "schedule": "0 0 1 * *"
     },
     {
       "path": "/api/cron/refresh-awards",
-      "schedule": "0 2 * * 0"
+      "schedule": "0 2 1 * *"
     },
     {
       "path": "/api/cron/refresh-posters",
-      "schedule": "0 4 * * 0"
+      "schedule": "0 4 1 * *"
     },
     {
       "path": "/api/cron/analytics",
-      "schedule": "0 6 * * 0"
+      "schedule": "0 6 1 * *"
     },
     {
       "path": "/api/cron/event-alerts",
-      "schedule": "0 5 * * *"
+      "schedule": "0 5 * * 1"
     }
   ]
 }

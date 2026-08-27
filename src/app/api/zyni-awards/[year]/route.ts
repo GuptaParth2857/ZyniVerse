@@ -11,7 +11,7 @@ export async function GET(
   if (!year) return NextResponse.json({ error: "Invalid year" }, { status: 400 });
 
   const awards = await getAwardsForYear(year);
-  return NextResponse.json({ year, awards });
+  return NextResponse.json({ year, awards }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
 }
 
 export async function POST(

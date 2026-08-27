@@ -22,8 +22,6 @@ const STYLE_LABELS: Record<StyleKey, string> = {
   dark: "Dark",
 };
 
-const PROXY = "/api/proxy-image?url=";
-
 function UserAvatar() {
   const { data: session } = useSession();
   const [failed, setFailed] = useState(false);
@@ -160,7 +158,7 @@ export default function CreateMomentPage() {
                       >
                         {s.poster && (
                           <div className="relative h-14 w-10 rounded overflow-hidden border border-[var(--color-line)] shrink-0">
-                            <Image src={`${PROXY}${encodeURIComponent(s.poster)}`} alt="" fill className="object-cover" sizes="40px" unoptimized />
+                            <Image src={s.poster} alt="" fill className="object-cover" sizes="40px" unoptimized />
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
@@ -186,7 +184,7 @@ export default function CreateMomentPage() {
                 <div className="flex items-center gap-3 mb-5">
                   {selected.poster && (
                     <div className="relative h-16 w-12 rounded-lg overflow-hidden border border-[var(--color-line)] shrink-0">
-                      <Image src={`${PROXY}${encodeURIComponent(selected.poster)}`} alt="" fill className="object-cover" sizes="48px" unoptimized />
+                      <Image src={selected.poster} alt="" fill className="object-cover" sizes="48px" unoptimized />
                     </div>
                   )}
                   <div>

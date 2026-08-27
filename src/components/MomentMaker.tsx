@@ -22,14 +22,12 @@ interface MomentMakerProps {
 
 const STYLES = ["classic", "neon", "minimal", "sakura", "dark"] as const;
 
-const PROXY = "/api/proxy-image?url=";
-
 function CoverImg({ src, className }: { src: string; className: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) {
     return <div className={`${className} bg-gradient-to-br from-purple-800/40 to-cyan-800/40 flex items-center justify-center`}><span className="text-white/30 text-lg font-bold">?</span></div>;
   }
-  return <Image src={`${PROXY}${encodeURIComponent(src)}`} alt="" width={40} height={56} className={className} onError={() => setFailed(true)} />;
+  return <Image src={src} alt="" width={40} height={56} className={className} onError={() => setFailed(true)} />;
 }
 
 function UserAvatar() {

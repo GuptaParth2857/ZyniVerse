@@ -17,7 +17,7 @@ import SocialBarAd from "@/components/SocialBarAd";
 import NativeBannerAd from "@/components/NativeBannerAd";
 import ChatWidget from "@/components/ChatWidget";
 import SplashScreen from "@/components/SplashScreen";
-import HeartbeatProvider from "@/components/HeartbeatProvider";
+
 import ActivityTracker from "@/components/ActivityTracker";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { Analytics } from "@vercel/analytics/next";
@@ -258,7 +258,6 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <AuthProvider>
-          <HeartbeatProvider />
           <Suspense fallback={null}>
             <ActivityTracker />
           </Suspense>

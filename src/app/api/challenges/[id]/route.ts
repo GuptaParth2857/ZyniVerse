@@ -27,7 +27,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     });
   }
 
-  return NextResponse.json({ challenge, leaderboard, userParticipation });
+  return NextResponse.json({ challenge, leaderboard, userParticipation }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

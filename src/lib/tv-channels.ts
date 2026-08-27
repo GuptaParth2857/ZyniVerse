@@ -267,16 +267,7 @@ const RAW_TV_CHANNELS: Record<string, TvChannel> = {
   },
 };
 
-// Wikimedia throttles direct hotlink bursts (429), so every channel logo
-// loads through our cached /api/proxy-image (in-memory + CDN cached).
-export const TV_CHANNELS: Record<string, TvChannel> = Object.fromEntries(
-  Object.entries(RAW_TV_CHANNELS).map(([id, ch]) => [
-    id,
-    ch.logoUrl
-      ? { ...ch, logoUrl: `/api/proxy-image?url=${encodeURIComponent(ch.logoUrl)}` }
-      : ch,
-  ])
-);
+export const TV_CHANNELS: Record<string, TvChannel> = RAW_TV_CHANNELS;
 
 const MUSE_ASIA_WEEKLY: Record<string, TimeSlot[]> = {
   Monday: [],

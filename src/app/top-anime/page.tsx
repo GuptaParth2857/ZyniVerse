@@ -9,8 +9,6 @@ import { CardSkeleton } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import type { Media } from "@/lib/anilist";
 
-const PROXY = "/api/proxy-image?url=";
-
 const TABS = [
   { id: "SCORE_DESC", label: "Top Rated" },
   { id: "POPULARITY_DESC", label: "Most Popular" },
@@ -111,7 +109,7 @@ export default function TopAnimePage() {
                     <Link key={anime.id} href={`/anime/${anime.id}`}
                       className="group relative aspect-[3/4] rounded-2xl overflow-hidden neon-rgb-border transition-all"
                     >
-                      <Image src={`${PROXY}${encodeURIComponent(anime.coverImage?.extraLarge || anime.coverImage?.large || "")}`} alt="" fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 20vw" unoptimized />
+                      <Image src={anime.coverImage?.extraLarge || anime.coverImage?.large || ""} alt="" fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 20vw" unoptimized />
                       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/85" />
 
                       {/* Rank corner badge */}
@@ -178,7 +176,7 @@ export default function TopAnimePage() {
                             <Link key={anime.id} href={`/anime/${anime.id}`}
                               className="group relative shrink-0 w-56 aspect-[3/4] rounded-2xl overflow-hidden neon-rgb-border transition-all"
                             >
-                              <Image src={`${PROXY}${encodeURIComponent(anime.coverImage?.extraLarge || anime.coverImage?.large || "")}`} alt="" fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="224px" unoptimized />
+                              <Image src={anime.coverImage?.extraLarge || anime.coverImage?.large || ""} alt="" fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="224px" unoptimized />
                               <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/85" />
 
                               <div className="absolute bottom-0 left-0 right-0 z-10 p-3">

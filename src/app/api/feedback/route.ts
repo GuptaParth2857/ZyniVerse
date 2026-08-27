@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       select: { id: true, type: true, message: true, page: true, createdAt: true },
     });
 
-    return NextResponse.json({ feedbacks });
+    return NextResponse.json({ feedbacks }, { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600" } });
   } catch {
     return NextResponse.json({ error: "Failed to fetch feedback" }, { status: 500 });
   }

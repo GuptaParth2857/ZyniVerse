@@ -184,5 +184,5 @@ export async function GET(
         votes: n.votes.length,
       })),
     })),
-  });
+  }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
 }

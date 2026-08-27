@@ -85,7 +85,7 @@ export async function GET(
   const cacheKey = `mal-episodes-${malId}`;
   const cached = CACHE.get(cacheKey);
   if (cached && Date.now() - cached.ts < CACHE_TTL) {
-    return NextResponse.json(cached.data);
+    return NextResponse.json(cached.data, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
   }
 
   try {
@@ -105,7 +105,7 @@ export async function GET(
     };
 
     CACHE.set(cacheKey, { data: result, ts: Date.now() });
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
   } catch (_error) {
     return NextResponse.json(
       { error: "Failed to fetch episode data from MAL" },

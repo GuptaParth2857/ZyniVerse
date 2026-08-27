@@ -7,7 +7,7 @@ export async function GET(_req: NextRequest) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const figures = await getFigureCollection(session.user.id);
-  return NextResponse.json({ figures });
+  return NextResponse.json({ figures }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
 }
 
 export async function POST(req: NextRequest) {

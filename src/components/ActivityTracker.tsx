@@ -5,20 +5,35 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { logError } from "@/lib/logger";
 
-function trackActivity(action: string, data?: Record<string, unknown>) {
+const BATCH_KEY = "activity_pending";
+const BATCH_SIZE = 5;
+const FLUSH_INTERVAL_MS = 300000;
+const ACHIEVEMENT_INTERVAL_MS = 600000;
+
+function getPending(): Array<{ action: string; data: Record<string, unknown>; ts: number }> {
   try {
-    fetch("/api/activity/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, ...data }),
-    }).catch((e) => logError(e));
-  } catch (e) { logError(e); }
+    return JSON.parse(localStorage.getItem(BATCH_KEY) || "[]");
+  } catch {
+    return [];
+  }
 }
 
-function checkAchievements() {
-  try {
-    fetch("/api/achievements/check-activity", { method: "POST" }).catch((e) => logError(e));
-  } catch (e) { logError(e); }
+function addPending(entry: { action: string; data: Record<string, unknown>; ts: number }) {
+  const pending = getPending();
+  pending.push(entry);
+  localStorage.setItem(BATCH_KEY, JSON.stringify(pending));
+}
+
+function flushPending() {
+  const pending = getPending();
+  if (pending.length === 0) return;
+  localStorage.removeItem(BATCH_KEY);
+
+  fetch("/api/activity/track", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ batch: pending }),
+  }).catch((e) => logError(e));
 }
 
 function extractMediaId(pathname: string): number | null {
@@ -57,7 +72,8 @@ export default function ActivityTracker() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const lastTracked = useRef<string>("");
-  const achievementCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const viewCount = useRef(0);
+  const achievementTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!pathname) return;
@@ -65,19 +81,35 @@ export default function ActivityTracker() {
     if (key !== lastTracked.current) {
       lastTracked.current = key;
       const { action, data } = detectAction(pathname, searchParams);
-      trackActivity(action, data);
-    }
+      addPending({ action, data, ts: Date.now() });
+      viewCount.current++;
 
-    // Achievements only exist for signed-in users — skip the round-trip
-    // for guests entirely.
-    if (!userId) return;
-    if (achievementCheckTimer.current) clearTimeout(achievementCheckTimer.current);
-    achievementCheckTimer.current = setTimeout(checkAchievements, 3000);
-  }, [pathname, searchParams, userId]);
+      if (viewCount.current >= BATCH_SIZE) {
+        viewCount.current = 0;
+        flushPending();
+      }
+    }
+  }, [pathname, searchParams]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const interval = setInterval(() => flushPending(), FLUSH_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!userId || typeof window === "undefined") return;
+    achievementTimer.current = setInterval(() => {
+      fetch("/api/achievements/check-activity", { method: "POST" }).catch((e) => logError(e));
+    }, ACHIEVEMENT_INTERVAL_MS);
+    return () => {
+      if (achievementTimer.current) clearInterval(achievementTimer.current);
+    };
+  }, [userId]);
 
   useEffect(() => {
     return () => {
-      if (achievementCheckTimer.current) clearTimeout(achievementCheckTimer.current);
+      flushPending();
     };
   }, []);
 

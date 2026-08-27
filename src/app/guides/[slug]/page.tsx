@@ -7,9 +7,6 @@ import Image from "next/image";
 
 function proxyImage(url: string): string {
   if (!url) return "";
-  if (url.includes("animenewsnetwork.com")) {
-    return `/api/proxy-image?url=${encodeURIComponent(url)}`;
-  }
   return url;
 }
 

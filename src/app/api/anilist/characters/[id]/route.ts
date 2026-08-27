@@ -13,5 +13,7 @@ export async function GET(
   const page = Math.max(Number(url.searchParams.get("page")) || 1, 1);
   const perPage = Math.min(Number(url.searchParams.get("perPage")) || 25, 25);
   const data = await getAnimeCharacters(id, page, perPage);
-  return Response.json(data);
+  return Response.json(data, {
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+  });
 }

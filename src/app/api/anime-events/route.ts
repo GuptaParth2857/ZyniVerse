@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     const types = await getEventTypes();
     const countries = await getCountries();
 
-    return NextResponse.json({ events, types, countries });
+    return NextResponse.json({ events, types, countries }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
   } catch (error) {
     console.error("Failed to fetch anime events:", error);
     return NextResponse.json({ error: "Failed to fetch events" }, { status: 500 });

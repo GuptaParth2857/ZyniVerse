@@ -11,8 +11,6 @@ import { PageTransition } from "@/components/PageTransition";
 import NativeBannerAd from "@/components/NativeBannerAd";
 import type { AiringScheduleEntry } from "@/lib/anilist";
 
-const PROXY = "/api/proxy-image?url=";
-
 const DAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function startOfWeek(offsetWeeks = 0) {
@@ -244,7 +242,7 @@ export default function SchedulePage() {
                                 <div className="m-[1px] rounded-[11px] bg-[var(--color-void)]/80 backdrop-blur-sm p-3">
                                   <div className="flex items-center gap-3">
                                     <div className="relative shrink-0 h-16 w-11 rounded-lg overflow-hidden border border-white/5">
-                                      <Image src={`${PROXY}${encodeURIComponent(item.media.coverImage?.large || "")}`} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" unoptimized />
+                                      <Image src={item.media.coverImage?.large || ""} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" unoptimized />
                                       <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-cyan)] text-[9px] font-bold text-black shadow-lg shadow-[var(--color-cyan)]/30">
                                         {item.episode}
                                       </div>

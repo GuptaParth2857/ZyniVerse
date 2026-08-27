@@ -11,5 +11,5 @@ export async function GET(req: NextRequest) {
 
   const conventions = await getConventions({ city, state, status, month, year });
 
-  return NextResponse.json({ conventions });
+  return NextResponse.json({ conventions }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
 }

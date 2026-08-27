@@ -72,5 +72,5 @@ export async function GET() {
     charB: { id: battle.charBId, name: battle.charBName, image: battle.charBImage, votes: votesB },
     totalVotes: votesA + votesB,
     date: battle.date,
-  });
+  }, { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600" } });
 }

@@ -9,10 +9,10 @@ export async function GET(req: NextRequest) {
     const year = Number(yearParam);
     if (!year) return NextResponse.json({ error: "Invalid year" }, { status: 400 });
     const awards = await getAwardsForYear(year);
-    return NextResponse.json({ year, awards });
+    return NextResponse.json({ year, awards }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
   }
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
-  return NextResponse.json({ years, categories: AWARD_CATEGORIES });
+  return NextResponse.json({ years, categories: AWARD_CATEGORIES }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
 }

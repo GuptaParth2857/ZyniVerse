@@ -61,8 +61,12 @@ export async function GET(request: Request) {
       .filter((r) => !localIds.has(r.id))
       .map((r) => ({ mediaId: r.id, title: r.title, image: r.image, count: 0 }));
 
-    return NextResponse.json({ groups: [...localMatches, ...remoteGroups] });
+    return NextResponse.json({ groups: [...localMatches, ...remoteGroups] }, {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+    });
   }
 
-  return NextResponse.json({ groups: localGroups });
+  return NextResponse.json({ groups: localGroups }, {
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+  });
 }

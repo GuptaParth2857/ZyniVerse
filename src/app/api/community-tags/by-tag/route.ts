@@ -37,5 +37,5 @@ export async function GET(req: NextRequest) {
     media.sort((a, b) => b.score - a.score);
   }
 
-  return NextResponse.json({ tag: normalized, count: media.length, media });
+  return NextResponse.json({ tag: normalized, count: media.length, media }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
 }

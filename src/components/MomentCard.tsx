@@ -14,8 +14,6 @@ export interface MomentCardProps {
   style?: string;
 }
 
-const PROXY = "/api/proxy-image?url=";
-
 /**
  * Scales like the generated PNG (600x800 canvas):
  * quote 4cqw, character 2.5cqw, meta 1.667cqw, logo 6.667cqw, watermark 1.333cqw
@@ -37,7 +35,7 @@ export default function MomentCard({
       {hasCover ? (
         <>
           <Image
-            src={`${PROXY}${encodeURIComponent(animeCover!)}`}
+            src={animeCover!}
             alt=""
             fill
             className="object-cover"

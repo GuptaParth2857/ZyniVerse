@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     prisma.club.count({ where }),
   ]);
 
-  return NextResponse.json({ clubs, total, page, limit });
+  return NextResponse.json({ clubs, total, page, limit }, { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600" } });
 }
 
 export async function POST(req: NextRequest) {

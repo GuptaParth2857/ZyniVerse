@@ -1,19 +1,13 @@
 const CANVAS_W = 600;
 const CANVAS_H = 800;
 
-const PROXY = "/api/proxy-image?url=";
-
-function proxyUrl(src: string): string {
-  return `${PROXY}${encodeURIComponent(src)}`;
-}
-
-function loadImg(src: string, useProxy = true): Promise<HTMLImageElement | null> {
+function loadImg(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
-    img.src = useProxy ? proxyUrl(src) : src;
+    img.src = src;
   });
 }
 
@@ -54,7 +48,7 @@ export async function generateMomentPng(data: MomentData): Promise<Blob | null> 
 
   const [coverImg, logoImg] = await Promise.all([
     data.animeCover ? loadImg(data.animeCover) : null,
-    loadImg("/logo.png", false),
+    loadImg("/logo.png"),
   ]);
 
   // BG

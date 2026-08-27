@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     })
   );
 
-  return NextResponse.json({ challenges: challengesWithCounts });
+  return NextResponse.json({ challenges: challengesWithCounts }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
 }
 
 export async function POST(req: NextRequest) {

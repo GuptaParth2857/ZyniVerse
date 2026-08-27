@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       prisma.feedback.count({ where }),
     ]);
 
-    return NextResponse.json({ feedbacks, total });
+    return NextResponse.json({ feedbacks, total }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
   } catch {
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }

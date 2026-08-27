@@ -1,11 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
+
+const BATCH_KEY = "analytics_pending_pageviews";
+const BATCH_SIZE = 5;
+const FLUSH_INTERVAL_MS = 300000;
+
+function getPending(): Array<{ path: string; sessionId: string; referrer: string | null; ts: number }> {
+  try {
+    return JSON.parse(localStorage.getItem(BATCH_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function addPending(entry: { path: string; sessionId: string; referrer: string | null; ts: number }) {
+  const pending = getPending();
+  pending.push(entry);
+  localStorage.setItem(BATCH_KEY, JSON.stringify(pending));
+}
+
+function flushPending(sessionId: string) {
+  const pending = getPending();
+  if (pending.length === 0) return;
+  localStorage.removeItem(BATCH_KEY);
+
+  const entries = pending.filter((e) => e.sessionId === sessionId);
+  if (entries.length === 0) return;
+
+  fetch("/api/analytics/pageview", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ batch: entries, sessionId }),
+  }).catch(() => {});
+}
 
 export default function AnalyticsTracker() {
   const pathname = usePathname();
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const viewCount = useRef(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -15,7 +49,6 @@ export default function AnalyticsTracker() {
       id = crypto.randomUUID();
       sessionStorage.setItem("analytics_session_id", id);
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSessionId(id);
 
     const ua = navigator.userAgent;
@@ -44,21 +77,30 @@ export default function AnalyticsTracker() {
   useEffect(() => {
     if (typeof window === "undefined" || !sessionId) return;
 
-    fetch("/api/analytics/pageview", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        path: pathname,
-        sessionId,
-        referrer: document.referrer || null,
-      }),
-    }).catch(() => {});
+    addPending({ path: pathname, sessionId, referrer: document.referrer || null, ts: Date.now() });
+    viewCount.current++;
+
+    if (viewCount.current >= BATCH_SIZE) {
+      viewCount.current = 0;
+      flushPending(sessionId);
+    }
   }, [pathname, sessionId]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !sessionId) return;
 
+    const interval = setInterval(() => {
+      flushPending(sessionId);
+    }, FLUSH_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !sessionId) return;
+
     const handleUnload = () => {
+      flushPending(sessionId);
       navigator.sendBeacon(
         "/api/analytics/heartbeat",
         new Blob(
