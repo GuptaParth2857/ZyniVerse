@@ -205,7 +205,7 @@ export default function WatchPartyRoom({ partyId }: { partyId: string }) {
           setPlaybackPos(server.playbackPos);
         }
       } catch { /* ignore polling errors */ }
-    }, 2000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [connected, partyId]);
 

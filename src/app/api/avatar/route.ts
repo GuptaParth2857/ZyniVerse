@@ -1,6 +1,9 @@
 import { NextRequest } from "next/server";
 import { isAllowedAvatarHost } from "@/lib/avatar-src";
 
+const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+const cache = new Map<string, { data: ArrayBuffer; type: string; expires: number }>();
+
 export async function GET(req: NextRequest) {
   const raw = req.nextUrl.searchParams.get("url");
   if (!raw) return new Response("Bad Request", { status: 400 });
@@ -14,6 +17,19 @@ export async function GET(req: NextRequest) {
 
   if (url.protocol !== "https:" || !isAllowedAvatarHost(url.hostname)) {
     return new Response("Forbidden", { status: 403 });
+  }
+
+  const now = Date.now();
+  const cached = cache.get(raw);
+  if (cached && cached.expires > now) {
+    return new Response(cached.data, {
+      status: 200,
+      headers: {
+        "content-type": cached.type,
+        "cache-control": "public, max-age=604800, s-maxage=1209600, stale-while-revalidate=2592000",
+        "x-avatar-source": url.origin,
+      },
+    });
   }
 
   try {
@@ -34,12 +50,19 @@ export async function GET(req: NextRequest) {
       return new Response("Not an image", { status: 415 });
     }
 
-    return new Response(upstream.body, {
+    const data = await upstream.arrayBuffer();
+    cache.set(raw, { data, type: contentType, expires: now + CACHE_TTL });
+
+    if (cache.size > 500) {
+      const oldest = cache.keys().next().value;
+      if (oldest) cache.delete(oldest);
+    }
+
+    return new Response(data, {
       status: 200,
       headers: {
         "content-type": contentType,
-        "cache-control":
-          "public, max-age=604800, s-maxage=1209600, stale-while-revalidate=2592000",
+        "cache-control": "public, max-age=604800, s-maxage=1209600, stale-while-revalidate=2592000",
         "x-avatar-source": url.origin,
       },
     });

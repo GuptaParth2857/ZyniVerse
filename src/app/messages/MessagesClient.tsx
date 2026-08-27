@@ -113,7 +113,7 @@ export default function MessagesClient() {
     const interval = setInterval(() => {
       if (document.hidden) return;
       fetchMessages(activeConvoId);
-    }, 15000);
+    }, 30000);
     return () => clearInterval(interval);
   }, [activeConvoId, fetchMessages, conversations, markAsRead]);
 

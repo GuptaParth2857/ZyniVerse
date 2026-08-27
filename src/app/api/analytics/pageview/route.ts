@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { trackPageView, countryFromRequest } from "@/lib/analytics";
+import { trackPageView, trackPageViewBatch, countryFromRequest } from "@/lib/analytics";
 
 export async function POST(req: Request) {
   try {
@@ -7,16 +7,14 @@ export async function POST(req: Request) {
     const country = countryFromRequest(req.headers);
 
     if (Array.isArray(body.batch)) {
-      for (const entry of body.batch) {
-        await trackPageView({
-          path: entry.path,
-          userId: entry.userId,
-          sessionId: entry.sessionId,
-          referrer: entry.referrer,
-          userAgent: entry.userAgent,
+      await trackPageViewBatch(
+        body.batch.map((e: { path: string; sessionId?: string; referrer?: string }) => ({
+          path: e.path,
+          sessionId: e.sessionId,
+          referrer: e.referrer,
           country,
-        });
-      }
+        }))
+      );
     } else {
       await trackPageView({
         path: body.path,

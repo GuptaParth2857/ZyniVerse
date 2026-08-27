@@ -83,7 +83,7 @@ export default function FriendsClient() {
         setRequests(rData.requests ?? []);
         setSent(sData.requests ?? []);
       } catch (e) { logError(e); }
-    }, 15000);
+    }, 60000);
     return () => clearInterval(poll);
   }, [status, router, fetchAll]);
 

@@ -101,13 +101,6 @@ export default function AnalyticsTracker() {
 
     const handleUnload = () => {
       flushPending(sessionId);
-      navigator.sendBeacon(
-        "/api/analytics/heartbeat",
-        new Blob(
-          [JSON.stringify({ sessionId })],
-          { type: "application/json" }
-        )
-      );
     };
 
     window.addEventListener("beforeunload", handleUnload);

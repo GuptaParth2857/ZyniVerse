@@ -126,7 +126,7 @@ export default function ChatWidget() {
     const interval = setInterval(() => {
       if (document.hidden) return;
       fetchMessages(activeConvo);
-    }, 20000);
+    }, 60000);
     return () => clearInterval(interval);
   }, [activeConvo, open, fetchMessages, markAsRead]);
 

@@ -39,6 +39,34 @@ export async function trackPageView(params: {
   }
 }
 
+export async function trackPageViewBatch(entries: Array<{
+  path: string;
+  sessionId?: string | null;
+  referrer?: string | null;
+  country?: string | null;
+}>) {
+  if (entries.length === 0) return;
+  try {
+    await prisma.pageView.createMany({
+      data: entries.map((e) => ({
+        path: e.path,
+        sessionId: e.sessionId || null,
+        referrer: e.referrer || null,
+        country: e.country || null,
+      })),
+    });
+    const sessionIds = [...new Set(entries.map((e) => e.sessionId).filter(Boolean))] as string[];
+    if (sessionIds.length > 0) {
+      await prisma.userSession.updateMany({
+        where: { sessionId: { in: sessionIds } },
+        data: { lastActiveAt: new Date() },
+      });
+    }
+  } catch (error) {
+    console.error("Failed to batch track page views:", error);
+  }
+}
+
 export async function trackSearch(params: {
   query: string;
   userId?: string;
