@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { searchStaff, getPopularStaff } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import type { StaffBasic } from "@/lib/anilist";
@@ -144,7 +143,10 @@ export default function StaffBrowsePage() {
   const [hovered, setHovered] = useState<number | null>(null);
 
   useEffect(() => {
-    getPopularStaff(12).then(setPopular).catch(() => {});
+    fetch("/api/anilist/staff?perPage=12")
+      .then((r) => r.json())
+      .then(setPopular)
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -153,7 +155,7 @@ export default function StaffBrowsePage() {
     const timer = setTimeout(async () => {
       setLoading(true); setError(null);
       try {
-        const data = await searchStaff(query.trim());
+        const data = await fetch(`/api/anilist/staff?q=${encodeURIComponent(query.trim())}`).then((r) => r.json());
         setResults(data.results);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Search failed");

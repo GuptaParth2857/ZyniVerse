@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { getTopRated, getPopular, getTrending, getRecommendationsByGenres, bestTitle } from "@/lib/anilist";
+import { bestTitle } from "@/lib/anilist";
 import { CardSkeleton } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import type { Media } from "@/lib/anilist";
@@ -32,16 +32,17 @@ export default function TopAnimePage() {
   const [tab, setTab] = useState("SCORE_DESC");
 
   const fetcher = useMemo(() => ({
-    SCORE_DESC: getTopRated,
-    POPULARITY_DESC: getPopular,
-    TRENDING_DESC: getTrending,
+    SCORE_DESC: "/api/anilist/top-rated?perPage=30",
+    POPULARITY_DESC: "/api/anilist/popular?perPage=30",
+    TRENDING_DESC: "/api/anilist/trending?perPage=30",
   }), []);
 
   useEffect(() => {
     let c = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    fetcher[tab as keyof typeof fetcher](30)
+    fetch(fetcher[tab as keyof typeof fetcher])
+      .then((r) => r.json())
       .then((d) => { if (!c) setList(d); })
       .catch(() => { if (!c) setList([]); })
       .finally(() => { if (!c) setLoading(false); });
@@ -52,7 +53,7 @@ export default function TopAnimePage() {
     let c = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setGenreLoading(true);
-    Promise.all(GENRE_CATEGORIES.map((g) => getRecommendationsByGenres([g.id], 5)))
+    Promise.all(GENRE_CATEGORIES.map((g) => fetch(`/api/anilist/recommendations?genre=${encodeURIComponent(g.id)}&perPage=5`).then((r) => r.json())))
       .then((results) => {
         if (!c) {
           const map: Record<string, Media[]> = {};

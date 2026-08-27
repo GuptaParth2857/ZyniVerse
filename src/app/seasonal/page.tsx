@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getSeasonal, getMangaPopular } from "@/lib/anilist";
 import AnimeCard from "@/components/AnimeCard";
 import { CardSkeleton, ErrorState } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
@@ -66,8 +65,8 @@ export default function SeasonalPage() {
     setError(null);
     /* eslint-enable react-hooks/set-state-in-effect */
     const p = type === "ANIME"
-      ? getSeasonal(year, season, 50).then((d) => { if (!cancelled) { setList(d.media); setTotalCount(d.pageInfo?.total || d.media.length); } })
-      : getMangaPopular(50).then((d) => { if (!cancelled) { setList(d); setTotalCount(d.length); } });
+      ? fetch(`/api/anilist/seasonal?year=${year}&season=${season}&perPage=50`).then((r) => r.json()).then((d) => { if (!cancelled) { setList(d.media); setTotalCount(d.pageInfo?.total || d.media.length); } })
+      : fetch("/api/anilist/popular?perPage=50").then((r) => r.json()).then((d) => { if (!cancelled) { setList(d); setTotalCount(d.length); } });
     p.catch((e: Error) => { if (!cancelled) setError(e.message); }).finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [year, season, type]);

@@ -9,7 +9,7 @@ import { PageTransition } from "@/components/PageTransition";
 import Loader, { ErrorState } from "@/components/Loader";
 import RankBadge from "@/components/RankBadge";
 import { getRank } from "@/lib/achievements";
-import { getTrending, getPopular, getTopRated, getSeasonal, bestTitle } from "@/lib/anilist";
+import { bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
 
 interface UserLeaderboardEntry {
@@ -331,15 +331,15 @@ export default function LeaderboardPage() {
       } else {
         let items: Media[];
         if (t === "seasonal") {
-          const result = await getSeasonal(sy, sn, 24);
+          const result = await fetch(`/api/anilist/seasonal?year=${sy}&season=${sn}&perPage=24`).then((r) => r.json());
           items = result.media || [];
         } else {
-          const fetcher: Record<string, (p?: number) => Promise<Media[]>> = {
-            trending: getTrending,
-            popular: getPopular,
-            toprated: getTopRated,
+          const endpoints: Record<string, string> = {
+            trending: "/api/anilist/trending?perPage=24",
+            popular: "/api/anilist/popular?perPage=24",
+            toprated: "/api/anilist/top-rated?perPage=24",
           };
-          items = await fetcher[t](24);
+          items = await fetch(endpoints[t]).then((r) => r.json());
         }
         if (dataRef.current === t) {
           setData(items);

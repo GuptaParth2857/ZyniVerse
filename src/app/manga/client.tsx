@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getMangaTrending, getMangaPopular, getMangaTopRated, getGenres } from "@/lib/anilist";
 import { CardSkeleton } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import MangaCard from "@/components/MangaCard";
@@ -26,9 +25,9 @@ interface MangaEntryDB {
 }
 
 const TABS = [
-  { key: "trending", label: "Trending", fetcher: () => getMangaTrending(24) },
-  { key: "popular", label: "Popular", fetcher: () => getMangaPopular(24) },
-  { key: "top", label: "Top Rated", fetcher: () => getMangaTopRated(24) },
+  { key: "trending", label: "Trending", url: "/api/anilist/manga?tab=trending&perPage=24" },
+  { key: "popular", label: "Popular", url: "/api/anilist/manga?tab=popular&perPage=24" },
+  { key: "top", label: "Top Rated", url: "/api/anilist/manga?tab=top&perPage=24" },
 ];
 
 const LIST_TABS = ["ALL", "READING", "COMPLETED", "PLANNING"];
@@ -44,7 +43,7 @@ export default function MangaBrowseClient() {
   const [showMyList, setShowMyList] = useState(false);
 
   useEffect(() => {
-    getGenres().then(setGenres).catch(() => {});
+    fetch("/api/anilist/genres").then((r) => r.json()).then(setGenres).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -62,10 +61,13 @@ export default function MangaBrowseClient() {
         .finally(() => !cancelled && setLoading(false));
     } else {
       const t = TABS.find((t) => t.key === tab);
-      t?.fetcher()
-        .then((d) => !cancelled && setList(d))
-        .catch((e: Error) => !cancelled && setError(e.message))
-        .finally(() => !cancelled && setLoading(false));
+      if (t) {
+        fetch(t.url)
+          .then((r) => r.json())
+          .then((d) => !cancelled && setList(d))
+          .catch((e: Error) => !cancelled && setError(e.message))
+          .finally(() => !cancelled && setLoading(false));
+      }
     }
     return () => { cancelled = true; };
   }, [tab, showMyList, listTab]);

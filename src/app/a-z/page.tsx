@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { searchMedia, bestTitle } from "@/lib/anilist";
+import { bestTitle } from "@/lib/anilist";
 import AnimeCard from "@/components/AnimeCard";
 import CardSkeleton from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
@@ -27,8 +27,9 @@ export default function AZPage() {
 
     const query = activeLetter === "#" ? "" : activeLetter;
 
-    searchMedia({ search: query, sort: "POPULARITY_DESC", perPage: 30, page: 1 })
-      .then((d) => {
+    fetch(`/api/anilist/search-media?search=${encodeURIComponent(query)}&sort=POPULARITY_DESC&perPage=30&page=1`)
+      .then((r) => r.json())
+      .then((d: { media: Media[]; pageInfo: { total: number } }) => {
         if (cancelled) return;
         const filtered = activeLetter === "#"
           ? d.media.filter((m) => !/^[a-zA-Z]/.test(bestTitle(m.title)[0] || ""))
@@ -50,8 +51,9 @@ export default function AZPage() {
 
     const query = activeLetter === "#" ? "" : activeLetter;
 
-    searchMedia({ search: query, sort: "POPULARITY_DESC", perPage: 30, page })
-      .then((d) => {
+    fetch(`/api/anilist/search-media?search=${encodeURIComponent(query)}&sort=POPULARITY_DESC&perPage=30&page=${page}`)
+      .then((r) => r.json())
+      .then((d: { media: Media[]; pageInfo: { total: number } }) => {
         if (cancelled) return;
         const filtered = activeLetter === "#"
           ? d.media.filter((m) => !/^[a-zA-Z]/.test(bestTitle(m.title)[0] || ""))

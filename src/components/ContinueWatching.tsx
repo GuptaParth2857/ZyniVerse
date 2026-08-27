@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { getMediaBatch, bestTitle } from "@/lib/anilist";
+import { bestTitle } from "@/lib/anilist";
 import type { MediaBasic } from "@/lib/anilist";
 
 interface InProgressItem {
@@ -35,7 +35,11 @@ export default function ContinueWatching() {
           ).slice(0, 6);
           const ids = entries.map((e) => e.mediaId);
           if (ids.length === 0) { setLoaded(true); return; }
-          const mediaList = await getMediaBatch(ids);
+          const mediaList: MediaBasic[] = await fetch("/api/anilist/batch", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids }),
+          }).then((r) => r.json()).then((d) => d.media || []);
           const map = new Map(mediaList.map((m) => [m.id, m]));
           setItems(entries.map((e) => ({ ...e, meta: map.get(e.mediaId) || null })));
         }

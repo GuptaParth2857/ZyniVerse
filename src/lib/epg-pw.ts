@@ -103,10 +103,10 @@ export async function fetchAllEpgFromPw(): Promise<
   const entries = Object.entries(EPG_PW_MAP);
   const results: { channelId: string; days: Record<string, TimeSlot[]> }[] = [];
 
-  // Calculate dates for the past 7 days (Mon-Sun)
+  // Calculate dates for today + next 2 days (3 days total to reduce external requests)
   const now = new Date();
   const dates: Date[] = [];
-  for (let i = -6; i <= 0; i++) {
+  for (let i = 0; i <= 2; i++) {
     const d = new Date(now);
     d.setDate(d.getDate() + i);
     dates.push(d);

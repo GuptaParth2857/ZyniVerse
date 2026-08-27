@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { getAiringSchedule, bestTitle } from "@/lib/anilist";
+import { bestTitle } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
@@ -52,7 +52,8 @@ export default function SchedulePage() {
     setLoading(true); setError(null);
     const from = Math.floor(weekStart.getTime() / 1000);
     const to = Math.floor(weekEnd.getTime() / 1000);
-    getAiringSchedule(from, to)
+    fetch(`/api/anilist/airing-schedule?from=${from}&to=${to}`)
+      .then((r) => r.json())
       .then((data) => !cancelled && setSchedule(data))
       .catch((e) => !cancelled && setError(e.message))
       .finally(() => !cancelled && setLoading(false));

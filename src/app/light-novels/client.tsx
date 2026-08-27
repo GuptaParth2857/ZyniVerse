@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { getLightNovelTrending, getLightNovelPopular, getLightNovelTopRated } from "@/lib/anilist";
 import MangaCard from "@/components/MangaCard";
 import AffiliateLink from "@/components/AffiliateLink";
 import type { Media } from "@/lib/anilist";
@@ -26,9 +25,9 @@ interface MangaEntryDB {
 const FADE_UP = { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5 } };
 
 const TABS = [
-  { key: "trending", label: "🔥 Trending", fetcher: () => getLightNovelTrending(24) },
-  { key: "popular", label: "⭐ Popular", fetcher: () => getLightNovelPopular(24) },
-  { key: "top", label: "🏆 Top Rated", fetcher: () => getLightNovelTopRated(24) },
+  { key: "trending", label: "🔥 Trending", url: "/api/anilist/light-novels?tab=trending&perPage=24" },
+  { key: "popular", label: "⭐ Popular", url: "/api/anilist/light-novels?tab=popular&perPage=24" },
+  { key: "top", label: "🏆 Top Rated", url: "/api/anilist/light-novels?tab=top&perPage=24" },
 ];
 
 const STATUS_FILTERS = ["ALL", "READING", "COMPLETED", "PLANNING"];
@@ -116,16 +115,19 @@ export default function LightNovelBrowseClient() {
       return () => controller.abort();
     } else {
       const t = TABS.find((t) => t.key === tab);
-      t?.fetcher()
-        .then((d) => {
-          if (!cancelled) {
-            let items = Array.isArray(d) ? d : (d as { media?: Media[] }).media || [];
-            if (selectedGenre) items = items.filter((m: Media) => m.genres?.includes(selectedGenre));
-            setList(items);
-          }
-        })
-        .catch((e: Error) => !cancelled && setError(e.message))
-        .finally(() => !cancelled && setLoading(false));
+      if (t) {
+        fetch(t.url)
+          .then((r) => r.json())
+          .then((d) => {
+            if (!cancelled) {
+              let items = Array.isArray(d) ? d : (d as { media?: Media[] }).media || [];
+              if (selectedGenre) items = items.filter((m: Media) => m.genres?.includes(selectedGenre));
+              setList(items);
+            }
+          })
+          .catch((e: Error) => !cancelled && setError(e.message))
+          .finally(() => !cancelled && setLoading(false));
+      }
     }
     return () => { cancelled = true; };
   }, [tab, showMyList, listTab, debouncedQuery, selectedGenre, page]);

@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { bestTitle, searchCharacters } from "@/lib/anilist";
+import { bestTitle } from "@/lib/anilist";
 import type { CharacterBasic, Media, CharacterEdge } from "@/lib/anilist";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ExpandingFlexCard from "@/components/ExpandingFlexCard";
@@ -191,7 +191,7 @@ export default function CharactersBrowsePage() {
     const timer = setTimeout(async () => {
       setSearching(true);
       try {
-        const data = await searchCharacters(searchQuery.trim());
+        const data = await fetch(`/api/anilist/characters?q=${encodeURIComponent(searchQuery.trim())}`).then((r) => r.json());
         setSearchResults(data.results);
       } catch { setSearchResults([]); }
       setSearching(false);

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getAiringSchedule, bestTitle, type AiringScheduleEntry } from "@/lib/anilist";
+import { bestTitle, type AiringScheduleEntry } from "@/lib/anilist";
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -29,7 +29,8 @@ export default function MonthlyCalendar() {
   useEffect(() => {
     const from = Math.floor(new Date(year, month, 1).getTime() / 1000);
     const to = Math.floor(new Date(year, month + 1, 0, 23, 59, 59).getTime() / 1000);
-    getAiringSchedule(from, to)
+    fetch(`/api/anilist/airing-schedule?from=${from}&to=${to}`)
+      .then((r) => r.json())
       .then((d) => { setSchedule(d || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, [year, month]);
