@@ -248,19 +248,70 @@ export default function CharacterBattlePage() {
 
           {/* VS Badge */}
           <motion.div
-            initial={{ scale: 0, rotate: -20 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 220, damping: 14 }}
-            className="relative flex justify-center"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.25, type: "spring", stiffness: 200, damping: 13 }}
+            className="relative flex h-24 w-24 items-center justify-center sm:h-28 sm:w-28"
           >
+            {/* Outer rotating dashed ring */}
             <motion.div
-              animate={{ opacity: [0.2, 0.5, 0.2] }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className="absolute inset-0 rounded-full bg-[var(--color-magenta)] blur-xl"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0 rounded-full border-2 border-dashed border-[var(--color-magenta)]/30"
             />
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-[var(--color-magenta)]/50 bg-[var(--color-void)] shadow-[0_0_25px_-5px_var(--color-magenta)]">
-              <span className="font-display text-xl font-bold text-[var(--color-magenta)]">VS</span>
+            {/* Counter-rotating ring */}
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-2 rounded-full border border-[var(--color-cyan)]/25"
+            />
+            {/* Pulsing glow core */}
+            <motion.div
+              animate={{ opacity: [0.25, 0.7, 0.25], scale: [1, 1.12, 1] }}
+              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-4 rounded-full blur-xl"
+              style={{ background: "conic-gradient(from 0deg, var(--color-magenta), var(--color-cyan), var(--color-violet), var(--color-magenta))" }}
+            />
+            {/* Center circle */}
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-white/15 bg-[var(--color-void)] shadow-[0_0_30px_-6px_var(--color-magenta)]">
+              <motion.span
+                animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                className="bg-[length:200%_100%] bg-clip-text font-display text-2xl font-black text-transparent"
+                style={{
+                  backgroundImage: "linear-gradient(90deg, var(--color-magenta), var(--color-cyan), var(--color-violet), var(--color-magenta))",
+                }}
+              >
+                VS
+              </motion.span>
             </div>
+            {/* Side sparks */}
+            {["left", "right"].map((pos, i) => (
+              <motion.span
+                key={pos}
+                animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }}
+                transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.7 }}
+                className={`absolute ${pos === "left" ? "-left-1" : "-right-1"} top-1/2 -translate-y-1/2 text-base`}
+                style={{ color: pos === "left" ? "var(--color-magenta)" : "var(--color-cyan)", filter: "drop-shadow(0 0 6px currentColor)" }}
+              >
+                ✦
+              </motion.span>
+            ))}
+            {/* Top/bottom energy pulses */}
+            <motion.div
+              animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -top-2 text-[10px] font-bold tracking-widest text-[var(--color-magenta)]"
+            >
+              ⚡
+            </motion.div>
+            <motion.div
+              animate={{ opacity: [0.3, 1, 0.3], y: [0, 4, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="absolute -bottom-2 text-[10px] font-bold tracking-widest text-[var(--color-cyan)]"
+            >
+              ⚡
+            </motion.div>
           </motion.div>
 
           <CharacterCard
@@ -303,48 +354,120 @@ export default function CharacterBattlePage() {
 
         {/* Vote stats / footer */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
-          className="mt-4 text-center"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mt-8 text-center"
         >
-          <p className="text-xs text-[var(--color-mute)]">
-            {battle.totalVotes.toLocaleString()} vote{battle.totalVotes !== 1 ? "s" : ""} today
-          </p>
+          {/* Vote count pill */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mx-auto inline-flex items-center gap-3 rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] px-5 py-2 shadow-[0_0_20px_-10px_var(--color-violet)]"
+          >
+            <span className="flex items-center gap-1.5">
+              {[0, 1, 2].map((i) => (
+                <motion.span
+                  key={i}
+                  animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
+                  transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.22 }}
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ background: i === 1 ? "var(--color-magenta)" : "var(--color-cyan)" }}
+                />
+              ))}
+            </span>
+            <span className="text-sm font-bold text-[var(--color-ink)]">
+              <motion.span
+                key={battle.totalVotes}
+                initial={{ scale: 1.4, color: "var(--color-magenta)" }}
+                animate={{ scale: 1, color: "var(--color-ink)" }}
+                className="tabular-nums"
+              >
+                {battle.totalVotes.toLocaleString()}
+              </motion.span>{" "}
+              vote{battle.totalVotes !== 1 ? "s" : ""} today
+            </span>
+          </motion.div>
 
-          {voted && (
-            <motion.div
-              initial={{ opacity: 0, y: 12, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className="mx-auto mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--color-cyan)]/40 bg-[var(--color-cyan)]/10 px-4 py-1.5 text-sm text-[var(--color-cyan)]"
-            >
-              <span>✓</span> Thanks for voting! Results are live — come back tomorrow for a new battle.
-            </motion.div>
-          )}
+          {/* CTA state */}
+          <div className="mt-4 min-h-[2.5rem]">
+            {voted ? (
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                className="mx-auto inline-flex items-center gap-2 rounded-full border border-[var(--color-cyan)]/40 bg-[var(--color-cyan)]/10 px-5 py-2 text-sm font-semibold text-[var(--color-cyan)] shadow-[0_0_20px_-8px_var(--color-cyan)]"
+              >
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  ✓
+                </motion.span>{" "}
+                Thanks for voting! Results are live — come back tomorrow for a new battle.
+              </motion.div>
+            ) : battle.totalVotes === 0 ? (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="text-sm font-semibold text-[var(--color-magenta)]"
+              >
+                🔥 Be the first to vote!
+              </motion.p>
+            ) : null}
 
-          {!session?.user?.id && (
-            <p className="mt-2 text-xs text-[var(--color-mute)]">
-              <Link href="/login" className="font-semibold text-[var(--color-cyan)] hover:underline">
-                Log in
-              </Link>{" "}
-              to cast your vote
-            </p>
-          )}
+            {!session?.user?.id && !voted && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="mt-3"
+              >
+                <Link
+                  href="/login"
+                  className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full px-6 py-2.5 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-8px_var(--color-magenta)]"
+                  style={{ background: "linear-gradient(90deg, var(--color-magenta), var(--color-violet))" }}
+                >
+                  <span aria-hidden className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="relative">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor" />
+                  </svg>
+                  <span className="relative">Log in to Vote</span>
+                </Link>
+              </motion.div>
+            )}
+          </div>
 
-          <div className="mt-4 flex justify-center gap-3">
-            <button
+          {/* Action buttons */}
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <motion.button
               onClick={handleShare}
-              className="group rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2 text-xs font-bold text-[var(--color-ink)] transition-all hover:border-[var(--color-cyan)]/50 hover:text-[var(--color-cyan)]"
+              whileTap={{ scale: 0.94 }}
+              className="group relative overflow-hidden rounded-lg border border-[var(--color-cyan)]/40 bg-[var(--color-panel)] px-5 py-2.5 text-xs font-bold text-[var(--color-cyan)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_-10px_var(--color-cyan)]"
             >
-              {shared ? "✓ Copied!" : "🔗 Share Challenge"}
-            </button>
-            <Link
-              href="/characters"
-              className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-2 text-xs font-bold text-[var(--color-mute)] transition-colors hover:text-[var(--color-ink)]"
-            >
-              All Characters
-            </Link>
+              <span aria-hidden className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[var(--color-cyan)]/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+              <span className="relative">{shared ? "✓ Copied!" : "🔗 Share Challenge"}</span>
+            </motion.button>
+            <motion.div whileTap={{ scale: 0.94 }}>
+              <Link
+                href="/characters"
+                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-5 py-2.5 text-xs font-bold text-[var(--color-ink)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--color-magenta)]/50 hover:text-[var(--color-magenta)]"
+              >
+                <span aria-hidden className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <span className="relative">👥 All Characters</span>
+                <motion.svg
+                  animate={{ x: [0, 3, 0] }}
+                  transition={{ duration: 1.6, repeat: Infinity }}
+                  width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  className="relative"
+                >
+                  <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </motion.svg>
+              </Link>
+            </motion.div>
           </div>
         </motion.div>
       </div>
