@@ -2498,3 +2498,10 @@ img[src=""] { display: none; }
 [data-theme="light"] .theorem-badge-upcoming {
   color: #d97706;
 }
+
+/* -- Character battle card shimmer border -- */
+@keyframes shimmerBorder {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+

@@ -377,165 +377,363 @@ function CharacterCard({
 }) {
   const votesText = useCountUp(character.votes);
   const [imgError, setImgError] = useState(false);
+  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
+
+  // 3D tilt that follows the cursor
+  const rx = useMotionValue(0);
+  const ry = useMotionValue(0);
+  const srx = useSpring(rx, { stiffness: 180, damping: 18 });
+  const sry = useSpring(ry, { stiffness: 180, damping: 18 });
+  const glowX = useMotionValue(50);
+  const glowY = useMotionValue(50);
+
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    ry.set((px - 0.5) * 12);
+    rx.set((0.5 - py) * 12);
+    glowX.set(px * 100);
+    glowY.set(py * 100);
+  };
+
+  const handleRipple = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const id = Date.now() + Math.random();
+    setRipples((r) => [...r, { id, x, y }]);
+    setTimeout(() => setRipples((r) => r.filter((ri) => ri.id !== id)), 700);
+  };
+
+  const accent = side === "A" ? "var(--color-magenta)" : "var(--color-cyan)";
+  const isHighlight = voted || isWinner;
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: side === "A" ? -40 : 40, scale: 0.96 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      transition={{ duration: 0.55, ease: CARD_EASE }}
-      className="relative"
+      initial={{ opacity: 0, x: side === "A" ? -40 : 40, scale: 0.94, y: 20 }}
+      animate={{ opacity: 1, x: 0, scale: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: CARD_EASE, delay: side === "A" ? 0 : 0.1 }}
+      className="group relative"
+      style={{ perspective: 1000 }}
     >
-      <motion.div
-        animate={
-          justVoted
-            ? { scale: [1, 1.03, 1], boxShadow: [
-                "0 0 0px var(--color-cyan)",
-                "0 0 45px -8px var(--color-cyan)",
-                "0 0 0px var(--color-cyan)",
-              ] }
-            : isWinner
-            ? { boxShadow: ["0 0 18px -10px rgba(34,197,94,0.3)", "0 0 30px -8px rgba(34,197,94,0.45)", "0 0 18px -10px rgba(34,197,94,0.3)"] }
-            : {}
-        }
-        transition={
-          justVoted
-            ? { duration: 0.7, ease: "easeOut" }
-            : isWinner
-            ? { duration: 2.4, repeat: Infinity }
-            : {}
-        }
-        className={`relative overflow-hidden rounded-2xl border transition-colors duration-500 ${
-          voted && !isWinner
-            ? "border-[var(--color-cyan)]"
-            : isWinner
-            ? "border-emerald-500/60"
-            : isLoser
-            ? "border-white/[0.06]"
-            : "border-white/[0.08] hover:border-white/[0.16]"
-        }`}
-      >
-        {/* Character Image */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-void)]">
-          {character.image && !imgError ? (
-            <Image
-              src={character.image}
-              alt={character.name}
-              fill
-              priority
-              unoptimized={character.image.includes("anilist.co")}
-              onError={() => setImgError(true)}
-              className="object-cover transition-transform duration-700 hover:scale-105"
-              sizes="(max-width: 640px) 100vw, 45vw"
-            />
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] text-5xl">
-              <span>🌀</span>
-              <span className="text-xs font-mono text-[var(--color-mute)]">{character.name}</span>
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+      {/* Hover glow halo */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -inset-1 rounded-3xl opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-40"
+        style={{ background: `radial-gradient(60% 60% at var(--gx,50%) var(--gy,50%), ${accent}66, transparent 70%)` }}
+      />
 
-          <AnimatePresence>
-            {justVoted && (
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 1.4, opacity: 0 }}
-                className="absolute inset-0 flex items-center justify-center bg-[var(--color-cyan)]/20 backdrop-blur-[1px]"
-              >
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 12 }}
-                  className="text-6xl"
+      <motion.div
+        onMouseMove={onMove}
+        onMouseLeave={() => {
+          rx.set(0);
+          ry.set(0);
+        }}
+        style={{ rotateX: srx, rotateY: sry, transformStyle: "preserve-3d", "--gx": glowX, "--gy": glowY, "--accent": accent } as React.CSSProperties}
+        className="relative will-change-transform"
+      >
+        {/* Animated gradient border ring */}
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${
+            isHighlight ? "opacity-100" : ""
+          }`}
+          style={{
+            background: `linear-gradient(115deg, transparent 30%, ${accent}aa 50%, transparent 70%)`,
+            backgroundSize: "300% 300%",
+            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            maskComposite: "exclude",
+            padding: "1.5px",
+            animation: "shimmerBorder 2.5s linear infinite",
+          }}
+        />
+
+        <motion.div
+          animate={
+            justVoted
+              ? { scale: [1, 1.04, 1.01, 1], rotate: [0, -1.5, 1.5, 0], boxShadow: [`0 0 0px ${accent}`, `0 0 55px -6px ${accent}`, `0 0 0px ${accent}`] }
+              : isWinner
+              ? { boxShadow: ["0 0 20px -10px rgba(34,197,94,0.35)", "0 0 36px -8px rgba(34,197,94,0.55)", "0 0 20px -10px rgba(34,197,94,0.35)"] }
+              : {}
+          }
+          transition={
+            justVoted
+              ? { duration: 0.9, ease: "easeOut" }
+              : isWinner
+              ? { duration: 2.2, repeat: Infinity }
+              : {}
+          }
+          style={{ transformStyle: "preserve-3d" }}
+          className={`relative overflow-hidden rounded-2xl border transition-colors duration-500 ${
+            voted && !isWinner
+              ? "border-[var(--color-cyan)]"
+              : isWinner
+              ? "border-emerald-500/60"
+              : isLoser
+              ? "border-white/[0.06] opacity-80"
+              : "border-white/[0.08] group-hover:border-white/[0.18]"
+          }`}
+        >
+          {/* Character Image (elevated for 3D parallax) */}
+          <div
+            className="relative aspect-[3/4] overflow-hidden bg-[var(--color-void)]"
+            style={{ transform: "translateZ(20px)" }}
+          >
+            {character.image && !imgError ? (
+              <Image
+                src={character.image}
+                alt={character.name}
+                fill
+                priority
+                unoptimized={character.image.includes("anilist.co")}
+                onError={() => setImgError(true)}
+                className="object-cover transition-transform duration-[900ms] ease-out group-hover:scale-110"
+                sizes="(max-width: 640px) 100vw, 45vw"
+              />
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] text-5xl">
+                <motion.span animate={{ rotate: [0, 360] }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }}>🌀</motion.span>
+                <span className="text-xs font-mono text-[var(--color-mute)]">{character.name}</span>
+              </div>
+            )}
+
+            {/* Scrollable spotlight that follows cursor */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 opacity-0 mix-blend-soft-light transition-opacity duration-300 group-hover:opacity-100"
+              style={{ background: `radial-gradient(200px circle at var(--gx,50%) var(--gy,50%), #fff 0%, transparent 65%)` }}
+            />
+
+            {/* Gradient + subtle colour wash in accent */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+            <div
+              aria-hidden
+              className={`absolute inset-0 transition-opacity duration-700 ${isWinner ? "opacity-30" : "opacity-0 group-hover:opacity-20"}`}
+              style={{ background: `linear-gradient(to top, ${accent}55, transparent 60%)` }}
+            />
+
+            {/* Shine sweep on hover */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 -left-full w-1/2 skew-x-[-20deg] bg-white/10 blur-sm transition-transform duration-1000 ease-out group-hover:translate-x-[300%]"
+            />
+
+            <AnimatePresence>
+              {justVoted && (
+                <motion.div
+                  initial={{ scale: 0.4, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 1.5, opacity: 0 }}
+                  className="absolute inset-0 z-10 flex items-center justify-center bg-black/25 backdrop-blur-[1px]"
                 >
-                  💥
-                </motion.span>
+                  {["💥", "⭐", "✨"].map((e, i) => (
+                    <motion.span
+                      key={i}
+                      initial={{ scale: 0, y: 0, opacity: 0 }}
+                      animate={{ scale: 1, y: i === 0 ? 0 : (i === 1 ? -70 : 70), opacity: [0, 1, 0] }}
+                      transition={{ duration: 0.9, delay: i * 0.08 }}
+                      className={`absolute ${i === 0 ? "text-7xl" : "text-3xl"}`}
+                      style={{ filter: `drop-shadow(0 0 12px ${accent})` }}
+                    >
+                      {e}
+                    </motion.span>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Vote percentage */}
+            <div className="absolute bottom-0 left-0 right-0">
+              <div className="h-1.5 bg-white/10">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${percentage}%` }}
+                  transition={{ duration: 1.1, ease: "easeOut" }}
+                  className={`h-full ${
+                    isWinner
+                      ? "bg-gradient-to-r from-emerald-400 to-emerald-500"
+                      : isDraw
+                      ? "bg-gradient-to-r from-yellow-400 to-yellow-500"
+                      : "bg-gradient-to-r from-white/30 to-white/60"
+                  }`}
+                />
+              </div>
+            </div>
+
+            {/* Winner / loser badge */}
+            {isWinner && (
+              <motion.div
+                initial={{ scale: 0, rotate: -30, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 260, damping: 12, delay: 0.5 }}
+                className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-emerald-500/95 px-3 py-1 text-xs font-bold text-emerald-950 shadow-lg"
+              >
+                👑 Winner
               </motion.div>
             )}
-          </AnimatePresence>
-
-          {/* Vote percentage */}
-          <div className="absolute bottom-0 left-0 right-0">
-            <div className="h-1.5 bg-white/10">
+            {isLoser && !isDraw && (
               <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${percentage}%` }}
-                transition={{ duration: 0.9, ease: "easeOut" }}
-                className={`h-full ${
-                  isWinner
-                    ? "bg-gradient-to-r from-emerald-400 to-emerald-500"
-                    : isDraw
-                    ? "bg-gradient-to-r from-yellow-400 to-yellow-500"
-                    : "bg-gradient-to-r from-white/30 to-white/50"
-                }`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="absolute right-3 top-3 z-10 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white/70 backdrop-blur"
+              >
+                Defeated
+              </motion.div>
+            )}
+
+            {/* Live percentage pill */}
+            <div
+              className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 font-semibold text-white/90 backdrop-blur"
+              style={{ transform: "translateZ(30px)" }}
+            >
+              <motion.span
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 1.6, repeat: Infinity }}
+                className={`h-1.5 w-1.5 rounded-full`}
+                style={{ background: accent }}
+              />
+              <motion.span
+                key={percentage}
+                initial={{ y: 8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="text-[11px] tabular-nums"
+              >
+                {percentage}%
+              </motion.span>
+            </div>
+          </div>
+
+          {/* Info + Vote (elevated) */}
+          <div className="p-4" style={{ transform: "translateZ(26px)" }}>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <Link
+                  href={`/character/${character.id}`}
+                  className="group/name line-clamp-1 inline-flex items-center gap-1.5 font-display text-lg font-bold text-white/95 transition-colors hover:text-[var(--color-cyan)]"
+                >
+                  <span
+                    className="bg-[length:0%_2px] bg-bottom bg-no-repeat transition-[background-size] duration-500 group-hover/name:bg-[length:100%_2px]"
+                    style={{ backgroundImage: `linear-gradient(${accent}, ${accent})` }}
+                  >
+                    {character.name}
+                  </span>
+                </Link>
+                {(character.anime || character.role) && (
+                  <motion.p
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="mt-0.5 line-clamp-1 text-xs text-[var(--color-mute)]"
+                  >
+                    <span style={{ color: accent }} className="font-semibold">
+                      {character.role ? character.role : "From"}
+                    </span>{" "}
+                    <span className="italic">{character.anime || "popular anime"}</span>
+                  </motion.p>
+                )}
+              </div>
+              <motion.span
+                key={votesText}
+                initial={{ scale: 1.3, color: accent }}
+                animate={{ scale: 1 }}
+                className="shrink-0 text-sm font-mono font-bold"
+                style={{ color: accent }}
+              >
+                {votesText}
+              </motion.span>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between">
+              <span className="text-xs font-mono text-[var(--color-mute)]">
+                {character.votes.toLocaleString()} votes · {percentage}%
+              </span>
+              <VoteButton
+                voted={voted}
+                disabled={disabled}
+                accent={accent}
+                label={voted ? "✓ Voted" : side === "A" ? "Vote A" : "Vote B"}
+                onClick={(e) => {
+                  handleRipple(e);
+                  onVote();
+                }}
+                ripples={ripples}
               />
             </div>
           </div>
-
-          {/* Winner / loser badge */}
-          {isWinner && (
-            <motion.div
-              initial={{ scale: 0, rotate: -30 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 260, damping: 12, delay: 0.4 }}
-              className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-emerald-500/95 px-3 py-1 text-xs font-bold text-emerald-950 shadow-lg"
-            >
-              👑 Winner
-            </motion.div>
-          )}
-          {isLoser && !isDraw && (
-            <div className="absolute right-3 top-3 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white/70">
-              Defeated
-            </div>
-          )}
-
-          {/* Percentage label */}
-          <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-semibold text-white/85 backdrop-blur">
-            {percentage}%
-          </div>
-        </div>
-
-        {/* Info + Vote */}
-        <div className="p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <Link
-                href={`/character/${character.id}`}
-                className="line-clamp-1 font-display text-lg font-bold text-white/95 transition-colors hover:text-[var(--color-cyan)]"
-              >
-                {character.name}
-              </Link>
-              {(character.anime || character.role) && (
-                <p className="mt-0.5 line-clamp-1 text-xs text-[var(--color-mute)]">
-                  {character.role ? `${character.role} of ` : "From "}
-                  {character.anime || "popular anime"}
-                </p>
-              )}
-            </div>
-            <span className="shrink-0 text-sm font-mono font-bold text-[var(--color-magenta)]">{votesText}</span>
-          </div>
-
-          <div className="mt-3 flex items-center justify-between">
-            <span className="text-xs font-mono text-[var(--color-mute)]">
-              {character.votes.toLocaleString()} votes · {percentage}%
-            </span>
-            <button
-              onClick={onVote}
-              disabled={disabled}
-              className={`relative overflow-hidden rounded-lg px-5 py-2 text-xs font-bold transition-all duration-300 ${
-                voted
-                  ? "cursor-default bg-[var(--color-cyan)]/15 text-[var(--color-cyan)]"
-                  : disabled
-                  ? "cursor-not-allowed bg-white/5 text-white/30"
-                  : "bg-[var(--color-magenta)]/20 text-[var(--color-magenta)] hover:-translate-y-0.5 hover:bg-[var(--color-magenta)] hover:text-black hover:shadow-[0_8px_25px_-8px_var(--color-magenta)]"
-              }`}
-            >
-              {voted ? "✓ Voted" : side === "A" ? "Vote A" : "Vote B"}
-            </button>
-          </div>
-        </div>
+        </motion.div>
       </motion.div>
     </motion.div>
+  );
+}
+
+function VoteButton({
+  voted,
+  disabled,
+  accent,
+  label,
+  onClick,
+  ripples,
+}: {
+  voted: boolean;
+  disabled: boolean;
+  accent: string;
+  label: string;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  ripples: { id: number; x: number; y: number }[];
+}) {
+  return (
+    <motion.button
+      onClick={onClick}
+      disabled={disabled}
+      whileTap={!disabled && !voted ? { scale: 0.88 } : {}}
+      className={`group relative overflow-hidden rounded-lg px-5 py-2 text-xs font-bold transition-all duration-300 ${
+        voted
+          ? "cursor-default border border-[var(--color-cyan)]/40 bg-[var(--color-cyan)]/15 text-[var(--color-cyan)]"
+          : disabled
+          ? "cursor-not-allowed bg-white/5 text-white/30"
+          : "text-white"
+      }`}
+      style={
+        !voted && !disabled
+          ? {
+              background: `linear-gradient(135deg, color-mix(in srgb, ${accent} 35%, transparent), color-mix(in srgb, ${accent} 15%, transparent))`,
+              border: `1px solid color-mix(in srgb, ${accent} 55%, transparent)`,
+              boxShadow: `0 0 18px -6px ${accent}`,
+            }
+          : {}
+      }
+    >
+      {/* Shine sweep on hover */}
+      {!voted && !disabled && (
+        <span
+          aria-hidden
+          className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
+        />
+      )}
+      {/* Ripple burst */}
+      {ripples.map((r) => (
+        <motion.span
+          key={r.id}
+          initial={{ scale: 0, opacity: 0.6 }}
+          animate={{ scale: 4, opacity: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="pointer-events-none absolute h-10 w-10 rounded-full"
+          style={{ left: r.x - 20, top: r.y - 20, background: `${accent}` }}
+        />
+      ))}
+      {voted && (
+        <motion.span
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 12 }}
+          className="absolute inset-0 animate-pulse rounded-lg ring-1 ring-inset ring-[var(--color-cyan)]/40"
+        />
+      )}
+      <span className="relative z-10">{label}</span>
+      {!voted && !disabled && <span className="sr-only">select</span>}
+    </motion.button>
   );
 }
