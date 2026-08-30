@@ -17,70 +17,27 @@ interface DubAnime {
   score: string;
 }
 
-const ANITALY_BASE = "https://anitally.in/api";
-const MYDUBLIST_URL = "https://raw.githubusercontent.com/Joelis57/MyDubList/main/dubs/confidence/normal/dubbed_english.json";
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const language = searchParams.get("language") || "all";
 
-  let allDubs: DubAnime[] = [];
-  let useFallback = false;
-
-  try {
-    const [regionalRes, , englishDubRes] = await Promise.all([
-      fetch(`${ANITALY_BASE}/regional-dubs`, { signal: AbortSignal.timeout(8000) }),
-      fetch(`${ANITALY_BASE}/recently-added-dubs`, { signal: AbortSignal.timeout(8000) }),
-      fetch(MYDUBLIST_URL, { signal: AbortSignal.timeout(8000) }),
-    ]);
-
-    if (!regionalRes.ok) throw new Error("API unavailable");
-
-    const englishDubData = englishDubRes.ok ? await englishDubRes.json() : null;
-    const englishDubIds = englishDubData?.dubbed
-      ? new Set<number>(englishDubData.dubbed)
-      : new Set<number>();
-
-    const regionalData = await regionalRes.json();
-
-    allDubs = (regionalData.data || []).map((item: Record<string, unknown>) => {
-      const comingSoon = typeof item.coming_soon_languages === "string"
-        ? item.coming_soon_languages.split(",").map((l: string) => l.trim()).filter(Boolean)
-        : [];
-      const localRating = item.localRating as Record<string, unknown> | undefined;
-      const dubRatings = item.dubRatings as Record<string, Record<string, unknown>> | undefined;
-      const score = localRating?.average
-        ? localRating.average
-        : dubRatings?.Hindi?.average && dubRatings.Hindi.average !== "No Ratings"
-          ? dubRatings.Hindi.average
-          : null;
-      return {
-        mal_id: item.mal_id as number,
-        title: item.title as string,
-        displayTitle: (item.displayTitle as string) || (item.title as string),
-        image: item.image_url as string,
-        synopsis: (item.synopsis as string) || "",
-        genres: (item.genres as string[]) || [],
-        hasHindi: (item.has_hindi as boolean) || comingSoon.includes("Hindi"),
-        hasTamil: (item.has_tamil as boolean) || comingSoon.includes("Tamil"),
-        hasTelugu: (item.has_telugu as boolean) || comingSoon.includes("Telugu"),
-        hasEnglish: englishDubIds.has(item.mal_id as number),
-        comingSoonLanguages: comingSoon,
-        isCurrentSeason: item.is_current_season_dub === 1,
-        score: score as string,
-      };
-    });
-
-    const seen = new Set<number>();
-    allDubs = allDubs.filter((d) => {
-      if (seen.has(d.mal_id)) return false;
-      seen.add(d.mal_id);
-      return true;
-    });
-  } catch {
-    useFallback = true;
-    allDubs = [...DUBBED_ANIME_STATIC];
-  }
+  const allDubs: DubAnime[] = DUBBED_ANIME_STATIC.map((d) => ({
+    mal_id: d.mal_id,
+    title: d.title,
+    displayTitle: d.displayTitle,
+    image: d.image,
+    synopsis: d.synopsis,
+    genres: d.genres,
+    hasHindi: d.hasHindi,
+    hasTamil: d.hasTamil,
+    hasTelugu: d.hasTelugu,
+    hasEnglish: d.hasEnglish,
+    comingSoonLanguages: d.comingSoonLanguages,
+    isCurrentSeason: d.isCurrentSeason,
+    score: d.score,
+  })).filter(
+    (d, i, arr) => arr.findIndex((x) => x.mal_id === d.mal_id) === i
+  );
 
   let filtered = allDubs;
   if (language === "hindi") filtered = allDubs.filter((d) => d.hasHindi);
@@ -95,7 +52,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     success: true,
-    source: useFallback ? "static" : "api",
+    source: "static",
     counts: {
       total: filtered.length,
       hindi: allDubs.filter((d) => d.hasHindi).length,

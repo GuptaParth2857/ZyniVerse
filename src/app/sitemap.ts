@@ -5,8 +5,16 @@ import { getPopular, getMangaPopular, getPopularCharacters } from "@/lib/anilist
 import { getFillerData } from "@/lib/filler";
 import { getAllRSSNews } from "@/lib/news";
 import { SHUT_DOWN_SITES } from "@/lib/data/dead-site-alternatives";
+import { INDIAN_DUB_GUIDES } from "@/lib/indian-dub-guides";
+import { NEWS_DESK } from "@/lib/news-desk";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
+// Cache the sitemap so crawler fetches are served fast instead of repeatedly
+// hitting the DB, AniList, RSS, and Wikipedia. 6-hour refresh keeps it fresh
+// enough while making Bing's discovery reliable (a slow/timing-out sitemap is
+// the #1 reason Bing under-indexes a site).
+export const revalidate = 21600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -36,7 +44,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/quiz`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE_URL}/quiz/daily`, lastModified: now, changeFrequency: "daily", priority: 0.5 },
     { url: `${BASE_URL}/schedule`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
-    { url: `${BASE_URL}/community`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
+    { url: `${BASE_URL}/reels`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
+    { url: `${BASE_URL}/creators`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/posts`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/awards`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/developer`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/recommendations`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
@@ -239,6 +249,87 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch (e) { logError(e); }
 
+  // Indian dub guides (static, high SEO value — unique editorial content)
+  const indianDubGuidePages: MetadataRoute.Sitemap = INDIAN_DUB_GUIDES.map((g) => ({
+    url: `${BASE_URL}/indian-dubs/${g.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
+
+  // ZyniVerse News Desk (static, dated, high freshness value)
+  const newsDeskPages: MetadataRoute.Sitemap = NEWS_DESK.map((n) => ({
+    url: `${BASE_URL}/news/desk/${n.slug}`,
+    lastModified: new Date(n.publishedAt),
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
+
+  // Creators hub + creator pages (users with published reels)
+  let creatorPages: MetadataRoute.Sitemap = [];
+  try {
+    const creators = await prisma.user.findMany({
+      where: { reels: { some: {} } },
+      select: { username: true, createdAt: true },
+      take: 200,
+    });
+    creatorPages = creators.map((c) => ({
+      url: `${BASE_URL}/creators/${c.username}`,
+      lastModified: c.createdAt || now,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    }));
+  } catch (e) { logError(e); }
+
+  // Public shareable anime/manga list hubs (users with tracked entries)
+  let listPages: MetadataRoute.Sitemap = [];
+  try {
+    const tracked = await prisma.user.findMany({
+      where: { OR: [{ entries: { some: {} } }, { mangaEntries: { some: {} } }] },
+      select: { username: true, createdAt: true },
+      take: 500,
+    });
+    listPages = tracked.map((u) => ({
+      url: `${BASE_URL}/list/${u.username}`,
+      lastModified: u.createdAt || now,
+      changeFrequency: "weekly" as const,
+      priority: 0.5,
+    }));
+  } catch (e) { logError(e); }
+
+  // Individual reel pages (indexable, video object schema)
+  let reelPages: MetadataRoute.Sitemap = [];
+  try {
+    const reels = await prisma.reel.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 300,
+      select: { id: true, updatedAt: true, createdAt: true },
+    });
+    reelPages = reels.map((r) => ({
+      url: `${BASE_URL}/reels/${r.id}`,
+      lastModified: r.updatedAt || r.createdAt || now,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    }));
+  } catch (e) { logError(e); }
+
+  // Poster / post detail pages (main-attraction feed, image posts carry individual URLs)
+  let postPages: MetadataRoute.Sitemap = [];
+  try {
+    const posts = await prisma.post.findMany({
+      where: { image: { not: null } },
+      select: { id: true, updatedAt: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+      take: 500,
+    });
+    postPages = posts.map((p) => ({
+      url: `${BASE_URL}/posts/${p.id}`,
+      lastModified: p.updatedAt || p.createdAt || now,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }));
+  } catch (e) { logError(e); }
+
   const allPages: MetadataRoute.Sitemap = [
     ...staticPages,
     ...blogPages,
@@ -250,6 +341,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...fillerSlugPages,
     ...newsPages,
     ...alternativePages,
+    ...indianDubGuidePages,
+    ...newsDeskPages,
+    ...creatorPages,
+    ...listPages,
+    ...reelPages,
+    ...postPages,
     ...popularAnimePages,
     ...popularMangaPages,
     ...popularCharacterPages,

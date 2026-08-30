@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { hasValidAnimeTag, getAnimeTagError } from "@/lib/blog-tags";
+import { submitToIndexNow } from "@/lib/indexnow";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -74,6 +75,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     include: { user: { select: { id: true, username: true, avatar: true } } },
   });
 
+  if (!updated.isDraft) {
+    void submitToIndexNow(`/blog/${updated.slug}`);
+  }
+
   return NextResponse.json({ post: updated });
 }
 
@@ -87,5 +92,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (post.userId !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   await prisma.blogPost.update({ where: { id }, data: { isDeleted: true } });
+  void submitToIndexNow(`/blog/${post.slug}`);
   return NextResponse.json({ ok: true });
 }

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { dedupedFetch } from "@/lib/wiki-cache";
 import { hasValidAnimeTag, getAnimeTagError } from "@/lib/blog-tags";
+import { submitToIndexNow } from "@/lib/indexnow";
 import { searchAll, getTrending } from "@/lib/anilist";
 import { extractAnimeFromTitle, fetchAnimeFromWikipedia, fetchWikipediaAnimeArticles, searchAndFetchWikipediaArticles } from "@/lib/wikipedia";
 
@@ -247,6 +248,10 @@ export async function POST(req: NextRequest) {
     },
     include: { user: { select: { id: true, username: true, avatar: true } } },
   });
+
+  if (!post.isDraft) {
+    void submitToIndexNow(`/blog/${post.slug}`);
+  }
 
   return NextResponse.json({ post }, { status: 201 });
 }

@@ -37,7 +37,9 @@ const PRIMARY_LINKS = [
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/watchlist", label: "My List" },
   { to: "/manga-list", label: "My Manga" },
+  { to: "/posts", label: "Posts", accent: true },
   { to: "/reels", label: "Reels", accent: true },
+  { to: "/creators", label: "Creators", accent: true },
 ];
 
 interface MoreLink { to: string; label: string; external?: boolean; }
@@ -119,7 +121,7 @@ const MORE_CATEGORIES: MoreCategory[] = [
     icon: "💬",
     items: [
       { to: "/forum", label: "Forum" },
-      { to: "/community", label: "Social Feed" },
+      { to: "/posts", label: "Posts" },
       { to: "/activity", label: "Activity" },
       { to: "/friends", label: "Friends" },
       { to: "/clubs", label: "Clubs" },

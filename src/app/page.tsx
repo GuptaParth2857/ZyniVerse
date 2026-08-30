@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import {
   getTrending, getPopular, getUpcoming, getTopRated, getAiringSchedule,
 } from "@/lib/anilist";
@@ -32,6 +33,7 @@ import PoweredBy from "@/components/PoweredBy";
 import type { Media } from "@/lib/anilist";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
+import { posterCategoryOf } from "@/lib/post-types";
 
 function AnimatedSection({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
@@ -61,6 +63,16 @@ export default async function Home() {
     userCount = await prisma.user.count();
   } catch (e) { logError(e); }
 
+  let latestPosters: { id: string; title: string; image: string | null; type: string }[] = [];
+  try {
+    latestPosters = await prisma.post.findMany({
+      where: { image: { not: null } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: { id: true, title: true, image: true, type: true },
+    });
+  } catch (e) { logError(e); }
+
   const heroStats = {
     users: userCount,
     fillerGuides: 200,
@@ -72,6 +84,52 @@ export default async function Home() {
     <PageTransition>
       <div className="animate-page-in">
       <Hero3D items={trendingData} stats={heroStats} />
+      {latestPosters.length > 0 && (
+        <FadeIn delay={0.01}>
+          <AnimatedSection className="!py-10">
+            <div className="mb-5 flex items-end justify-between">
+              <div className="rounded-xl px-4 py-2">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Main Attraction</p>
+                <h2 className="font-display text-3xl font-bold sm:text-4xl">Latest Posters</h2>
+              </div>
+              <Link href="/posts" className="shrink-0 text-sm text-[var(--color-mute)] hover:text-[var(--color-cyan)]">
+                View all →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+              {latestPosters.map((p) => {
+                const cat = posterCategoryOf(p.type);
+                return (
+                  <Link
+                    key={p.id}
+                    href={`/posts/${p.id}`}
+                    className="group relative block aspect-[4/5] overflow-hidden rounded-xl neon-rgb-border bg-[var(--color-panel)]"
+                  >
+                    {p.image ? (
+                      <Image
+                        src={p.image}
+                        alt={p.title}
+                        fill
+                        sizes="(max-width: 640px) 50vw, 20vw"
+                        className="object-cover transition duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-br from-[var(--color-violet)]/70 to-[var(--color-magenta)]/70" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
+                    <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur">
+                      {cat.emoji} {cat.label}
+                    </span>
+                    <p className="absolute inset-x-2.5 bottom-2 line-clamp-2 text-sm font-bold text-white drop-shadow">
+                      {p.title}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          </AnimatedSection>
+        </FadeIn>
+      )}
       <FadeIn delay={0.02}>
         <NeonBanner />
       </FadeIn>

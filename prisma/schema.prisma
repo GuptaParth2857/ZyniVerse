@@ -114,6 +114,8 @@ model User {
   clubPollVotes          ClubPollVote[]
   voiceLineLikes         VoiceLineLike[]
   characterBattles       CharacterBattleVote[]
+  characterTournaments   CharacterTournament[]     @relation("TournamentCreator")
+  tournamentVotes        CharacterTournamentVote[]
   fanArts                FanArt[]
   fanArtLikes            FanArtLike[]
 }
@@ -2098,6 +2100,83 @@ model CharacterBattleVote {
 
   @@unique([battleId, userId])
   @@index([battleId])
+}
+
+// ── Character Tournaments (user-created) ──
+
+model CharacterTournament {
+  id          String              @id @default(cuid())
+  creatorId   String
+  title       String
+  description String?
+  size        Int                 @default(16)
+  status      String              @default("upcoming") // upcoming | active | completed | cancelled
+  currentRound Int                @default(1)
+  totalRounds Int
+  seed        Int
+  createdAt   DateTime            @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  creator      User                     @relation("TournamentCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  participants CharacterTournamentParticipant[]
+  matches      CharacterTournamentMatch[]
+
+  @@index([creatorId])
+  @@index([status])
+}
+
+model CharacterTournamentParticipant {
+  id           String   @id @default(cuid())
+  tournamentId String
+  charId       Int
+  charName     String
+  charImage    String?
+  seed         Int
+  createdAt    DateTime @default(now())
+
+  tournament CharacterTournament            @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  matchA     CharacterTournamentMatch[]      @relation("MatchA")
+  matchB     CharacterTournamentMatch[]      @relation("MatchB")
+  wins       CharacterTournamentMatch[]      @relation("MatchWinner")
+
+  @@index([tournamentId])
+  @@unique([tournamentId, seed])
+}
+
+model CharacterTournamentMatch {
+  id           String   @id @default(cuid())
+  tournamentId String
+  round        Int
+  position     Int
+  charAId      String?
+  charBId      String?
+  winnerId     String?
+  votesA       Int      @default(0)
+  votesB       Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  tournament CharacterTournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  charA      CharacterTournamentParticipant? @relation("MatchA", fields: [charAId], references: [id], onDelete: SetNull)
+  charB      CharacterTournamentParticipant? @relation("MatchB", fields: [charBId], references: [id], onDelete: SetNull)
+  winner     CharacterTournamentParticipant? @relation("MatchWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+  votes      CharacterTournamentVote[]
+
+  @@index([tournamentId, round, position])
+}
+
+model CharacterTournamentVote {
+  id        String   @id @default(cuid())
+  matchId   String
+  userId    String
+  choice    String
+  createdAt DateTime @default(now())
+
+  match CharacterTournamentMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, userId])
+  @@index([matchId])
 }
 
 // ── Fan Art Gallery ──

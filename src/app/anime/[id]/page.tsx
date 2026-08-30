@@ -3,7 +3,7 @@ import { getAnimeDetailFull, type MediaAnimeFull } from "@/lib/anilist";
 import { notFound } from "next/navigation";
 import AnimeDetailClient from "./detail-client";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const getAnimeDetailCached = cache(getAnimeDetailFull);
 

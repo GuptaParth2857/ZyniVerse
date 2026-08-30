@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
 import { safeDecode } from "@/lib/url-params";
+import { MyListShareRow } from "../manga/share-row";
 
 interface AniListMedia {
   id: number;
@@ -225,6 +226,12 @@ export default async function PublicWatchlistPage({ params }: { params: Promise<
           })}
         </div>
       )}
+
+      <MyListShareRow
+        username={user.username}
+        type="watchlist"
+        count={entries.length}
+      />
     </div>
   );
 }

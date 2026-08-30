@@ -20,6 +20,8 @@ const MORE_ITEMS = [
   { href: "/podcast", label: "Podcast" },
   { href: "/merch", label: "Merch Store" },
   { href: "/indian-dubs", label: "Indian Dubs" },
+  { href: "/posts", label: "Posts & Posters" },
+  { href: "/creators", label: "Creators & Reels" },
   { href: "/tv-schedule", label: "TV Channels" },
   { href: "/conventions", label: "Conventions" },
   { href: "/filler", label: "Filler Guides" },

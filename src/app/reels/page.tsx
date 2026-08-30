@@ -198,12 +198,18 @@ function ActionButton({
 export default function ReelsPage() {
   return (
     <Suspense fallback={null}>
-      <ReelsFeed />
+      <ReelsPageBody />
     </Suspense>
   );
 }
 
-function ReelsFeed() {
+function ReelsPageBody() {
+  const searchParams = useSearchParams();
+  const feedUsername = searchParams.get("username");
+  return <ReelsFeed key={feedUsername ?? "all"} feedUsername={feedUsername} />;
+}
+
+function ReelsFeed({ feedUsername }: { feedUsername: string | null }) {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const deepLinkId = searchParams.get("reel");
@@ -229,7 +235,8 @@ function ReelsFeed() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/reels?page=${page}&limit=10`)
+    const usernameQuery = feedUsername ? `&username=${encodeURIComponent(feedUsername)}` : "";
+    fetch(`/api/reels?page=${page}&limit=10${usernameQuery}`)
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;
@@ -248,7 +255,7 @@ function ReelsFeed() {
     return () => {
       cancelled = true;
     };
-  }, [page]);
+  }, [page, feedUsername]);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -495,6 +502,18 @@ function ReelsFeed() {
           </Link>
         </div>
 
+        {feedUsername && (
+          <div className="mb-3 px-1">
+            <Link
+              href="/reels"
+              className="inline-flex items-center gap-1.5 rounded-full neon-rgb-border bg-[var(--color-panel)]/80 px-3 py-1.5 text-xs font-semibold text-[var(--color-magenta)] transition hover:brightness-110"
+            >
+              Showing reels from @{feedUsername}
+              <span className="text-[var(--color-mute)]">· clear filter ✕</span>
+            </Link>
+          </div>
+        )}
+
         <div className="flex flex-col gap-4">
           {loading && reels.length === 0 ? (
             <div className="flex h-64 items-center justify-center text-sm text-[var(--color-muted)]">
@@ -725,8 +744,14 @@ function ReelCard({
           </div>
           <span className="text-sm font-semibold text-white drop-shadow">@{reel.user.username}</span>
         </Link>
-        {reel.caption && <p className="mt-2 line-clamp-3 text-sm text-white/90">{reel.caption}</p>}
-        <p className="mt-1 text-xs text-white/50">{formatCount(reel.views)} views · {timeAgo(reel.createdAt)}</p>
+        {reel.caption && (
+          <Link href={`/reels/${reel.id}`} className="mt-2 line-clamp-3 block text-sm text-white/90 hover:text-white transition-colors">
+            {reel.caption}
+          </Link>
+        )}
+        <Link href={`/reels/${reel.id}`} className="mt-1 block text-xs text-white/50 hover:text-white/80">
+          {formatCount(reel.views)} views · {timeAgo(reel.createdAt)} · open reel ↗
+        </Link>
       </div>
 
       {!playing && active && (

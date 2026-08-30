@@ -1,0 +1,17 @@
+{
+  "username": "parthgupta",
+  "posters": [
+    {
+      "image": "posters/vortexme-collab.jpg",
+      "title": "Meet our collaborator @vort.exme — Anime edits for ZyniVerse",
+      "type": "POSTER_COLLAB",
+      "content": "We are proud to feature @vort.exme as a ZyniVerse creator. Watch their anime edits, reels and behind-the-scenes content right here, reposted with permission. Follow the collaborator on Instagram for daily drops."
+    },
+    {
+      "image": "https://example.com/poster-news.jpg",
+      "title": "Jujutsu Kaisen Season 4: Culling Game Part 2 key visual revealed at JUJUFEST 2026",
+      "type": "POSTER_NEWS",
+      "content": "Official key visual for JJK Season 4 Culling Game Part 2 was unveiled at JUJUFEST 2026. Hindi dub continues on AniOne India. Details inside."
+    }
+  ]
+}

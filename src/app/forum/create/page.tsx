@@ -4,7 +4,7 @@ import ForumCreateThread from "@/components/ForumCreateThread";
 
 export const metadata: Metadata = {
   title: "Create Thread | ZyniVerse",
-  description: "Start a new discussion thread on the ZyniVerse forum.",
+  description: "Start a new discussion thread on the ZyniVerse forum. Ask questions, share anime recommendations, and talk about your favorite series with India's anime community.",
 };
 
 export default async function ForumCreatePage({ searchParams }: { searchParams: Promise<{ animeId?: string; animeTitle?: string; animeImage?: string }> }) {

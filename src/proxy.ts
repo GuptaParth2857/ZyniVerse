@@ -1,57 +1,60 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const LOCALE_COOKIE = "zyni-locale";
-const SUPPORTED_LOCALES = ["en", "hi", "ta", "te"] as const;
-type Locale = (typeof SUPPORTED_LOCALES)[number];
-
-function getLocaleFromAcceptLanguage(acceptLanguage: string | null): Locale {
-  if (!acceptLanguage) return "en";
-  const preferred = acceptLanguage
-    .split(",")
-    .map((s) => {
-      const [lang, q = "q=1"] = s.trim().split(";");
-      return { lang: lang.split("-")[0].toLowerCase(), q: parseFloat(q.split("=")[1] || "1") };
-    })
-    .sort((a, b) => b.q - a.q);
-
-  for (const { lang } of preferred) {
-    if (SUPPORTED_LOCALES.includes(lang as Locale)) return lang as Locale;
-  }
-  return "en";
-}
+// AI-training scrapers, SEO crawlers, and other high-volume non-human agents
+// that burn compute/invocations/origin-transfer without sending any users.
+// Googlebot and Bingbot are intentionally NOT blocked.
+const BLOCKED_BOT_TOKENS = [
+  "gptbot",
+  "chatgpt-user",
+  "oai-searchbot",
+  "gpt-3.5-turbo",
+  "perplexity",
+  "pplx",
+  "claudebot",
+  "claude-web",
+  "anthropic-ai",
+  "claude-external",
+  "amazonbot",
+  "google-extended",
+  "googleother",
+  "bytespider",
+  "ccbot",
+  "dataforseobot",
+  "ahrefsbot",
+  "semrushbot",
+  "mj12bot",
+  "dotbot",
+  "seznambot",
+  "barkrowler",
+  "petalbot",
+  "applebot-extended",
+  "meta-externalagent",
+  "meta-externalfetcher",
+  "diffbot",
+  "imagesiftbot",
+  "python-requests",
+  "python-urllib",
+  "scrapy",
+  "yandexbot",
+  "baiduspider",
+  "sogou",
+  "exabot",
+];
 
 export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Check for locale prefix in URL (/hi/..., /ta/..., /te/...)
-  const pathParts = pathname.split("/").filter(Boolean);
-  const firstSegment = pathParts[0]?.toLowerCase();
-
-  if (SUPPORTED_LOCALES.includes(firstSegment as Locale) && firstSegment !== "en") {
-    const locale = firstSegment as Locale;
-    const response = NextResponse.redirect(new URL(pathname.replace(`/${locale}`, "") || "/", request.url));
-    response.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
-    return response;
-  }
-
-  // For regular page routes, detect language from Accept-Language if no cookie set
-  const existingCookie = request.cookies.get(LOCALE_COOKIE)?.value;
-  if (!existingCookie || !SUPPORTED_LOCALES.includes(existingCookie as Locale)) {
-    const acceptLanguage = request.headers.get("Accept-Language");
-    const locale = getLocaleFromAcceptLanguage(acceptLanguage);
-    if (locale !== "en") {
-      const response = NextResponse.next();
-      response.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
-      return response;
+  const ua = request.headers.get("user-agent");
+  if (ua) {
+    const lower = ua.toLowerCase();
+    if (BLOCKED_BOT_TOKENS.some((token) => lower.includes(token))) {
+      return new NextResponse("403 Forbidden", { status: 403 });
     }
   }
-
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|logo.png|manifest.json|icons/|api/).*)",
+    "/((?!api/og|api/v1|api/streaming|api/extension|_next/static|_next/image|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js|txt|xml|json|woff|woff2|map|webmanifest)$).*)",
   ],
 };

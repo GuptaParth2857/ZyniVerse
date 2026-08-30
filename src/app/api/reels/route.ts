@@ -10,10 +10,12 @@ export async function GET(req: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
     const limit = Math.min(30, Math.max(1, parseInt(searchParams.get("limit") || "10")));
     const userId = searchParams.get("userId");
+    const username = searchParams.get("username");
     const sort = searchParams.get("sort") || "newest";
 
     const where: Record<string, unknown> = {};
     if (userId) where.userId = userId;
+    if (username) where.user = { username };
 
     const orderBy =
       sort === "popular"

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getCharacter } from "@/lib/anilist";
 import CharacterDetailClient from "./character-client";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const getCharacterCached = cache(getCharacter);
 

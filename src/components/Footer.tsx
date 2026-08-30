@@ -68,7 +68,7 @@ const LINK_COLUMNS: FooterColumn[] = [
     title: "Community",
     links: [
       { href: "/forum", label: "Forum", icon: "message-circle" },
-      { href: "/community", label: "Social Feed", icon: "message-circle" },
+      { href: "/posts", label: "Posts", icon: "image" },
       { href: "/clubs", label: "Clubs", icon: "users" },
       { href: "/polls", label: "Polls", icon: "bar-chart" },
       { href: "/critiques", label: "Critiques", icon: "edit" },

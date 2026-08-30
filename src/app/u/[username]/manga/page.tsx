@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { safeDecode } from "@/lib/url-params";
+import { MyListShareRow } from "./share-row";
 
 interface UserRow {
   id: string;
@@ -195,6 +196,12 @@ export default async function PublicMangaListPage({ params }: { params: Promise<
           })}
         </div>
       )}
+
+      <MyListShareRow
+        username={user.username}
+        type="manga"
+        count={entries.length}
+      />
     </div>
   );
 }

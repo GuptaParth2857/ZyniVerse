@@ -10,6 +10,6 @@ export async function GET(req: Request) {
   const perPage = Math.min(Number(url.searchParams.get("perPage")) || 20, 50);
   const data = await searchCharacters(q, page, perPage);
   return Response.json(data, {
-    headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
   });
 }

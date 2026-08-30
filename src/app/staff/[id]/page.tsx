@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getStaffBasic, getStaffMedia } from "@/lib/anilist";
 import StaffDetailClient from "./staff-client";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const getStaffBasicCached = cache(getStaffBasic);
 const getStaffMediaCached = cache(getStaffMedia);

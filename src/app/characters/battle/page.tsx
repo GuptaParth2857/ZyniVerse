@@ -468,6 +468,15 @@ export default function CharacterBattlePage() {
                 </motion.svg>
               </Link>
             </motion.div>
+            <motion.div whileTap={{ scale: 0.94 }}>
+              <Link
+                href="/character-tournaments"
+                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-lg border border-[var(--color-violet)]/40 bg-[var(--color-panel)] px-5 py-2.5 text-xs font-bold text-[var(--color-violet)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_-10px_var(--color-violet)]"
+              >
+                <span aria-hidden className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[var(--color-violet)]/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <span className="relative">🏆 Tournaments</span>
+              </Link>
+            </motion.div>
           </div>
         </motion.div>
       </div>

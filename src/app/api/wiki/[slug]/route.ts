@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { dedupedFetch } from "@/lib/wiki-cache";
 import { proxyImageUrl } from "@/lib/avatar-src";
+import { submitToIndexNow } from "@/lib/indexnow";
 
 const USER_AGENT = "ZyniVerse/1.0";
 
@@ -88,7 +89,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
         coverImage: proxyImageUrl(page.coverImage),
       },
     });
-    resp.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+    resp.headers.set("Cache-Control", "public, s-maxage=600, stale-while-revalidate=1200");
     return resp;
   }
 
@@ -147,6 +148,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
     },
   });
 
+  if (updated.isPublished) {
+    void submitToIndexNow(`/wiki/${updated.slug}`);
+  }
+
   return NextResponse.json({ page: updated });
 }
 
@@ -159,6 +164,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ s
   if (!page) return NextResponse.json({ error: "Page not found" }, { status: 404 });
 
   await prisma.wikiPage.delete({ where: { slug } });
+  void submitToIndexNow(`/wiki/${slug}`);
 
   return NextResponse.json({ success: true });
 }

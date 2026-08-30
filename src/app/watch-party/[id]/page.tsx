@@ -5,7 +5,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id: _id } = await params;
   return {
     title: "Watch Party | ZyniVerse",
-    description: "Join the watch party and watch anime together!",
+    description: "Watch anime together with friends in real time! Start a synchronized ZyniVerse watch party, chat while you watch, and share the experience with your community.",
   };
 }
 

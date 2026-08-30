@@ -8,5 +8,5 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const leaderboard = await getLeaderboard(challengeId, limit);
 
-  return NextResponse.json({ leaderboard }, { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600" } });
+  return NextResponse.json({ leaderboard }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } });
 }

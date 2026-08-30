@@ -12,12 +12,12 @@ export async function GET(req: Request) {
     const page = Math.max(Number(url.searchParams.get("page")) || 1, 1);
     const data = await searchStaff(q.trim(), page, perPage);
     return Response.json(data, {
-      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
     });
   }
 
   const data = await getPopularStaff(perPage);
   return Response.json(data, {
-    headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
   });
 }

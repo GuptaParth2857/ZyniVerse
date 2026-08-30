@@ -25,6 +25,7 @@ import UsersAlsoLiked from "@/components/features/UsersAlsoLiked";
 import MetadataPanel from "@/components/MetadataPanel";
 import CommunityTagPanel from "@/components/CommunityTagPanel";
 import ShareButton from "@/components/ShareButton";
+import WhatsAppShare from "@/components/WhatsAppShare";
 import MomentMaker from "@/components/MomentMaker";
 import RecRelationships from "@/components/RecRelationships";
 import DiscussionLinks from "@/components/DiscussionLinks";
@@ -209,6 +210,10 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
                 <div className="flex items-center gap-2">
                   <ShareButton mediaId={anime.id} title={title} />
                 </div>
+                <WhatsAppShare
+                  url={`${typeof window !== "undefined" ? window.location.origin : "https://zyverse.in"}/anime/${anime.id}`}
+                  text={`I'm watching ${title} on ZyniVerse! 🎬🇮🇳`}
+                />
                 <button onClick={() => setMomentMakerOpen(true)}
                   className="rounded-full neon-rgb-border bg-[var(--color-cyan)]/5 px-6 py-2.5 text-sm font-semibold text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/10 transition-all backdrop-blur"
                 >✦ Create Moment</button>

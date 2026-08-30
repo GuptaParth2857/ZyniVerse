@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:seed": "prisma db seed",
-    "posters:sync": "node scripts/sync-live-action-posters.mjs"
+    "posters:sync": "node scripts/sync-live-action-posters.mjs",
+    "reels:import": "node scripts/import-reels.mjs --manifest scripts/reels-manifest.example.json --commit",
+    "posters:import": "node scripts/import-posters.mjs --manifest scripts/posters-manifest.example.json --commit"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

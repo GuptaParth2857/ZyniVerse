@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { getMangaDetailFull } from "@/lib/anilist";
 import MangaDetailClient from "./manga-client";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const getMangaCached = cache(getMangaDetailFull);
 

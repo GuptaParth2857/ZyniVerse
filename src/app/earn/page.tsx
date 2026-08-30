@@ -15,6 +15,12 @@ interface ReferralStats {
   level: number;
 }
 
+interface LeaderEntry {
+  username: string;
+  avatar: string | null;
+  referralCount: number;
+}
+
 const REWARDS = [
   { invites: 1, reward: "100 XP + 'Recruiter' Badge", icon: "🥉" },
   { invites: 3, reward: "300 XP + Exclusive Profile Frame", icon: "🥈" },
@@ -30,8 +36,13 @@ export default function EarnPage() {
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [copyMsg, setCopyMsg] = useState("");
   const [loading, setLoading] = useState(true);
+  const [leaders, setLeaders] = useState<LeaderEntry[]>([]);
 
   useEffect(() => {
+    fetch("/api/referral/leaderboard")
+      .then((r) => r.json())
+      .then((d) => setLeaders(d.leaders || []))
+      .catch(() => {});
     if (status === "authenticated") {
       fetch("/api/referral/stats")
         .then((r) => r.json())
@@ -158,6 +169,34 @@ export default function EarnPage() {
             <div className="py-16 text-center">
               <p className="text-[var(--color-mute)]">Could not load referral stats.</p>
             </div>
+          )}
+
+          {leaders.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="neon-rgb-border rounded-2xl bg-[var(--color-panel)] p-6 mb-8"
+            >
+              <h2 className="font-display text-lg font-bold mb-4 flex items-center gap-2">
+                🏆 Top Referrers
+                <span className="text-xs font-mono text-[var(--color-mute)]">leaderboard</span>
+              </h2>
+              <div className="space-y-2">
+                {leaders.map((l, i) => (
+                  <div key={l.username} className="flex items-center gap-3 rounded-xl bg-[var(--color-void)] px-4 py-2.5">
+                    <span className={`w-6 text-center text-sm font-black ${i === 0 ? "text-[var(--color-amber)]" : i === 1 ? "text-slate-300" : i === 2 ? "text-[#CD7F32]" : "text-[var(--color-mute)]"}`}>
+                      {i + 1}
+                    </span>
+                    <span className="text-sm font-semibold">@{l.username}</span>
+                    <span className="ml-auto text-xs text-[var(--color-cyan)] font-mono">{l.referralCount} invited</span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-[var(--color-mute)]">
+                Share your link to climb the board and unlock rewards.
+              </p>
+            </motion.div>
           )}
         </div>
       </ErrorBoundary>

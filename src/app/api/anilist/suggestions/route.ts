@@ -8,11 +8,11 @@ export async function GET(req: Request) {
   const q = url.searchParams.get("q");
   if (!q?.trim()) {
     return Response.json([], {
-      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
     });
   }
   const data = await getSuggestions(q.trim());
   return Response.json(data, {
-    headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
   });
 }

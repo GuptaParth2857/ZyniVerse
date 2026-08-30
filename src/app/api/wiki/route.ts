@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { dedupedFetch } from "@/lib/wiki-cache";
 import { proxyImageUrl } from "@/lib/avatar-src";
+import { submitToIndexNow } from "@/lib/indexnow";
 
 interface WikiEntry {
   id: string;
@@ -212,6 +213,8 @@ export async function POST(req: NextRequest) {
       summary: page.summary,
     },
   });
+
+  void submitToIndexNow(`/wiki/${page.slug}`);
 
   return NextResponse.json({ page }, { status: 201 });
 }
