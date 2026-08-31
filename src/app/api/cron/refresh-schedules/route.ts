@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchAllEpgFromPw } from "@/lib/epg-pw";
 import { getAnimaxSchedule } from "@/lib/animax-schedule";
+import { pruneLogs, pruneAniListCacheToCap } from "@/lib/db-prune";
 
 export const revalidate = 0;
 export const maxDuration = 60;
@@ -70,17 +71,27 @@ export async function GET(request: Request) {
     }
   }
 
-  // 4. Prune stale AniList + Podcast cache rows (keeps DB under quota)
+  // 4. Prune stale/oversized caches + old log rows (keeps DB under Supabase quota)
   try {
-    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const [anilist, podcast] = await Promise.all([
-      prisma.aniListCache.deleteMany({ where: { updatedAt: { lt: cutoff } } }),
-      prisma.podcastCache.deleteMany({ where: { updatedAt: { lt: cutoff } } }).catch(() => ({ count: 0 })),
+    const [anilistAge, podcast, anilistCap] = await Promise.all([
+      prisma.aniListCache
+        .deleteMany({ where: { updatedAt: { lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } })
+        .then((r) => r.count)
+        .catch(() => 0),
+      prisma.podcastCache
+        .deleteMany({ where: { updatedAt: { lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } })
+        .then((r) => r.count)
+        .catch(() => 0),
+      pruneAniListCacheToCap(),
     ]);
+    const logs = await pruneLogs();
+    const logTotals = Object.values(logs).reduce((a, b) => a + b, 0);
     results.push({
       task: "cache-prune",
       status: 200,
-      detail: `AniListCache -${anilist.count}, PodcastCache -${podcast.count} (older than 7d)`,
+      detail:
+        `AniListCache -${anilistAge} (age), cap -${anilistCap.deleted} (now ${anilistCap.total}), ` +
+        `PodcastCache -${podcast}, logs -${logTotals} (older than 45d)`,
     });
   } catch (error) {
     results.push({
