@@ -283,7 +283,7 @@ export default function AdminAnalyticsPage() {
 
   useEffect(() => {
     const id = setTimeout(() => load(true), 0);
-    const interval = setInterval(() => load(true), 90000);
+    const interval = setInterval(() => { if (!document.hidden) load(true); }, 180000);
     return () => {
       clearTimeout(id);
       clearInterval(interval);

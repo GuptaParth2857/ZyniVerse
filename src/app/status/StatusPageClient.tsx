@@ -86,7 +86,7 @@ export default function StatusPageClient() {
 
   useEffect(() => {
     load();
-    const interval = setInterval(load, 60000);
+    const interval = setInterval(() => { if (!document.hidden) load(); }, 300000);
     return () => clearInterval(interval);
   }, [load]);
 

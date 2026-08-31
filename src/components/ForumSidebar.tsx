@@ -30,8 +30,9 @@ export default function ForumSidebar() {
     fetch("/api/forum/stats").then(r => r.json()).then(d => setOnlineUsers(d.onlineCount)).catch(() => {});
 
     const id = setInterval(() => {
+      if (document.hidden) return;
       fetch("/api/forum/stats").then(r => r.json()).then(d => setOnlineUsers(d.onlineCount)).catch(() => {});
-    }, 30000);
+    }, 300000);
     return () => clearInterval(id);
   }, []);
 

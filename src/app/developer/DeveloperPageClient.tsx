@@ -292,7 +292,7 @@ export default function DeveloperPageClient() {
 
   useEffect(() => {
     const id = setTimeout(() => loadStats(), 0);
-    const interval = setInterval(loadStats, 60000);
+    const interval = setInterval(() => { if (!document.hidden) loadStats(); }, 300000);
     return () => {
       clearTimeout(id);
       clearInterval(interval);

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "next start",
+    "start": "npx tsx server.ts",
+    "dev:app": "next dev",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",

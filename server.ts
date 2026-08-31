@@ -1,8 +1,13 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
+import next from "next";
 
+const dev = process.env.NODE_ENV !== "production";
 const hostname = "0.0.0.0";
 const port = parseInt(process.env.PORT || "3000", 10);
+
+const app = next({ dev, hostname, port });
+const handle = app.getRequestHandler();
 
 const JIOTV_EPG_BASE = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get";
 
@@ -37,252 +42,251 @@ async function fetchJiotvEpg(channelId: number, offset: number) {
   return await res.json() as { epg: { showname: string; description: string; startEpoch: number; endEpoch: number; episode_num: number; episodePoster: string }[] };
 }
 
-// EPG endpoint — fetches real JioTV EPG data from Railway's non-datacenter IP
-// Vercel serverless IPs get blocked by JioTV, so we proxy through here
+app.prepare().then(() => {
+  const httpServer = createServer(async (req, res) => {
+    if (req.url === "/health") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: "ok" }));
+      return;
+    }
 
-const httpServer = createServer(async (req, res) => {
-  if (req.url === "/health") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ status: "ok" }));
-    return;
-  }
+    if (req.url === "/api/epg") {
+      try {
+        const entries = Object.entries(JIOTV_CHANNEL_MAP);
+        const allResults: { channelId: string; days: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> }[] = [];
 
-  if (req.url === "/api/epg") {
-    try {
-      const entries = Object.entries(JIOTV_CHANNEL_MAP);
-      const allResults: { channelId: string; days: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> }[] = [];
+        const BATCH_SIZE = 4;
+        for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+          const batch = entries.slice(i, i + BATCH_SIZE);
+          const batchResults = await Promise.allSettled(
+            batch.map(async ([channelId, jiotvId]) => {
+              const dayGroups: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> = {};
+              for (const d of ALL_DAYS) dayGroups[d] = [];
 
-      const BATCH_SIZE = 4;
-      for (let i = 0; i < entries.length; i += BATCH_SIZE) {
-        const batch = entries.slice(i, i + BATCH_SIZE);
-        const batchResults = await Promise.allSettled(
-          batch.map(async ([channelId, jiotvId]) => {
-            const dayGroups: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> = {};
-            for (const d of ALL_DAYS) dayGroups[d] = [];
+              const offsets = [-6, -5, -4, -3, -2, -1, 0];
+              const responses = await Promise.allSettled(offsets.map((o) => fetchJiotvEpg(jiotvId, o)));
 
-            const offsets = [-6, -5, -4, -3, -2, -1, 0];
-            const responses = await Promise.allSettled(offsets.map((o) => fetchJiotvEpg(jiotvId, o)));
-
-            for (const r of responses) {
-              const resp = r.status === "fulfilled" ? r.value : null;
-              if (!resp?.epg) continue;
-              for (const entry of resp.epg) {
-                const dayName = getDayNameFromDate(new Date(entry.startEpoch));
-                if (dayGroups[dayName]) {
-                  dayGroups[dayName].push({
-                    show: entry.showname,
-                    start: epochToIstHHMM(entry.startEpoch),
-                    end: epochToIstHHMM(entry.endEpoch),
-                    duration: Math.round((entry.endEpoch - entry.startEpoch) / 60000),
-                    description: entry.description || undefined,
-                  });
+              for (const r of responses) {
+                const resp = r.status === "fulfilled" ? r.value : null;
+                if (!resp?.epg) continue;
+                for (const entry of resp.epg) {
+                  const dayName = getDayNameFromDate(new Date(entry.startEpoch));
+                  if (dayGroups[dayName]) {
+                    dayGroups[dayName].push({
+                      show: entry.showname,
+                      start: epochToIstHHMM(entry.startEpoch),
+                      end: epochToIstHHMM(entry.endEpoch),
+                      duration: Math.round((entry.endEpoch - entry.startEpoch) / 60000),
+                      description: entry.description || undefined,
+                    });
+                  }
                 }
               }
-            }
 
-            for (const d of ALL_DAYS) {
-              dayGroups[d].sort((a, b) => a.start.localeCompare(b.start));
-            }
+              for (const d of ALL_DAYS) {
+                dayGroups[d].sort((a, b) => a.start.localeCompare(b.start));
+              }
 
-            return { channelId, days: dayGroups };
-          })
-        );
+              return { channelId, days: dayGroups };
+            })
+          );
 
-        for (const r of batchResults) {
-          if (r.status === "fulfilled") allResults.push(r.value);
+          for (const r of batchResults) {
+            if (r.status === "fulfilled") allResults.push(r.value);
+          }
         }
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ channels: allResults }));
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err instanceof Error ? err.message : "EPG fetch failed" }));
       }
-
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ channels: allResults }));
-    } catch (err) {
-      res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: err instanceof Error ? err.message : "EPG fetch failed" }));
+      return;
     }
-    return;
-  }
 
-  if (req.method === "POST" && req.url === "/internal/dm-broadcast") {
-    let body = "";
-    for await (const chunk of req) body += chunk;
-    try {
-      const { recipientId, message, event, payload } = JSON.parse(body || "{}");
-      if (!recipientId || (!message && payload === undefined)) {
+    if (req.method === "POST" && req.url === "/internal/dm-broadcast") {
+      let body = "";
+      for await (const chunk of req) body += chunk;
+      try {
+        const { recipientId, message, event, payload } = JSON.parse(body || "{}");
+        if (!recipientId || (!message && payload === undefined)) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "recipientId and message/payload required" }));
+          return;
+        }
+        const token = process.env.DM_BROADCAST_TOKEN;
+        if (token && req.headers["x-dm-token"] !== token) {
+          res.writeHead(403, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Forbidden" }));
+          return;
+        }
+        io.to(`dm:${recipientId}`).emit(event || "dm-message", payload !== undefined ? payload : message);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: true }));
+      } catch {
         res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "recipientId and message/payload required" }));
-        return;
+        res.end(JSON.stringify({ error: "Invalid body" }));
       }
-      const token = process.env.DM_BROADCAST_TOKEN;
-      if (token && req.headers["x-dm-token"] !== token) {
-        res.writeHead(403, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Forbidden" }));
-        return;
-      }
-      io.to(`dm:${recipientId}`).emit(event || "dm-message", payload !== undefined ? payload : message);
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ ok: true }));
-    } catch {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Invalid body" }));
+      return;
     }
-    return;
-  }
 
-  res.writeHead(404);
-  res.end("Not found");
-});
-
-const io = new Server(httpServer, {
-  path: "/api/socketio",
-  cors: { origin: "*", methods: ["GET", "POST"] },
-  addTrailingSlash: false,
-});
-
-io.on("connection", (socket) => {
-  console.log("[Socket] User connected:", socket.id);
-
-  socket.on("dm-join", ({ userId }) => {
-    if (userId) socket.join(`dm:${userId}`);
+    handle(req, res);
   });
 
-  socket.on("join-party", ({ partyId, user, isHost }) => {
-    socket.join(`party:${partyId}`);
-    socket.data = { partyId, user, isHost: !!isHost };
-    io.to(`party:${partyId}`).emit("member-joined", {
-      user,
-      members: Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || []),
+  const io = new Server(httpServer, {
+    path: "/api/socketio",
+    cors: { origin: "*", methods: ["GET", "POST"] },
+    addTrailingSlash: false,
+  });
+
+  io.on("connection", (socket) => {
+    console.log("[Socket] User connected:", socket.id);
+
+    socket.on("dm-join", ({ userId }) => {
+      if (userId) socket.join(`dm:${userId}`);
     });
-    console.log(`[Socket] ${user.username} joined party ${partyId}`);
-  });
 
-  socket.on("leave-party", ({ partyId }) => {
-    socket.leave(`party:${partyId}`);
-    const user = socket.data.user;
-    io.to(`party:${partyId}`).emit("member-left", {
-      user,
-      members: Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || []),
+    socket.on("join-party", ({ partyId, user, isHost }) => {
+      socket.join(`party:${partyId}`);
+      socket.data = { partyId, user, isHost: !!isHost };
+      io.to(`party:${partyId}`).emit("member-joined", {
+        user,
+        members: Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || []),
+      });
+      console.log(`[Socket] ${user.username} joined party ${partyId}`);
     });
-    console.log(`[Socket] ${user?.username} left party ${partyId}`);
-  });
 
-  socket.on("host-sync", ({ partyId, isPlaying, playbackPos, episode }) => {
-    socket.to(`party:${partyId}`).emit("sync-state", {
-      isPlaying,
-      playbackPos,
-      episode,
-      timestamp: Date.now(),
-    });
-  });
-
-  socket.on("host-play", ({ partyId, playbackPos }) => {
-    socket.to(`party:${partyId}`).emit("play", { playbackPos, timestamp: Date.now() });
-  });
-
-  socket.on("host-pause", ({ partyId, playbackPos }) => {
-    socket.to(`party:${partyId}`).emit("pause", { playbackPos, timestamp: Date.now() });
-  });
-
-  socket.on("host-seek", ({ partyId, playbackPos }) => {
-    socket.to(`party:${partyId}`).emit("seek", { playbackPos, timestamp: Date.now() });
-  });
-
-  socket.on("host-episode", ({ partyId, episode }) => {
-    socket.to(`party:${partyId}`).emit("episode-change", { episode });
-  });
-
-  socket.on("chat-message", ({ partyId, user, message }) => {
-    io.to(`party:${partyId}`).emit("new-message", {
-      id: Date.now().toString(),
-      userId: user.id,
-      username: user.username,
-      message,
-      type: "CHAT",
-      createdAt: new Date().toISOString(),
-    });
-  });
-
-  socket.on("reaction", ({ partyId, user, emoji }) => {
-    socket.to(`party:${partyId}`).emit("new-reaction", {
-      userId: user.id,
-      username: user.username,
-      emoji,
-    });
-  });
-
-  socket.on("video-source", ({ partyId, videoUrl, videoType }) => {
-    socket.to(`party:${partyId}`).emit("video-updated", { videoUrl, videoType });
-  });
-
-  socket.on("screen-share-started", ({ partyId }) => {
-    socket.to(`party:${partyId}`).emit("screen-share-started-viewers", { partyId });
-  });
-
-  socket.on("screen-share-stopped", ({ partyId }) => {
-    socket.to(`party:${partyId}`).emit("screen-share-stopped-viewers", { partyId });
-  });
-
-  // Voice chat signaling
-  socket.on("voice-join", ({ partyId, user }) => {
-    socket.data = { ...socket.data, voiceUser: user };
-    io.to(`party:${partyId}`).emit("voice-user-joined", { user, socketId: socket.id });
-    console.log(`[Voice] ${user.username} joined voice in party ${partyId}`);
-  });
-
-  socket.on("voice-leave", ({ partyId, user }) => {
-    io.to(`party:${partyId}`).emit("voice-user-left", { user, socketId: socket.id });
-    console.log(`[Voice] ${user.username} left voice in party ${partyId}`);
-  });
-
-  socket.on("voice-offer", ({ partyId, targetId, offer, fromUser }) => {
-    io.to(targetId).emit("voice-offer", { offer, fromUser, fromSocketId: socket.id, partyId });
-  });
-
-  socket.on("voice-answer", ({ partyId, targetId, answer }) => {
-    io.to(targetId).emit("voice-answer", { answer, fromSocketId: socket.id, partyId });
-  });
-
-  socket.on("voice-ice-candidate", ({ partyId, targetId, candidate }) => {
-    io.to(targetId).emit("voice-ice-candidate", { candidate, fromSocketId: socket.id, partyId });
-  });
-
-  socket.on("voice-speaking", ({ partyId, user, isSpeaking }) => {
-    socket.to(`party:${partyId}`).emit("voice-speaking", { user, isSpeaking, socketId: socket.id });
-  });
-
-  socket.on("webrtc-viewer-ready", ({ partyId }) => {
-    const hostSocket = Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || [])
-      .map((id) => io.sockets.sockets.get(id))
-      .find((s) => s && s.data?.isHost);
-    if (hostSocket) {
-      hostSocket.emit("webrtc-viewer-join", { viewerId: socket.id, partyId });
-    }
-  });
-
-  socket.on("webrtc-offer", ({ partyId, targetId, offer }) => {
-    io.to(targetId).emit("webrtc-offer-viewer", { offer, partyId, hostId: socket.id });
-  });
-
-  socket.on("webrtc-viewer-answer", ({ partyId, hostId, answer }) => {
-    io.to(hostId).emit("webrtc-viewer-answer", { viewerId: socket.id, answer, partyId });
-  });
-
-  socket.on("webrtc-ice-candidate", ({ partyId, targetId, candidate }) => {
-    const eventName = socket.data?.isHost ? "webrtc-ice-candidate-viewer" : "webrtc-ice-candidate-host";
-    io.to(targetId).emit(eventName, { candidate, partyId, senderId: socket.id });
-  });
-
-  socket.on("disconnect", () => {
-    const { partyId, user } = socket.data || {};
-    if (partyId) {
+    socket.on("leave-party", ({ partyId }) => {
+      socket.leave(`party:${partyId}`);
+      const user = socket.data.user;
       io.to(`party:${partyId}`).emit("member-left", {
         user,
         members: Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || []),
       });
-      console.log(`[Socket] ${user?.username} disconnected from party ${partyId}`);
-    }
-  });
-});
+      console.log(`[Socket] ${user?.username} left party ${partyId}`);
+    });
 
-httpServer.listen(port, hostname, () => {
-  console.log(`> Socket.io ready at http://${hostname}:${port}/api/socketio`);
+    socket.on("host-sync", ({ partyId, isPlaying, playbackPos, episode }) => {
+      socket.to(`party:${partyId}`).emit("sync-state", {
+        isPlaying,
+        playbackPos,
+        episode,
+        timestamp: Date.now(),
+      });
+    });
+
+    socket.on("host-play", ({ partyId, playbackPos }) => {
+      socket.to(`party:${partyId}`).emit("play", { playbackPos, timestamp: Date.now() });
+    });
+
+    socket.on("host-pause", ({ partyId, playbackPos }) => {
+      socket.to(`party:${partyId}`).emit("pause", { playbackPos, timestamp: Date.now() });
+    });
+
+    socket.on("host-seek", ({ partyId, playbackPos }) => {
+      socket.to(`party:${partyId}`).emit("seek", { playbackPos, timestamp: Date.now() });
+    });
+
+    socket.on("host-episode", ({ partyId, episode }) => {
+      socket.to(`party:${partyId}`).emit("episode-change", { episode });
+    });
+
+    socket.on("chat-message", ({ partyId, user, message }) => {
+      io.to(`party:${partyId}`).emit("new-message", {
+        id: Date.now().toString(),
+        userId: user.id,
+        username: user.username,
+        message,
+        type: "CHAT",
+        createdAt: new Date().toISOString(),
+      });
+    });
+
+    socket.on("reaction", ({ partyId, user, emoji }) => {
+      socket.to(`party:${partyId}`).emit("new-reaction", {
+        userId: user.id,
+        username: user.username,
+        emoji,
+      });
+    });
+
+    socket.on("video-source", ({ partyId, videoUrl, videoType }) => {
+      socket.to(`party:${partyId}`).emit("video-updated", { videoUrl, videoType });
+    });
+
+    socket.on("screen-share-started", ({ partyId }) => {
+      socket.to(`party:${partyId}`).emit("screen-share-started-viewers", { partyId });
+    });
+
+    socket.on("screen-share-stopped", ({ partyId }) => {
+      socket.to(`party:${partyId}`).emit("screen-share-stopped-viewers", { partyId });
+    });
+
+    // Voice chat signaling
+    socket.on("voice-join", ({ partyId, user }) => {
+      socket.data = { ...socket.data, voiceUser: user };
+      io.to(`party:${partyId}`).emit("voice-user-joined", { user, socketId: socket.id });
+      console.log(`[Voice] ${user.username} joined voice in party ${partyId}`);
+    });
+
+    socket.on("voice-leave", ({ partyId, user }) => {
+      io.to(`party:${partyId}`).emit("voice-user-left", { user, socketId: socket.id });
+      console.log(`[Voice] ${user.username} left voice in party ${partyId}`);
+    });
+
+    socket.on("voice-offer", ({ partyId, targetId, offer, fromUser }) => {
+      io.to(targetId).emit("voice-offer", { offer, fromUser, fromSocketId: socket.id, partyId });
+    });
+
+    socket.on("voice-answer", ({ partyId, targetId, answer }) => {
+      io.to(targetId).emit("voice-answer", { answer, fromSocketId: socket.id, partyId });
+    });
+
+    socket.on("voice-ice-candidate", ({ partyId, targetId, candidate }) => {
+      io.to(targetId).emit("voice-ice-candidate", { candidate, fromSocketId: socket.id, partyId });
+    });
+
+    socket.on("voice-speaking", ({ partyId, user, isSpeaking }) => {
+      socket.to(`party:${partyId}`).emit("voice-speaking", { user, isSpeaking, socketId: socket.id });
+    });
+
+    socket.on("webrtc-viewer-ready", ({ partyId }) => {
+      const hostSocket = Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || [])
+        .map((id) => io.sockets.sockets.get(id))
+        .find((s) => s && s.data?.isHost);
+      if (hostSocket) {
+        hostSocket.emit("webrtc-viewer-join", { viewerId: socket.id, partyId });
+      }
+    });
+
+    socket.on("webrtc-offer", ({ partyId, targetId, offer }) => {
+      io.to(targetId).emit("webrtc-offer-viewer", { offer, partyId, hostId: socket.id });
+    });
+
+    socket.on("webrtc-viewer-answer", ({ partyId, hostId, answer }) => {
+      io.to(hostId).emit("webrtc-viewer-answer", { viewerId: socket.id, answer, partyId });
+    });
+
+    socket.on("webrtc-ice-candidate", ({ partyId, targetId, candidate }) => {
+      const eventName = socket.data?.isHost ? "webrtc-ice-candidate-viewer" : "webrtc-ice-candidate-host";
+      io.to(targetId).emit(eventName, { candidate, partyId, senderId: socket.id });
+    });
+
+    socket.on("disconnect", () => {
+      const { partyId, user } = socket.data || {};
+      if (partyId) {
+        io.to(`party:${partyId}`).emit("member-left", {
+          user,
+          members: Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || []),
+        });
+        console.log(`[Socket] ${user?.username} disconnected from party ${partyId}`);
+      }
+    });
+  });
+
+  httpServer.listen(port, hostname, () => {
+    console.log(`> Ready on http://${hostname}:${port}`);
+    console.log(`> Socket.io ready at http://${hostname}:${port}/api/socketio`);
+  });
 });

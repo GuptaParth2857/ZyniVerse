@@ -207,7 +207,7 @@ export default function AdminOverviewPage() {
 
   useEffect(() => {
     const id = setTimeout(() => load(), 0);
-    const interval = setInterval(load, 60000);
+    const interval = setInterval(() => { if (!document.hidden) load(); }, 120000);
     return () => {
       clearTimeout(id);
       clearInterval(interval);

@@ -368,10 +368,11 @@ export default function LeaderboardPage() {
   // Auto-refresh every 5 minutes (only for non-cached tabs)
   useEffect(() => {
     const interval = setInterval(() => {
+      if (document.hidden) return;
       const key = dataRef.current;
       if (key) cache.delete(key === "seasonal" ? `${key}-${seasonYearRef.current}-${seasonNameRef.current}` : key);
       if (dataRef.current) fetchData(dataRef.current);
-    }, 300000);
+    }, 600000);
     return () => clearInterval(interval);
   }, [fetchData]);
 

@@ -74,6 +74,7 @@ export default function FriendsClient() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAll();
     const poll = setInterval(async () => {
+      if (document.hidden) return;
       try {
         const [rRes, sRes] = await Promise.all([
           fetch("/api/friends?type=pending"),
@@ -83,7 +84,7 @@ export default function FriendsClient() {
         setRequests(rData.requests ?? []);
         setSent(sData.requests ?? []);
       } catch (e) { logError(e); }
-    }, 60000);
+    }, 300000);
     return () => clearInterval(poll);
   }, [status, router, fetchAll]);
 
