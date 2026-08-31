@@ -1,7 +1,8 @@
 import { readFileSync, writeFileSync } from "fs";
 
-const NEW_REF = "vwzkdjnmdztkdtnnrlfs";
+const NEW_REF = process.env.NEW_SUPABASE_REF || "vwzkdjnmdztkdtnnrlfs";
 const NEW_DB_PASS = process.env.NEW_DB_PASSWORD;
+// Read from environment — never hardcode secrets in source.
 const PUB_KEY = process.env.NEW_SUPABASE_PUB_KEY;
 const SEC_KEY = process.env.NEW_SUPABASE_SEC_KEY;
 
