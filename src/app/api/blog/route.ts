@@ -7,6 +7,7 @@ import { hasValidAnimeTag, getAnimeTagError } from "@/lib/blog-tags";
 import { submitToIndexNow } from "@/lib/indexnow";
 import { searchAll, getTrending } from "@/lib/anilist";
 import { extractAnimeFromTitle, fetchAnimeFromWikipedia, fetchWikipediaAnimeArticles, searchAndFetchWikipediaArticles } from "@/lib/wikipedia";
+export const dynamic = "force-dynamic";
 
 function slugify(text: string): string {
   return text

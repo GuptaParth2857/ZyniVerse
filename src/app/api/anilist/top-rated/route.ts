@@ -1,5 +1,6 @@
 import { getTopRated } from "@/lib/anilist";
 import { anilistLimiter } from "@/lib/rate-limiter";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   const rateCheck = anilistLimiter.middleware(req);

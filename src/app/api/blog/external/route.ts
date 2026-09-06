@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dedupedFetch } from "@/lib/wiki-cache";
+export const dynamic = "force-dynamic";
 
 const USER_AGENT = "ZyniVerse/1.0";
 

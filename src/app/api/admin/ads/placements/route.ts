@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
+export const dynamic = "force-dynamic";
 
 function invalidateConfig() {
   revalidatePath("/api/ads/config");

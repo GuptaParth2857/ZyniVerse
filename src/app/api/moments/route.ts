@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
 import { resolveUserId } from "@/lib/resolve-user";
+export const dynamic = "force-dynamic";
 
 const ANON_USERNAME = "anonymous";
 

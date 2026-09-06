@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 
 const REVENUE_PER_CLICK = 0.05;
 const DAYS = 14;

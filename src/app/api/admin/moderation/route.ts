@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
+export const dynamic = "force-dynamic";
 
 type ContentKind = "MEME" | "FANART" | "COSPLAY" | "CLIP" | "REEL" | "POST" | "COMMENT" | "REVIEW" | "LONG_REVIEW" | "BLOG" | "WIKI" | "FORUM_THREAD" | "FORUM_POST" | "CLUB_POST" | "CLUB_COMMENT" | "REEL_COMMENT" | "MOMENT";
 

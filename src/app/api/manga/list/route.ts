@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { autoCompleteAnimeForChallenge } from "@/lib/challenges";
 import { checkAndAwardAchievement } from "@/lib/achievements-server";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const rateCheck = apiLimiter.middleware(req);

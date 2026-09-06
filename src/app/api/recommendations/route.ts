@@ -6,8 +6,8 @@ import { searchMedia, getTrending, getTopRated, getUpcoming, bestTitle } from "@
 import type { Media } from "@/lib/anilist";
 import { getAIRecommendations } from "@/lib/ai-recommender";
 import { logError } from "@/lib/logger";
-
 export const dynamic = "force-dynamic";
+
 
 const VALID_GENRES = [
   "Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery",

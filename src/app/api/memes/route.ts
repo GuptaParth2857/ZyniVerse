@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { apiLimiter } from "@/lib/rate-limiter";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const rateCheck = apiLimiter.middleware(req);

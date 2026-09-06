@@ -1,6 +1,7 @@
 import { searchAll } from "@/lib/anilist";
 import { anilistLimiter } from "@/lib/rate-limiter";
 import { NextRequest } from "next/server";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const rateCheck = anilistLimiter.middleware(req);

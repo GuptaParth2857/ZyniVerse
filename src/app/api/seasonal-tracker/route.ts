@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiLimiter } from "@/lib/rate-limiter";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const rateLimited = apiLimiter.middleware(req);

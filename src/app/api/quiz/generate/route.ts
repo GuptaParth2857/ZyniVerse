@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateDynamicQuiz } from "@/lib/quiz";
 import { storeQuestions } from "@/lib/quiz-store";
 import { apiLimiter } from "@/lib/rate-limiter";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const rateCheck = apiLimiter.middleware(req);

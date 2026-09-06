@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEpisodeProgress } from "@/lib/episode-tracking";
 import { resolveUserId } from "@/lib/resolve-user";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const userId = await resolveUserId();

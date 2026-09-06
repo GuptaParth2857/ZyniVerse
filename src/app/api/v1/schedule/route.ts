@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyApiKey } from "@/lib/api-key";
 import { getAiringSchedule, type AiringScheduleEntry } from "@/lib/anilist";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const auth = await verifyApiKey(req);

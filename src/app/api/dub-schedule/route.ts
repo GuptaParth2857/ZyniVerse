@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { DUBBED_ANIME_STATIC } from "@/lib/data/dubbed-static";
+export const dynamic = "force-dynamic";
 
 interface DubAnime {
   mal_id: number;

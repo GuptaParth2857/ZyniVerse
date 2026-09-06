@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { ALL_AWARDS, AWARD_YEARS, AWARD_PLATFORMS, AWARD_TYPES, getAwardsByFilters } from "@/lib/awards-data";
 import { resolveImage } from "@/lib/image-resolver";
 import { logError } from "@/lib/logger";
+export const dynamic = "force-dynamic";
 
-export const revalidate = 86400;
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);

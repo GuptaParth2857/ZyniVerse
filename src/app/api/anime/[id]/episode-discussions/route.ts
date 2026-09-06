@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveUserId } from "@/lib/resolve-user";
 import { apiLimiter } from "@/lib/rate-limiter";
+export const dynamic = "force-dynamic";
 
 function sanitize(text: string): string {
   return text.replace(/<[^>]*>/g, "").trim().slice(0, 2000);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDoujinshi } from "@/lib/mangadex-api";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);

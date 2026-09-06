@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { TOURNAMENT_SIZES, createTournament } from "@/lib/character-tournaments";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);

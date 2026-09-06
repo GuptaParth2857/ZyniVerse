@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { dedupedFetch } from "@/lib/wiki-cache";
 import { proxyImageUrl } from "@/lib/avatar-src";
 import { submitToIndexNow } from "@/lib/indexnow";
+export const dynamic = "force-dynamic";
 
 interface WikiEntry {
   id: string;

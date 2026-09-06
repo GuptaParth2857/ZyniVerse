@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { getPopularCharacters } from "@/lib/anilist";
 import { anilistLimiter } from "@/lib/rate-limiter";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const rateCheck = anilistLimiter.middleware(req);

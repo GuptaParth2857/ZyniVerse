@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getMediaBatch } from "@/lib/anilist";
+export const dynamic = "force-dynamic";
 
-export const revalidate = 1800;
 
 export async function GET(request: Request) {
   const url = new URL(request.url);

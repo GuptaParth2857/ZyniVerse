@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { THEME_SONGS } from "@/lib/data/themes";
 import { THEME_COVERS } from "@/lib/data/theme-covers";
+export const dynamic = "force-dynamic";
 
 const ANILIST_GQL = "https://graphql.anilist.co";
 

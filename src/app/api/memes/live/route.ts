@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiLimiter } from "@/lib/rate-limiter";
+export const dynamic = "force-dynamic";
 
 const SUBS = ["animemes", "goodanimemes", "anime_memes", "animefunny"];
 const CACHE_MS = 90_000;

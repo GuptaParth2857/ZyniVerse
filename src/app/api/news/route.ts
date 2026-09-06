@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { getAnimeNews, getSeasonalAnnouncements, getRecentReviews, getActivityFeed, getAllRSSNews } from "@/lib/news";
 import { auth } from "@/lib/auth";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const rateCheck = apiLimiter.middleware(req);
