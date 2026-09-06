@@ -40,6 +40,10 @@ const ALL_ACHIEVEMENTS: AchievementDef[] = [
   { code: "INFLUENCER", name: "Influencer", description: "Get 50 followers", icon: "👑", category: "social", points: 75, criteria: { type: "followers", value: 50 } },
   { code: "EARLY_ADOPTER", name: "Early Adopter", description: "Join ZyniVerse in first year", icon: "🚀", category: "milestone", points: 100, criteria: { type: "early_adopter", value: 1 }, isHidden: true },
   { code: "FIRST_100", name: "First 100", description: "Be among first 100 users", icon: "🥇", category: "milestone", points: 200, criteria: { type: "first_100", value: 1 }, isHidden: true },
+  { code: "MEME_MAESTRO", name: "Meme Maestro", description: "Win the weekly funniest meme contest", icon: "😂", category: "community", points: 100, criteria: { type: "contest_win", value: 1 } },
+  { code: "COSPLAY_STAR", name: "Cosplay Star", description: "Win the weekly cosplay contest", icon: "🎭", category: "community", points: 100, criteria: { type: "contest_win", value: 1 } },
+  { code: "ARTIST_OF_THE_WEEK", name: "Artist of the Week", description: "Win the weekly fan art contest", icon: "🎨", category: "community", points: 100, criteria: { type: "contest_win", value: 1 } },
+  { code: "MOMENT_LEGEND", name: "Moment Legend", description: "Win the weekly best anime moment contest", icon: "💬", category: "community", points: 100, criteria: { type: "contest_win", value: 1 } },
 ];
 
 export function getAllAchievements(): AchievementDef[] {

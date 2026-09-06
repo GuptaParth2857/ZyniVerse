@@ -32,14 +32,9 @@ const DISCORD_INVITE = process.env.NEXT_PUBLIC_DISCORD_INVITE;
 const PRIMARY_LINKS = [
   { to: "/", label: "Home" },
   { to: "/search", label: "Explore" },
-  { to: "/top-anime", label: "Top Anime" },
-  { to: "/schedule", label: "Schedule" },
-  { to: "/leaderboard", label: "Leaderboard" },
   { to: "/watchlist", label: "My List" },
-  { to: "/manga-list", label: "My Manga" },
-  { to: "/posts", label: "Posts", accent: true },
+  { to: "/schedule", label: "Schedule" },
   { to: "/reels", label: "Reels", accent: true },
-  { to: "/creators", label: "Creators", accent: true },
 ];
 
 interface MoreLink { to: string; label: string; external?: boolean; }
@@ -50,7 +45,10 @@ const MORE_CATEGORIES: MoreCategory[] = [
     title: "Discover",
     icon: "🔍",
     items: [
+      { to: "/discover", label: "Unified Feed 🎌" },
       { to: "/ai", label: "Zyni AI ✨" },
+      { to: "/top-anime", label: "Top Anime" },
+      { to: "/leaderboard", label: "Leaderboard" },
       { to: "/news", label: "News" },
       { to: "/guides", label: "Guides & Articles" },
       { to: "/live-action", label: "Live Action" },
@@ -63,6 +61,9 @@ const MORE_CATEGORIES: MoreCategory[] = [
       { to: "/calendar", label: "Calendar" },
       { to: "/a-z", label: "A–Z Index" },
       { to: "/moments", label: "Moments" },
+      { to: "/clips", label: "Scene Collector" },
+      { to: "/wallpapers", label: "Wallpapers" },
+      { to: "/memes", label: "Memes" },
     ],
   },
   {
@@ -85,6 +86,7 @@ const MORE_CATEGORIES: MoreCategory[] = [
       { to: "/dubbed", label: "Dubs" },
       { to: "/filler", label: "Filler Guides" },
       { to: "/watch-order", label: "Watch Orders" },
+      { to: "/backlog", label: "Backlog Board" },
       { to: "/themes", label: "Theme Songs" },
       { to: "/ost", label: "OST" },
       { to: "/characters", label: "Characters" },
@@ -111,9 +113,14 @@ const MORE_CATEGORIES: MoreCategory[] = [
     items: [
       { to: "/cosplay", label: "Cosplay" },
       { to: "/fanart", label: "Fan Art" },
+      { to: "/contests", label: "Contests 🏆" },
       { to: "/quiz", label: "Quiz" },
+      { to: "/games", label: "Anime Games 🎮" },
+      { to: "/wordle", label: "Anime Wordle" },
+      { to: "/bingo", label: "Anime Bingo" },
       { to: "/challenges", label: "Challenges" },
       { to: "/watch-party", label: "Watch Party" },
+      { to: "/anime-night", label: "AI Anime Night ✨" },
     ],
   },
   {
@@ -131,6 +138,7 @@ const MORE_CATEGORIES: MoreCategory[] = [
       { to: "/critiques", label: "Critiques" },
       { to: "/tierlist", label: "Tier Lists" },
       { to: "/lists", label: "Lists" },
+      { to: "/shared-watchlists", label: "Shared Lists" },
       { to: "/feedback", label: "Feedback" },
       ...(DISCORD_INVITE
         ? [{ to: DISCORD_INVITE, label: "Discord", external: true }]
@@ -142,18 +150,24 @@ const MORE_CATEGORIES: MoreCategory[] = [
     icon: "✨",
     items: [
       { to: "/tools", label: "Tools" },
+      { to: "/compare-anime", label: "Anime Compare ⚔️" },
       { to: "/extension", label: "Chrome Extension" },
       { to: "/merch", label: "Merch Store" },
       { to: "/premium", label: "Premium" },
       { to: "/figures", label: "My Collection" },
+      { to: "/seasonal-tracker", label: "Season Tracker" },
       { to: "/stats", label: "My Stats" },
+      { to: "/stats/timeline", label: "Watch Timeline" },
       { to: "/stats/wrapped", label: "Wrapped" },
       { to: "/achievements", label: "Achievements" },
       { to: "/awards", label: "Awards" },
       { to: "/compare", label: "Compare" },
       { to: "/tags", label: "Tags" },
-      { to: "/docs", label: "API Docs" },
+      { to: "/commissions", label: "Commissions" },
+      { to: "/creators", label: "Creators" },
       { to: "/developer", label: "Developer" },
+      { to: "/developer/webhooks", label: "Webhooks" },
+      { to: "/docs", label: "API Docs" },
       { to: "/wiki", label: "Wiki" },
       { to: "/about", label: "About" },
       { to: "/status", label: "Status" },
@@ -394,7 +408,7 @@ export default function Navbar() {
               </svg>
             </button>
             {moreOpen && (
-              <div className="absolute top-full right-0 mt-2 w-[92vw] sm:w-[44rem] max-w-[44rem] rounded-2xl neon-rgb-border bg-[var(--color-panel)] shadow-[0_8px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl overflow-hidden">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[92vw] sm:w-[44rem] max-w-[44rem] rounded-2xl neon-rgb-border bg-[var(--color-panel)] shadow-[0_8px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl overflow-hidden">
                 {/* Horizontal category tabs */}
                 <div className="flex overflow-x-auto border-b border-[var(--color-line)] scrollbar-none">
                   {MORE_CATEGORIES.map((cat) => (

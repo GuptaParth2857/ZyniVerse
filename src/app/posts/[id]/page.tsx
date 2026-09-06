@@ -7,7 +7,7 @@ import { logError } from "@/lib/logger";
 import { posterCategoryOf } from "@/lib/post-types";
 import { PostShareRow } from "./share-row";
 
-export const revalidate = 600;
+export const revalidate = 3600;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 

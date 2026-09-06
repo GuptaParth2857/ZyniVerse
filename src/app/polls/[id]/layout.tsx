@@ -5,11 +5,13 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id: _id } = await params;
+  const { id } = await params;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
   return {
     title: `Anime Poll — Vote Now | ZyniVerse`,
     description: `Vote on this anime poll and see what the ZyniVerse community thinks.`,
+    alternates: { canonical: `${baseUrl}/polls/${id}` },
     robots: { index: true, follow: true },
   };
 }

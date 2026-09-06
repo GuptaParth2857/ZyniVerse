@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import NotificationList from "@/components/NotificationList";
+import NotificationPreferences from "@/components/NotificationPreferences";
 
 export const metadata: Metadata = {
   title: "Notifications | ZyniVerse",
@@ -23,6 +24,7 @@ export default function NotificationsPage() {
           Airing alerts, activity updates, and everything happening across ZyniVerse.
         </p>
       </div>
+      <NotificationPreferences />
       <NotificationList />
     </main>
   );

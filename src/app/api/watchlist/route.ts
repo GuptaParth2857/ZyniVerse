@@ -15,6 +15,7 @@ export async function GET() {
     select: {
       mediaId: true, type: true, status: true, progress: true, total: true, score: true,
       scoreStory: true, scoreArt: true, scoreSound: true, scoreCharacters: true, scoreEnjoyment: true,
+      dropReason: true,
     },
   });
   return NextResponse.json({ items });
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
   const userId = await resolveUserId();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { mediaId, type, action, status, mediaTitle, mediaImage, score, subScores } = await req.json();
+  const { mediaId, type, action, status, mediaTitle, mediaImage, score, subScores, dropReason } = await req.json();
 
   if (action === "rate") {
     const computed = computeScore(score, subScores);
@@ -57,8 +58,12 @@ export async function POST(req: NextRequest) {
   if (action === "add" && status) {
     await prisma.listEntry.upsert({
       where: { userId_mediaId: { userId, mediaId } },
-      update: { status, type: type || "ANIME" },
-      create: { userId, mediaId, type: type || "ANIME", status, progress: 0, total: 0 },
+      update: {
+        status,
+        type: type || "ANIME",
+        dropReason: status === "DROPPED" ? (dropReason || null) : null,
+      },
+      create: { userId, mediaId, type: type || "ANIME", status, progress: 0, total: 0, dropReason: status === "DROPPED" ? (dropReason || null) : null },
     });
 
     autoCompleteAnimeForChallenge(userId, mediaId, mediaTitle || "Unknown", mediaImage, "anime").catch(() => {});
@@ -83,8 +88,12 @@ export async function POST(req: NextRequest) {
   } else if (action === "update" && status) {
     await prisma.listEntry.upsert({
       where: { userId_mediaId: { userId, mediaId } },
-      update: { status, progress: status === "COMPLETED" ? { increment: 1 } : undefined },
-      create: { userId, mediaId, type: type || "ANIME", status, progress: 0, total: 0 },
+      update: {
+        status,
+        progress: status === "COMPLETED" ? { increment: 1 } : undefined,
+        dropReason: status === "DROPPED" ? (dropReason || null) : null,
+      },
+      create: { userId, mediaId, type: type || "ANIME", status, progress: 0, total: 0, dropReason: status === "DROPPED" ? (dropReason || null) : null },
     });
 
     if (status === "COMPLETED") {

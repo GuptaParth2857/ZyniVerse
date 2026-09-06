@@ -9,8 +9,11 @@ interface ListSummary {
   title: string;
   description: string | null;
   type: string;
+  category: string | null;
   isFeatured: boolean;
   likes: number;
+  upvotes: number;
+  downvotes: number;
   createdAt: string;
   itemCount: number;
   coverImages: string[];
@@ -82,6 +85,8 @@ export default function ListGrid() {
         {[
           { value: "recent", label: "Recent" },
           { value: "popular", label: "Popular" },
+          { value: "top", label: "Top Voted" },
+          { value: "controversial", label: "Controversial" },
         ].map((opt) => (
           <button
             key={opt.value}

@@ -53,4 +53,31 @@ describe("getStreamingSources", () => {
   it("returns empty for unknown anime", () => {
     expect(getStreamingSources("Some Totally Fake Anime 12345")).toEqual([]);
   });
+
+  it("matches newly curated titles", () => {
+    const titles = [
+      "Your Lie in April",
+      "Erased",
+      "The Promised Neverland",
+      "86",
+      "Great Pretender",
+      "Bocchi the Rock!",
+      "Toradora",
+    ];
+    for (const t of titles) {
+      const sources = getStreamingSources(t);
+      expect(sources.length, `${t} should have curated sources`).toBeGreaterThan(0);
+      for (const s of sources) {
+        expect(s.url).toMatch(/^https?:\/\//);
+        expect(["subscription", "free", "ads"]).toContain(s.type);
+      }
+    }
+  });
+
+  it("matches new alias without trailing punctuation", () => {
+    const withBang = getStreamingSources("Bocchi the Rock!");
+    const withoutBang = getStreamingSources("Bocchi the Rock");
+    expect(withBang.length).toBeGreaterThan(0);
+    expect(withoutBang.length).toBeGreaterThan(0);
+  });
 });

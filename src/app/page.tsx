@@ -10,6 +10,8 @@ export const metadata: Metadata = {
     canonical: process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in",
   },
 };
+
+export const revalidate = 3600;
 import Section from "@/components/Section";
 import MediaCarousel from "@/components/MediaCarousel";
 import OnAirTicker from "@/components/OnAirTicker";
@@ -22,6 +24,7 @@ import AdBanner from "@/components/AdBanner";
 import NativeBannerAd from "@/components/NativeBannerAd";
 import QuoteOfTheDay from "@/components/QuoteOfTheDay";
 import HomeMomentButton from "@/components/HomeMomentButton";
+import AnimeOfTheDay from "@/components/AnimeOfTheDay";
 import FriendActivityFeed from "@/components/features/FriendActivityFeed";
 import MonthlyCalendar from "@/components/features/MonthlyCalendar";
 import FeaturedFeedbackCarousel from "@/components/FeaturedFeedbackCarousel";
@@ -84,6 +87,9 @@ export default async function Home() {
     <PageTransition>
       <div className="animate-page-in">
       <Hero3D items={trendingData} stats={heroStats} />
+      <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6">
+        <AnimeOfTheDay />
+      </div>
       {latestPosters.length > 0 && (
         <FadeIn delay={0.01}>
           <AnimatedSection className="!py-10">
@@ -327,6 +333,7 @@ export default async function Home() {
               <Link href="/top-anime" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold transition-colors">Top Anime</Link>
               <Link href="/watchlist" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold transition-colors">My Watchlist</Link>
               <HomeMomentButton />
+              <Link href="/recap" className="rounded-full bg-[var(--color-magenta)] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity">🎌 My Year in Anime →</Link>
             </div>
           </div>
         </FadeIn>

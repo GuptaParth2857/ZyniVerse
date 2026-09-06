@@ -32,10 +32,15 @@ export default async function EditListPage({ params }: Props) {
   if (list.userId !== session.user.id) notFound();
 
   let isLiked = false;
+  let voteValue = 0;
   const like = await prisma.userListLike.findUnique({
     where: { listId_userId: { listId: id, userId: session.user.id } },
   });
   isLiked = !!like;
+  const vote = await prisma.listVote.findUnique({
+    where: { listId_userId: { listId: id, userId: session.user.id } },
+  });
+  voteValue = vote?.value ?? 0;
 
   const { _count, ...rest } = list;
   const serialized = {
@@ -55,6 +60,7 @@ export default async function EditListPage({ params }: Props) {
       items={serializedItems}
       isOwner={true}
       isLiked={isLiked}
+      voteValue={voteValue}
     />
   );
 }

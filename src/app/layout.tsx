@@ -16,7 +16,9 @@ import AdBanner from "@/components/AdBanner";
 import SocialBarAd from "@/components/SocialBarAd";
 import NativeBannerAd from "@/components/NativeBannerAd";
 import ChatWidget from "@/components/ChatWidget";
+import ToastFeed from "@/components/ToastFeed";
 import SplashScreen from "@/components/SplashScreen";
+import OnboardingGate from "@/components/OnboardingGate";
 
 import ActivityTracker from "@/components/ActivityTracker";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
@@ -265,6 +267,7 @@ export default function RootLayout({
             <AnalyticsTracker />
           </Suspense>
           <Providers>
+            <OnboardingGate />
             <Navbar />
             <main className="flex-1"><RouteTransition>{children}</RouteTransition></main>
             {/* Native banner between content and footer */}
@@ -280,6 +283,7 @@ export default function RootLayout({
             <CookieConsent />
             <ServiceWorkerRegistration />
             <ChatWidget />
+            <ToastFeed />
             <SplashScreen />
           </Providers>
         </AuthProvider>

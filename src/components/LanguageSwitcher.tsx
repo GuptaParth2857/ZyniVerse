@@ -26,6 +26,7 @@ export default function LanguageSwitcher() {
   const locales = getAvailableLocales();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrent(getCurrentLocale());
     setMounted(true);
   }, []);

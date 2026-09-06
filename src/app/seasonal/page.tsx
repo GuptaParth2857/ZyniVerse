@@ -7,6 +7,7 @@ import { CardSkeleton, ErrorState } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
 import NativeBannerAd from "@/components/NativeBannerAd";
+import HotEpisodes from "@/components/HotEpisodes";
 import SeasonalFilters, { type SeasonalFiltersState } from "@/components/SeasonalFilters";
 import type { Media } from "@/lib/anilist";
 
@@ -124,6 +125,8 @@ export default function SeasonalPage() {
             {totalCount > 0 ? `${totalCount.toLocaleString()} ${isManga ? "manga" : "titles"} · ${formatBreakdown}` : "Browse the latest titles"}
           </p>
         </div>
+
+        {!isManga && <HotEpisodes limit={5} />}
 
         {/* ── Controls ── */}
         <div className="flex flex-wrap items-center gap-3 mb-8">

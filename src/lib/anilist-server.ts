@@ -2,6 +2,7 @@ import { cacheLife } from 'next/cache';
 import type { Media } from './anilist';
 
 const ENDPOINT = "https://graphql.anilist.co";
+const USER_AGENT = "ZyniVerse/1.0 (https://zyverse.in)";
 
 async function gql(query: string, variables: Record<string, unknown> = {}) {
   'use cache'
@@ -9,7 +10,13 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
 
   const res = await fetch(ENDPOINT, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "User-Agent": USER_AGENT,
+      Origin: "https://anilist.co",
+      Referer: "https://anilist.co/",
+    },
     body: JSON.stringify({ query, variables }),
   });
   if (!res.ok) {

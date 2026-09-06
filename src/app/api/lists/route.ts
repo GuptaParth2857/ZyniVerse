@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
   const userId = searchParams.get("userId");
   const sort = searchParams.get("sort") || "recent";
   const search = searchParams.get("search");
+  const category = searchParams.get("category");
   const page = parseInt(searchParams.get("page") || "1");
   const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
 
@@ -23,18 +24,30 @@ export async function GET(req: NextRequest) {
     where.isPublic = true;
   }
   if (search) where.title = { contains: search };
+  if (category && category !== "all") where.category = category;
 
-  const _orderBy =
-    sort === "popular"
-      ? { likes: "desc" as const }
-      : sort === "trending"
-        ? { likes: "desc" as const }
-        : { createdAt: "desc" as const };
+  let orderBy: Record<string, string>;
+  switch (sort) {
+    case "top":
+      orderBy = { upvotes: "desc" };
+      break;
+    case "controversial":
+      orderBy = { upvotes: "desc" };
+      break;
+    case "popular":
+    case "trending":
+      orderBy = { likes: "desc" };
+      break;
+    default:
+      orderBy = { createdAt: "desc" };
+  }
 
   const [lists, total] = await Promise.all([
     prisma.userList.findMany({
       where,
-      orderBy: sort === "recent" ? { createdAt: "desc" } : { likes: "desc" },
+      orderBy: sort === "controversial"
+        ? [{ upvotes: "desc" }, { downvotes: "desc" }]
+        : orderBy,
       skip: (page - 1) * limit,
       take: limit,
       include: {
@@ -64,7 +77,7 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { title, description, type, isPublic } = await req.json();
+  const { title, description, type, isPublic, category } = await req.json();
   if (!title?.trim()) return NextResponse.json({ error: "Title is required" }, { status: 400 });
   if (!type || !["anime", "manga", "mixed"].includes(type)) return NextResponse.json({ error: "Type must be anime, manga, or mixed" }, { status: 400 });
 
@@ -75,6 +88,7 @@ export async function POST(req: NextRequest) {
       description: description?.trim() || null,
       type,
       isPublic: isPublic !== false,
+      category: category?.trim() || "",
     },
     include: {
       user: { select: { id: true, username: true, avatar: true } },

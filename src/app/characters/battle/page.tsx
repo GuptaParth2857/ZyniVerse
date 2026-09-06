@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -106,6 +106,7 @@ export default function CharacterBattlePage() {
       });
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(load, []);
 
   const handleVote = async (choice: "A" | "B") => {

@@ -529,6 +529,92 @@ interface VibeState {
   results: MediaCardItem[];
 }
 
+interface MixerPkg {
+  title: string;
+  mood: string;
+  hook: string;
+  caption: string;
+  song: string;
+  scene: string;
+  transition: string;
+  hashtags: string[];
+}
+
+function MixerCard({ results, mood }: { results: MediaCardItem[]; mood: string }) {
+  const [pkg, setPkg] = useState<MixerPkg | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const top = results[0];
+
+  async function gen() {
+    if (!top) return;
+    setBusy(true); setError("");
+    try {
+      const res = await fetch("/api/ai/mixer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mood, title: top.title }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't build the edit.");
+      setPkg(data.mixer);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function copyAll() {
+    if (!pkg) return;
+    const text = `${pkg.hook}\n\n${pkg.caption}\n\nSong: ${pkg.song}\nScene: ${pkg.scene}\nEdit: ${pkg.transition}\n\n${(pkg.hashtags || []).map((h) => "#" + h).join(" ")}`;
+    void navigator.clipboard?.writeText(text);
+  }
+
+  return (
+    <div className="mt-6 overflow-hidden rounded-2xl border border-[var(--color-line)] bg-black/25">
+      <div className="flex items-center justify-between border-b border-[var(--color-line)] px-4 py-3">
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--color-magenta)]">🎬 ✦ Brain-Rot Mixer</p>
+        <span className="text-[9px] text-[var(--color-mute)]">viral edit package</span>
+      </div>
+      <div className="px-4 py-4">
+        {!pkg ? (
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-[var(--color-mute)]">
+              <span className="font-semibold text-[var(--color-ink)]">{top?.title}</span> ke liye ek viral short-edits package banayein — hook, caption, song, scene &amp; hashtags.
+            </p>
+            <button
+              onClick={() => void gen()}
+              disabled={busy || !top}
+              className="shrink-0 rounded-full border border-[var(--color-magenta)]/40 bg-[var(--color-magenta)]/10 px-4 py-1.5 text-xs font-bold text-[var(--color-magenta)] hover:bg-[var(--color-magenta)]/20 disabled:opacity-50 transition-colors"
+            >{busy ? "Mixing…" : "Generate ✨"}</button>
+          </div>
+        ) : (
+          <div className="space-y-3 text-sm">
+            <p className="text-base font-bold text-[var(--color-ink)] leading-snug">“{pkg.hook}”</p>
+            <p className="text-[var(--color-mute)]">{pkg.caption}</p>
+            <div className="grid gap-2 sm:grid-cols-2 text-xs">
+              <div className="rounded-lg bg-black/20 px-3 py-2"><span className="font-bold text-[var(--color-cyan)]">Song:</span> {pkg.song}</div>
+              <div className="rounded-lg bg-black/20 px-3 py-2"><span className="font-bold text-[var(--color-magenta)]">Scene:</span> {pkg.scene}</div>
+              <div className="rounded-lg bg-black/20 px-3 py-2 sm:col-span-2"><span className="font-bold text-[var(--color-cyan)]">Edit:</span> {pkg.transition}</div>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(pkg.hashtags || []).map((h) => (
+                <span key={h} className="rounded-full border border-[var(--color-line)] px-2.5 py-0.5 text-[10px] text-[var(--color-mute)]">#{h}</span>
+              ))}
+            </div>
+            {error && <p className="text-xs text-red-400">{error}</p>}
+            <div className="flex gap-2">
+              <button onClick={() => void gen()} disabled={busy} className="rounded-full border border-[var(--color-line)] px-4 py-1.5 text-xs font-bold text-[var(--color-mute)] hover:text-[var(--color-magenta)] hover:border-[var(--color-magenta)] transition-colors">Regenerate</button>
+              <button onClick={copyAll} className="rounded-full border border-[var(--color-magenta)]/40 bg-[var(--color-magenta)]/10 px-4 py-1.5 text-xs font-bold text-[var(--color-magenta)] hover:bg-[var(--color-magenta)]/20 transition-colors">Copy package</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function VibeTab() {
   const [restored] = useState(() =>
     typeof window === "undefined" ? null : loadStored<VibeState>(VIBE_KEY)
@@ -626,6 +712,7 @@ function VibeTab() {
             <span className="h-px flex-1 bg-gradient-to-r from-[var(--color-line)] to-transparent" />
           </div>
           <MediaGrid items={results} />
+          <MixerCard results={results} mood={q} />
         </>
       )}
     </div>

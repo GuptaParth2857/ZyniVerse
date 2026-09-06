@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
 import { getFillerForAnime } from "@/lib/filler";
+import AISummaryCard from "@/components/AISummaryCard";
+import FillerChecklist from "@/components/FillerChecklist";
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -203,6 +205,13 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
           <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500" /> Mixed</span>
           <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-500" /> Filler</span>
         </div>
+
+        <AISummaryCard animeId={anilistId} animeTitle={title} />
+
+        <FillerChecklist
+          episodes={filler.episodes.map((ep) => ({ episode: ep.episode, title: ep.title, type: ep.type }))}
+          storageKey={`zyni.filler.${anilistId}`}
+        />
 
         {fillerEpisodes.length > 0 && (
           <section id="filler-list" className="mb-10">

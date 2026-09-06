@@ -54,19 +54,21 @@ async function checkDatabase(): Promise<ServiceResult> {
 async function checkAniList(): Promise<ServiceResult> {
   const started = Date.now();
   try {
-    const res = await fetch(ANILIST_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "User-Agent": USER_AGENT,
-      },
-      body: JSON.stringify({
-        query: "query { Page(perPage: 1) { media(type: ANIME) { id } } }",
-      }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
+const res = await fetch(ANILIST_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "User-Agent": USER_AGENT,
+      "Origin": "https://anilist.co",
+      "Referer": "https://anilist.co/",
+    },
+    body: JSON.stringify({
+      query: "query { Page(perPage: 1) { media(type: ANIME) { id } } }",
+    }),
+    cache: "no-store",
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  });
     if (res.ok) {
       return {
         name: "AniList Upstream",

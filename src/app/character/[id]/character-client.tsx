@@ -7,6 +7,9 @@ import { useParams } from "next/navigation";
 import { bestTitle } from "@/lib/anilist";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CharacterFull } from "@/lib/anilist";
+import ClaimCharacterButton from "@/components/ClaimCharacterButton";
+import TraitTagButton from "@/components/TraitTagButton";
+import CharacterChat from "@/components/CharacterChat";
 import { amazonSearchUrl } from "@/lib/affiliate-config";
 
 function stripHtml(str: string | null | undefined = "") { return str ? str.replace(/<[^>]*>/g, "") : ""; }
@@ -42,6 +45,7 @@ export default function CharacterDetailClient({ initialChar }: { initialChar: Ch
 
   return (
     <div>
+      <CharacterChat characterId={Number(id)} characterName={char.name?.full || "Character"} avatar={char.image?.large} accent={accent} />
       {/* ── Hero ── */}
       <div className="relative min-h-[60vh] border-b border-[var(--color-line)] overflow-hidden">
         {/* Background glow */}
@@ -106,6 +110,12 @@ export default function CharacterDetailClient({ initialChar }: { initialChar: Ch
                 <span className="text-sm text-[var(--color-mute)]">
                   <span style={{ color: accent }} className="font-bold">{mangaRoles.length}</span> Manga
                 </span>
+              </div>
+
+              {/* Claim */}
+              <div className="mt-5">
+                <ClaimCharacterButton characterId={Number(id)} characterName={char.name?.full || ""} characterImage={char.image?.large} accent={accent} size="md" />
+                <TraitTagButton characterId={Number(id)} characterName={char.name?.full || ""} characterImage={char.image?.large} />
               </div>
             </div>
           </div>

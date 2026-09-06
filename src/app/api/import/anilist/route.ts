@@ -74,5 +74,17 @@ export async function POST(req: NextRequest) {
     imported++;
   }
 
+  await prisma.listImport.create({
+    data: {
+      userId,
+      source: "anilist",
+      mediaType: "ANIME",
+      fileName: username,
+      totalEntries: entries.length,
+      imported,
+      skipped: entries.length - imported,
+    },
+  });
+
   return NextResponse.json({ imported, total: entries.length });
 }

@@ -98,12 +98,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = dbId;
         let avatar: string | null = null;
         if (dbId) {
-          const dbUser = await prisma.user.findUnique({
-            where: { id: dbId },
-            select: { avatar: true },
-          });
-          avatar = dbUser?.avatar && !isDefaultAvatar(dbUser.avatar) ? dbUser.avatar : null;
-        }
+        const dbUser = await prisma.user.findUnique({
+          where: { id: dbId },
+          select: { avatar: true, onboarded: true, createdAt: true },
+        });
+        avatar = dbUser?.avatar && !isDefaultAvatar(dbUser.avatar) ? dbUser.avatar : null;
+        session.user.onboarded = dbUser?.onboarded ?? false;
+        session.user.createdAt = dbUser?.createdAt;
+      }
         session.user.image = avatar;
       }
       return session;

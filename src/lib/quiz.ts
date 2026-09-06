@@ -175,7 +175,7 @@ async function fetchCharactersBatch(animeIds: number[]): Promise<Map<number, { n
   try {
     const res = await fetch("https://graphql.anilist.co", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": "ZyniVerse/1.0 (https://zyverse.in)", "Origin": "https://anilist.co", "Referer": "https://anilist.co/" },
       body: JSON.stringify({ query, variables: { ids: animeIds } }),
       next: { revalidate: 21600 },
     });
@@ -193,7 +193,7 @@ async function generateQuestionsFromAnime(count: number): Promise<QuizQuestion[]
   try {
     const res = await fetch("https://graphql.anilist.co", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": "ZyniVerse/1.0 (https://zyverse.in)", "Origin": "https://anilist.co", "Referer": "https://anilist.co/" },
       body: JSON.stringify({
         query: `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: POPULARITY_DESC, type: ANIME, isAdult: false) { id title { romaji english } coverImage { large } studios(isMain: true) { nodes { id name } } episodes duration format source(version: 2) genres startDate { year } averageScore } } }`,
         variables: { p: count + 10 },

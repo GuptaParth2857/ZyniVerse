@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { safeDecode } from "@/lib/url-params";
 import { MyListShareRow } from "@/app/u/[username]/manga/share-row";
 
-export const revalidate = 600;
+export const revalidate = 3600;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 

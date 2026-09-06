@@ -121,7 +121,7 @@ export async function resolveImage(title: string, malId?: number, anilistId?: nu
     try {
       const res = await fetch(ANILIST_SEARCH, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": "ZyniVerse/1.0 (https://zyverse.in)", "Origin": "https://anilist.co", "Referer": "https://anilist.co/" },
         body: JSON.stringify({
           query: `query ($id: Int) { Media(id: $id, type: ANIME) { coverImage { large } } }`,
           variables: { id: anilistId },
@@ -150,7 +150,7 @@ export async function resolveImage(title: string, malId?: number, anilistId?: nu
   try {
     const res = await fetch(ANILIST_SEARCH, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": "ZyniVerse/1.0 (https://zyverse.in)", "Origin": "https://anilist.co", "Referer": "https://anilist.co/" },
       body: JSON.stringify({ query: SEARCH_QUERY, variables: { search: searchTerm } }),
       signal: AbortSignal.timeout(5000),
     });

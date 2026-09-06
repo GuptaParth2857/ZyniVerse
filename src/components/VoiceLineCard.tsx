@@ -55,7 +55,7 @@ export default function VoiceLineCard({ line, index = 0 }: { line: VoiceLine; in
     const cy = rect.top + rect.height / 2;
     const px = (e.clientX - cx) / (rect.width / 2);
     const py = (e.clientY - cy) / (rect.height / 2);
-    el.style.transform = `perspective(900px) rotateY(${px * 5}deg) rotateX(${-py * 5}deg) scale(1.02)`;
+    el.style.transform = `perspective(900px) rotateY(${px * 4}deg) rotateX(${-py * 4}deg) scale(1.015)`;
   }, [momentOpen]);
 
   const handlePointerLeave = useCallback(() => {
@@ -139,19 +139,29 @@ export default function VoiceLineCard({ line, index = 0 }: { line: VoiceLine; in
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 26, scale: 0.96 }}
+      initial={{ opacity: 0, y: 26, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.45, delay: (index % 9) * 0.07, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.45, delay: Math.min((index % 6) * 0.05, 0.3), ease: [0.22, 1, 0.36, 1] }}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
-      className="neon-premium rounded-[20px]"
-      style={{ transition: "transform 0.2s ease-out" }}
+      className="group relative overflow-hidden rounded-3xl meme-card-border bg-[#15121d]/85 backdrop-blur-xl"
+      style={{ transition: "transform 0.2s ease-out, border-color 0.3s, box-shadow 0.3s" }}
     >
-      <div className="neon-premium-track" />
-      <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
-      <div className="neon-premium-content rounded-[20px] p-5">
+      {/* hairline shimmer on top edge */}
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px z-40 meme-hairline" />
+
+      {/* QUOTE HEADER — accent aurora backdrop */}
+      <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5" style={{ background: "#0a0910" }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(120% 120% at 75% -10%, ${accent}1f, transparent 55%), radial-gradient(120% 120% at 10% 110%, ${accent}0f, transparent 55%)`,
+          }}
+        />
+        <div className="award-sheen" />
+
         {/* Top badges */}
-        <div className="mb-3 flex items-center gap-2">
+        <div className="relative z-10 mb-3 flex flex-wrap items-center gap-1.5">
           <span className="h-1.5 w-8 rounded-full" style={{ background: accent, boxShadow: `0 0 10px ${accent}88` }} />
           <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${typeColors[line.type] || "bg-white/10 text-[var(--color-mute)]"}`}>
             {line.type}
@@ -168,7 +178,8 @@ export default function VoiceLineCard({ line, index = 0 }: { line: VoiceLine; in
           </span>
         </div>
 
-        <Link href={`/voice-lines/${line.id}`} className="block no-underline">
+        {/* Quote */}
+        <Link href={`/voice-lines/${line.id}`} className="relative z-10 block no-underline">
           <div className="relative">
             <span
               className="pointer-events-none absolute -top-3 -left-2 select-none font-serif text-6xl leading-none opacity-20"
@@ -176,38 +187,50 @@ export default function VoiceLineCard({ line, index = 0 }: { line: VoiceLine; in
             >
               &quot;
             </span>
-            <p className="relative pl-2 text-lg leading-relaxed italic text-[var(--color-ink)]">
+            <p className="relative pl-2 text-[15px] leading-relaxed italic text-[var(--color-ink)] sm:text-lg font-sans tracking-tight line-clamp-4">
               {line.line}
             </p>
           </div>
           {line.lineHindi && (
-            <p className="mt-2 text-sm text-[var(--color-magenta)] italic">{line.lineHindi}</p>
+            <p className="mt-2 text-[13px] font-medium italic text-[var(--color-magenta)]">{line.lineHindi}</p>
           )}
-          <div className="mt-3 flex items-center gap-2 text-sm">
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
             <span className="font-bold text-[var(--color-cyan)]">{line.character}</span>
             <span className="text-[var(--color-mute)]">·</span>
             <span className="text-[var(--color-mute)]">{line.animeTitle}</span>
           </div>
-          {line.context && (
-            <p className="mt-1.5 text-xs text-[var(--color-mute)]">{line.context}</p>
-          )}
           {line.episode && (
-            <p className="mt-0.5 text-[10px] font-mono text-[var(--color-mute)]">
+            <p className="mt-1 font-mono text-[10px] text-[var(--color-mute)]">
               Ep. {line.episode}
               {line.timestamp && ` · ${line.timestamp}`}
             </p>
           )}
         </Link>
+      </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[var(--color-line)] pt-3">
+      {/* BODY */}
+      <div className="relative z-10 px-4 pt-3 pb-3 sm:px-5">
+        <p className="mb-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.35em] text-[var(--color-cyan)]/80">
+          ✦ Anime Dialogue
+        </p>
+        {line.context && (
+          <p className="text-xs leading-relaxed text-[var(--color-mute)] line-clamp-2">{line.context}</p>
+        )}
+      </div>
+
+      {/* ACTION BAR */}
+      <div className="relative z-10 flex items-center justify-between gap-2 border-t border-[var(--color-line)] px-3 py-2.5 sm:px-5 sm:py-3">
+        <div className="flex items-stretch gap-1 rounded-2xl border border-[var(--color-line)] bg-[var(--color-void)]/80 p-1">
           <motion.button
-            whileTap={{ scale: 0.82 }}
+            whileTap={{ scale: 0.8 }}
             onClick={handleLike}
             disabled={likeBusy}
-            className={`flex items-center gap-1.5 rounded-md px-4 py-2 text-xs transition-colors disabled:opacity-60 ${
+            aria-label="Like"
+            className={`flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-bold transition-all disabled:opacity-60 ${
               liked
-                ? "text-red-400 bg-red-500/10"
-                : "text-[var(--color-mute)] hover:text-red-400 hover:bg-red-500/5"
+                ? "text-[var(--color-magenta)] bg-[var(--color-magenta)]/15 shadow-[0_0_18px_rgba(255,0,230,0.25)]"
+                : "text-[var(--color-mute)] hover:bg-white/5 hover:text-[var(--color-magenta)]"
             }`}
           >
             <motion.svg
@@ -215,8 +238,8 @@ export default function VoiceLineCard({ line, index = 0 }: { line: VoiceLine; in
               initial={{ scale: 0.4 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 500, damping: 15 }}
-              width="14"
-              height="14"
+              width="15"
+              height="15"
               viewBox="0 0 24 24"
               fill={liked ? "currentColor" : "none"}
               stroke="currentColor"
@@ -224,31 +247,42 @@ export default function VoiceLineCard({ line, index = 0 }: { line: VoiceLine; in
             >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </motion.svg>
-            {likes}
+            <motion.span
+              key={likes}
+              initial={{ y: 10, opacity: 0, scale: 0.6 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              transition={{ type: "spring", stiffness: 420, damping: 22 }}
+              className={`tabular-nums ${liked ? "text-[var(--color-magenta)]" : ""}`}
+            >
+              {likes}
+            </motion.span>
           </motion.button>
+        </div>
+
+        <div className="flex items-center gap-1.5">
           <motion.button
-            whileTap={{ scale: 0.82 }}
+            whileTap={{ scale: 0.85 }}
             onClick={handleShare}
-            className="flex items-center gap-1.5 rounded-md px-4 py-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:bg-cyan-500/5 transition-colors"
+            className="flex items-center gap-1.5 rounded-xl bg-white/5 px-2.5 sm:px-3 py-2 text-[11px] font-semibold text-[var(--color-mute)] transition-all hover:bg-white/10 hover:text-[var(--color-cyan)]"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
               <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
             </svg>
-            {copied ? "Copied!" : "Share"}
+            <span className="hidden sm:inline">{copied ? "Copied!" : "Share"}</span>
           </motion.button>
           {line.animeId > 0 && (
             <motion.button
-              whileTap={{ scale: 0.82 }}
+              whileTap={{ scale: 0.85 }}
               onClick={handleOpenMoment}
-              className="flex items-center gap-1.5 rounded-md px-4 py-2 text-xs text-[var(--color-magenta)] hover:text-[var(--color-magenta)] hover:bg-[var(--color-magenta)]/5 transition-colors"
+              className="flex items-center gap-1.5 rounded-xl bg-white/5 px-2.5 sm:px-3 py-2 text-[11px] font-semibold text-[var(--color-mute)] transition-all hover:bg-white/10 hover:text-[var(--color-magenta)]"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" />
                 <circle cx="8.5" cy="8.5" r="1.5" />
                 <path d="M21 15l-5-5L5 21" />
               </svg>
-              Moment
+              <span className="hidden sm:inline">Moment</span>
             </motion.button>
           )}
         </div>

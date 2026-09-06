@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
 export const metadata: Metadata = {
   title: "Anime Themes & Customization — Dark, Light & Dim Modes | ZyniVerse",
   description:
@@ -9,6 +11,7 @@ export const metadata: Metadata = {
     description:
       "Customize your ZyniVerse experience with dark, dim, and light themes.",
   },
+  alternates: { canonical: `${BASE_URL}/themes` },
   robots: { index: true, follow: true },
 };
 

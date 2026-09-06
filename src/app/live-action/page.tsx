@@ -20,6 +20,15 @@ const FADE_UP = {
   transition: { duration: 0.5 },
 };
 
+const CURRENT_YEAR = new Date().getFullYear();
+
+function countdownLabel(year: number): string {
+  const diff = year - CURRENT_YEAR;
+  if (diff <= 0) return "NOW STREAMING";
+  if (diff === 1) return "OUT IN 1 YR";
+  return `OUT IN ${diff} YRS`;
+}
+
 function StatusBadge({ status }: { status: LiveActionAnime["status"] }) {
   const config = {
     available: { label: "Available", color: "#48BB78" },
@@ -74,6 +83,13 @@ function PosterCard({ anime, rank, priority }: { anime: LiveActionAnime; rank?: 
           </div>
         )}
         <StatusBadge status={anime.status} />
+        {anime.status === "upcoming" && (
+          <span className="absolute bottom-2 left-2 z-10 rounded-full px-2 py-0.5 font-mono text-[9px] font-bold backdrop-blur-sm"
+            style={{ background: "rgba(237,137,54,0.18)", color: "#ED8936", border: "1px solid rgba(237,137,54,0.45)" }}
+          >
+            {countdownLabel(anime.releaseYear)} · {anime.releaseYear}
+          </span>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
         <div className="absolute inset-x-0 bottom-0 p-2.5 sm:p-3 translate-y-2 group-hover/card:translate-y-0 opacity-0 group-hover/card:opacity-100 transition-all duration-300">
           <p className="font-display text-xs sm:text-sm font-bold leading-tight line-clamp-2 drop-shadow-lg">
@@ -142,6 +158,124 @@ function HorizontalCarousel({ items }: { items: LiveActionAnime[] }) {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
       </button>
     </div>
+  );
+}
+
+function FeaturedBanner({ data }: { data: LiveActionAnime[] }) {
+  const featured = data.find((a) => a.status === "available" && a.posterUrl) || data[0];
+  const [imgErr, setImgErr] = useState(false);
+  if (!featured) return null;
+
+  const tickerItems = [...data]
+    .sort((a, b) => b.popularity - a.popularity)
+    .slice(0, 10)
+    .map((a, i) => ({
+      label: a.title,
+      color: a.platforms[0]?.logoColor || "#F47521",
+      emoji: i === 0 ? "🔦" : i % 2 === 0 ? "🎬" : "🎥",
+    }));
+
+  return (
+    <motion.div {...FADE_UP} transition={{ duration: 0.6 }} className="mb-8">
+      <div className="neon-rgb-border rounded-3xl overflow-hidden relative">
+        {/* Backdrop */}
+        <div className="absolute inset-0">
+          {featured.posterUrl && !imgErr ? (
+            <Image
+              src={featured.posterUrl}
+              alt=""
+              fill
+              sizes="100vw"
+              priority
+              className="object-cover object-top opacity-35"
+              onError={() => setImgErr(true)}
+            />
+          ) : featured.status === "upcoming" ? (
+            <LiveActionPlaceholder title={featured.title} year={featured.releaseYear} />
+          ) : null}
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-void)] via-[var(--color-void)]/85 to-[var(--color-void)]/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-transparent to-transparent" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col gap-3 px-5 py-8 sm:px-8 sm:py-10">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="on-air-badge">🔦 FEATURED</span>
+            <StatusBadge status={featured.status} />
+          </div>
+          <h2 className="font-display text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+            <span className="neon-text-gradient">{featured.title}</span>
+          </h2>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-mute)]">
+            <RatingBadge rating={featured.rating} />
+            <span className="font-mono uppercase">{featured.type}</span>
+            <span>{featured.releaseYear}</span>
+            <span>·</span>
+            <span>{featured.languages.slice(0, 3).join(", ")}</span>
+          </div>
+          <p className="text-sm leading-relaxed text-[var(--color-mute)] line-clamp-3 max-w-xl">{featured.description}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {featured.genres.slice(0, 4).map((g) => (
+              <span key={g} className="glass-tag rounded-full px-2.5 py-1 text-[10px]">{g}</span>
+            ))}
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-3">
+            <Link
+              href={`/live-action/${featured.id}`}
+              className="neon-banner-btn rounded-xl px-6 py-3 text-xs font-bold uppercase tracking-wider"
+            >
+              View Details →
+            </Link>
+            {featured.platforms[0]?.available && (
+              <a
+                href={featured.platforms[0].url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-line)] px-5 py-3 text-xs font-semibold text-[var(--color-ink)] transition-all hover:border-[var(--color-cyan)]/60"
+              >
+                <span className="h-2 w-2 rounded-full" style={{ background: featured.platforms[0].logoColor }} />
+                Stream on {featured.platforms[0].name}
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Neon marquee ticker band */}
+      <div aria-hidden className="ticker-window mt-3 border-t border-[var(--color-line)] bg-[var(--color-void)]/40 py-3">
+        <div className="ticker-track flex w-max items-center gap-10 whitespace-nowrap px-8">
+          {[...tickerItems, ...tickerItems].map((t, i) => (
+            <span key={i} className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em]">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: t.color, boxShadow: `0 0 8px ${t.color}` }} />
+              <span className="text-base leading-none">{t.emoji}</span>
+              <span className="text-[var(--color-mute)]">{t.label}</span>
+              <span className="ml-6 select-none text-[var(--color-magenta)]/40">✦</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function TopRatedSection({ items }: { items: LiveActionAnime[] }) {
+  const topRated = items.filter((a) => a.rating >= 8.0).sort((a, b) => b.rating - a.rating);
+  if (topRated.length === 0) return null;
+
+  return (
+    <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.1 }} className="mb-8">
+      <div className="mb-5 flex items-end justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-5 w-1 rounded-full" style={{ background: "var(--color-amber)" }} />
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-mute)]">{/* Top Rated */}</p>
+            <h2 className="font-display text-2xl font-bold sm:text-3xl">Critic Favorites</h2>
+            <p className="text-xs text-[var(--color-mute)] mt-0.5">The critically acclaimed best of the bunch</p>
+          </div>
+        </div>
+      </div>
+      <HorizontalCarousel items={topRated} />
+    </motion.div>
   );
 }
 
@@ -263,15 +397,28 @@ function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "upcoming">("all");
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<"all" | "series" | "movie">("all");
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(96);
+
+  const years = useMemo(
+    () => Array.from(new Set(allData.map((a) => a.releaseYear))).sort((a, b) => b - a),
+    [allData]
+  );
+  const languages = useMemo(
+    () => Array.from(new Set(allData.flatMap((a) => a.languages))).sort(),
+    [allData]
+  );
 
   const filtered = useMemo(() => {
     let result = [...allData];
     if (statusFilter !== "all") result = result.filter((a) => a.status === statusFilter);
     if (selectedType !== "all") result = result.filter((a) => a.type === selectedType);
     if (selectedPlatform) result = result.filter((a) => a.platforms.some((p) => p.name === selectedPlatform));
+    if (selectedYear != null) result = result.filter((a) => a.releaseYear === selectedYear);
+    if (selectedLanguage) result = result.filter((a) => a.languages.includes(selectedLanguage));
     return result.sort((a, b) => b.popularity - a.popularity);
-  }, [statusFilter, selectedPlatform, selectedType, allData]);
+  }, [statusFilter, selectedPlatform, selectedType, selectedYear, selectedLanguage, allData]);
 
   return (
     <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.3 }} className="mb-8">
@@ -327,6 +474,41 @@ function FilterableGrid({ allData }: { allData: LiveActionAnime[] }) {
             {p.name}
           </button>
         ))}
+        <span className="w-px h-6 bg-[var(--color-line)] self-center mx-1" />
+        {languages.map((l, i) => (
+          <button key={l} onClick={() => { setSelectedLanguage(selectedLanguage === l ? null : l); setVisibleCount(96); }}
+            className="rounded-lg la-neon-filter px-3 py-1.5 text-xs font-semibold transition-all"
+            style={{
+              ["--fd" as string]: i + 18,
+              borderColor: selectedLanguage === l ? "var(--color-magenta)" : undefined,
+              background: selectedLanguage === l ? "rgba(255,64,129,0.12)" : "transparent",
+              color: selectedLanguage === l ? "var(--color-magenta)" : "var(--color-mute)",
+            }}
+          >
+            🗣 {l}
+          </button>
+        ))}
+        <span className="w-px h-6 bg-[var(--color-line)] self-center mx-1" />
+        <select
+          value={selectedYear ?? ""}
+          onChange={(e) => { setSelectedYear(e.target.value ? Number(e.target.value) : null); setVisibleCount(96); }}
+          className="la-neon-filter rounded-lg px-3 py-1.5 text-xs font-semibold transition-all outline-none"
+          style={{ ["--fd" as string]: 30, color: selectedYear != null ? "var(--color-cyan)" : "var(--color-mute)", background: selectedYear != null ? "rgba(0,188,212,0.13)" : "transparent", borderColor: selectedYear != null ? "var(--color-cyan)" : undefined }}
+        >
+          <option value="" className="bg-[var(--color-panel)] text-[var(--color-mute)]">📅 All Years</option>
+          {years.map((y) => (
+            <option key={y} value={y} className="bg-[var(--color-panel)] text-[var(--color-ink)]">{y}</option>
+          ))}
+        </select>
+
+        {(statusFilter !== "all" || selectedType !== "all" || selectedPlatform || selectedYear != null || selectedLanguage) && (
+          <button
+            onClick={() => { setStatusFilter("all"); setSelectedType("all"); setSelectedPlatform(null); setSelectedYear(null); setSelectedLanguage(null); setVisibleCount(96); }}
+            className="text-[10px] font-mono font-semibold text-[var(--color-magenta)] hover:underline"
+          >
+            ✕ Clear filters
+          </button>
+        )}
       </div>
 
       {/* Grid */}
@@ -401,6 +583,7 @@ function LiveActionPage() {
     const popular = [...liveData].sort((a, b) => b.popularity - a.popularity).slice(0, 8);
     return filterTitles(popular);
   }, [filterTitles, liveData]);
+  const filteredTopRated = useMemo(() => filterTitles(liveData), [filterTitles, liveData]);
   const filteredGrid = useMemo(() => (searchQuery ? filterTitles(liveData) : liveData), [filterTitles, searchQuery, liveData]);
 
   return (
@@ -543,8 +726,14 @@ function LiveActionPage() {
             ))}
           </motion.div>
 
+          {/* Featured spotlight + ticker */}
+          {!searchQuery && <FeaturedBanner data={liveData} />}
+
           {/* Most Popular */}
           <MostPopularSection items={searchQuery ? filteredPopular : undefined} allData={liveData} />
+
+          {/* Top Rated / Critic Favorites */}
+          <TopRatedSection items={filteredTopRated} />
 
           {/* Available Now */}
           {filteredAvailable.length > 0 && (
@@ -570,8 +759,8 @@ function LiveActionPage() {
                 <div className="flex items-center gap-3">
                   <div className="h-5 w-1 rounded-full bg-[#ED8936]" />
                   <div>
-                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-mute)]">{/* Upcoming */}</p>
-                    <h2 className="font-display text-2xl font-bold sm:text-3xl">Coming Soon</h2>
+                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-mute)]">{/* Most Anticipated */}</p>
+                    <h2 className="font-display text-2xl font-bold sm:text-3xl">Most Anticipated</h2>
                     <p className="text-xs text-[var(--color-mute)] mt-0.5">Live-action adaptations in production</p>
                   </div>
                 </div>

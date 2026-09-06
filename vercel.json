@@ -2,6 +2,7 @@
   "buildCommand": "npx prisma generate && next build",
   "installCommand": "npm install",
   "framework": "nextjs",
+  "fluid": false,
   "crons": [
     {
       "path": "/api/cron/refresh-schedules",

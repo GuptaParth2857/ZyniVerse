@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useWatchlist } from "@/components/WatchlistProvider";
 import { DynamicWatchlistCarousel3D as WatchlistCarousel3D } from "@/components/lazy";
 import { PageTransition } from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
+import ListImportExport from "@/components/ListImportExport";
 import NativeBannerAd from "@/components/NativeBannerAd";
 
 type ListStatus = "CURRENT" | "PLANNING" | "COMPLETED" | "DROPPED" | "PAUSED" | "REWATCHING";
@@ -21,10 +23,33 @@ const STATUS_OPTIONS: { label: string; value: ListStatus }[] = [
 
 export default function WatchlistPage() {
   const { items, setStatus } = useWatchlist();
+  const { status: authStatus } = useSession();
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<ListStatus>("COMPLETED");
   const [showBulkToolbar, setShowBulkToolbar] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareError, setShareError] = useState("");
+
+  const handleShare = async () => {
+    if (shareUrl) { await navigator.clipboard.writeText(shareUrl).catch(() => {}); return; }
+    if (authStatus !== "authenticated") { setShareError("Sign in to share your card."); return; }
+    setSharing(true);
+    setShareError("");
+    try {
+      const res = await fetch("/api/share-list", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+      const url = `${window.location.origin}/list-share/${data.key}`;
+      setShareUrl(url);
+      await navigator.clipboard.writeText(url).catch(() => {});
+    } catch {
+      setShareError("Couldn't create share link. Try again.");
+    } finally {
+      setSharing(false);
+    }
+  };
 
   const toggleSelect = (id: number) => {
     setSelected((prev) => {
@@ -111,6 +136,26 @@ export default function WatchlistPage() {
                 {exporting ? "..." : "Export JSON"}
               </button>
 
+              {/* Share list card */}
+              <button
+                onClick={handleShare}
+                disabled={sharing}
+                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                  shareUrl
+                    ? "bg-emerald-500 text-black"
+                    : "border border-[var(--color-line)] bg-[var(--color-panel)] text-[var(--color-text)] hover:border-[var(--color-cyan)]"
+                } disabled:opacity-50`}
+              >
+                {sharing ? "..." : shareUrl ? "✓ Link Copied" : "🔗 Share Card"}
+              </button>
+              {shareUrl && (
+                <a href={shareUrl} target="_blank" rel="noopener noreferrer"
+                  className="rounded-lg border border-[var(--color-cyan)]/40 bg-[var(--color-cyan)]/10 px-3 py-1.5 text-xs font-medium text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/20 transition-all">
+                  Open Card ↗
+                </a>
+              )}
+              {shareError && <span className="text-[10px] text-red-400">{shareError}</span>}
+
               {/* Mass edit toggle */}
               <button
                 onClick={() => {
@@ -193,6 +238,7 @@ export default function WatchlistPage() {
           </div>
         </>
       )}
+      <ListImportExport />
       <div className="mx-auto max-w-7xl pb-6 mt-8">
         <NativeBannerAd />
       </div>

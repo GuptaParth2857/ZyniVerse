@@ -72,6 +72,12 @@ export default function PopularCharactersPage() {
               <div className="shrink-0 text-right">
                 <div className="text-3xl font-bold font-mono text-white/80">{chars.length.toLocaleString()}</div>
                 <div className="text-[10px] font-mono uppercase tracking-wider text-white/25">characters loaded</div>
+                <Link href="/my-characters" className="mt-2 inline-block rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                  ♥ My Characters
+                </Link>
+                <Link href="/characters/trait-search" className="mt-2 ml-2 inline-block rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                  🔎 Trait Search
+                </Link>
               </div>
             )}
           </div>

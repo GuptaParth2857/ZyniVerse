@@ -28,6 +28,7 @@ interface ListEntryData {
   scoreSound?: number | null;
   scoreCharacters?: number | null;
   scoreEnjoyment?: number | null;
+  dropReason?: string | null;
 }
 
 export interface SubScores {
@@ -44,7 +45,7 @@ interface WatchlistCtx {
   isSaved: (id: number) => boolean;
   getStatus: (id: number) => string | null;
   toggle: (anime: WatchlistItem) => void;
-  setStatus: (mediaId: number, status: ListStatus, type?: string) => void;
+  setStatus: (mediaId: number, status: ListStatus, type?: string, dropReason?: string) => void;
   getProgress: (mediaId: number) => number;
   getScore: (mediaId: number) => number | null;
   getSubScores: (mediaId: number) => SubScores;
@@ -127,20 +128,20 @@ export function WatchlistProvider({ children }: { children: React.ReactNode }) {
     });
   }, [session, syncToCloud]);
 
-  const setStatus = useCallback((mediaId: number, status: ListStatus, type = "ANIME") => {
+  const setStatus = useCallback((mediaId: number, status: ListStatus, type = "ANIME", dropReason?: string) => {
     if (session?.user?.id) {
       fetch("/api/watchlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "add", mediaId, type, status }),
+        body: JSON.stringify({ action: "add", mediaId, type, status, ...(dropReason ? { dropReason } : {}) }),
       }).catch(() => {});
     }
     setEntries((prev) => {
       const existing = prev.find((e) => e.mediaId === mediaId);
       if (existing) {
-        return prev.map((e) => e.mediaId === mediaId ? { ...e, status } : e);
+        return prev.map((e) => e.mediaId === mediaId ? { ...e, status, dropReason: status === "DROPPED" ? (dropReason ?? e.dropReason) : null } : e);
       }
-      return [...prev, { mediaId, type, status, progress: 0, total: 0, score: null }];
+      return [...prev, { mediaId, type, status, progress: 0, total: 0, score: null, dropReason: status === "DROPPED" ? dropReason : null }];
     });
   }, [session]);
 

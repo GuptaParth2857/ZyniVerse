@@ -269,6 +269,17 @@ export async function searchYouTubePodcasts(query: string): Promise<PodcastEpiso
   const dbCached = await readDbCache(cacheKey);
   if (dbCached) return dbCached;
 
+  // Quick local match from the cached feed before hitting the live API —
+  // common queries answer in milliseconds instead of waiting on YouTube.
+  const feed = await readDbCache("youtube-podcasts", true);
+  if (feed) {
+    const quick = filterFeedByQuery(feed, q);
+    if (quick.length > 0) {
+      searchCache.set(cacheKey, { data: quick, timestamp: Date.now() });
+      return quick;
+    }
+  }
+
   if (!API_KEY) return feedFallbackSearch(q);
 
   try {

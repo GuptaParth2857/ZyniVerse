@@ -9,8 +9,11 @@ interface UserListCardData {
   title: string;
   description: string | null;
   type: string;
+  category: string | null;
   isFeatured: boolean;
   likes: number;
+  upvotes: number;
+  downvotes: number;
   createdAt: string;
   itemCount: number;
   coverImages: string[];
@@ -76,6 +79,7 @@ function Collage({ images, itemCount }: { images: string[]; itemCount: number })
 }
 
 export default function UserListCard({ list, index = 0 }: { list: UserListCardData; index?: number }) {
+  const score = list.upvotes - list.downvotes;
   return (
     <TiltCard
       index={index}
@@ -92,11 +96,18 @@ export default function UserListCard({ list, index = 0 }: { list: UserListCardDa
         <div className="p-4">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-display text-sm font-bold leading-snug truncate">{list.title}</h3>
-            {list.isFeatured && (
-              <span className="shrink-0 rounded-full bg-yellow-500/20 px-2 py-0.5 text-[10px] font-semibold text-yellow-400">
-                ★ Featured
-              </span>
-            )}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {list.category && (
+                <span className="rounded-full bg-[var(--color-cyan)]/10 px-2 py-0.5 text-[10px] font-semibold text-[var(--color-cyan)]">
+                  {list.category}
+                </span>
+              )}
+              {list.isFeatured && (
+                <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-[10px] font-semibold text-yellow-400">
+                  ★ Featured
+                </span>
+              )}
+            </div>
           </div>
           {list.description && (
             <p className="mt-1 text-xs leading-relaxed text-[var(--color-mute)] line-clamp-2">{list.description}</p>
@@ -114,7 +125,14 @@ export default function UserListCard({ list, index = 0 }: { list: UserListCardDa
             </div>
             <div className="flex items-center gap-3">
               <span className="font-mono text-[10px]">{list.itemCount} items</span>
-              <span className="font-mono text-[10px] text-[var(--color-magenta)]">♥ {list.likes}</span>
+              <div className="flex items-center gap-1 font-mono text-[10px]">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={score > 0 ? "text-green-400" : ""}>
+                  <path d="M12 19V5M5 12l7-7 7 7" />
+                </svg>
+                <span className={score > 0 ? "text-green-400" : score < 0 ? "text-red-400" : ""}>
+                  {score > 0 ? `+${score}` : score}
+                </span>
+              </div>
             </div>
           </div>
         </div>

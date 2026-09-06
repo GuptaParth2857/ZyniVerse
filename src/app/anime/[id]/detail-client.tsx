@@ -28,12 +28,16 @@ import ShareButton from "@/components/ShareButton";
 import WhatsAppShare from "@/components/WhatsAppShare";
 import MomentMaker from "@/components/MomentMaker";
 import RecRelationships from "@/components/RecRelationships";
+import FanRecommendations from "@/components/features/FanRecommendations";
 import DiscussionLinks from "@/components/DiscussionLinks";
 import CharacterVoteWidget from "@/components/CharacterVoteWidget";
 import CalendarSync from "@/components/CalendarSync";
 import EpisodeRatingsCard from "@/components/EpisodeRatingsCard";
 import EpisodeDiscussion from "@/components/EpisodeDiscussion";
 import DubNotifyButton from "@/components/DubNotifyButton";
+import AnimeFollowButton from "@/components/AnimeFollowButton";
+import LongReviews from "@/components/LongReviews";
+import SeasonalTrackerWidget from "@/components/SeasonalTrackerWidget";
 import type { MediaAnimeFull } from "@/lib/anilist";
 
 const DUB_LANG_STYLES: Record<string, { bg: string; text: string; border: string }> = {
@@ -202,6 +206,7 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
                 >
                   {saved ? "✓ Saved to List" : "+ Add to List"}
                 </button>
+                <AnimeFollowButton mediaId={anime.id} animeTitle={title} />
                 {anime.trailer?.site === "youtube" && (
                   <button onClick={() => setTrailerOpen(true)}
                     className="rounded-full neon-rgb-border bg-white/5 px-6 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-cyan)]/10 hover:border-[var(--color-cyan)] transition-all backdrop-blur"
@@ -414,10 +419,16 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
 
           {/* Reviews */}
           <ReviewsSection mediaId={anime.id} />
+
+          {/* Long-form Reviews */}
+          <LongReviews mediaId={anime.id} mediaTitle={title} mediaImage={anime.coverImage?.large || ""} />
         </div>
 
         {/* ── Right Column (Sidebar) ── */}
         <aside className="space-y-6">
+          {/* Seasonal Tracker */}
+          <SeasonalTrackerWidget mediaId={anime.id} mediaTitle={title} mediaImage={anime.coverImage?.large || ""} totalEpisodes={anime.episodes} />
+
           {/* Episode Tracker */}
           {anime.episodes && (
             <EpisodeTracker mediaId={anime.id} totalEpisodes={anime.episodes} animeTitle={title} />
@@ -454,6 +465,9 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
 
           {/* Recommendation Relationships */}
           <RecRelationships mediaId={anime.id} />
+
+          {/* Fan Recommendations */}
+          <FanRecommendations mediaId={anime.id} mediaTitle={title} />
 
           {/* Reddit Discussions */}
           <DiscussionLinks mediaId={anime.id} />

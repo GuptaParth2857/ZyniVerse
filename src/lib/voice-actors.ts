@@ -143,7 +143,7 @@ async function searchStaffOnAnilist(name: string): Promise<AniListStaffSearchRes
   try {
     const res = await fetch("https://graphql.anilist.co", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": "ZyniVerse/1.0 (https://zyverse.in)", "Origin": "https://anilist.co", "Referer": "https://anilist.co/" },
       body: JSON.stringify({ query: ANILIST_STAFF_QUERY, variables: { s: name } }),
       signal: AbortSignal.timeout(5000),
     });
@@ -228,7 +228,7 @@ async function resolveAnimeCovers(ids: number[]): Promise<Map<number, string>> {
     try {
       const res = await fetch("https://graphql.anilist.co", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": "ZyniVerse/1.0 (https://zyverse.in)", "Origin": "https://anilist.co", "Referer": "https://anilist.co/" },
         body: JSON.stringify({ query: ANILIST_MEDIA_COVER_QUERY, variables: { ids: chunk } }),
         signal: AbortSignal.timeout(8000),
       });

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
 export const metadata: Metadata = {
   title: "Anime Polls — Vote on Your Favorites | ZyniVerse",
   description:
@@ -9,6 +11,7 @@ export const metadata: Metadata = {
     description:
       "Create and vote on anime polls. Have your say in the community.",
   },
+  alternates: { canonical: `${BASE_URL}/polls` },
   robots: { index: true, follow: true },
 };
 

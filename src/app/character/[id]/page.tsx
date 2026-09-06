@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getCharacter } from "@/lib/anilist";
 import CharacterDetailClient from "./character-client";
 
-export const revalidate = 300;
+export const revalidate = 43200;
 
 const getCharacterCached = cache(getCharacter);
 

@@ -20,8 +20,17 @@ interface StatsData {
   yearlyActivity: { year: number; count: number }[];
 }
 
+interface GenreTrend {
+  year: number;
+  [genre: string]: number;
+}
+
+const GENRE_COLORS = ["#ff2d78", "#29f2e0", "#8a5cff", "#ffd700", "#00ff7f", "#ff6b6b", "#60a5fa", "#c084fc"];
+
 export default function StatsPage() {
   const [stats, setStats] = useState<StatsData | null>(null);
+  const [trends, setTrends] = useState<GenreTrend[]>([]);
+  const [trendGenres, setTrendGenres] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +42,13 @@ export default function StatsPage() {
       })
       .then((d) => { setStats(d); setLoading(false); })
       .catch((e) => { setError(e.message); setLoading(false); });
+
+    fetch("/api/genre-trends")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d) { setTrends(d.trends || []); setTrendGenres(d.genres || []); }
+      })
+      .catch(() => {});
   }, []);
 
   if (loading) return <Loader label="Crunching your stats..." />;
@@ -115,6 +131,47 @@ export default function StatsPage() {
                   <span className="text-[10px] font-mono text-[var(--color-mute)]">{y.year}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {trends.length > 0 && trendGenres.length > 0 && (
+          <div className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5 mt-6">
+            <h3 className="font-display text-sm font-bold mb-1">Genre Trends</h3>
+            <p className="text-[11px] text-[var(--color-mute)] mb-4">How your top genres grew across completed anime each year.</p>
+
+            <div className="flex flex-wrap gap-2 mb-4">
+              {trendGenres.map((g, i) => (
+                <span key={g} className="inline-flex items-center gap-1.5 text-[10px] text-[var(--color-mute)]">
+                  <span className="h-2.5 w-2.5 rounded-sm" style={{ background: GENRE_COLORS[i % GENRE_COLORS.length] }} />
+                  {g}
+                </span>
+              ))}
+            </div>
+
+            <div className="space-y-4">
+              {trends.map((t) => {
+                const values = trendGenres.map((g) => t[g] || 0);
+                const total = values.reduce((a, b) => a + b, 0);
+                if (total === 0) return null;
+                return (
+                  <div key={t.year}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-mono font-semibold text-[var(--color-ink)]">{t.year}</span>
+                      <span className="text-[10px] font-mono text-[var(--color-mute)]">{total} completed</span>
+                    </div>
+                    <div className="flex h-5 w-full rounded-md overflow-hidden bg-white/5">
+                      {values.map((v, i) => {
+                        if (v === 0) return null;
+                        const width = (v / total) * 100;
+                        return (
+                          <div key={i} className="h-full transition-all" style={{ width: `${width}%`, background: GENRE_COLORS[i % GENRE_COLORS.length] }} title={`${trendGenres[i]}: ${v}`} />
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

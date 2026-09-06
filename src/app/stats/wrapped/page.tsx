@@ -113,7 +113,7 @@ export default function WrappedPage() {
                 </div>
                 <div className="text-left">
                   <p className="text-sm font-bold">{session?.user?.name || "Anime Fan"}</p>
-                  <p className="text-[10px] text-[var(--color-mute)]">@{(session?.user as Record<string, string>)?.username || "user"}</p>
+                  <p className="text-[10px] text-[var(--color-mute)]">@{(session?.user as unknown as Record<string, string>)?.username || "user"}</p>
                 </div>
               </div>
             </div>

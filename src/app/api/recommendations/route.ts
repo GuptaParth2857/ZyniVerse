@@ -1,82 +1,158 @@
+import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
+import { resolveUserId } from "@/lib/resolve-user";
 import { auth } from "@/lib/auth";
-import { getGenreBasedRecs, getSimilarAnime, getTrendingRecs, getPersonalizedRecs } from "@/lib/recommender";
+import { searchMedia, getTrending, getTopRated, getUpcoming, bestTitle } from "@/lib/anilist";
+import type { Media } from "@/lib/anilist";
 import { getAIRecommendations } from "@/lib/ai-recommender";
-import { getTopRated, getUpcoming, bestTitle } from "@/lib/anilist";
+import { logError } from "@/lib/logger";
 
-function mediaToRec(media: { id: number; title: { english?: string | null; romaji?: string | null; native?: string | null; userPreferred?: string | null }; coverImage?: { extraLarge?: string | null; large?: string | null; medium?: string | null } | null; format?: string | null; episodes?: number | null; genres?: string[] | null; averageScore?: number | null; trending?: number | null; popularity?: number | null; status?: string | null; nextAiringEpisode?: { airingAt: number } | null }, reason: string) {
-  const score = Math.min(100, Math.round(((media.averageScore || 0) * 0.6) + ((media.trending || 0) * 0.2) + ((media.popularity || 0) / 5000) * 20));
+export const dynamic = "force-dynamic";
+
+const VALID_GENRES = [
+  "Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery",
+  "Psychological", "Romance", "Sci-Fi", "Slice of Life", "Sports",
+  "Supernatural", "Thriller", "Mecha",
+];
+
+function mediaToRec(m: Media, reason = ""): {
+  id: number; title: string; image: string; score: number; reason: string;
+  format: string; episodes: number; genres: string[]; matchTags: string[];
+} {
   return {
-    id: media.id,
-    title: bestTitle(media.title),
-    score,
+    id: m.id,
+    title: bestTitle(m.title),
+    image: m.coverImage?.extraLarge || m.coverImage?.large || m.coverImage?.medium || "",
+    score: m.averageScore || 0,
     reason,
-    image: media.coverImage?.extraLarge || media.coverImage?.large || media.coverImage?.medium || "",
-    format: media.format || "",
-    episodes: media.episodes || 0,
-    genres: media.genres || [],
+    format: m.format || "",
+    episodes: m.episodes || 0,
+    genres: m.genres || [],
     matchTags: [],
   };
 }
 
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const type = url.searchParams.get("type") || "trending";
-  const genres = url.searchParams.get("genre")?.split(",").filter(Boolean) || [];
-  const id = url.searchParams.get("id") ? Number(url.searchParams.get("id")) : undefined;
-  const exclude = url.searchParams.get("exclude")?.split(",").map(Number).filter(Boolean) || [];
+async function discovery(type: string, genre: string | null, userId: string | null) {
+  const PER = 24;
+  const seen = new Set<number>();
+  const push = (list: { id: number }[]) => {
+    const out: typeof list = [];
+    for (const it of list) {
+      if (seen.has(it.id)) continue;
+      seen.add(it.id);
+      out.push(it);
+    }
+    return out;
+  };
 
-  // Session-dependent types must stay dynamic; everything else is
-  // public and identical per query, so let the CDN absorb repeat hits.
-  const cacheable = !["ai", "personalized"].includes(type);
-  const headers: HeadersInit = cacheable
-    ? { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600" }
-    : { "Cache-Control": "private, no-store" };
+  switch (type) {
+    case "ai":
+    case "personalized": {
+      // "AI Picks" uses taste from anonymous+personal activity; "For You" is
+      // strictly the logged-in user's taste profile (falls back to trending).
+      const recs = await getAIRecommendations(userId ?? undefined);
+      return push(recs.map((r) => ({
+        id: r.id, title: r.title, image: r.image, score: r.score,
+        reason: r.reason, format: r.format, episodes: r.episodes,
+        genres: r.genres, matchTags: r.matchTags,
+      }))).slice(0, type === "personalized" ? 24 : 12);
+    }
+    case "top_rated": {
+      const top = await getTopRated(PER);
+      return push(top.map((m) => mediaToRec(m, "One of the highest-rated anime — a must-watch."))).slice(0, 24);
+    }
+    case "upcoming": {
+      const up = await getUpcoming(PER);
+      return push(up.map((m) => mediaToRec(m, "Coming soon — add it to your watchlist."))).slice(0, 24);
+    }
+    case "genre": {
+      if (!genre || !VALID_GENRES.includes(genre)) {
+        return NextResponse.json({ error: "A valid genre is required for genre discovery." }, { status: 400 });
+      }
+      const g = await searchMedia({ genre, sort: "POPULARITY_DESC", perPage: PER });
+      return push(g.media.map((m) => mediaToRec(m, `Top ${genre} anime picked for you.`))).slice(0, 24);
+    }
+    case "trending":
+    default: {
+      const tr = await getTrending(PER);
+      return push(tr.map((m) => mediaToRec(m, "Trending now — join the conversation."))).slice(0, 24);
+    }
+  }
+}
+
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url);
+  const type = (url.searchParams.get("type") || "").trim().toLowerCase();
+  const genre = url.searchParams.get("genre")?.trim() || null;
+
+  // Fan recommendations (from feature D): /api/recommendations?fromId=&toId=
+  if (!type && (url.searchParams.get("fromId") || url.searchParams.get("toId"))) {
+    const fromId = Number(url.searchParams.get("fromId"));
+    const toId = Number(url.searchParams.get("toId"));
+    const order = url.searchParams.get("order") || "top";
+    const where = fromId ? { fromMediaId: fromId } : toId ? { toMediaId: toId } : undefined;
+    const recs = await prisma.mediaRecommendation.findMany({
+      where,
+      orderBy: order === "new" ? { createdAt: "desc" } : { upvotes: "desc" },
+      take: 50,
+    });
+    return NextResponse.json({ recommendations: recs });
+  }
+
+  // Discovery mode (fixes the Recommendations page)
+  let userId: string | null = null;
+  try {
+    const session = await auth();
+    userId = session?.user?.id ?? null;
+  } catch { /* anonymous browsing still works */ }
 
   try {
-    let recommendations;
-
-    switch (type) {
-      case "ai": {
-        const session = await auth();
-        recommendations = await getAIRecommendations(session?.user?.id || undefined);
-        break;
-      }
-      case "genre": {
-        recommendations = await getGenreBasedRecs(genres, exclude);
-        break;
-      }
-      case "similar": {
-        if (!id) return Response.json({ recommendations: [], error: "id required" }, { status: 400 });
-        recommendations = await getSimilarAnime(id);
-        break;
-      }
-      case "personalized": {
-        const session = await auth();
-        if (session?.user?.id) {
-          recommendations = await getPersonalizedRecs(session.user.id);
-        } else {
-          recommendations = await getTrendingRecs();
-        }
-        break;
-      }
-      case "top_rated": {
-        const data = await getTopRated(18);
-        recommendations = data.map((m) => mediaToRec(m, "Highest rated anime of all time"));
-        break;
-      }
-      case "upcoming": {
-        const data = await getUpcoming(18);
-        recommendations = data.map((m) => mediaToRec(m, m.nextAiringEpisode ? "Airing soon" : "Upcoming release"));
-        break;
-      }
-      default: {
-        recommendations = await getTrendingRecs();
-        break;
-      }
-    }
-
-    return Response.json({ recommendations }, { headers });
+    const body = await discovery(type, genre, userId);
+    if (body instanceof NextResponse) return body;
+    return NextResponse.json({ recommendations: body });
   } catch (e) {
-    return Response.json({ recommendations: [], error: (e as Error).message }, { status: 500 });
+    logError(e);
+    return NextResponse.json({ error: "Failed to load recommendations, try again shortly." }, { status: 502 });
   }
+}
+
+export async function POST(request: NextRequest) {
+  const userId = await resolveUserId();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await request.json();
+  const fromMediaId = Number(body.fromMediaId);
+  const fromTitle = String(body.fromTitle || "").trim();
+  const fromType = body.fromType || "ANIME";
+  const toMediaId = Number(body.toMediaId);
+  const toTitle = String(body.toTitle || "").trim();
+  const toType = body.toType || "ANIME";
+  const meaning = String(body.meaning || "").trim();
+
+  if (!fromMediaId || !toMediaId || !toTitle || !meaning) {
+    return NextResponse.json({ error: "fromMediaId, toMediaId, toTitle and meaning required" }, { status: 400 });
+  }
+  if (meaning.length > 500) {
+    return NextResponse.json({ error: "Meaning too long (max 500 chars)" }, { status: 400 });
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { username: true } });
+
+  const rec = await prisma.mediaRecommendation.create({
+    data: {
+      fromMediaId,
+      fromTitle,
+      fromType,
+      toMediaId,
+      toTitle,
+      toType,
+      meaning,
+      userId,
+      authorUsername: user?.username ?? null,
+    },
+  });
+
+  return NextResponse.json({ recommendation: rec }, { status: 201 });
 }

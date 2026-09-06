@@ -13,9 +13,12 @@ import WatchHistory from "@/components/WatchHistory";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import RankBadge, { RankPill } from "@/components/RankBadge";
 import ProfileMoments from "@/components/ProfileMoments";
+import DailyRewardCard from "@/components/DailyRewardCard";
+import FollowedAnimeStrip from "@/components/FollowedAnimeStrip";
+import AccountDataManager from "@/components/AccountDataManager";
 import { getRank, getNextRank } from "@/lib/achievements";
 
-type Tab = "overview" | "entries" | "reviews" | "stats" | "history" | "import" | "api" | "lists" | "moments";
+type Tab = "overview" | "entries" | "reviews" | "stats" | "history" | "import" | "api" | "lists" | "moments" | "account";
 
 interface MediaInfo {
   id: number;
@@ -53,6 +56,7 @@ const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: "history", label: "History", icon: "◷" },
   { key: "import", label: "Import", icon: "⇪" },
   { key: "api", label: "API", icon: "⚡" },
+  { key: "account", label: "Account", icon: "⚙" },
 ];
 
 const STATUS_OPTIONS = ["ALL", "CURRENT", "PLANNING", "COMPLETED", "DROPPED", "PAUSED"] as const;
@@ -444,6 +448,8 @@ export default function ProfilePage() {
             {/* OVERVIEW TAB */}
             {tab === "overview" && (
               <div className="space-y-6">
+                <DailyRewardCard />
+                <FollowedAnimeStrip />
                 {/* Top Anime Showcase */}
                 {user.entries.filter((e) => e.type === "ANIME" && e.status === "COMPLETED" && e.score && e.score > 0).length > 0 && (
                   <div>
@@ -768,6 +774,9 @@ export default function ProfilePage() {
 
             {/* API TAB */}
             {tab === "api" && <ApiKeyManager />}
+
+            {/* ACCOUNT TAB */}
+            {tab === "account" && <AccountDataManager />}
           </motion.div>
         </AnimatePresence>
       </div>

@@ -6,7 +6,7 @@ import WatchOrderDetail from "./WatchOrderDetail";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
-export const revalidate = 300;
+export const revalidate = 43200;
 
 interface Props {
   params: Promise<{ id: string }>;

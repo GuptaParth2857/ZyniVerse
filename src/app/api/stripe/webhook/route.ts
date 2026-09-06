@@ -29,6 +29,18 @@ export async function POST(request: Request) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.userId;
+      const orderType = session.metadata?.orderType;
+
+      if (session.mode === "payment" || orderType === "merch") {
+        if (session.id) {
+          await prisma.order.updateMany({
+            where: { stripeSessionId: session.id, status: "pending" },
+            data: { status: "paid" },
+          });
+        }
+        break;
+      }
+
       const plan = session.metadata?.plan || "pro";
 
       if (userId) {

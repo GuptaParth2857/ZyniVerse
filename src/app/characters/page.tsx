@@ -270,7 +270,12 @@ export default function CharactersBrowsePage() {
             <span className="h-4 w-1 rounded-full bg-[#C026FF]" />
             Most Popular Characters
           </h2>
-          <span className="text-[10px] text-white/20 font-mono">By favorites</span>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-white/20 font-mono">By favorites</span>
+            <Link href="/popular-characters" className="shrink-0 text-sm text-white/30 hover:text-white/60 transition-colors">
+              View all →
+            </Link>
+          </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
           {rest.map((c, i) => (

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { pruneLogs, pruneAniListCacheToCap } from "@/lib/db-prune";
 
 export const revalidate = 0;

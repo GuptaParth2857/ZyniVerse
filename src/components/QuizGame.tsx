@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { logError } from "@/lib/logger";
+import ShareGameResult from "@/components/ShareGameResult";
 
 interface QuizQ {
   id: string;
@@ -90,6 +91,13 @@ interface Wallet {
 }
 
 function loadWallet(): Wallet {
+  if (typeof window === "undefined") {
+    return {
+      xp: 0, totalCorrect: 0, totalPlayed: 0, dailyStreak: 0, lastPlayedDate: "",
+      powerUps: { fiftyFifty: 3, skip: 1, doubleXp: 1 },
+      bestScore: 0, bestStreak: 0, totalXpEarned: 0, quizzesPlayed: 0,
+    };
+  }
   try {
     const raw = localStorage.getItem("quizWallet");
     if (raw) {
@@ -120,6 +128,7 @@ function loadWallet(): Wallet {
 }
 
 function saveWallet(wallet: Wallet) {
+  if (typeof window === "undefined") return;
   localStorage.setItem("quizWallet", JSON.stringify(wallet));
 }
 
@@ -867,6 +876,18 @@ export default function QuizGame({ isDaily = false }: { isDaily?: boolean }) {
                 className="flex-1 rounded-xl py-3 text-sm font-bold border transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)", color: "#888" }}
               >⚙️ Change Settings</button>
+            </div>
+
+            <div className="mt-5 rounded-xl bg-white/5 border border-white/10 p-3">
+              <p className="text-xs font-bold text-[#00ffff] mb-2 text-center">📣 Show off your score</p>
+              <ShareGameResult
+                game="Anime Quiz"
+                label="ZyniVerse Daily"
+                score={score}
+                total={questions.length}
+                streak={wallet.dailyStreak > 1 ? wallet.dailyStreak : undefined}
+                text={`I scored ${score}/${questions.length} on ZyniVerse Anime Quiz${wallet.dailyStreak > 1 ? ` (${wallet.dailyStreak}-day streak!)` : ""}! Think you can beat me? 😤`}
+              />
             </div>
           </div>
         </div>

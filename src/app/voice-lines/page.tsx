@@ -15,31 +15,45 @@ export const metadata: Metadata = {
 
 export default function VoiceLinesPage() {
   return (
-    <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-      <section className="mb-10">
-        <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-magenta)]/40 bg-[var(--color-magenta)]/10 px-3 py-1 font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)] shadow-[0_0_16px_rgba(255,64,146,0.25)]">
-          ✦ Voice Lines Library
-        </p>
-        <div className="neon-rgb-border inline-block rounded-2xl px-5 py-3">
-          <h1 className="bg-gradient-to-r from-[var(--color-cyan)] via-white to-[var(--color-magenta)] bg-clip-text font-display text-3xl font-bold text-transparent sm:text-5xl">
+    <main className="relative mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6">
+      {/* Background glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[480px] opacity-40 blur-[120px]"
+        style={{
+          background:
+            "radial-gradient(50% 50% at 25% 20%, rgba(138,92,255,0.5), transparent 70%), radial-gradient(50% 50% at 75% 15%, rgba(255,45,120,0.4), transparent 70%), radial-gradient(40% 40% at 50% 80%, rgba(41,242,224,0.25), transparent 70%)",
+        }}
+      />
+
+      {/* ─────────── HERO ─────────── */}
+      <section className="relative overflow-hidden rounded-3xl border border-[var(--color-line)] bg-[var(--color-panel)]/60 py-12 text-center backdrop-blur-sm sm:py-16">
+        <div className="neon-banner-card pointer-events-none absolute inset-0" />
+        <div className="relative z-10 mx-auto max-w-3xl px-6">
+          <p className="console-label mb-4">Voice Lines Library · Iconic Dialogues</p>
+
+          <h1 className="neon-text-gradient font-display text-4xl font-black tracking-tight sm:text-6xl">
             Anime Quotes & Dialogues
           </h1>
-        </div>
-        <p className="mt-4 max-w-2xl text-lg text-[var(--color-mute)]">
-          Search and browse the most iconic anime quotes. From Naruto&apos;s ninja way to
-          Luffy&apos;s pirate dreams — including Hindi dub lines.
-        </p>
-        <div className="mt-6 flex flex-wrap gap-2">
-          {["Naruto", "One Piece", "Attack on Titan", "Hindi Dub"].map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-1 text-xs text-[var(--color-mute)]"
-            >
-              {tag}
-            </span>
-          ))}
+
+          <p className="mx-auto mt-4 max-w-xl text-sm text-[var(--color-mute)] sm:text-base">
+            Search and browse the most iconic anime quotes. From Naruto&apos;s ninja way to
+            Luffy&apos;s pirate dreams — including Hindi dub lines.
+          </p>
+
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
+            {["Naruto", "One Piece", "Attack on Titan", "Hindi Dub"].map((tag) => (
+              <span
+                key={tag}
+                className="glass-tag"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
+
       <VoiceLineGallery />
     </main>
   );

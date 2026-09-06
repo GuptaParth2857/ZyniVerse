@@ -95,6 +95,7 @@ export default function CharacterTournamentsPage() {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load(tab === "mine");
   }, [tab, load]);
 
@@ -296,6 +297,7 @@ function CreateModal({
 
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSize(8);
       setTitle("");
       setDescription("");
@@ -304,13 +306,13 @@ function CreateModal({
       setSelected([]);
       setError(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
     const q = query.trim();
     if (!q) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults([]);
       return;
     }

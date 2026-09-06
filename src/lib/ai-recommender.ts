@@ -44,6 +44,19 @@ async function buildActivityProfile(userId?: string): Promise<ActivityProfile> {
   }
 
   const genreWeights = new Map<string, number>();
+
+  // Seed from onboarding preferences so new users get good recs immediately
+  if (userId) {
+    const pref = await prisma.user.findUnique({
+      where: { id: userId! },
+      select: { favoriteGenres: true, favoriteMoods: true },
+    });
+    if (pref && pref.favoriteGenres.length > 0) {
+      pref.favoriteGenres.forEach((g, i) => {
+        genreWeights.set(g, Math.max((genreWeights.get(g) || 0), 12 - i));
+      });
+    }
+  }
   const mediaIds: number[] = [];
   const searchQueries: string[] = [];
   const actionCounts = new Map<string, number>();

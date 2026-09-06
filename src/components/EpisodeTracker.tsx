@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import ShareButton from "@/components/ShareButton";
+import EpisodeReactionBar from "@/components/EpisodeReactionBar";
 
 interface EpisodeTrackerProps {
   mediaId: number;
@@ -142,6 +143,9 @@ export default function EpisodeTracker({ mediaId, totalEpisodes, animeTitle }: E
           })}
         </div>
       )}
+
+      {/* Reactions */}
+      <EpisodeReactionBar mediaId={mediaId} episode={Math.min(nextUnwatched, totalEpisodes || 1)} />
 
       {/* Sync info */}
       {watched.length > 0 && totalEpisodes > 0 && watched.length >= totalEpisodes && (

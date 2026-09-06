@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getStaffBasic, getStaffMedia } from "@/lib/anilist";
 import StaffDetailClient from "./staff-client";
 
-export const revalidate = 300;
+export const revalidate = 43200;
 
 const getStaffBasicCached = cache(getStaffBasic);
 const getStaffMediaCached = cache(getStaffMedia);

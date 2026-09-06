@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -32,6 +32,7 @@ const ART_TYPES: Record<string, string> = {
 
 export default function FanArtDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const { data: session } = useSession();
   const [fanArt, setFanArt] = useState<FanArt | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,7 +66,7 @@ export default function FanArtDetailPage() {
     setDeleting(true);
     try {
       await fetch(`/api/fanart/${fanArt.id}`, { method: "DELETE" });
-      window.location.href = "/fanart";
+      router.push("/fanart");
     } catch {
       setDeleting(false);
     }

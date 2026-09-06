@@ -23,17 +23,23 @@ export async function GET(
   if (!list.isPublic && list.userId !== session?.user?.id) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   let isLiked = false;
+  let voteValue = 0;
   if (session?.user?.id) {
     const like = await prisma.userListLike.findUnique({
       where: { listId_userId: { listId: id, userId: session.user.id } },
     });
     isLiked = !!like;
+    const vote = await prisma.listVote.findUnique({
+      where: { listId_userId: { listId: id, userId: session.user.id } },
+    });
+    voteValue = vote?.value ?? 0;
   }
 
   return NextResponse.json({
     list: { ...list, itemCount: list._count.items, _count: undefined },
     isOwner: session?.user?.id === list.userId,
     isLiked,
+    voteValue,
   });
 }
 
@@ -49,9 +55,8 @@ export async function PUT(
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (existing.userId !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { title, description, type, isPublic, isFeatured, sortOrder, items } = await req.json();
+  const { title, description, type, isPublic, isFeatured, sortOrder, category, items } = await req.json();
 
-  // Featuring is a curation action — only admins may set it.
   const featuredAllowed = isAdminEmail(session.user?.email);
 
   const list = await prisma.$transaction(async (tx) => {
@@ -68,6 +73,7 @@ export async function PUT(
         isPublic: isPublic ?? existing.isPublic,
         isFeatured: featuredAllowed ? (isFeatured ?? existing.isFeatured) : existing.isFeatured,
         sortOrder: sortOrder ?? existing.sortOrder,
+        category: category !== undefined ? (category?.trim() ?? "") : existing.category,
         items: items ? {
           create: (items as Array<{ mediaId: number; mediaTitle: string; mediaImage?: string; mediaType: string; note?: string }>).map((item, i) => ({
             mediaId: item.mediaId,

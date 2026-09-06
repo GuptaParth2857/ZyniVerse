@@ -6,7 +6,7 @@ import {
   type AnimeEvent,
 } from "@/lib/anime-events";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function GET(request: Request) {
   try {

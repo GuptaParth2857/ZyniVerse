@@ -34,6 +34,40 @@ export async function GET(req: NextRequest) {
     orderBy: { mediaId: "asc" },
   });
 
+  if (format === "xml") {
+    const fmtDate = (d: Date | null | undefined) => {
+      if (!d) return "0000-00-00";
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    };
+    const rows = entries
+      .map((e) => {
+        const status = STATUS_MAP[e.status] || e.status.toLowerCase();
+        const score = e.score ?? 0;
+        return `    <anime>
+      <series_animedb_id>${e.mediaId}</series_animedb_id>
+      <my_status>${status}</my_status>
+      <my_watched_episodes>${e.progress ?? 0}</my_watched_episodes>
+      <my_score>${score}</my_score>
+      <my_start_date>${fmtDate(e.startedAt)}</my_start_date>
+      <my_finish_date>${fmtDate(e.completedAt)}</my_finish_date>
+    </anime>`;
+      })
+      .join("\n");
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<myanimelist>
+${rows}
+</myanimelist>`;
+    return new NextResponse(xml, {
+      headers: {
+        "Content-Type": "application/xml; charset=utf-8",
+        "Content-Disposition": `attachment; filename="zyniverse-myanimelist-${Date.now()}.xml"`,
+      },
+    });
+  }
+
   if (format === "json") {
     const data = entries.map((e) => ({
       media_id: e.mediaId,

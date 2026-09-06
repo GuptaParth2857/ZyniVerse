@@ -10,6 +10,14 @@ interface NotificationCreate {
 }
 
 export async function createNotification(data: NotificationCreate) {
+  const prefs = await prisma.notificationPreference.findUnique({
+    where: { userId: data.userId },
+  });
+
+  if (prefs && !prefAllows(prefs, data.type)) {
+    return null;
+  }
+
   const notification = await prisma.notification.create({ data });
   void sendPushToUser(data.userId, {
     title: data.title,
@@ -18,6 +26,30 @@ export async function createNotification(data: NotificationCreate) {
     tag: notification.id,
   }).catch(() => {});
   return notification;
+}
+
+function prefAllows(
+  prefs: { aiEnabled: boolean; followEnabled: boolean; commentEnabled: boolean; reviewEnabled: boolean; eventEnabled: boolean; systemEnabled: boolean; airingEnabled: boolean },
+  type: string
+): boolean {
+  switch (type) {
+    case "FOLLOW":
+    case "FRIEND":
+      return prefs.followEnabled;
+    case "COMMENT":
+    case "ACTIVITY":
+      return prefs.commentEnabled;
+    case "REVIEW":
+      return prefs.reviewEnabled;
+    case "EVENT":
+      return prefs.eventEnabled;
+    case "AIRING":
+      return prefs.airingEnabled;
+    case "SYSTEM":
+      return prefs.systemEnabled;
+    default:
+      return true;
+  }
 }
 
 export async function getNotifications(userId: string, limit = 50, offset = 0) {

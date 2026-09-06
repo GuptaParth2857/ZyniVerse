@@ -8,6 +8,29 @@ import { searchMedia, bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
 import { logError } from "@/lib/logger";
 
+const LIST_CATEGORIES = [
+  "",
+  "Top 10",
+  "Hidden Gems",
+  "Seasonal Picks",
+  "Must Watch",
+  "Romance",
+  "Action",
+  "Comedy",
+  "Drama",
+  "Horror",
+  "Sci-Fi",
+  "Fantasy",
+  "Slice of Life",
+  "Thriller",
+  "Sports",
+  "Mecha",
+  "Isekai",
+  "Best OST",
+  "Underrated",
+  "Classics",
+];
+
 interface ListItem {
   id: string;
   listId: string;
@@ -25,9 +48,12 @@ interface ListData {
   title: string;
   description: string | null;
   type: string;
+  category: string | null;
   isPublic: boolean;
   isFeatured: boolean;
   likes: number;
+  upvotes: number;
+  downvotes: number;
   createdAt: string;
   itemCount: number;
   user: { id: string; username: string; avatar: string | null };
@@ -38,11 +64,13 @@ export default function UserListDetail({
   items: initialItems,
   isOwner: initialOwner,
   isLiked: initialLiked,
+  voteValue: initialVoteValue,
 }: {
   list: ListData;
   items: ListItem[];
   isOwner: boolean;
   isLiked: boolean;
+  voteValue: number;
 }) {
   const router = useRouter();
   const [list] = useState(initialList);
@@ -50,6 +78,9 @@ export default function UserListDetail({
   const [isOwner] = useState(initialOwner);
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [likes, setLikes] = useState(initialList.likes);
+  const [upvotes, setUpvotes] = useState(initialList.upvotes);
+  const [downvotes, setDownvotes] = useState(initialList.downvotes);
+  const [voteValue, setVoteValue] = useState(initialVoteValue);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -61,6 +92,7 @@ export default function UserListDetail({
   const [editTitle, setEditTitle] = useState(list.title);
   const [editDescription, setEditDescription] = useState(list.description || "");
   const [editPublic, setEditPublic] = useState(list.isPublic);
+  const [editCategory, setEditCategory] = useState(list.category || "");
   const [editNote, setEditNote] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -123,6 +155,7 @@ export default function UserListDetail({
           title: editTitle,
           description: editDescription || null,
           isPublic: editPublic,
+          category: editCategory,
           items: newItems.map((item) => ({
             mediaId: item.mediaId,
             mediaTitle: item.mediaTitle,
@@ -161,6 +194,20 @@ export default function UserListDetail({
     } catch (e) { logError(e); }
   }
 
+  async function vote(value: 1 | -1) {
+    try {
+      const res = await fetch(`/api/lists/${list.id}/vote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value }),
+      });
+      const data = await res.json();
+      setVoteValue(data.voted ? data.value : 0);
+      setUpvotes(data.upvotes);
+      setDownvotes(data.downvotes);
+    } catch (e) { logError(e); }
+  }
+
   async function togglePublic() {
     try {
       const res = await fetch(`/api/lists/${list.id}`, {
@@ -190,9 +237,10 @@ export default function UserListDetail({
     navigator.clipboard.writeText(window.location.href);
   }
 
+  const score = upvotes - downvotes;
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      {/* Header */}
       <div className="mb-8">
         {editMode ? (
           <div className="space-y-3">
@@ -207,19 +255,35 @@ export default function UserListDetail({
               rows={2}
               className="w-full resize-none bg-transparent text-sm text-[var(--color-mute)] outline-none border-b border-[var(--color-line)] pb-1"
             />
-            <label className="flex items-center gap-2 text-sm text-[var(--color-mute)]">
-              <input type="checkbox" checked={editPublic} onChange={(e) => setEditPublic(e.target.checked)} className="rounded" />
-              Public
-            </label>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 text-sm text-[var(--color-mute)]">
+                <input type="checkbox" checked={editPublic} onChange={(e) => setEditPublic(e.target.checked)} className="rounded" />
+                Public
+              </label>
+              <select
+                value={editCategory}
+                onChange={(e) => setEditCategory(e.target.value)}
+                className="rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-1.5 text-sm outline-none"
+              >
+                {LIST_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c || "No Category"}</option>
+                ))}
+              </select>
+            </div>
           </div>
         ) : (
           <>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <div className="neon-rgb-border rounded-xl px-4 py-2">
                     <h1 className="text-3xl font-bold">{list.title}</h1>
                   </div>
+                  {list.category && (
+                    <span className="rounded-full bg-[var(--color-cyan)]/10 px-2.5 py-0.5 text-xs font-semibold text-[var(--color-cyan)]">
+                      {list.category}
+                    </span>
+                  )}
                   {list.isFeatured && (
                     <span className="rounded-full bg-yellow-500/20 px-2.5 py-0.5 text-xs font-semibold text-yellow-400">
                       Featured
@@ -246,9 +310,36 @@ export default function UserListDetail({
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center rounded-lg neon-rgb-border overflow-hidden">
+                  <button
+                    onClick={() => vote(1)}
+                    className={`flex items-center justify-center w-10 h-10 transition-colors ${
+                      voteValue === 1 ? "bg-green-500/20 text-green-400" : "hover:bg-white/5 text-[var(--color-mute)]"
+                    }`}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill={voteValue === 1 ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                      <path d="M12 19V5M5 12l7-7 7 7" />
+                    </svg>
+                  </button>
+                  <span className={`px-2 text-sm font-mono font-bold ${
+                    score > 0 ? "text-green-400" : score < 0 ? "text-red-400" : "text-[var(--color-mute)]"
+                  }`}>
+                    {score > 0 ? `+${score}` : score}
+                  </span>
+                  <button
+                    onClick={() => vote(-1)}
+                    className={`flex items-center justify-center w-10 h-10 transition-colors ${
+                      voteValue === -1 ? "bg-red-500/20 text-red-400" : "hover:bg-white/5 text-[var(--color-mute)]"
+                    }`}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill={voteValue === -1 ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                      <path d="M12 5v14M5 12l7 7 7-7" />
+                    </svg>
+                  </button>
+                </div>
                 <button
                   onClick={toggleLike}
-                  className={`flex items-center gap-1.5 rounded-lg border px-5 py-2.5 text-sm transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm transition-colors ${
                     isLiked
                       ? "border-red-500/50 text-red-400 bg-red-500/10"
                       : "border-[var(--color-line)] text-[var(--color-mute)] hover:text-red-400"
@@ -262,9 +353,9 @@ export default function UserListDetail({
                 {isOwner && (
                   <button
                     onClick={() => setEditMode(true)}
-className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
-                    >
-                      Edit
+                    className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
+                  >
+                    Edit
                   </button>
                 )}
                 <div className="relative group">
@@ -283,7 +374,6 @@ className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm text-[var(--color-mute
         )}
       </div>
 
-      {/* Edit mode top bar */}
       {editMode && (
         <div className="mb-6 flex items-center gap-3 flex-wrap">
           <button
@@ -312,7 +402,7 @@ className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm text-[var(--color-mute
             Delete List
           </button>
           <button
-            onClick={() => { setEditMode(false); setEditTitle(list.title); setEditDescription(list.description || ""); setEditPublic(list.isPublic); }}
+            onClick={() => { setEditMode(false); setEditTitle(list.title); setEditDescription(list.description || ""); setEditPublic(list.isPublic); setEditCategory(list.category || ""); }}
             className="rounded-lg neon-rgb-border px-3 py-2 text-sm text-[var(--color-mute)]"
           >
             Cancel
@@ -320,7 +410,6 @@ className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm text-[var(--color-mute
         </div>
       )}
 
-      {/* Items grid */}
       {items.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-[var(--color-mute)] mb-4">No items in this list yet.</p>
@@ -386,7 +475,6 @@ className="rounded-lg neon-rgb-border px-5 py-2.5 text-sm text-[var(--color-mute
         </div>
       )}
 
-      {/* Search Modal */}
       {showSearch && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="mx-4 w-full max-w-lg rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 max-h-[80vh] flex flex-col">

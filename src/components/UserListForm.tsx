@@ -3,11 +3,35 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const LIST_CATEGORIES = [
+  "",
+  "Top 10",
+  "Hidden Gems",
+  "Seasonal Picks",
+  "Must Watch",
+  "Romance",
+  "Action",
+  "Comedy",
+  "Drama",
+  "Horror",
+  "Sci-Fi",
+  "Fantasy",
+  "Slice of Life",
+  "Thriller",
+  "Sports",
+  "Mecha",
+  "Isekai",
+  "Best OST",
+  "Underrated",
+  "Classics",
+];
+
 export default function UserListForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState<"anime" | "manga" | "mixed">("anime");
+  const [category, setCategory] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -21,7 +45,7 @@ export default function UserListForm() {
       const res = await fetch("/api/lists", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim(), description: description.trim() || null, type, isPublic }),
+        body: JSON.stringify({ title: title.trim(), description: description.trim() || null, type, isPublic, category }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -76,6 +100,18 @@ export default function UserListForm() {
               </button>
             ))}
           </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Category</label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full rounded-lg neon-rgb-border bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)] transition-colors"
+          >
+            {LIST_CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c || "No Category"}</option>
+            ))}
+          </select>
         </div>
         <label className="flex items-center gap-2 text-sm text-[var(--color-mute)]">
           <input

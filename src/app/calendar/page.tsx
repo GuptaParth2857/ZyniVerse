@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PageTransition } from "@/components/PageTransition";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Loader from "@/components/Loader";
+import CalendarSyncButtons from "@/components/CalendarSyncButtons";
 import { getAiringSchedule, type AiringScheduleEntry } from "@/lib/anilist";
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -79,6 +80,7 @@ export default function CalendarPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <CalendarSyncButtons />
               <button onClick={prev} className="rounded-lg px-5 py-2.5 text-xs hover:border-[var(--color-cyan)] transition-colors">←</button>
               <span className="font-display text-sm font-bold min-w-[140px] text-center">{MONTHS[month]} {year}</span>
               <button onClick={next} className="rounded-lg px-5 py-2.5 text-xs hover:border-[var(--color-cyan)] transition-colors">→</button>

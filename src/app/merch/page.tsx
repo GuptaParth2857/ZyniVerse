@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { PageTransition } from "@/components/PageTransition";
 import MerchStore from "@/components/MerchStore";
 import NativeBannerAd from "@/components/NativeBannerAd";
+import { CartProvider } from "@/components/merch/useCart";
+import { ProductStore } from "@/components/merch/ProductStore";
 
 export const metadata: Metadata = {
   title: "Anime Merch Store — Figures, Clothing & More | ZyniVerse",
@@ -28,6 +30,10 @@ export default function MerchPage() {
             Buy anime figures, manga, clothing, and accessories. Best prices in India.
           </p>
         </div>
+
+        <CartProvider>
+          <ProductStore />
+        </CartProvider>
 
         <MerchStore />
 

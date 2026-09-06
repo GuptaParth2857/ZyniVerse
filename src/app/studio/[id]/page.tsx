@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getStudio } from "@/lib/anilist";
 import StudioDetailClient from "./studio-client";
 
-export const revalidate = 300;
+export const revalidate = 43200;
 
 const getStudioCached = cache(getStudio);
 

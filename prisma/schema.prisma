@@ -23,10 +23,14 @@ model User {
   themeColor    String?   @default("emerald")
   signature     String?
   provider      String?
+  onboarded     Boolean   @default(false)
+  favoriteGenres String[] @default([])
+  favoriteMoods  String[] @default([])
   lastSeen      DateTime?
   createdAt     DateTime  @default(now())
 
   entries                ListEntry[]
+  listShares             ListShare[]
   progress               EpisodeProgress[]
   reviews                Review[]
   episodeThreadComments  EpisodeThreadComment[]
@@ -43,6 +47,14 @@ model User {
   fillerVotes            FillerVote[]
   fillerReports          FillerReport[]
   subscription           Subscription?
+  orders                 Order[]
+  contentReports         ContentReport[]
+  notificationPreference NotificationPreference?
+  listImports            ListImport[]
+  characterFavorites     CharacterFavorite[]
+  mediaRecommendations   MediaRecommendation[]
+  mediaRecommendationVotes MediaRecommendationVote[]
+  episodeReactions       EpisodeReaction[]
   tierLists              TierList[]
   tierListVotes          TierListVote[]
   airingAlerts           AiringAlert[]
@@ -56,6 +68,7 @@ model User {
   challengeEntries       ChallengeEntry[]
   lists                  UserList[]
   listLikes              UserListLike[]
+  listVotes              ListVote[]
   forumThreads           ForumThread[]
   forumPosts             ForumPost[]
   forumVotes             ForumVote[]
@@ -91,6 +104,9 @@ model User {
   clubBannedBy           ClubBan[]                 @relation("ClubBanner")
   zyniAwardVotes         ZyniAwardVote[]
   figureCollection       FigureCollection[]
+  dailyLogin             DailyLogin?
+  streakFreeze           StreakFreeze?
+  animeFollows           AnimeFollow[]
   discordAccount         DiscordAccount?
   pageViews              PageView[]
   sessions               UserSession[]
@@ -118,6 +134,29 @@ model User {
   tournamentVotes        CharacterTournamentVote[]
   fanArts                FanArt[]
   fanArtLikes            FanArtLike[]
+  longReviews            LongReview[]
+  longReviewVotes        LongReviewVote[]
+  wallpapers             Wallpaper[]
+  wallpaperLikes         WallpaperLike[]
+  bingoCards             BingoCard[]
+  ownedSharedWatchlists  SharedWatchlist[]      @relation("WatchlistOwner")
+  sharedWatchlistMembers SharedWatchlistMember[]
+  creatorProfile         CreatorProfile?
+  tipsSent               Tip[]
+  wordleGames            WordleGame[]
+  userFrames             UserFrame[]
+  seasonalTrackers       SeasonalTracker[]
+  webhooks               Webhook[]
+  sceneClips             SceneClip[]
+  sceneClipLikes         SceneClipLike[]
+  commissions            Commission[]
+  commissionRequests     CommissionRequest[]
+  memes                  Meme[]
+  memeVotes              MemeVote[]
+  memeComments           MemeComment[]
+  contestWins            ContentContest[]          @relation("ContestWinner")
+  contestEntries         ContentContestEntry[]
+  contestVotes           ContentContestVote[]
 }
 
 model Follow {
@@ -134,6 +173,17 @@ model Follow {
   @@index([followingId])
 }
 
+model ListShare {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  key       String   @unique
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([key])
+}
+
 model ListEntry {
   id              String    @id @default(cuid())
   userId          String
@@ -148,6 +198,7 @@ model ListEntry {
   scoreSound      Int?
   scoreCharacters Int?
   scoreEnjoyment  Int?
+  dropReason      String?
   startedAt       DateTime?
   completedAt     DateTime?
   createdAt       DateTime  @default(now())
@@ -807,16 +858,20 @@ model UserList {
   title       String
   description String?
   type        String // "anime" | "manga" | "mixed"
+  category    String   @default("")
   isPublic    Boolean  @default(true)
   isFeatured  Boolean  @default(false)
   sortOrder   Int      @default(0)
   likes       Int      @default(0)
+  upvotes     Int      @default(0)
+  downvotes   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items    UserListItem[]
-  likesRel UserListLike[]
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     UserListItem[]
+  likesRel  UserListLike[]
+  votes     ListVote[]
 
   @@index([userId])
   @@index([isPublic, createdAt])
@@ -844,6 +899,19 @@ model UserListLike {
   id        String   @id @default(cuid())
   listId    String
   userId    String
+  createdAt DateTime @default(now())
+
+  list UserList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, userId])
+}
+
+model ListVote {
+  id        String   @id @default(cuid())
+  listId    String
+  userId    String
+  value     Int
   createdAt DateTime @default(now())
 
   list UserList @relation(fields: [listId], references: [id], onDelete: Cascade)
@@ -2216,4 +2284,727 @@ model FanArtLike {
 
   @@unique([fanArtId, userId])
   @@index([fanArtId])
+}
+
+// ── Long-form Reviews ──
+
+model LongReview {
+  id         String   @id @default(cuid())
+  userId     String
+  mediaId    Int
+  mediaTitle String
+  mediaImage String?
+  title      String
+  content    String
+  rating     Int?
+  upvotes    Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes   LongReviewVote[]
+
+  @@index([userId])
+  @@index([mediaId])
+  @@index([upvotes])
+  @@index([createdAt])
+}
+
+model LongReviewVote {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  value     Int      // 1 or -1
+  createdAt DateTime @default(now())
+
+  review LongReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@index([reviewId])
+}
+
+// ── Wallpaper Section ──
+
+model Wallpaper {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  imageUrl    String
+  thumbnailUrl String?
+  animeTitle  String?
+  animeId     Int?
+  resolution  String?  // "1920x1080", "3840x2160", etc.
+  category    String   @default("landscape") // landscape, portrait, phone, square
+  tags        String   @default("")
+  downloads   Int      @default(0)
+  likes       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likesRel WallpaperLike[]
+
+  @@index([userId])
+  @@index([category])
+  @@index([createdAt])
+  @@index([downloads])
+}
+
+model WallpaperLike {
+  id          String   @id @default(cuid())
+  wallpaperId String
+  userId      String
+  createdAt   DateTime @default(now())
+
+  wallpaper Wallpaper @relation(fields: [wallpaperId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([wallpaperId, userId])
+  @@index([wallpaperId])
+}
+
+// ── Anime Bingo ──
+
+model BingoCard {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  season    String   // "WINTER", "SPRING", "SUMMER", "FALL"
+  year      Int
+  squares   String   @default("[]") // JSON array of 25 squares
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([season, year])
+}
+
+// ── Collaborative Watchlists ──
+
+model SharedWatchlist {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner   User                   @relation("WatchlistOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members SharedWatchlistMember[]
+  items   SharedWatchlistItem[]
+
+  @@index([ownerId])
+}
+
+model SharedWatchlistMember {
+  id             String   @id @default(cuid())
+  watchlistId    String
+  userId         String
+  role           String   @default("member") // owner, editor, viewer
+  joinedAt       DateTime @default(now())
+
+  watchlist SharedWatchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([watchlistId, userId])
+  @@index([watchlistId])
+  @@index([userId])
+}
+
+model SharedWatchlistItem {
+  id          String   @id @default(cuid())
+  watchlistId String
+  mediaId     Int
+  mediaTitle  String
+  mediaImage  String?
+  addedBy     String
+  note        String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  watchlist SharedWatchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+
+  @@unique([watchlistId, mediaId])
+  @@index([watchlistId])
+}
+
+// ── Donation / Tip System ──
+
+model CreatorProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  displayName     String?
+  bio             String?
+  kofiUrl         String?
+  buymeacoffeeUrl String?
+  upiId           String?
+  totalTips       Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tips  Tip[]
+}
+
+model Tip {
+  id        String   @id @default(cuid())
+  creatorId String
+  senderId  String?
+  amount    Int      // in paise/cents
+  currency  String   @default("INR")
+  message   String?
+  anonymous Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  creator CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  sender  User?          @relation(fields: [senderId], references: [id], onDelete: SetNull)
+
+  @@index([creatorId])
+  @@index([createdAt])
+}
+
+// ── Anime Wordle ──
+
+model WordleGame {
+  id        String   @id @default(cuid())
+  userId    String
+  mediaId   Int
+  mediaTitle String
+  attempts  Int      @default(0)
+  won       Boolean  @default(false)
+  guesses   String   @default("[]") // JSON array of guessed titles
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, createdAt])
+  @@index([userId])
+}
+
+// ── Profile Frames ──
+
+model ProfileFrame {
+  id          String   @id @default(cuid())
+  name        String
+  imageUrl    String
+  rarity      String   @default("common") // common, rare, epic, legendary
+  category    String   @default("default")
+  unlockCondition String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  users UserFrame[]
+}
+
+model UserFrame {
+  id        String   @id @default(cuid())
+  userId    String
+  frameId   String
+  isActive  Boolean  @default(false)
+  unlockedAt DateTime @default(now())
+
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  frame ProfileFrame  @relation(fields: [frameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, frameId])
+  @@index([userId])
+}
+
+// ── Seasonal Tracker ──
+
+model SeasonalTracker {
+  id        String   @id @default(cuid())
+  userId    String
+  season    String
+  year      Int
+  createdAt DateTime @default(now())
+
+  user    User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries SeasonalTrackerEntry[]
+
+  @@unique([userId, season, year])
+  @@index([userId])
+}
+
+model SeasonalTrackerEntry {
+  id          String   @id @default(cuid())
+  trackerId   String
+  mediaId     Int
+  mediaTitle  String
+  mediaImage  String?
+  status      String   @default("WATCHING") // WATCHING, COMPLETED, DROPPED, PLANNED
+  progress    Int      @default(0)
+  totalEpisodes Int?
+  score       Int?
+  addedAt     DateTime @default(now())
+
+  tracker SeasonalTracker @relation(fields: [trackerId], references: [id], onDelete: Cascade)
+
+  @@unique([trackerId, mediaId])
+  @@index([trackerId])
+}
+
+// ── Webhook Support (API) ──
+
+model Webhook {
+  id        String   @id @default(cuid())
+  userId    String
+  url       String
+  events    String   @default("[]") // JSON array of event types
+  secret    String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+model WebhookDelivery {
+  id        String   @id @default(cuid())
+  webhookId String
+  event     String
+  payload   String
+  status    String   @default("pending") // pending, success, failed
+  response  String?
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([status])
+}
+
+// ── Scene / Clip Collector ──
+
+model SceneClip {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  imageUrl    String
+  videoUrl    String?
+  mediaTitle  String?
+  mediaId     Int?
+  timestamp   String?  // "23:45" format
+  tags        String   @default("")
+  likes       Int      @default(0)
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likesRel SceneClipLike[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([likes])
+}
+
+model SceneClipLike {
+  id       String   @id @default(cuid())
+  clipId   String
+  userId   String
+  createdAt DateTime @default(now())
+
+  clip SceneClip @relation(fields: [clipId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([clipId, userId])
+  @@index([clipId])
+}
+
+// ── Commission Marketplace ──
+
+model Commission {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  imageUrl    String?
+  category    String   // fanart, cosplay, music, editing, other
+  priceMin    Int?     // in INR
+  priceMax    Int?
+  turnaround  String?  // "3-5 days", "1 week", etc.
+  isActive    Boolean  @default(true)
+  portfolio   String   @default("[]") // JSON array of image URLs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requests CommissionRequest[]
+
+  @@index([userId])
+  @@index([category])
+  @@index([isActive])
+}
+
+model CommissionRequest {
+  id           String   @id @default(cuid())
+  commissionId String
+  requesterId  String
+  message      String?
+  status       String   @default("pending") // pending, accepted, completed, rejected
+  createdAt    DateTime @default(now())
+
+  commission Commission @relation(fields: [commissionId], references: [id], onDelete: Cascade)
+  requester  User       @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+
+  @@index([commissionId])
+  @@index([requesterId])
+}
+
+// ── Anime Memes ──
+
+model Meme {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  imageUrl    String
+  mediaTitle  String?
+  tags        String   @default("")
+  upvotes     Int      @default(0)
+  downvotes   Int      @default(0)
+  commentCount Int     @default(0)
+  createdAt   DateTime @default(now())
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes    MemeVote[]
+  comments MemeComment[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([upvotes])
+}
+
+model MemeVote {
+  id        String   @id @default(cuid())
+  memeId    String
+  userId    String
+  value     Int      // 1 or -1
+  createdAt DateTime @default(now())
+
+  meme Meme @relation(fields: [memeId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([memeId, userId])
+  @@index([memeId])
+}
+
+model MemeComment {
+  id        String   @id @default(cuid())
+  memeId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  meme Meme @relation(fields: [memeId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([memeId])
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  image         String
+  description   String?
+  price         Int                 // price in paise/cents
+  originalPrice Int?
+  stock         Int      @default(0)
+  category      String
+  platform      String   @default("In-house")
+  anime         String?
+  affiliateUrl  String?
+  active        Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String?
+  name      String
+  image     String?
+  price     Int
+  quantity  Int     @default(1)
+
+  order   Order                   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product?                @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Order {
+  id             String    @id @default(cuid())
+  userId         String
+  status         String    @default("pending")  // pending | paid | fulfilled | cancelled
+  stripeSessionId String?  @unique
+  subtotal       Int
+  total          Int
+  currency       String    @default("inr")
+  customerName   String?
+  customerEmail  String?
+  addressLine1   String?
+  addressLine2   String?
+  city           String?
+  state          String?
+  postalCode     String?
+  country        String    @default("IN")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       OrderItem[]
+
+  @@index([userId, status])
+  @@index([status])
+}
+
+model ContentReport {
+  id          String   @id @default(cuid())
+  contentType String   // POST | COMMENT | MEME | FANART | CLIP | COSPLAY | REVIEW | LONG_REVIEW | BLOG | WIKI | FORUM_THREAD | FORUM_POST | CLUB_POST | CLUB_COMMENT | REEL_COMMENT | MOMENT | REEL
+  contentId   String   // id of the reported content row
+  authorId    String?  // author of the reported content
+  userId      String   // reporter
+  reason      String
+  note        String?
+  status      String   @default("PENDING")  // PENDING | RESOLVED | DISMISSED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contentType, contentId, userId])
+  @@index([contentType, status])
+  @@index([status])
+}
+
+model NotificationPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  aiEnabled Boolean  @default(true)
+  followEnabled  Boolean @default(true)
+  commentEnabled Boolean @default(true)
+  reviewEnabled  Boolean @default(true)
+  eventEnabled   Boolean @default(true)
+  systemEnabled  Boolean @default(true)
+  airingEnabled  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ListImport {
+  id          String   @id @default(cuid())
+  userId      String
+  source      String   // "mal" | "anilist"
+  mediaType   String   // "ANIME" | "MANGA"
+  fileName    String?
+  totalEntries Int     @default(0)
+  imported    Int      @default(0)
+  skipped     Int      @default(0)
+  errors      Json?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model CharacterFavorite {
+  id            String   @id @default(cuid())
+  userId        String
+  characterId   Int
+  characterName String
+  characterImage String?
+  kind          String   @default("favorite") // "favorite" | "waifu" | "husbando"
+  rank          Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, characterId])
+  @@index([characterId])
+}
+
+model MediaRecommendation {
+  id            String   @id @default(cuid())
+  fromMediaId   Int
+  fromTitle     String
+  fromType      String   @default("ANIME")
+  toMediaId     Int
+  toTitle       String
+  toType        String   @default("ANIME")
+  meaning       String
+  userId        String
+  authorUsername String?
+  upvotes       Int      @default(0)
+  downvotes     Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  user         User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes        MediaRecommendationVote[]
+
+  @@index([fromMediaId])
+  @@index([toMediaId])
+  @@index([userId])
+}
+
+model MediaRecommendationVote {
+  id             String @id @default(cuid())
+  recommendationId String
+  userId         String
+  value          Int // 1 | -1
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendation MediaRecommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  @@unique([recommendationId, userId])
+  @@index([recommendationId])
+}
+
+model EpisodeReaction {
+  id        String @id @default(cuid())
+  mediaId   Int
+  episode   Int
+  userId    String
+  reaction  String // "wow" | "hype" | "cry" | "lol" | "sleep"
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, episode, userId])
+  @@index([mediaId, episode])
+  @@index([mediaId, createdAt])
+}
+
+model CharacterTrait {
+  id           String   @id @default(cuid())
+  characterId  Int      @unique
+  name         String
+  image        String?
+  ageInt       Int?
+  ageLabel     String?
+  gender       String?
+  hairColor    String?
+  eyeColor     String?
+  favourites   Int      @default(0)
+  updatedAt    DateTime @updatedAt
+
+  @@index([gender])
+  @@index([hairColor])
+  @@index([eyeColor])
+  @@index([ageInt, gender])
+}
+
+// Daily login bonus + streak (retention #1)
+model DailyLogin {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  streak         Int       @default(0)
+  lastClaimed    DateTime?
+  totalClaims    Int       @default(0)
+  totalXpAwarded Int       @default(0)
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([streak])
+}
+
+// Streak freeze/shield tokens (earned, redeemable to protect a streak)
+model StreakFreeze {
+  id        String   @id @default(cuid())
+  userId    String
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+}
+
+// Follow anime titles for new episode / season / news alerts
+model AnimeFollow {
+  id        String   @id @default(cuid())
+  userId    String
+  mediaId   Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mediaId])
+  @@index([mediaId])
+}
+
+// Weekly community content contests (meme / cosplay / fanart etc)
+enum ContentContestType {
+  MEME
+  COSPLAY
+  FANART
+  MOMENT
+  BLOG
+}
+
+model ContentContest {
+  id           String            @id @default(cuid())
+  title        String
+  type         ContentContestType
+  weekStart    DateTime
+  weekEnd      DateTime
+  rewardXp     Int               @default(50)
+  rewardBadge  String?
+  description  String?
+  winnerId     String?
+  status       String            @default("ACTIVE")
+  createdAt    DateTime          @default(now())
+
+  winner      User?        @relation("ContestWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+  entries     ContentContestEntry[]
+}
+
+model ContentContestEntry {
+  id         String   @id @default(cuid())
+  contestId  String
+  userId     String
+  title      String
+  image      String?
+  caption    String?
+  upvotes    Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  contest ContentContest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes   ContentContestVote[]
+
+  @@index([contestId, upvotes])
+  @@unique([contestId, userId])
+}
+
+model ContentContestVote {
+  id        String   @id @default(cuid())
+  contestId String
+  entryId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  entry ContentContestEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  user  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, userId])
+  @@index([contestId])
 }

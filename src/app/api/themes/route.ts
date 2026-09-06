@@ -15,7 +15,7 @@ async function searchAniList(query: string): Promise<AniListResult[]> {
     const q = `query($search:String){Page(page:1,perPage:20){media(search:$search,type:ANIME){id title{romaji english}coverImage{large}}}}`;
     const res = await fetch(ANILIST_GQL, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": "ZyniVerse/1.0 (https://zyverse.in)", "Origin": "https://anilist.co", "Referer": "https://anilist.co/" },
       body: JSON.stringify({ query: q, variables: { search: query } }),
       signal: AbortSignal.timeout(8000),
     });

@@ -71,6 +71,7 @@ export default function SplashScreen() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
     const hasSeen = localStorage.getItem(SPLASH_SEEN_KEY) === todayKey();
     if (hasSeen) return;

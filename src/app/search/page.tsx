@@ -158,6 +158,56 @@ function SearchInner() {
     status: statusFilter || null,
   }), [query, genre, tag, sort, type, format, season, yearFrom, statusFilter]);
 
+  // Smart (AI) search fallback — activated when keyword search returns zero
+  // results for a sentence-like query (natural language, not a title).
+  const [smartResults, setSmartResults] = useState<
+    { id: number; title: string; poster: string | null; year: number | null; format: string | null; score: number | null; reason: string }[]
+  >([]);
+  const [smartLoading, setSmartLoading] = useState(false);
+  const [smartInterpreted, setSmartInterpreted] = useState<string | null>(null);
+  const [smartError, setSmartError] = useState<string | null>(null);
+
+  const isSentenceLike = useCallback((s: string): boolean => {
+    const t = s.trim();
+    if (t.length < 6) return false;
+    // A bare title usually has no spaces or is covered by keyword search;
+    // treat spaced/clause-y queries as natural language candidates.
+    return t.split(/\s+/).length >= 3 || /(anime|manga|one|who|kaun|hai|wala|like|about|want)/i.test(t);
+  }, []);
+
+  const runSmartSearch = useCallback(async (text: string) => {
+    setSmartLoading(true);
+    setSmartError(null);
+    try {
+      const res = await fetch("/api/ai/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ q: text }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Smart search failed.");
+      setSmartResults(data.results ?? []);
+      setSmartInterpreted(data.interpreted ?? null);
+    } catch (e) {
+      setSmartResults([]);
+      setSmartError(e instanceof Error ? e.message : "Smart search failed.");
+    } finally {
+      setSmartLoading(false);
+    }
+  }, []);
+
+  // When keyword search finishes with zero hits and the query reads like a
+  // sentence, offer + auto-run the AI natural-language fallback.
+  useEffect(() => {
+    if (loading || smartLoading) return;
+    if (!query || animeResults.length > 0 || mangaResults.length > 0) return;
+    if (type === "MANGA" || type === "ALL") return; // anime-only for now
+    if (!isSentenceLike(query)) return;
+    if (smartResults.length > 0 || smartError) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void runSmartSearch(query);
+  }, [loading, query, type, animeResults, mangaResults, smartResults, smartError, smartLoading, runSmartSearch, isSentenceLike]);
+
   const runSearch = useCallback(
     async (pageNum: number) => {
       setLoading(true);
@@ -571,13 +621,55 @@ function SearchInner() {
                       </div>
                     )}
                     {!loading && displayAnime.length === 0 && displayManga.length === 0 && (
-                      <EmptyState
-                        icon="search"
-                        title="No results found"
-                        description="Try adjusting your filters or search terms."
-                        actionLabel="Clear Filters"
-                        onAction={clearFilters}
-                      />
+                      <>
+                        {(smartLoading || smartResults.length > 0 || smartError) && (
+                          <div className="mb-8">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="h-1.5 w-8 rounded-full bg-[var(--color-cyan)] shadow-[0_0_10px_rgba(0,255,224,0.55)]" />
+                              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-cyan)]">✦ Smart AI Match</span>
+                            </div>
+                            {smartInterpreted && (
+                              <p className="mt-1 text-xs text-[var(--color-mute)]">Understood as: <span className="text-[var(--color-cyan)]">{smartInterpreted}</span></p>
+                            )}
+                            {smartLoading && (
+                              <div className="mt-3 flex items-center gap-2 text-sm text-[var(--color-mute)]">
+                                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 12L4 2M8 22a2 2 0 0 1 4-12a3 3 0 0 1 3-3M13 9l-1.5 1.5" /></svg>
+                                Zyni AI is interpreting your sentence…
+                              </div>
+                            )}
+                            {smartError && (
+                              <p className="mt-2 rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">{smartError}</p>
+                            )}
+                            {smartResults.length > 0 && (
+                              <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 mt-3">
+                                {smartResults.map((a) => (
+                                  <Link key={`smart-${a.id}`} href={`/anime/${a.id}`} className="group block no-underline">
+                                    <div className="relative aspect-[2/3] rounded-xl overflow-hidden border border-[var(--color-line)] group-hover:border-[var(--color-cyan)] transition-all">
+                                      {a.poster ? (
+                                        <Image src={a.poster} alt={a.title} fill className="object-cover" sizes="(max-width:768px) 50vw, 25vw" />
+                                      ) : (
+                                        <div className="flex h-full items-center justify-center text-xs text-[var(--color-mute)]">No art</div>
+                                      )}
+                                      {a.score ? (
+                                        <span className="absolute top-1 right-1 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-[#ffd700]">★ {(a.score / 10).toFixed(1)}</span>
+                                      ) : null}
+                                    </div>
+                                    <p className="mt-1 truncate text-xs font-medium">{a.title}</p>
+                                    {a.year && <p className="truncate text-[10px] text-[var(--color-mute)]">{a.year}</p>}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <EmptyState
+                          icon="search"
+                          title="No keyword results found"
+                          description={(smartResults.length > 0 || smartLoading) ? "But here's what matches your meaning — if this looks right, it means you were describing the vibe, not the title." : "Try a natural-language search like \"anime jisme MC weak hai par strong ban jata hai\" — Smart Search can understand sentences."}
+                          actionLabel="Clear Filters"
+                          onAction={clearFilters}
+                        />
+                      </>
                     )}
                     {loading && (
                       <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 mt-4">

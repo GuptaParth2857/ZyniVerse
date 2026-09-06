@@ -64,6 +64,25 @@ function compatColor(v: number): string {
   return v >= 70 ? "var(--color-cyan)" : v >= 40 ? "#eab308" : "var(--color-magenta)";
 }
 
+function soulmateLabel(v: number): { label: string; emoji: string } {
+  if (v >= 85) return { label: "Anime Soulmates", emoji: "💞" };
+  if (v >= 70) return { label: "Great Match", emoji: "💖" };
+  if (v >= 50) return { label: "Good Friends", emoji: "😄" };
+  if (v >= 30) return { label: "Different Worlds", emoji: "🤷" };
+  return { label: "Total Opposites", emoji: "⚔️" };
+}
+
+function shareCompare(text: string) {
+  if (typeof navigator === "undefined") return;
+  void navigator.clipboard?.writeText(text).then(() => {
+    const btn = document.querySelector("[data-copied-msg]") as HTMLElement | null;
+    if (btn) {
+      btn.textContent = "✓ Copied!";
+      setTimeout(() => { btn.textContent = ""; }, 2000);
+    }
+  }).catch(() => {});
+}
+
 function Avatar({ src, name, fallbackColor }: { src?: string | null; name: string; fallbackColor: string }) {
   return (
     <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-[var(--color-line)] sm:h-20 sm:w-20">
@@ -144,6 +163,13 @@ export default function ListComparison({ username }: { username: string }) {
 
   const { stats, user: other, insights } = data;
   const compat = compatColor(stats.compatibility);
+  const soulmate = soulmateLabel(stats.compatibility);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const shareText = `💞 Anime Soulmate match: me & @${other.username} are ${stats.compatibility}% compatible (${soulmate.label})! Check your anime compatibility on ZyniVerse 🎌`;
+  const compareLink = `${origin}/compare/${encodeURIComponent(other.username)}`;
+  const ogCard = `${origin}/api/og/compare?u1=${encodeURIComponent(session?.user?.name || "You")}&u2=${encodeURIComponent(other.username)}&pct=${stats.compatibility}`;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText}\n\n${ogCard}\n${compareLink}`)}`;
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`${shareText} ${compareLink}`)}`;
 
   /* Empty states */
   if (stats.theirTotal === 0) {
@@ -197,6 +223,29 @@ export default function ListComparison({ username }: { username: string }) {
             {insights.averageDiff !== null && <span className="ml-1 text-[var(--color-mute)]">· avg diff {insights.averageDiff} pts</span>}
           </p>
         )}
+
+        {/* Soulmate badge + share */}
+        <div className="mt-4 inline-flex items-center gap-2 rounded-full border px-4 py-1.5" style={{ borderColor: compat, background: `${compat}12` }}>
+          <span className="text-base">{soulmate.emoji}</span>
+          <span className="text-sm font-bold" style={{ color: compat }}>{soulmate.label}</span>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          <a
+            href={whatsappUrl}
+            target="_blank" rel="noopener noreferrer"
+            className="rounded-full border border-[var(--color-line)] px-4 py-1.5 text-xs font-bold text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors"
+          >WhatsApp</a>
+          <a
+            href={twitterUrl}
+            target="_blank" rel="noopener noreferrer"
+            className="rounded-full border border-[var(--color-line)] px-4 py-1.5 text-xs font-bold text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors"
+          >X</a>
+          <button
+            onClick={() => shareCompare(`${shareText}\n\n${compareLink}`)}
+            className="rounded-full border border-[var(--color-line)] px-4 py-1.5 text-xs font-bold text-[var(--color-mute)] hover:text-[var(--color-cyan)] hover:border-[var(--color-cyan)] transition-colors"
+          >Copy</button>
+          <span data-copied-msg className="text-[10px] text-[var(--color-cyan)]" />
+        </div>
       </div>
 
       {/* Taste insights */}

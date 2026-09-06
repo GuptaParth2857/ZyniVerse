@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRef, useCallback } from "react";
 import { motion } from "framer-motion";
+import { ReportButton } from "@/components/ReportButton";
 
 interface CosplayCardProps {
   cosplay: {
@@ -175,6 +176,12 @@ export default function CosplayCard({ cosplay, onLike, liked, index = 0 }: Cospl
                   </svg>
                   {cosplay.likes}
                 </span>
+                <ReportButton
+                  contentType="COSPLAY"
+                  contentId={cosplay.id}
+                  authorId={cosplay.user.id}
+                  label=""
+                />
               </div>
             </div>
           </div>

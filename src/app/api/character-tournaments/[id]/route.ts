@@ -10,7 +10,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const view = await getTournamentRounds(id);
   if (!view) return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
 
-  let myVotes: Record<string, "A" | "B"> = {};
+  const myVotes: Record<string, "A" | "B"> = {};
   if (session?.user?.id) {
     const votes = await prisma.characterTournamentVote.findMany({
       where: {

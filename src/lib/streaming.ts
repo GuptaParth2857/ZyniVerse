@@ -464,6 +464,45 @@ add("Beyblade", [
   { name: "JioHotstar", url: jioSearch("Beyblade"), logo: "JioHotstar", region: "India", languages: ["Hindi", "English"], type: "subscription" },
 ]);
 
+add(["Your Lie in April", "Shigatsu wa Kimi no Uso"], [
+  { name: "Crunchyroll", url: cr("G6Q7PD9GR/Your-Lie-in-April"), logo: "Crunchyroll", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Netflix", url: "https://www.netflix.com/in/title/80078175", logo: "Netflix", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+]);
+
+add(["Erased", "Boku dake ga Inai Machi"], [
+  { name: "Crunchyroll", url: cr("GY5PJ5QK2/Erased"), logo: "Crunchyroll", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Netflix", url: "https://www.netflix.com/in/title/80108085", logo: "Netflix", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+]);
+
+add(["The Promised Neverland", "Yakusoku no Neverland"], [
+  { name: "Crunchyroll", url: cr("G6Q7P9XMR/The-Promised-Neverland"), logo: "Crunchyroll", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Prime Video", url: "https://www.primevideo.com/search/ref=atv_sr.583?phrase=The+Promised+Neverland", logo: "Amazon Prime Video", region: "India", languages: ["English", "Hindi", "Japanese"], type: "subscription" },
+]);
+
+add(["86", "86 Eighty Six"], [
+  { name: "Crunchyroll", url: cr("GG5H5Q2GV/86"), logo: "Crunchyroll", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Muse Asia", url: museSearch("86 anime"), logo: "Muse Asia", region: "India", languages: ["English"], type: "free" },
+]);
+
+add(["Great Pretender", "Great Pretender"], [
+  { name: "Netflix", url: "https://www.netflix.com/in/title/81061822", logo: "Netflix", region: "India", languages: ["English", "Hindi", "Japanese"], type: "subscription" },
+]);
+
+add(["Bocchi the Rock!", "Bocchi the Rock"], [
+  { name: "Crunchyroll", url: cr("G4PH0WGEJ/Bocchi-the-Rock"), logo: "Crunchyroll", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Muse Asia", url: museSearch("Bocchi the Rock"), logo: "Muse Asia", region: "India", languages: ["English"], type: "free" },
+]);
+
+add(["Toradora", "Toradora!"], [
+  { name: "Crunchyroll", url: cr("GW4V93XJP/Toradora"), logo: "Crunchyroll", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Netflix", url: "https://www.netflix.com/in/title/70229347", logo: "Netflix", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+]);
+
+add(["Your Name", "Kimi no Na wa"], [
+  { name: "Crunchyroll", url: cr("G5PH91GPY/Your-Name"), logo: "Crunchyroll", region: "India", languages: ["English", "Japanese"], type: "subscription" },
+  { name: "Netflix", url: "https://www.netflix.com/in/title/80182119", logo: "Netflix", region: "India", languages: ["Hindi", "English", "Japanese"], type: "subscription" },
+]);
+
 export function getStreamingSources(title: string): StreamingSource[] {
   if (!title) return [];
 

@@ -28,10 +28,12 @@ export async function GET(req: NextRequest) {
     const userId = searchParams.get("userId");
     const sort = searchParams.get("sort") || "newest";
     const search = searchParams.get("search");
+    const style = searchParams.get("style");
 
     const where: Record<string, unknown> = { isPublic: true };
     if (animeId) where.animeId = parseInt(animeId);
     if (userId) where.userId = userId;
+    if (style) where.style = style;
     if (search) {
       where.OR = [
         { quote: { contains: search, mode: "insensitive" } },

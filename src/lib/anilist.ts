@@ -91,7 +91,7 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
 
         const res = await fetch(ENDPOINT, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": USER_AGENT },
+          headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": USER_AGENT, Origin: "https://anilist.co", Referer: "https://anilist.co/" },
           body: JSON.stringify({ query, variables }),
           signal: controller.signal,
           cache: "force-cache",
@@ -493,6 +493,31 @@ export async function getPopularCharacters(page = 1, perPage = 50) {
     }`;
   const data = await gql(q, { p: page, pp: perPage });
   return data.Page as { pageInfo: { hasNextPage: boolean; total: number }; characters: CharacterBasic[] };
+}
+
+export interface CharacterTraitRaw {
+  id: number;
+  name: { full?: string; userPreferred?: string };
+  image: { large?: string; medium?: string };
+  gender?: string | null;
+  age?: string | number | null;
+  favourites?: number;
+}
+
+export async function getCharacterTraitsBatch(page = 1, perPage = 50) {
+  const q = `
+    query ($p: Int, $pp: Int) {
+      Page(page: $p, perPage: $pp) {
+        pageInfo { hasNextPage total }
+        characters(sort: FAVOURITES_DESC) {
+          id name { full userPreferred }
+          image { large medium }
+          gender age favourites
+        }
+      }
+    }`;
+  const data = await gql(q, { p: page, pp: perPage });
+  return data.Page as { pageInfo: { hasNextPage: boolean; total: number }; characters: CharacterTraitRaw[] };
 }
 
 export async function getAnimeGallery(perPage = 24) {

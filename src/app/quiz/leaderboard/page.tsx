@@ -2,8 +2,19 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
+export const metadata: Metadata = {
+  title: "Anime Quiz Leaderboard — Top Scores & Rankings | ZyniVerse",
+  description:
+    "See the top anime quiz scores on ZyniVerse. Ranked by total points across anime quizzes, daily challenges, and community trivia.",
+  alternates: { canonical: `${BASE_URL}/quiz/leaderboard` },
+  robots: { index: true, follow: true },
+};
 
 interface ScoreRow {
   user: { id: string; username: string; avatar: string | null };

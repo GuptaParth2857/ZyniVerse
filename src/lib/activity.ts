@@ -11,7 +11,7 @@ const AL_CACHE_TIME = new Map<number, number>();
 function gql(query: string, vars: Record<string, unknown>) {
   return fetch(AL_ENDPOINT, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    headers: { "Content-Type": "application/json", "Accept": "application/json", "User-Agent": "ZyniVerse/1.0 (https://zyverse.in)", "Origin": "https://anilist.co", "Referer": "https://anilist.co/" },
     body: JSON.stringify({ query, variables: vars }),
   }).then((r) => {
     if (r.status === 429) throw new Error("Rate limited by AniList");

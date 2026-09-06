@@ -5,7 +5,8 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  await params;
+  const { id } = await params;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
   return {
     title: `Light Novel Details — Read & Track | ZyniVerse`,
@@ -14,6 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `Light Novel Details | ZyniVerse`,
       description: `Browse light novel details, volumes, and reading progress on ZyniVerse.`,
     },
+    alternates: { canonical: `${baseUrl}/light-novels/${id}` },
     robots: { index: true, follow: true },
   };
 }

@@ -25,6 +25,21 @@ const FADE_UP = {
   transition: { duration: 0.5 },
 };
 
+const TRENDING_TOPICS = [
+  { label: "Naruto", emoji: "🍥" },
+  { label: "One Piece", emoji: "🏴‍☠️" },
+  { label: "Solo Leveling", emoji: "⚔️" },
+  { label: "Jujutsu Kaisen", emoji: "👹" },
+  { label: "Hindi Dub", emoji: "🇮🇳" },
+  { label: "Voice Actors", emoji: "🎙️" },
+  { label: "Dandadan", emoji: "👽" },
+  { label: "One Punch Man", emoji: "👊" },
+  { label: "Bleach", emoji: "⚔️" },
+  { label: "Demon Slayer", emoji: "🗡️" },
+];
+
+const PAGE_SIZE = 24;
+
 export default function PodcastPage() {
   const [episodes, setEpisodes] = useState<PodcastEpisode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,6 +50,7 @@ export default function PodcastPage() {
   const [langFilter, setLangFilter] = useState<"all" | "en" | "hi">("all");
   const [channelFilter, setChannelFilter] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     fetch("/api/podcast")
@@ -78,6 +94,8 @@ export default function PodcastPage() {
     if (channelFilter) result = result.filter((e) => e.channel === channelFilter);
     return result.sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
   }, [episodes, searchResults, query, langFilter, channelFilter]);
+
+  const visibleEpisodes = useMemo(() => displayEpisodes.slice(0, visibleCount), [displayEpisodes, visibleCount]);
 
   return (
     <PageTransition>
@@ -173,7 +191,7 @@ export default function PodcastPage() {
                 type="text"
                 placeholder="Search episodes, channels, topics..."
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => { setQuery(e.target.value); setVisibleCount(PAGE_SIZE); }}
                 className="w-full bg-transparent text-sm text-[var(--color-ink)] outline-none placeholder:text-[var(--color-mute)]"
               />
               {query && (
@@ -193,10 +211,55 @@ export default function PodcastPage() {
           )}
         </motion.div>
 
+        {/* Trending topics */}
+        <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.08 }} className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--color-mute)] flex items-center gap-1.5">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#ff00ff] animate-pulse" />
+            Trending
+          </span>
+          {TRENDING_TOPICS.map((t, i) => (
+            <button
+              key={t.label}
+              onClick={() => { setQuery(t.label); setChannelFilter(null); setLangFilter("all"); }}
+              className="rounded-full pod-neon-filter px-2.5 py-1 text-[10px] font-semibold transition-all"
+              style={{ ["--fd" as string]: i + 6, color: "var(--color-mute)" }}
+            >
+              <span className="mr-1">{t.emoji}</span>{t.label}
+            </button>
+          ))}
+        </motion.div>
+
+        {/* Subscribe bar */}
+        {channels.length > 0 && (
+          <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.09 }} className="mb-6">
+            <div className="pod-neon-card rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm p-3" style={{ ["--i" as string]: 9 }}>
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[var(--color-mute)] mb-2">🎙 Channels</p>
+              <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+                {channels.map((ch) => {
+                  const first = episodes.find((e) => e.channel === ch);
+                  return (
+                    <a
+                      key={ch}
+                      href={first?.channelUrl || "https://www.youtube.com"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 flex items-center gap-2 rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] pl-2.5 pr-3 py-1.5 text-[11px] font-semibold text-[var(--color-ink)] transition-all hover:border-red-500/50 hover:bg-red-500/5"
+                    >
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500/15 text-[8px]">▶</span>
+                      {ch}
+                      <span className="text-[9px] font-bold text-red-400">Subscribe →</span>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Filters */}
         <motion.div {...FADE_UP} transition={{ duration: 0.5, delay: 0.1 }} className="mb-6 flex flex-wrap gap-2">
           {(["all", "en", "hi"] as const).map((l, i) => (
-            <button key={l} onClick={() => { setLangFilter(l); setChannelFilter(null); }}
+            <button key={l} onClick={() => { setLangFilter(l); setChannelFilter(null); setVisibleCount(PAGE_SIZE); }}
               className="rounded-lg pod-neon-filter px-3 py-1.5 text-xs font-semibold transition-all"
               style={{
                 ["--fd" as string]: i,
@@ -209,7 +272,7 @@ export default function PodcastPage() {
           ))}
           <span className="w-px h-6 bg-[var(--color-line)] self-center mx-1" />
           {channels.map((ch, i) => (
-            <button key={ch} onClick={() => { setChannelFilter(channelFilter === ch ? null : ch); setLangFilter("all"); }}
+            <button key={ch} onClick={() => { setChannelFilter(channelFilter === ch ? null : ch); setLangFilter("all"); setVisibleCount(PAGE_SIZE); }}
               className="rounded-lg pod-neon-filter px-3 py-1.5 text-xs font-semibold transition-all"
               style={{
                 ["--fd" as string]: i + 3,
@@ -264,7 +327,7 @@ export default function PodcastPage() {
         {/* Episodes */}
         {!isLoading && (
           <div className="space-y-4">
-            {displayEpisodes.map((ep, i) => (
+            {visibleEpisodes.map((ep, i) => (
               <motion.div
                 key={ep.id}
                 initial={{ opacity: 0, x: -16 }}
@@ -347,6 +410,18 @@ export default function PodcastPage() {
                 )}
               </motion.div>
             ))}
+
+            {visibleCount < displayEpisodes.length && (
+              <div className="pt-2 text-center">
+                <button
+                  onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                  className="rounded-lg pod-neon-filter px-6 py-2.5 text-xs font-semibold transition-all"
+                  style={{ borderColor: "#00ffff", background: "rgba(0,255,255,0.08)", color: "#00ffff" }}
+                >
+                  Show more ({Math.min(PAGE_SIZE, displayEpisodes.length - visibleCount)} more of {displayEpisodes.length - visibleCount})
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
