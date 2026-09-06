@@ -4,7 +4,7 @@ import { getCharacterTraitsBatch } from "@/lib/anilist";
 import { parseAge, normalizeGender } from "@/lib/character-traits";
 export const dynamic = "force-dynamic";
 
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
