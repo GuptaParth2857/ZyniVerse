@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -16,6 +16,7 @@ import ProfileMoments from "@/components/ProfileMoments";
 import DailyRewardCard from "@/components/DailyRewardCard";
 import FollowedAnimeStrip from "@/components/FollowedAnimeStrip";
 import AccountDataManager from "@/components/AccountDataManager";
+import StreamingSyncCard from "@/components/StreamingSyncCard";
 import { getRank, getNextRank } from "@/lib/achievements";
 
 type Tab = "overview" | "entries" | "reviews" | "stats" | "history" | "import" | "api" | "lists" | "moments" | "account";
@@ -714,6 +715,9 @@ export default function ProfilePage() {
             {/* IMPORT TAB */}
             {tab === "import" && (
               <div className="mt-2 space-y-4">
+                <Suspense fallback={null}>
+                  <StreamingSyncCard themeColor={tc} />
+                </Suspense>
                 {/* AniList Import */}
                 <div className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm">
                   <div className="p-6">

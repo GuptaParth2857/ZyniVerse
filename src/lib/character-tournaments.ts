@@ -3,9 +3,19 @@ import type { Prisma } from "@prisma/client";
 
 // ── Character Tournament core logic ─────────────────────────────────────
 // Single-elimination bracket. Rounds pair winners of consecutive matches.
+//
+// Two modes:
+//  - "qualifying": a popularity poll among a large candidate pool. Every
+//    user casts one favorite vote. When the qualifying window closes, the
+//    top `bracketSize` characters form a single-elim bracket.
+//  - "bracket": classic single-elimination (existing behavior).
 
 export const TOURNAMENT_SIZES = [8, 16, 32] as const;
 export type TournamentSize = (typeof TOURNAMENT_SIZES)[number];
+
+export const QUALIFYING_DAYS = 7;
+export const ROUND_DAYS = 3;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function totalRoundsForSize(size: number): number {
   return Math.round(Math.log2(size));
@@ -13,7 +23,7 @@ export function totalRoundsForSize(size: number): number {
 
 function assertSize(size: number): asserts size is TournamentSize {
   if (!TOURNAMENT_SIZES.includes(size as TournamentSize)) {
-    throw new Error("Invalid tournament size");
+    throw new Error("Invalid bracket size");
   }
 }
 
@@ -21,17 +31,36 @@ export interface ParticipantInput {
   charId: number;
   charName: string;
   charImage?: string | null;
+  franchiseCover?: string | null;
 }
 
-export async function createTournament(
-  creatorId: string,
-  opts: { title: string; description?: string; size: number; randomize?: boolean; participants: ParticipantInput[] }
-) {
-  assertSize(opts.size);
+export interface CreateTournamentOpts {
+  title: string;
+  description?: string;
+  posterUrl?: string;
+  size: number;
+  randomize?: boolean;
+  participants: ParticipantInput[];
+  mode?: "qualifying" | "bracket";
+  bracketSize?: number;
+}
+
+export async function createTournament(creatorId: string, opts: CreateTournamentOpts) {
+  const mode = opts.mode ?? "bracket";
+  const bracketSize = mode === "qualifying" ? opts.bracketSize ?? 16 : opts.size;
+
+  if (mode === "qualifying") {
+    if (opts.size < bracketSize) throw new Error("Qualifying pool must be larger than the bracket size");
+    if (opts.size < TOURNAMENT_SIZES[0]) throw new Error("Qualifying pool is too small");
+  } else {
+    assertSize(opts.size);
+  }
+  assertSize(bracketSize);
+
   if (opts.participants.length !== opts.size) {
     throw new Error(`Tournament of size ${opts.size} needs exactly ${opts.size} characters`);
   }
-  // De-dupe by charId
+
   const seen = new Set<number>();
   const parts: ParticipantInput[] = [];
   for (const p of opts.participants) {
@@ -39,27 +68,35 @@ export async function createTournament(
     seen.add(p.charId);
     parts.push(p);
   }
-  if (parts.length < 2 || parts.length > opts.size) {
-    throw new Error("Duplicate or invalid participants");
+  if (parts.length !== opts.size) {
+    throw new Error("Duplicate characters are not allowed");
   }
 
   const seed = Math.floor(Math.random() * 1e9);
+  const now = new Date();
 
   const tournament = await prisma.characterTournament.create({
     data: {
       creatorId,
       title: opts.title,
       description: opts.description,
+      posterUrl: opts.posterUrl,
       size: opts.size,
-      status: "upcoming",
+      bracketSize,
+      mode,
+      status: mode === "qualifying" ? "qualifying" : "upcoming",
       currentRound: 1,
-      totalRounds: totalRoundsForSize(opts.size),
+      totalRounds: totalRoundsForSize(bracketSize),
       seed,
+      ...(mode === "qualifying"
+        ? { qualifyingStartedAt: now, qualifyingEndsAt: new Date(now.getTime() + QUALIFYING_DAYS * DAY_MS) }
+        : {}),
       participants: {
         create: parts.map((p, i) => ({
           charId: p.charId,
           charName: p.charName,
           charImage: p.charImage,
+          franchiseCover: p.franchiseCover,
           seed: i + 1,
         })),
       },
@@ -67,14 +104,16 @@ export async function createTournament(
     include: { participants: true },
   });
 
-  await generateRoundMatches(tournament.id, 1);
+  if (mode !== "qualifying") {
+    await generateRoundMatches(tournament.id, 1);
+  }
   return tournament;
 }
 
 export async function startTournament(tournamentId: string) {
   const t = await prisma.characterTournament.update({
     where: { id: tournamentId },
-    data: { status: "active", startedAt: new Date() },
+    data: { status: "active", startedAt: new Date(), roundEndsAt: new Date(Date.now() + ROUND_DAYS * DAY_MS) },
   });
   return t;
 }
@@ -87,7 +126,8 @@ async function generateRoundMatches(tournamentId: string, round: number) {
   });
   if (!tournament) throw new Error("Tournament not found");
 
-  const matchesInRound = tournament.size / Math.pow(2, round);
+  const bracketSize = tournament.bracketSize ?? tournament.size;
+  const matchesInRound = bracketSize / Math.pow(2, round);
 
   if (round === 1) {
     const data: Prisma.CharacterTournamentMatchCreateManyInput[] = [];
@@ -121,7 +161,7 @@ export async function castTournamentVote(matchId: string, userId: string, choice
   const tournament = await prisma.characterTournament.findUnique({
     where: { id: match.tournamentId },
   });
-  if (!tournament || tournament.status !== "active") {
+  if (!tournament || tournament.status !== "active" || tournament.mode !== "bracket") {
     throw new Error("Tournament is not active");
   }
 
@@ -144,31 +184,114 @@ export async function castTournamentVote(matchId: string, userId: string, choice
   return updated;
 }
 
+/** Cast one favorite vote during the qualifying poll (one per user per tournament). */
+export async function castPollVote(tournamentId: string, userId: string, participantId: string) {
+  const tournament = await prisma.characterTournament.findUnique({ where: { id: tournamentId } });
+  if (!tournament || tournament.status !== "qualifying" || tournament.mode !== "qualifying") {
+    throw new Error("Qualifying is not open");
+  }
+
+  const participant = await prisma.characterTournamentParticipant.findFirst({
+    where: { id: participantId, tournamentId },
+  });
+  if (!participant) throw new Error("Character not found in this tournament");
+
+  try {
+    await prisma.characterTournamentPollVote.create({
+      data: { tournamentId, participantId, userId },
+    });
+  } catch {
+    throw new Error("You already voted in this qualifier");
+  }
+
+  const updated = await prisma.characterTournamentParticipant.update({
+    where: { id: participantId },
+    data: { pollVotes: { increment: 1 } },
+  });
+  return updated;
+}
+
+/** Close the qualifying poll and build the final bracket from the top vote-getters. */
+export async function finalizeQualifying(tournamentId: string) {
+  const tournament = await prisma.characterTournament.findUnique({ where: { id: tournamentId } });
+  if (!tournament) throw new Error("Tournament not found");
+  if (tournament.mode !== "qualifying") throw new Error("Tournament is not in qualifying mode");
+
+  const bracketSize = tournament.bracketSize ?? 16;
+
+  const participants = await prisma.characterTournamentParticipant.findMany({
+    where: { tournamentId },
+    orderBy: [{ pollVotes: "desc" }, { createdAt: "asc" }],
+  });
+  if (participants.length < bracketSize) {
+    throw new Error(`Need at least ${bracketSize} candidates to form a bracket`);
+  }
+
+  const qualifiers = participants.slice(0, bracketSize);
+  const qualifierIds = qualifiers.map((p) => p.id);
+  const excluded = participants.filter((p) => !qualifierIds.includes(p.id)).map((p) => p.id);
+
+  const now = new Date();
+
+  await prisma.$transaction([
+    prisma.characterTournamentParticipant.deleteMany({
+      where: { tournamentId, id: { in: excluded } },
+    }),
+    ...qualifiers.map((p, i) =>
+      prisma.characterTournamentParticipant.update({
+        where: { id: p.id },
+        data: { seed: i + 1 },
+      })
+    ),
+    prisma.characterTournament.update({
+      where: { id: tournamentId },
+      data: {
+        mode: "bracket",
+        status: "active",
+        bracketStartedAt: now,
+        currentRound: 1,
+        roundEndsAt: new Date(now.getTime() + ROUND_DAYS * DAY_MS),
+        ...(tournament.qualifyingEndsAt ? {} : { qualifyingEndsAt: now }),
+      },
+    }),
+  ]);
+
+  await generateRoundMatches(tournamentId, 1);
+
+  return {
+    tournamentId,
+    qualifiers: qualifiers.map((p, i) => ({ ...p, seed: i + 1 })),
+  };
+}
+
 /** Decide every unsolved match of the current round by majority and advance. */
 export async function finalizeRound(tournamentId: string) {
   const tournament = await prisma.characterTournament.findUnique({
     where: { id: tournamentId },
   });
   if (!tournament) throw new Error("Tournament not found");
-  if (tournament.status !== "active") throw new Error("Tournament is not active");
+  if (tournament.status !== "active" || tournament.mode !== "bracket") {
+    throw new Error("Tournament is not active");
+  }
 
   const round = tournament.currentRound;
   const matches = await prisma.characterTournamentMatch.findMany({
     where: { tournamentId, round },
     orderBy: { position: "asc" },
+    include: { charA: { select: { id: true, seed: true } }, charB: { select: { id: true, seed: true } } },
   });
 
   for (const m of matches) {
-    const winnerId =
-      m.votesA > m.votesB ? m.charAId : m.votesB > m.votesA ? m.charBId : m.winnerId;
-    if (winnerId) {
-      await prisma.characterTournamentMatch.update({
-        where: { id: m.id },
-        data: { winnerId },
-      });
-    } else {
-      throw new Error(`Match ${m.position} in round ${round} is tied — add votes or skip`);
-    }
+    let winnerId: string | null;
+    if (m.votesA > m.votesB) winnerId = m.charAId;
+    else if (m.votesB > m.votesA) winnerId = m.charBId;
+    else winnerId = m.charA?.seed !== undefined && (m.charB?.seed === undefined || m.charA.seed < m.charB.seed) ? m.charAId : m.charBId;
+
+    if (!winnerId) throw new Error(`Match ${m.position} in round ${round} has no winner`);
+    await prisma.characterTournamentMatch.update({
+      where: { id: m.id },
+      data: { winnerId },
+    });
   }
 
   if (round >= tournament.totalRounds) {
@@ -176,7 +299,7 @@ export async function finalizeRound(tournamentId: string) {
     const winnerId = finalMatch.winnerId;
     await prisma.characterTournament.update({
       where: { id: tournamentId },
-      data: { status: "completed", completedAt: new Date() },
+      data: { status: "completed", completedAt: new Date(), roundEndsAt: null },
     });
     const winner = winnerId
       ? await prisma.characterTournamentParticipant.findUnique({ where: { id: winnerId } })
@@ -187,7 +310,7 @@ export async function finalizeRound(tournamentId: string) {
   await generateRoundMatches(tournamentId, round + 1);
   await prisma.characterTournament.update({
     where: { id: tournamentId },
-    data: { currentRound: round + 1 },
+    data: { currentRound: round + 1, roundEndsAt: new Date(Date.now() + ROUND_DAYS * DAY_MS) },
   });
   return { completed: false, nextRound: round + 1 };
 }
@@ -213,6 +336,17 @@ export async function getTournamentRounds(tournamentId: string) {
     },
   });
   if (!tourney) return null;
+
+  if (tourney.mode === "qualifying") {
+    const sorted = [...tourney.participants].sort((a, b) => b.pollVotes - a.pollVotes || a.createdAt.getTime() - b.createdAt.getTime());
+    const totalPollVotes = tourney.participants.reduce((s, p) => s + p.pollVotes, 0);
+    return {
+      tournament: { ...tourney, participants: sorted },
+      rounds: [],
+      matches: [],
+      totalVotes: totalPollVotes,
+    };
+  }
 
   const totalVotes = matches.reduce((s, m) => s + m.votesA + m.votesB, 0);
 

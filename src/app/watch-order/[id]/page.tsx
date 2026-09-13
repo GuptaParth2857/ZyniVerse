@@ -37,6 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `${animeName.toLowerCase()} viewing order`,
       `${animeName.toLowerCase()} order`,
       "anime watch order 2026",
+      "anime kis order me dekhe", "anime ka sahi order", "anime serial order hindi", "one piece watch order hindi", "naruto watch order hindi",
     ],
     openGraph: {
       title: `${animeName} Watch Order — ZyniVerse`,

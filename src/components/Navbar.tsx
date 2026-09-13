@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { isAdminEmail } from "@/lib/admin-identity";
+import { t } from "@/lib/i18n";
 import { useWatchlist } from "./WatchlistProvider";
 
 interface UnifiedMediaResult { id: number; title: string; titleRomaji?: string | null; poster?: string | null; format: string | null; year: number | null; type: "ANIME" | "MANGA"; }
@@ -37,6 +38,21 @@ const PRIMARY_LINKS = [
   { to: "/reels", label: "Reels", accent: true },
 ];
 
+const NAV_T_KEY: Record<string, string> = {
+  Home: "nav.home",
+  Explore: "nav.explore",
+  "My List": "nav.watchlist",
+  Schedule: "nav.schedule",
+  Reels: "nav.reels",
+  More: "nav.more",
+  Discover: "nav.cat.discover",
+  India: "nav.cat.india",
+  Anime: "nav.anime",
+  Reading: "nav.cat.reading",
+  "Events & Fun": "nav.cat.events",
+  Community: "nav.cat.community",
+};
+
 interface MoreLink { to: string; label: string; external?: boolean; }
 interface MoreCategory { title: string; icon: string; items: MoreLink[]; }
 
@@ -55,7 +71,6 @@ const MORE_CATEGORIES: MoreCategory[] = [
       { to: "/random", label: "Random" },
       { to: "/seasonal", label: "Seasonal" },
       { to: "/recommendations", label: "Recommend" },
-      { to: "/streaming-calendar", label: "Streaming Calendar" },
       { to: "/season/upcoming", label: "Upcoming" },
       { to: "/podcast", label: "Podcast" },
       { to: "/calendar", label: "Calendar" },
@@ -71,7 +86,6 @@ const MORE_CATEGORIES: MoreCategory[] = [
     icon: "🇮🇳",
     items: [
       { to: "/indian-dubs", label: "Indian Dubs" },
-      { to: "/dub-schedule", label: "Dub Schedule" },
       { to: "/theatrical-releases", label: "Theatrical Releases" },
       { to: "/toons", label: "Toons & Cartoons" },
       { to: "/tv-schedule", label: "TV Channels" },
@@ -382,7 +396,7 @@ export default function Navbar() {
               }`}
               style={{ animationDelay: `${i * -0.5}s` }}
             >
-              {l.label}
+              {NAV_T_KEY[l.label] ? t(NAV_T_KEY[l.label]) : l.label}
               {l.accent && (
                 <span className="absolute -right-0.5 top-1 flex h-1.5 w-1.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-500" />
               )}
@@ -402,7 +416,7 @@ export default function Navbar() {
                 moreOpen ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)] hover:text-[var(--color-cyan)]"
               }`}
             >
-              More
+              {t("nav.more")}
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`inline ml-1 -mt-0.5 transition-transform ${moreOpen ? "rotate-180" : ""}`}>
                 <path d="M6 9l6 6 6-6" />
               </svg>
@@ -422,7 +436,7 @@ export default function Navbar() {
                       }`}
                     >
                       <span>{cat.icon}</span>
-                      <span>{cat.title}</span>
+                      <span>{NAV_T_KEY[cat.title] ? t(NAV_T_KEY[cat.title]) : cat.title}</span>
                     </button>
                   ))}
                 </div>
@@ -611,7 +625,7 @@ export default function Navbar() {
                     pathname === l.to ? "text-[var(--color-cyan)]" : "text-[var(--color-mute)] hover:text-[var(--color-cyan)]"
                   }`}
                   style={{ animationDelay: `${i * -0.5}s` }}
-                >{l.label}</Link>
+                >{NAV_T_KEY[l.label] ? t(NAV_T_KEY[l.label]) : l.label}</Link>
               ))}
             </div>
           </div>
@@ -624,13 +638,13 @@ export default function Navbar() {
                 <div key={cat.title} className={`rounded-lg overflow-hidden ${isOpen ? "neon-rgb-border bg-[var(--color-panel)]" : "border border-[var(--color-line)] bg-[var(--color-panel)]"}`}>
                   <button
                     onClick={() => setMobileOpenCats((prev) =>
-                      isOpen ? prev.filter((t) => t !== cat.title) : [...prev, cat.title]
+                      isOpen ? prev.filter((c) => c !== cat.title) : [...prev, cat.title]
                     )}
                     className="flex items-center justify-between w-full px-4 py-3 text-sm font-semibold text-[var(--color-ink)] hover:bg-white/5 transition-colors"
                   >
                     <span className="flex items-center gap-2">
                       <span className="text-base leading-none">{cat.icon}</span>
-                      {cat.title}
+                      {NAV_T_KEY[cat.title] ? t(NAV_T_KEY[cat.title]) : cat.title}
                     </span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                       className={`text-[var(--color-mute)] transition-transform ${isOpen ? "rotate-180" : ""}`}

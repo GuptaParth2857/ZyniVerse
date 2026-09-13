@@ -1831,3 +1831,45 @@ export async function getIndianVoiceActors(): Promise<VoiceActor[]> {
 
   return indianVAs;
 }
+
+export interface IndianDubRole {
+  characterName: string;
+  language: string;
+  roleType: "main" | "supporting" | "guest";
+  actor: { id: number; name: string; image: string };
+}
+
+let dubCastCache: Map<number, IndianDubRole[]> | null = null;
+
+export async function getIndianDubCast(mediaId: number): Promise<IndianDubRole[]> {
+  if (dubCastCache?.has(mediaId)) {
+    return dubCastCache.get(mediaId) || [];
+  }
+
+  const actors = await getIndianVoiceActors();
+  const roles: IndianDubRole[] = [];
+
+  for (const va of actors) {
+    for (const role of va.roles) {
+      if (role.animeId === mediaId) {
+        roles.push({
+          characterName: role.characterName,
+          language: role.language,
+          roleType: role.roleType,
+          actor: { id: va.id, name: va.name, image: va.image },
+        });
+      }
+    }
+  }
+
+  const sorted = roles.sort(
+    (a, b) =>
+      (a.roleType === "main" ? -1 : 0) - (b.roleType === "main" ? -1 : 0) ||
+      a.language.localeCompare(b.language) ||
+      a.characterName.localeCompare(b.characterName),
+  );
+
+  if (!dubCastCache) dubCastCache = new Map();
+  dubCastCache.set(mediaId, sorted);
+  return sorted;
+}

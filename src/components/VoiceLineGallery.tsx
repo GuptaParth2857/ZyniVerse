@@ -227,25 +227,37 @@ export default function VoiceLineGallery() {
 
       {/* ─────────── CONTENT ─────────── */}
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="overflow-hidden rounded-[20px] border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
-              <div className="mb-4 flex items-center gap-2">
-                <div className="shimmer h-1.5 w-8 rounded-full" />
-                <div className="shimmer h-4 w-16 rounded-full" />
+            <div key={i} className="relative rounded-3xl">
+              <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
+                <div className="absolute inset-0"
+                  style={{
+                    background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)",
+                    animation: "spin 6s linear infinite",
+                    willChange: "transform",
+                  }}
+                />
+                <span className="absolute inset-[1.5px] rounded-[22.5px] neon-border-inner" />
               </div>
-              <div className="space-y-2.5">
-                <div className="shimmer h-4 w-full rounded" />
-                <div className="shimmer h-4 w-4/5 rounded" />
-                <div className="shimmer h-4 w-3/5 rounded" />
-              </div>
-              <div className="mt-4 flex items-center gap-2">
-                <div className="shimmer h-4 w-24 rounded" />
-                <div className="shimmer h-4 w-16 rounded" />
-              </div>
-              <div className="mt-4 flex gap-2 border-t border-[var(--color-line)] pt-3">
-                <div className="shimmer h-8 w-20 rounded-md" />
-                <div className="shimmer h-8 w-20 rounded-md" />
+              <div className="relative z-10 overflow-hidden rounded-[22.5px] p-5">
+                <div className="mb-4 flex items-center gap-2">
+                  <div className="shimmer h-1.5 w-8 rounded-full" />
+                  <div className="shimmer h-4 w-16 rounded-full" />
+                </div>
+                <div className="space-y-2.5">
+                  <div className="shimmer h-4 w-full rounded" />
+                  <div className="shimmer h-4 w-4/5 rounded" />
+                  <div className="shimmer h-4 w-3/5 rounded" />
+                </div>
+                <div className="mt-4 flex items-center gap-2">
+                  <div className="shimmer h-4 w-24 rounded" />
+                  <div className="shimmer h-4 w-16 rounded" />
+                </div>
+                <div className="mt-4 flex gap-2 border-t border-[var(--color-line)] pt-3">
+                  <div className="shimmer h-8 w-20 rounded-md" />
+                  <div className="shimmer h-8 w-20 rounded-md" />
+                </div>
               </div>
             </div>
           ))}

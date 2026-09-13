@@ -20,6 +20,7 @@ import { DynamicHero3D as Hero3D, DynamicHorizontalScroll as HorizontalScroll } 
 import ExpandingFlexCard from "@/components/ExpandingFlexCard";
 import ContinueWatching from "@/components/ContinueWatching";
 import Recommendations from "@/components/Recommendations";
+import PersonalizedHero from "@/components/PersonalizedHero";
 import AdBanner from "@/components/AdBanner";
 import NativeBannerAd from "@/components/NativeBannerAd";
 import QuoteOfTheDay from "@/components/QuoteOfTheDay";
@@ -76,6 +77,64 @@ export default async function Home() {
     });
   } catch (e) { logError(e); }
 
+  let featuredTournament: {
+    id: string;
+    title: string;
+    description: string | null;
+    size: number;
+    mode: string;
+    status: string;
+    currentRound: number;
+    qualifyingEndsAt: Date | null;
+    roundEndsAt: Date | null;
+    creator: { username: string };
+    _count: { participants: number };
+  } | null = null;
+  try {
+    featuredTournament = await prisma.characterTournament.findFirst({
+      where: { status: { in: ["qualifying", "active"] } },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        size: true,
+        mode: true,
+        status: true,
+        currentRound: true,
+        qualifyingEndsAt: true,
+        roundEndsAt: true,
+        creator: { select: { username: true } },
+        _count: { select: { participants: true } },
+      },
+    });
+  } catch (e) { logError(e); }
+
+  let featuredEndsIn: string | null = null;
+  if (featuredTournament) {
+    const d =
+      featuredTournament.mode === "qualifying" ? featuredTournament.qualifyingEndsAt : featuredTournament.roundEndsAt;
+    if (d) {
+      const days = Math.max(0, Math.ceil((d.getTime() - Date.now()) / 86400000));
+      if (featuredTournament.mode === "qualifying") {
+        featuredEndsIn = days === 0 ? "Voting closes today" : `Voting ends in ${days} day${days === 1 ? "" : "s"}`;
+      } else {
+        featuredEndsIn = days === 0
+          ? "This round closes today"
+          : `Round ${featuredTournament.currentRound} ends in ${days} day${days === 1 ? "" : "s"}`;
+      }
+    }
+  }
+
+  const featuredHref = featuredTournament
+    ? `/character-tournaments/${featuredTournament.id}`
+    : "/character-tournaments";
+  const featuredChip = featuredTournament
+    ? featuredTournament.mode === "qualifying"
+      ? "⚡ Qualifying — Vote Now"
+      : "🔥 Live Bracket"
+    : "🚀 Starting Soon";
+
   const heroStats = {
     users: userCount,
     fillerGuides: 200,
@@ -86,7 +145,84 @@ export default async function Home() {
   return (
     <PageTransition>
       <div className="animate-page-in">
-      <Hero3D items={trendingData} stats={heroStats} />
+      <FadeIn>
+            <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
+              <Link
+                href={featuredHref}
+                className="group relative block overflow-hidden rounded-[24px] border border-[var(--color-line)] bg-[var(--color-panel)] shadow-[0_10px_50px_-15px_rgba(217,70,239,0.4)] transition-all duration-300 hover:border-cyan-400/50 hover:shadow-[0_12px_60px_-12px_var(--color-cyan)]"
+              >
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    background:
+                      "radial-gradient(80% 160% at 8% 15%, var(--color-violet), transparent 60%), radial-gradient(80% 160% at 92% 15%, var(--color-cyan), transparent 55%), linear-gradient(125deg, #160a24 0%, #0b0614 70%)",
+                  }}
+                />
+                <div className="relative flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-center sm:p-8">
+                  <div className="min-w-0 flex-1 text-center sm:text-left">
+                    <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider sm:justify-start">
+                      <span className="rounded-full border border-cyan-400/40 bg-cyan-400/10 px-2.5 py-0.5 text-cyan-300">
+                        {featuredChip}
+                      </span>
+                      {featuredTournament && (
+                        <>
+                          <span className="rounded-full border border-[var(--color-line)] bg-black/40 px-2.5 py-0.5 text-[var(--color-mute)]">
+                            {featuredTournament.size} candidates
+                          </span>
+                          <span className="text-[var(--color-mute)]">
+                            by @{featuredTournament.creator.username}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <h2 className="mt-3 font-display text-2xl font-bold text-white sm:text-4xl">
+                      {featuredTournament
+                        ? featuredTournament.title
+                        : "The Dream 16 — Biggest Anime Character Tournament"}
+                    </h2>
+                    <p className="mx-auto mt-2 max-w-xl line-clamp-2 text-sm text-white/70 sm:mx-0">
+                      {featuredTournament
+                        ? featuredTournament.description ||
+                          "Anime characters going head-to-head — your vote decides."
+                        : "64 anime characters, one favorite vote each. The Dream 16 advance to a 1v1 bracket — your vote picks the legends."}
+                    </p>
+                    <div className="mt-5 flex flex-wrap items-center justify-center gap-4 font-mono text-xs text-white/60 sm:justify-start">
+                      {featuredTournament ? (
+                        <>
+                          {featuredEndsIn && <span>⏳ {featuredEndsIn}</span>}
+                          <span>{featuredTournament._count.participants} fighters</span>
+                        </>
+                      ) : (
+                        <span>Voting opens soon</span>
+                      )}
+                      <span className="rounded-md bg-white/10 px-3 py-1.5 font-bold text-white transition-colors group-hover:bg-white/20">
+                        {featuredTournament ? "Vote your fav →" : "Be first in line →"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="relative shrink-0">
+                    <div className="h-40 w-32 rotate-2 overflow-hidden rounded-t-2xl rounded-b-lg border-2 border-[var(--color-cyan)]/60 shadow-[0_0_35px_-5px_var(--color-cyan)] transition duration-300 group-hover:rotate-0 group-hover:scale-105 sm:h-48 sm:w-40">
+                      <Image
+                        src="/dream16.jpg"
+                        alt="Dream 16 poster"
+                        width={320}
+                        height={384}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <span className="absolute -bottom-2 -left-3 -rotate-3 rounded-md bg-gradient-to-r from-[var(--color-magenta)] to-[var(--color-violet)] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-lg">
+                      Dream 16
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </FadeIn>
+          <div className="relative">
+            <Hero3D items={trendingData} stats={heroStats} />
+            <PersonalizedHero className="absolute inset-0 z-20" fallbackItems={[]} />
+          </div>
       <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6">
         <AnimeOfTheDay />
       </div>
@@ -159,7 +295,7 @@ export default async function Home() {
       <QuoteOfTheDay />
 
       <ContinueWatching />
-      <Recommendations />
+      <Recommendations type="personalized" title="Handpicked for You" />
 
       {/* Friend Activity Feed */}
       <FadeIn delay={0.05}>
@@ -333,7 +469,7 @@ export default async function Home() {
               <Link href="/top-anime" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold transition-colors">Top Anime</Link>
               <Link href="/watchlist" className="rounded-full neon-rgb-border px-5 py-2.5 text-sm font-semibold transition-colors">My Watchlist</Link>
               <HomeMomentButton />
-              <Link href="/recap" className="rounded-full bg-[var(--color-magenta)] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity">🎌 My Year in Anime →</Link>
+              <Link href="/stats/wrapped" className="rounded-full bg-[var(--color-magenta)] px-5 py-2.5 text-sm font-bold text-black hover:opacity-90 transition-opacity">🎌 My Year in Anime →</Link>
             </div>
           </div>
         </FadeIn>

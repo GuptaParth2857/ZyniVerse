@@ -61,10 +61,18 @@ export default function QuizPage() {
               </p>
             </div>
 
-            <Link href="/quiz/play" className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm px-6 py-3 flex items-center gap-2 text-sm font-bold text-[#8a2be2]">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-              Quick Play
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/quiz/play" className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm px-6 py-3 flex items-center gap-2 text-sm font-bold text-[#8a2be2]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Quick Play
+              </Link>
+              <Link
+                href="/quiz/personality"
+                className="rounded-xl bg-gradient-to-r from-[#8a2be2]/25 to-[#ff00ff]/20 border border-[#ff00ff]/40 backdrop-blur-sm px-6 py-3 flex items-center gap-2 text-sm font-bold text-[#ffccff] hover:bg-[#ff00ff]/25 transition-colors"
+              >
+                🎭 Personality Test
+              </Link>
+            </div>
           </div>
         </div>
 

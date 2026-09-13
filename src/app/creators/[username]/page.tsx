@@ -72,6 +72,7 @@ export default async function CreatorPage({ params }: PageProps) {
         themeColor: true,
         createdAt: true,
         provider: true,
+        referralCode: true,
       },
     }),
     prisma.reel.findMany({
@@ -188,6 +189,25 @@ export default async function CreatorPage({ params }: PageProps) {
           </p>
         </div>
       </div>
+
+      {user.referralCode && (
+        <div className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-[var(--color-cyan)]/30 bg-[var(--color-panel)]/60 px-5 py-4 sm:flex-row sm:px-6">
+          <div className="text-center sm:text-left">
+            <p className="text-sm font-bold text-[var(--color-ink)]">🎬 Publish your own anime reels</p>
+            <p className="mt-0.5 text-xs text-[var(--color-mute)]">
+              Join ZyniVerse as a creator and get your edits featured. Earn views while the community discovers them.
+            </p>
+          </div>
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(`🎬 Anime reels publish karo ZyniVerse pe — apne edits stream pe chahiye? Yahan join karo:\n\nhttps://zyverse.in/register?ref=${user.referralCode}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#25d366]/15 border border-[#25d366]/40 px-4 py-2 text-xs font-bold text-[#25d366] hover:bg-[#25d366]/25 transition-colors"
+          >
+            Invite a creator on WhatsApp
+          </a>
+        </div>
+      )}
 
       <div className="flex items-center justify-between">
         <h2 className="font-display text-lg font-bold text-[var(--color-ink)]">

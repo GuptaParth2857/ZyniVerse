@@ -53,7 +53,13 @@ export async function POST(req: Request) {
         `,
       });
     } else {
-      // Email not configured — silently skip
+      // No RESEND_API_KEY configured — don't pretend an email was sent.
+      await prisma.passwordResetToken.deleteMany({ where: { email } });
+      logError(new Error("RESEND_API_KEY is not set — password reset email cannot be sent."));
+      return NextResponse.json(
+        { error: "Password reset is temporarily unavailable. Please try again later." },
+        { status: 503 },
+      );
     }
 
     return NextResponse.json({ success: true, message: "If an account exists, an email was sent." });

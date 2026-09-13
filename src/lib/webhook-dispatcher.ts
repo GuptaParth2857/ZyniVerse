@@ -93,3 +93,7 @@ export async function dispatchToAllWebhooks(event: string, payload: Record<strin
 
   return results.filter((r) => r.status === "fulfilled" && r.value !== null).length;
 }
+
+export function notifyAllWebhooks(event: string, payload: Record<string, unknown>): void {
+  dispatchToAllWebhooks(event, payload).catch(() => {});
+}

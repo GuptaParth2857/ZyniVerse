@@ -1,4 +1,11 @@
 import type { NextConfig } from "next";
+import { EventEmitter } from "events";
+
+// Home page fires many parallel compressed responses; Next's server Gzip
+// streams hit Node's default 10-listener cap and emit a benign
+// MaxListenersExceededWarning. Raise it here so it covers the `next dev`
+// process too (production already does this in server.ts).
+EventEmitter.defaultMaxListeners = 50;
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client"],

@@ -57,15 +57,18 @@ function TimeAgo({ date }: { date: string }) {
 
 function NewsCardSkeleton() {
   return (
-    <div className="rounded-xl neon-border-card animate-pulse" style={{ ["--i" as string]: 0 }}>
-      <div className="h-48 w-full rounded-t-xl bg-white/5" />
-      <div className="p-4 space-y-2.5">
-        <div className="h-5 w-3/4 rounded bg-white/10" />
-        <div className="h-3.5 w-full rounded bg-white/5" />
-        <div className="h-3.5 w-1/2 rounded bg-white/5" />
-        <div className="flex gap-2 pt-1">
-          <div className="h-3 w-16 rounded bg-white/5" />
-          <div className="h-3 w-12 rounded bg-white/5" />
+    <div className="relative rounded-xl overflow-hidden p-[1.5px] animate-pulse">
+      <span className="absolute inset-0 rounded-xl" style={{ background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)", animation: "spin 6s linear infinite", willChange: "transform" }} aria-hidden />
+      <div className="relative z-10 overflow-hidden rounded-[10.5px] bg-[var(--color-panel)]">
+        <div className="h-48 w-full rounded-t-xl bg-white/5" />
+        <div className="p-4 space-y-2.5">
+          <div className="h-5 w-3/4 rounded bg-white/10" />
+          <div className="h-3.5 w-full rounded bg-white/5" />
+          <div className="h-3.5 w-1/2 rounded bg-white/5" />
+          <div className="flex gap-2 pt-1">
+            <div className="h-3 w-16 rounded bg-white/5" />
+            <div className="h-3 w-12 rounded bg-white/5" />
+          </div>
         </div>
       </div>
     </div>
@@ -107,45 +110,48 @@ function NewsCard({ item, index = 0 }: { item: NewsItem; index?: number }) {
       className="group h-full"
       style={{ transition: "transform 0.2s ease-out" }}
     >
-      <Link href={href} className="rounded-xl neon-border-card no-underline group block h-full overflow-hidden bg-[var(--color-panel)]">
-        {item.image ? (
-          <div className="relative h-48 w-full overflow-hidden">
-            <div
-              className="h-full w-full transition-transform duration-300 group-hover:scale-105"
-              style={{ background: `url(${item.image}) center/cover` }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-transparent to-transparent" />
-          </div>
-        ) : (
-          <div className="h-48 w-full bg-gradient-to-br from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10 flex items-center justify-center">
-            <span className="text-xs font-semibold text-[var(--color-mute)] uppercase tracking-wider">{item.source}</span>
-          </div>
-        )}
-        <div className="p-4">
-          <div className="flex items-center gap-1.5 flex-wrap mb-2">
-            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${sourceStyle.bg} ${sourceStyle.text} ${sourceStyle.border}`}>
-              {item.source}
-            </span>
-            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${typeStyle}`}>
-              {item.type}
-            </span>
-          </div>
-          <h3 className="font-display font-bold text-sm group-hover:text-[var(--color-cyan)] transition-colors line-clamp-2">
-            {item.title}
-          </h3>
-          <p className="text-xs text-[var(--color-mute)] mt-1.5 line-clamp-3 leading-relaxed">
-            {item.summary}
-          </p>
-          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-            <TimeAgo date={item.publishedAt} />
-            {item.tags.length > 0 && (
-              <span className="text-[10px] font-mono text-[var(--color-mute)] bg-[var(--color-void)] px-1.5 py-0.5 rounded border border-[var(--color-line)]">
-                {item.tags[0]}
+      <div className="relative h-full rounded-xl overflow-hidden p-[1.5px] transition-transform duration-300 hover:scale-[1.02]">
+        <span className="absolute inset-0 rounded-xl" style={{ background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)", animation: "spin 6s linear infinite", willChange: "transform" }} aria-hidden />
+        <Link href={href} className="relative z-10 no-underline group block h-full overflow-hidden rounded-[10.5px] bg-[var(--color-panel)]">
+          {item.image ? (
+            <div className="relative h-48 w-full overflow-hidden">
+              <div
+                className="h-full w-full transition-transform duration-300 group-hover:scale-105"
+                style={{ background: `url(${item.image}) center/cover` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-panel)] via-transparent to-transparent" />
+            </div>
+          ) : (
+            <div className="h-48 w-full bg-gradient-to-br from-[var(--color-cyan)]/10 to-[var(--color-magenta)]/10 flex items-center justify-center">
+              <span className="text-xs font-semibold text-[var(--color-mute)] uppercase tracking-wider">{item.source}</span>
+            </div>
+          )}
+          <div className="p-4">
+            <div className="flex items-center gap-1.5 flex-wrap mb-2">
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${sourceStyle.bg} ${sourceStyle.text} ${sourceStyle.border}`}>
+                {item.source}
               </span>
-            )}
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${typeStyle}`}>
+                {item.type}
+              </span>
+            </div>
+            <h3 className="font-display font-bold text-sm group-hover:text-[var(--color-cyan)] transition-colors line-clamp-2">
+              {item.title}
+            </h3>
+            <p className="text-xs text-[var(--color-mute)] mt-1.5 line-clamp-3 leading-relaxed">
+              {item.summary}
+            </p>
+            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+              <TimeAgo date={item.publishedAt} />
+              {item.tags.length > 0 && (
+                <span className="text-[10px] font-mono text-[var(--color-mute)] bg-[var(--color-void)] px-1.5 py-0.5 rounded border border-[var(--color-line)]">
+                  {item.tags[0]}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-      </Link>
+        </Link>
+      </div>
     </motion.div>
   );
 }
@@ -197,12 +203,6 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
           80%  { border-color: #ff0066; box-shadow: 0 0 8px #ff006655, inset 0 0 8px #ff006611; }
           100% { border-color: #ff00ff; box-shadow: 0 0 8px #ff00ff55, inset 0 0 8px #ff00ff11; }
         }
-        .neon-border-card {
-          animation: newsNeonBorder 4s linear infinite;
-          animation-delay: calc(var(--i, 0) * -0.4s);
-          border-width: 1px;
-          border-style: solid;
-        }
         @keyframes newsNeonBorderHover {
           0%   { border-color: #ff00ff; box-shadow: 0 0 14px #ff00ff, 0 0 28px #ff00ff88; }
           20%  { border-color: #00ffff; box-shadow: 0 0 14px #00ffff, 0 0 28px #00ffff88; }
@@ -210,10 +210,6 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
           60%  { border-color: #ffff00; box-shadow: 0 0 14px #ffff00, 0 0 28px #ffff0088; }
           80%  { border-color: #ff0066; box-shadow: 0 0 14px #ff0066, 0 0 28px #ff006688; }
           100% { border-color: #ff00ff; box-shadow: 0 0 14px #ff00ff, 0 0 28px #ff00ff88; }
-        }
-        .neon-border-card:hover {
-          animation: newsNeonBorderHover 1.5s linear infinite !important;
-          transform: scale(1.03);
         }
         .neon-filter {
           animation: newsNeonBorder 4s linear infinite;
@@ -254,7 +250,7 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
       {!loading && (
         <AnimatePresence mode="wait">
           {error ? (
-            <div className="rounded-xl neon-border-card text-center bg-[var(--color-panel)]">
+            <div className="rounded-xl border border-[var(--color-line)] text-center bg-[var(--color-panel)]">
               <div className="py-20 px-6">
                 <p className="text-[var(--color-mute)]">{error}</p>
               </div>
@@ -274,7 +270,7 @@ export default function NewsFeed({ defaultType = "all" }: { defaultType?: string
               ))}
             </motion.div>
           ) : (
-            <div className="rounded-xl neon-border-card text-center bg-[var(--color-panel)]">
+            <div className="rounded-xl border border-[var(--color-line)] text-center bg-[var(--color-panel)]">
               <div className="py-20 px-6">
                 <div className="text-4xl mb-3">📰</div>
                 <p className="text-[var(--color-mute)] mb-1 font-display font-bold">No news yet</p>

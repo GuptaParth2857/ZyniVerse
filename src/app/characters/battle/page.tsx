@@ -452,6 +452,14 @@ export default function CharacterBattlePage() {
               <span aria-hidden className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[var(--color-cyan)]/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               <span className="relative">{shared ? "✓ Copied!" : "🔗 Share Challenge"}</span>
             </motion.button>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`⚔️ ${battle.charA.name} vs ${battle.charB.name} — Daily Anime Battle on ZyniVerse! Apna fav vote karo.` + "\n\nhttps://zyverse.in/characters/battle")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#25d366]/15 border border-[#25d366]/40 px-5 py-2.5 text-xs font-bold text-[#25d366] hover:bg-[#25d366]/25 transition-colors"
+            >
+              WhatsApp
+            </a>
             <motion.div whileTap={{ scale: 0.94 }}>
               <Link
                 href="/characters"

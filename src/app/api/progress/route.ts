@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { notifyAllWebhooks } from "@/lib/webhook-dispatcher";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
@@ -45,6 +46,24 @@ export async function POST(req: NextRequest) {
         update: { progress: { increment: 1 }, total, status: "CURRENT" },
         create: { userId: session.user.id, mediaId, type: type || "ANIME", status: "CURRENT", progress: 1, total: total || 0 },
       });
+
+      notifyAllWebhooks("episode.watched", {
+        mediaId,
+        episode,
+        title: `Episode ${episode}`,
+        userId: session.user.id,
+      });
+
+      const entry = await prisma.listEntry.findUnique({
+        where: { userId_mediaId: { userId: session.user.id, mediaId } },
+        select: { progress: true, total: true },
+      });
+      if ((entry?.progress ?? 1) === 1) {
+        notifyAllWebhooks("anime.started", { mediaId, episode, userId: session.user.id });
+      }
+      if (entry?.total && entry.total > 0 && entry.progress >= entry.total) {
+        notifyAllWebhooks("anime.completed", { mediaId, total: entry.total, userId: session.user.id });
+      }
     }
   } else if (action === "remove") {
     await prisma.episodeProgress.deleteMany({

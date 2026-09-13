@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractMediaUrl } from "@/lib/extractors";
+import { resolveUserId } from "@/lib/resolve-user";
+import { apiLimiter } from "@/lib/rate-limiter";
+
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  const rateCheck = apiLimiter.middleware(req);
+  if (rateCheck) return rateCheck;
+
+  const userId = await resolveUserId();
+  if (!userId) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+
   try {
     const { url } = await req.json();
 

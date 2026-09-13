@@ -11,20 +11,29 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   if (!view) return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
 
   const myVotes: Record<string, "A" | "B"> = {};
+  let myPollVote: string | null = null;
   if (session?.user?.id) {
-    const votes = await prisma.characterTournamentVote.findMany({
-      where: {
-        userId: session.user.id,
-        match: { tournamentId: id },
-      },
-      select: { matchId: true, choice: true },
-    });
+    const [votes, pollVote] = await Promise.all([
+      prisma.characterTournamentVote.findMany({
+        where: {
+          userId: session.user.id,
+          match: { tournamentId: id },
+        },
+        select: { matchId: true, choice: true },
+      }),
+      prisma.characterTournamentPollVote.findUnique({
+        where: { tournamentId_userId: { tournamentId: id, userId: session.user.id } },
+        select: { participantId: true },
+      }),
+    ]);
     for (const v of votes) myVotes[v.matchId] = v.choice as "A" | "B";
+    myPollVote = pollVote?.participantId ?? null;
   }
 
   return NextResponse.json({
     ...view,
     myVotes,
+    myPollVote,
     isCreator: !!session?.user?.id && session.user.id === view.tournament.creatorId,
   });
 }

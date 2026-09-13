@@ -211,7 +211,7 @@ export default async function IndianDubGuidePage({ params }: GuideParams) {
           <p className="mt-3 text-sm leading-relaxed text-[var(--color-mute)]">{guide.watch}</p>
           <p className="mt-3 text-sm leading-relaxed text-[var(--color-mute)]">
             Want the complete picture? Browse the <Link className="text-[var(--color-cyan)] hover:underline" href="/dubbed">live interactive dub hub</Link>, see the full weekly{" "}
-            <Link className="text-[var(--color-cyan)] hover:underline" href="/dub-schedule">dub schedule</Link>, or check{" "}
+            <Link className="text-[var(--color-cyan)] hover:underline" href="/dubbed">dub schedule</Link>, or check{" "}
             <Link className="text-[var(--color-cyan)] hover:underline" href="/voice-actors/indian">Indian voice actors</Link> behind these dubs.
           </p>
         </div>

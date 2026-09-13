@@ -11,12 +11,37 @@ import { PageTransition } from "@/components/PageTransition";
 const CARD_EASE = [0.22, 1, 0.36, 1] as const;
 const SIZES = [8, 16, 32] as const;
 
+const HUB_HERO_TAGS = [
+  { label: "Qualifying", emoji: "⚡", color: "#22d3ee" },
+  { label: "1v1 Battles", emoji: "⚔️", color: "#f87171" },
+  { label: "Auto Rounds", emoji: "🏆", color: "#facc15" },
+  { label: "Community", emoji: "🤝", color: "#a78bfa" },
+];
+
+const HUB_HERO_STATS = [
+  { icon: "⚡", label: "7-Day Qualifiers" },
+  { icon: "⚔️", label: "Single Elim" },
+  { icon: "🤝", label: "One Vote Each" },
+];
+
+const HUB_TICKER = [
+  { label: "Qualifying Open", emoji: "⚡", color: "#22d3ee" },
+  { label: "1v1 Battles", emoji: "⚔️", color: "#f87171" },
+  { label: "Auto Cron", emoji: "🕛", color: "#a78bfa" },
+  { label: "Top 16", emoji: "🎯", color: "#facc15" },
+  { label: "Community", emoji: "🤝", color: "#34d399" },
+  { label: "Champion", emoji: "👑", color: "#f472b6" },
+  { label: "Dream 16", emoji: "🌟", color: "#60a5fa" },
+  { label: "Fan Vote", emoji: "🗳️", color: "#fb923c" },
+];
+
 interface TournamentSummary {
   id: string;
   title: string;
   description: string | null;
+  posterUrl: string | null;
   size: number;
-  status: "upcoming" | "active" | "completed" | "cancelled";
+  status: "qualifying" | "upcoming" | "active" | "completed" | "cancelled";
   currentRound: number;
   totalRounds: number;
   createdAt: string;
@@ -40,6 +65,10 @@ interface SelectedChar {
 type StatusBadge = Record<TournamentSummary["status"], { label: string; className: string }>;
 
 const STATUS_BADGE: StatusBadge = {
+  qualifying: {
+    label: "⚡ Qualifying",
+    className: "bg-cyan-400/15 border-cyan-400/40 text-cyan-300",
+  },
   upcoming: {
     label: "Upcoming",
     className: "bg-[var(--color-violet)]/15 border-[var(--color-violet)]/40 text-[var(--color-violet)]",
@@ -113,31 +142,109 @@ export default function CharacterTournamentsPage() {
           }}
         />
 
-        <div className="mb-8 text-center">
-          <motion.p
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="font-mono text-xs uppercase tracking-[0.25em] text-[var(--color-magenta)]"
-          >
-            🏆 Community Bracket
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.45, ease: CARD_EASE }}
-            className="neon-rgb-border mt-1 inline-block rounded-xl px-4 py-2"
-          >
-            <h1 className="font-display text-2xl font-bold sm:text-3xl">Character Tournaments</h1>
-          </motion.div>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.15 }}
-            className="mx-auto mt-3 max-w-lg text-sm text-[var(--color-mute)]"
-          >
-            Crown the ultimate anime character. Create a bracket, rally votes, and see who takes the title.
-          </motion.p>
-        </div>
+        {/* ─────────── HERO ─────────── */}
+        <section className="neon-rgb-border relative mb-8 overflow-hidden rounded-3xl bg-[var(--color-panel)]/60 py-14 text-center backdrop-blur-sm sm:py-20">
+          <div className="neon-banner-card pointer-events-none absolute inset-0" />
+
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+          <div aria-hidden className="scanline-sweep" />
+
+          <div aria-hidden className="pointer-events-none absolute left-3 top-3 h-4 w-4 border-l-2 border-t-2 border-[var(--color-cyan)]/50" />
+          <div aria-hidden className="pointer-events-none absolute right-3 top-3 h-4 w-4 border-r-2 border-t-2 border-[var(--color-cyan)]/50" />
+          <div aria-hidden className="pointer-events-none absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-[var(--color-magenta)]/50" />
+          <div aria-hidden className="pointer-events-none absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-[var(--color-magenta)]/50" />
+
+          <span aria-hidden className="pointer-events-none absolute left-10 top-10 hidden text-3xl opacity-40 float-anim md:block">🥊</span>
+          <span aria-hidden className="pointer-events-none absolute right-12 top-14 hidden text-3xl opacity-40 float-anim md:block" style={{ animationDelay: "0.9s" }}>🎬</span>
+          <span aria-hidden className="pointer-events-none absolute bottom-12 left-14 hidden text-2xl opacity-30 float-anim md:block" style={{ animationDelay: "0.45s" }}>📰</span>
+          <span aria-hidden className="pointer-events-none absolute bottom-14 right-14 hidden text-2xl opacity-30 float-anim md:block" style={{ animationDelay: "1.3s" }}>🎨</span>
+
+          <div aria-hidden className="pointer-events-none absolute left-[10%] top-1/2 hidden h-28 w-28 -translate-y-1/2 rounded-full bg-[var(--color-cyan)]/25 blur-[55px] float-anim md:block" />
+          <div aria-hidden className="pointer-events-none absolute right-[10%] top-1/2 hidden h-28 w-28 -translate-y-1/2 rounded-full bg-[var(--color-magenta)]/25 blur-[55px] float-anim md:block" style={{ animationDelay: "1.5s" }} />
+
+          <div className="relative z-10 mx-auto max-w-3xl px-6">
+            <motion.div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-3xl"
+              style={{
+                background: "conic-gradient(from 0deg, var(--color-magenta), var(--color-cyan), var(--color-violet), var(--color-magenta))",
+                animation: "spin 10s linear infinite",
+              }}
+            />
+
+            <div className="relative">
+              <motion.p
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="console-label mb-4 flex animate-hero-text items-center justify-center gap-2"
+                style={{ animationDelay: "0.05s" }}
+              >
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-cyan)] opacity-75" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--color-cyan)]" />
+                </span>
+                🏆 Community Bracket
+              </motion.p>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: CARD_EASE, delay: 0.1 }}
+                className="neon-text-gradient animate-hero-text font-display text-4xl font-black tracking-tight sm:text-6xl"
+                style={{ filter: "drop-shadow(0 0 28px rgba(138,92,255,0.35))", animationDelay: "0.15s" }}
+              >
+                Character Tournaments
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="mx-auto mt-4 max-w-xl animate-hero-text text-sm text-[var(--color-mute)] sm:text-base"
+                style={{ animationDelay: "0.25s" }}
+              >
+                Crown the ultimate anime character. Create a bracket, rally votes, and see who takes the title.
+              </motion.p>
+
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                {HUB_HERO_STATS.map((s) => (
+                  <span
+                    key={s.label}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] bg-[var(--color-void)]/50 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--color-mute)] backdrop-blur-sm"
+                  >
+                    {s.icon} {s.label}
+                  </span>
+                ))}
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                {HUB_HERO_TAGS.map((tag) => (
+                  <span
+                    key={tag.label}
+                    className="inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:brightness-125"
+                    style={{ color: tag.color, borderColor: `${tag.color}55`, background: `${tag.color}14` }}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: tag.color, boxShadow: `0 0 8px ${tag.color}` }} />
+                    {tag.emoji} {tag.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div aria-hidden className="ticker-window relative z-10 mt-8 border-t border-[var(--color-line)] bg-[var(--color-void)]/40 py-3">
+            <div className="ticker-track flex w-max items-center gap-10 whitespace-nowrap px-8">
+              {[...HUB_TICKER, ...HUB_TICKER].map((t, i) => (
+                <span key={i} className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em]">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: t.color, boxShadow: `0 0 8px ${t.color}` }} />
+                  <span className="text-base leading-none" style={{ textShadow: `0 0 10px ${t.color}aa` }}>{t.emoji}</span>
+                  <span className="text-[var(--color-mute)]">{t.label}</span>
+                  <span className="ml-6 select-none text-[var(--color-magenta)]/40">✦</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
 
         <div className="mb-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-1 rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] p-1">
@@ -222,6 +329,16 @@ export default function CharacterTournamentsPage() {
 
 function TournamentCard({ t, index }: { t: TournamentSummary; index: number }) {
   const badge = STATUS_BADGE[t.status];
+  const hot = t.status === "qualifying" || t.status === "active";
+  const players = t.status === "qualifying" ? t.size : t._count.participants;
+  const playersLabel = t.status === "qualifying" ? "candidates" : "fighters";
+  const roundLabel =
+    t.status === "qualifying"
+      ? "Open Qualifying"
+      : t.status === "upcoming"
+      ? `Round 1 of ${t.totalRounds}`
+      : `Round ${t.currentRound} of ${t.totalRounds}`;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -230,44 +347,95 @@ function TournamentCard({ t, index }: { t: TournamentSummary; index: number }) {
     >
       <Link
         href={`/character-tournaments/${t.id}`}
-        className="group relative block h-full overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300 hover:-translate-y-1 hover:border-[var(--color-magenta)]/40 hover:shadow-[0_12px_40px_-12px_var(--color-magenta)]"
+        className="group relative block h-full rounded-[24px]"
       >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-30"
-          style={{
-            background:
-              "radial-gradient(60% 60% at 50% 0%, var(--color-violet), transparent 70%)",
-          }}
-        />
-        <div className="relative p-5">
-          <div className="flex items-start justify-between gap-2">
-            <h2 className="line-clamp-1 font-display text-lg font-bold text-[var(--color-ink)]">
-              {t.title}
-            </h2>
-            <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${badge.className}`}>
+        {/* premium rotating neon conic border */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[24px]">
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)",
+              animation: "spin 6s linear infinite",
+              willChange: "transform",
+            }}
+          />
+          <span className="absolute inset-[1.5px] rounded-[22.5px] neon-border-inner" />
+        </div>
+
+        {/* popular-style pill badge */}
+        <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-1/2">
+          {hot ? (
+            <span className="block whitespace-nowrap rounded-full bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] px-3.5 py-1 text-[9px] font-bold uppercase tracking-wider text-black shadow-[0_0_20px_-5px_rgba(0,255,224,0.4)]">
               {badge.label}
             </span>
-          </div>
-          <p className="mt-1 line-clamp-1 text-xs text-[var(--color-mute)]">@{t.creator.username}</p>
-
-          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[var(--color-mute)]">
-            <span className="flex items-center gap-1.5">
-              <span className="font-mono font-bold text-[var(--color-violet)]">{t.size}</span> players
+          ) : t.status === "completed" ? (
+            <span className="block whitespace-nowrap rounded-full border border-emerald-400/40 bg-[#15121d]/95 px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-emerald-300">
+              {badge.label}
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="font-mono font-bold text-[var(--color-magenta)]">
-                {t.status === "upcoming" ? "Round 1" : `Round ${t.currentRound}`}
-              </span>
-              of {t.totalRounds}
+          ) : (
+            <span className="block whitespace-nowrap rounded-full border border-white/10 bg-[#15121d]/95 px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-[var(--color-mute)]">
+              {badge.label}
+            </span>
+          )}
+        </div>
+
+        {/* interior */}
+        <div className="relative z-10 flex h-full flex-col p-5 pt-6">
+          <p className="mb-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.35em] text-[var(--color-cyan)]/80">
+            {t.status === "qualifying" ? "✦ Qualifying" : "✦ Bracket"}
+          </p>
+          {t.posterUrl && (
+            <div className="mb-3 h-32 w-full overflow-hidden rounded-xl bg-[#0a0910]">
+              <Image
+                src={t.posterUrl}
+                alt={t.title}
+                width={400}
+                height={128}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
+          <h2 className="line-clamp-1 font-display text-lg font-bold text-[var(--color-ink)]">
+            {t.title}
+          </h2>
+          <p className="mt-0.5 line-clamp-1 text-xs text-[var(--color-mute)]">@{t.creator.username}</p>
+
+          <div className="mt-4 flex items-baseline gap-1.5">
+            <span className="bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-3xl font-black tabular-nums text-transparent">
+              {players}
+            </span>
+            <span className="font-mono text-[9px] uppercase tracking-wider text-[var(--color-mute)]">
+              {playersLabel}
             </span>
           </div>
 
-          <div className="mt-4 flex items-center justify-between border-t border-[var(--color-line)] pt-3">
+          <ul className="mt-4 space-y-1.5">
+            <li className="flex items-center gap-2 text-[11px] text-[var(--color-mute)]">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={hot ? "#ff00e6" : "#00ffe0"} strokeWidth="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              {roundLabel}
+            </li>
+            <li className="flex items-center gap-2 text-[11px] text-[var(--color-mute)]">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={hot ? "#ff00e6" : "#00ffe0"} strokeWidth="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              {t._count.matches} matches scheduled
+            </li>
+          </ul>
+
+          <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-3">
             <span className="text-[11px] font-mono text-[var(--color-mute)]">{relativeDate(t.createdAt)}</span>
-            <span className="flex items-center gap-3 text-[11px] font-mono text-[var(--color-mute)]">
-              <span>{t._count.participants} fighters</span>
-              <span>{t._count.matches} matches</span>
+            <span className="flex items-center gap-1.5 bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-[11px] font-bold uppercase tracking-wider text-transparent">
+              {t.status === "qualifying"
+                ? "Vote now"
+                : t.status === "completed"
+                ? "View results"
+                : "View bracket"}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </span>
           </div>
         </div>
@@ -286,8 +454,14 @@ function CreateModal({
   onCreated: (id: string) => void;
 }) {
   const [size, setSize] = useState<number>(8);
+  const [mode, setMode] = useState<"bracket" | "qualifying">("bracket");
+  const [qualSize, setQualSize] = useState<number>(64);
+  const [qualBracket, setQualBracket] = useState<number>(16);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [posterUrl, setPosterUrl] = useState<string | null>(null);
+  const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [uploadingPoster, setUploadingPoster] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CharacterResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -295,12 +469,19 @@ function CreateModal({
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const activeSize = mode === "qualifying" ? qualSize : size;
+
   useEffect(() => {
     if (!isOpen) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSize(8);
+      setMode("bracket");
+      setQualSize(64);
+      setQualBracket(16);
       setTitle("");
       setDescription("");
+      setPosterUrl(null);
+      setPosterPreview(null);
       setQuery("");
       setResults([]);
       setSelected([]);
@@ -335,11 +516,28 @@ function CreateModal({
     };
   }, [query, isOpen]);
 
+  const handlePosterUpload = async (file: File) => {
+    setPosterPreview(URL.createObjectURL(file));
+    setUploadingPoster(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (res.ok && data.url) setPosterUrl(data.url);
+      else setPosterUrl(null);
+    } catch {
+      setPosterUrl(null);
+    } finally {
+      setUploadingPoster(false);
+    }
+  };
+
   const selectedIds = new Set(selected.map((s) => s.charId));
 
   const addCharacter = (c: CharacterResult) => {
     if (selectedIds.has(c.id)) return;
-    if (selected.length >= size) return;
+    if (selected.length >= activeSize) return;
     const full = c.name.full || c.name.userPreferred || "Character";
     const img = c.image.large || c.image.medium || "";
     setSelected((prev) => [
@@ -360,12 +558,13 @@ function CreateModal({
     setSelected((prev) => prev.filter((s) => s.charId !== charId));
   };
 
-  const canCreate = selected.length === size && title.trim() !== "" && !creating;
+  const canCreate = selected.length === activeSize && title.trim() !== "" && !creating;
 
   const handleCreate = async () => {
     if (!canCreate) {
       if (title.trim() === "") setError("Give your tournament a title.");
-      else if (selected.length !== size) setError(`Select exactly ${size} characters (${selected.length}/${size}).`);
+      else if (selected.length !== activeSize)
+        setError(`Select exactly ${activeSize} characters (${selected.length}/${activeSize}).`);
       return;
     }
     setCreating(true);
@@ -377,7 +576,10 @@ function CreateModal({
         body: JSON.stringify({
           title: title.trim(),
           description: description.trim() || undefined,
-          size,
+          posterUrl: posterUrl || undefined,
+          size: activeSize,
+          mode,
+          bracketSize: mode === "qualifying" ? qualBracket : undefined,
           participants: selected.map((s) => ({
             charId: s.charId,
             charName: s.charName,
@@ -431,27 +633,99 @@ function CreateModal({
           <div className="space-y-6">
             <div>
               <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--color-mute)]">
-                Tournament Size
+                Mode
               </label>
-              <div className="flex items-center gap-2">
-                {SIZES.map((s) => (
+              <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] p-1">
+                {(["bracket", "qualifying"] as const).map((m) => (
                   <button
-                    key={s}
+                    key={m}
                     onClick={() => {
-                      setSize(s);
-                      setSelected((prev) => prev.slice(0, s));
+                      setMode(m);
                       setError(null);
+                      setSelected((prev) => prev.slice(0, m === "qualifying" ? qualSize : size));
                     }}
-                    className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-bold transition-colors ${
-                      size === s
-                        ? "border-[var(--color-magenta)] bg-[var(--color-magenta)]/15 text-[var(--color-magenta)]"
-                        : "border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-line)] hover:text-[var(--color-ink)]"
+                    className={`flex-1 rounded-md px-3 py-2 text-xs font-bold capitalize transition ${
+                      mode === m
+                        ? "bg-[var(--color-magenta)] text-black"
+                        : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"
                     }`}
                   >
-                    {s}
+                    {m === "bracket" ? "Direct Bracket" : "Qualifying → Bracket"}
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--color-mute)]">
+                {mode === "bracket" ? "Tournament Size" : "Candidate Pool Size"}
+              </label>
+              {mode === "bracket" ? (
+                <div className="flex items-center gap-2">
+                  {SIZES.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => {
+                        setSize(s);
+                        setSelected((prev) => prev.slice(0, s));
+                        setError(null);
+                      }}
+                      className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-bold transition-colors ${
+                        size === s
+                          ? "border-[var(--color-magenta)] bg-[var(--color-magenta)]/15 text-[var(--color-magenta)]"
+                          : "border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-line)] hover:text-[var(--color-ink)]"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    {[16, 32, 48, 64, 100, 200].map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => {
+                          setQualSize(s);
+                          setSelected((prev) => prev.slice(0, s));
+                          setError(null);
+                        }}
+                        className={`flex-1 rounded-lg border px-3 py-2 text-xs font-bold transition ${
+                          qualSize === s
+                            ? "border-[var(--color-cyan)] bg-[var(--color-cyan)]/15 text-cyan-300"
+                            : "border-[var(--color-line)] text-[var(--color-mute)] hover:text-[var(--color-ink)]"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                  <div>
+                    <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--color-mute)]">
+                      Top advance to bracket
+                    </p>
+                    <div className="flex gap-2">
+                      {SIZES.map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => {
+                            setQualBracket(s);
+                            setError(null);
+                          }}
+                          className={`flex-1 rounded-lg border px-3 py-2 text-xs font-bold transition ${
+                            qualBracket === s
+                              ? "border-[var(--color-magenta)] bg-[var(--color-magenta)]/15 text-[var(--color-magenta)]"
+                              : "border-[var(--color-line)] text-[var(--color-mute)] hover:text-[var(--color-ink)]"
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
@@ -480,10 +754,72 @@ function CreateModal({
             </div>
 
             <div>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--color-mute)]">
+                Poster <span className="font-normal normal-case text-[var(--color-mute)] opacity-60">(optional)</span>
+              </label>
+              <div className="flex items-center gap-3">
+                {posterPreview ? (
+                  <div className="relative h-28 w-20 shrink-0 overflow-hidden rounded-lg border border-[var(--color-line)]">
+                    <Image
+                      src={posterPreview}
+                      alt="Poster preview"
+                      width={80}
+                      height={112}
+                      className="h-full w-full object-cover"
+                    />
+                    <button
+                      onClick={() => {
+                        setPosterUrl(null);
+                        setPosterPreview(null);
+                      }}
+                      aria-label="Remove poster"
+                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-white transition-colors hover:bg-[var(--color-magenta)]"
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex h-28 w-20 shrink-0 items-center justify-center rounded-lg border border-dashed border-[var(--color-line)] bg-[var(--color-void)] text-2xl">
+                    🖼️
+                  </div>
+                )}
+                <div className="flex-1">
+                  <p className="text-xs text-[var(--color-mute)]">
+                    A banner for your tournament card. JPG / PNG / WEBP, under 5MB.
+                  </p>
+                  <div className="relative mt-2">
+                    <label
+                      className={`flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border text-xs font-bold transition-colors ${
+                        uploadingPoster
+                          ? "cursor-wait border-[var(--color-cyan)]/40 text-cyan-300"
+                          : "border-[var(--color-cyan)]/40 bg-[var(--color-cyan)]/10 text-cyan-300 hover:bg-[var(--color-cyan)]/20"
+                      }`}
+                    >
+                      {uploadingPoster ? "Uploading…" : "Upload poster"}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="hidden"
+                        disabled={uploadingPoster}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) void handlePosterUpload(f);
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
               <div className="mb-2 flex items-center justify-between">
                 <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-mute)]">Characters</label>
-                <span className={`text-[11px] font-mono ${selected.length === size ? "text-emerald-400" : "text-[var(--color-magenta)]"}`}>
-                  {selected.length}/{size} selected
+                <span className={`text-[11px] font-mono ${selected.length === activeSize ? "text-emerald-400" : "text-[var(--color-magenta)]"}`}>
+                  {selected.length}/{activeSize} selected
                 </span>
               </div>
 
@@ -529,7 +865,7 @@ function CreateModal({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search characters…"
-                  disabled={selected.length >= size}
+                  disabled={selected.length >= activeSize}
                   className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-4 py-2.5 text-sm text-[var(--color-ink)] outline-none transition-colors focus:border-[var(--color-cyan)] disabled:opacity-50"
                 />
                 {searching && (
@@ -537,7 +873,7 @@ function CreateModal({
                 )}
               </div>
 
-              {selected.length < size && results.length > 0 && !searching && (
+              {selected.length < activeSize && results.length > 0 && !searching && (
                 <div className="mt-2 max-h-56 space-y-1 overflow-y-auto rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] p-1">
                   {results.map((c) => {
                     const full = c.name.full || c.name.userPreferred || "Character";
@@ -573,7 +909,7 @@ function CreateModal({
                 </div>
               )}
 
-              {selected.length >= size && query && (
+              {selected.length >= activeSize && query && (
                 <p className="mt-2 text-xs text-emerald-400">Bracket full — remove a character to add another.</p>
               )}
             </div>
@@ -602,7 +938,13 @@ function CreateModal({
                   : undefined
               }
             >
-              {creating ? "Creating…" : canCreate ? `Create ${size}-Player Tournament` : "Select fighters to continue"}
+              {creating
+                ? "Creating…"
+                : canCreate
+                ? mode === "qualifying"
+                  ? `Create ${qualSize} → ${qualBracket} Qualifier`
+                  : `Create ${size}-Player Tournament`
+                : "Select fighters to continue"}
             </button>
           </div>
         </div>

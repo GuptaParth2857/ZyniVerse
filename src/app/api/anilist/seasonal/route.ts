@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const year = url.searchParams.get("year") ? Number(url.searchParams.get("year")) : undefined;
   const season = url.searchParams.get("season") || undefined;
-  const perPage = Math.min(Number(url.searchParams.get("perPage")) || 50, 50);
+  const perPage = Math.min(Number(url.searchParams.get("perPage")) || 50, 100);
   const data = await getSeasonal(year, season, perPage);
   return Response.json(data, {
     headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },

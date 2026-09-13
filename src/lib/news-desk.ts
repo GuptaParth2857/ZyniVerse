@@ -45,7 +45,7 @@ export const NEWS_DESK: NewsDeskItem[] = [
     ],
     links: [
       { label: "Browse all Indian dubs", href: "/indian-dubs" },
-      { label: "Weekly dub schedule", href: "/dub-schedule" },
+      { label: "Weekly dub schedule", href: "/dubbed" },
     ],
   },
   {
@@ -68,7 +68,7 @@ export const NEWS_DESK: NewsDeskItem[] = [
       { label: "Platform", value: "Crunchyroll" },
     ],
     links: [
-      { label: "Weekly dub schedule", href: "/dub-schedule" },
+      { label: "Weekly dub schedule", href: "/dubbed" },
       { label: "All Hindi, Tamil & Telugu dubs", href: "/indian-dubs" },
     ],
   },
@@ -94,7 +94,7 @@ export const NEWS_DESK: NewsDeskItem[] = [
     ],
     links: [
       { label: "Bleach watch order", href: "/watch-order/bleach" },
-      { label: "Weekly dub schedule", href: "/dub-schedule" },
+      { label: "Weekly dub schedule", href: "/dubbed" },
     ],
   },
   {
@@ -119,7 +119,7 @@ export const NEWS_DESK: NewsDeskItem[] = [
     ],
     links: [
       { label: "JJK Hindi dub guide", href: "/indian-dubs/jujutsu-kaisen-hindi-dub" },
-      { label: "Weekly dub schedule", href: "/dub-schedule" },
+      { label: "Weekly dub schedule", href: "/dubbed" },
     ],
   },
 ];

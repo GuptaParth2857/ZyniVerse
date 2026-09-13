@@ -28,14 +28,26 @@ export interface UserStats {
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
-export async function getUserStats(userId: string): Promise<UserStats> {
-  const [entries, progress] = await Promise.all([
+export async function getUserStats(userId: string, year?: number): Promise<UserStats> {
+  const [allEntries, allProgress] = await Promise.all([
     prisma.listEntry.findMany({ where: { userId } }),
     prisma.episodeProgress.findMany({
       where: { userId },
       orderBy: { createdAt: "asc" },
     }),
   ]);
+
+  let entries = allEntries;
+  let progress = allProgress;
+  if (year) {
+    progress = allProgress.filter((p) => p.watchedAt?.getFullYear() === year);
+    const mediaIdsInYear = new Set(progress.map((p) => p.mediaId));
+    entries = allEntries.filter(
+      (e) =>
+        (e.status === "COMPLETED" && e.completedAt && e.completedAt.getFullYear() === year) ||
+        mediaIdsInYear.has(e.mediaId)
+    );
+  }
 
   const totalAnime = entries.length;
   const completedCount = entries.filter((e) => e.status === "COMPLETED").length;
@@ -51,7 +63,7 @@ export async function getUserStats(userId: string): Promise<UserStats> {
   const activeEntries = entries.filter(
     (e) => e.status === "COMPLETED" || e.status === "CURRENT"
   );
-  const totalEpisodes = activeEntries.reduce((s, e) => s + e.progress, 0);
+  const totalEpisodes = year ? progress.length : activeEntries.reduce((s, e) => s + e.progress, 0);
   const totalDaysWatched = Math.round((totalEpisodes * 24) / 60 / 24 * 10) / 10;
 
   const mediaIds = [...new Set(entries.map((e) => e.mediaId))];

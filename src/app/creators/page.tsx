@@ -19,6 +19,9 @@ export default async function Page() {
     take: 50,
   });
 
+  const totals = await prisma.creatorProfile.aggregate({ _sum: { totalTips: true } });
+  const tipRows = (await prisma.tip.count().catch(() => 0)) || 0;
+
   const serialized = creators.map((c) => ({
     ...c,
     createdAt: c.createdAt.toISOString(),
@@ -29,6 +32,11 @@ export default async function Page() {
       creators={serialized}
       isLoggedIn={!!session?.user?.id}
       currentUserId={session?.user?.id || null}
+      stats={{
+        totalCreators: creators.length,
+        totalReceived: totals._sum.totalTips || 0,
+        totalTips: tipRows,
+      }}
     />
   );
 }

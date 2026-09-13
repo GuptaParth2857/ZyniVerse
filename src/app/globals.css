@@ -61,6 +61,22 @@ body {
   background: var(--color-violet);
 }
 
+/* Slim scrollbars for inner scroll areas (board columns, modal lists) */
+.board-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+.board-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.board-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.board-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-violet) 45%, transparent);
+  border-radius: 4px;
+}
+
 :focus-visible {
   outline: 2px solid var(--color-cyan);
   outline-offset: 2px;
@@ -1070,6 +1086,24 @@ body {
 .group:hover .award-sheen {
   transform: translateX(140%);
 }
+
+/* Anime Night: neon RGB animated ring on focus (friend inputs) */
+.neon-rgb-ring {
+  border: 1px solid rgba(255, 0, 224, 0.35);
+  background:
+    linear-gradient(#15121d, #15121d) padding-box,
+    linear-gradient(120deg, #ff00e6, #00ffe0, #a78bfa, #ff00e6) border-box;
+  background-size: 300% 300%;
+  animation: neonRGBBorder 4s linear infinite;
+}
+@keyframes neonRGBBorder {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+.neon-rgb-ring input:focus-visible {
+  outline: none;
+}
+
 
 /* Awards: shimmer sweep for gradient-letter posters */
 .award-gradient-letter {
@@ -2234,6 +2268,19 @@ img[src=""] { display: none; }
 }
 [data-theme="dim"] .neon-border-inner {
   background: rgba(19,19,30,0.92);
+}
+
+/* ── Tournament character art: recolor greyscale/manga sketches into an
+      anime-style neon tone using a mix-blend-mode color overlay ── */
+.tourney-char-img {
+  filter: saturate(1.25) contrast(1.05) brightness(1.03);
+}
+.tourney-anime-tint {
+  mix-blend-mode: color;
+  filter: saturate(1.5) contrast(1.02);
+}
+[data-theme="light"] .tourney-anime-tint {
+  mix-blend-mode: soft-light;
 }
 
 /* ═══════════════════════════════════════════════════════

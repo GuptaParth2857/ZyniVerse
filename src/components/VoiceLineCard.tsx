@@ -144,9 +144,24 @@ export default function VoiceLineCard({ line, index = 0 }: { line: VoiceLine; in
       transition={{ duration: 0.45, delay: Math.min((index % 6) * 0.05, 0.3), ease: [0.22, 1, 0.36, 1] }}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
-      className="group relative overflow-hidden rounded-3xl meme-card-border bg-[#15121d]/85 backdrop-blur-xl"
-      style={{ transition: "transform 0.2s ease-out, border-color 0.3s, box-shadow 0.3s" }}
+      className="group relative rounded-3xl"
+      style={{ transition: "transform 0.2s ease-out" }}
     >
+      {/* spinning neon border */}
+      <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none z-0">
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "conic-gradient(from 0deg, transparent, #00ffe0, transparent, #ff00e6, transparent, #7000ff, transparent, #00ffe0)",
+            animation: "spin 6s linear infinite",
+            willChange: "transform",
+          }}
+        />
+        <span className="absolute inset-[1.5px] rounded-[22.5px] neon-border-inner" />
+      </div>
+
+      {/* card content */}
+      <div className="relative z-10 overflow-hidden rounded-[22.5px]">
       {/* hairline shimmer on top edge */}
       <div className="pointer-events-none absolute inset-x-6 top-0 h-px z-40 meme-hairline" />
 
@@ -286,6 +301,7 @@ export default function VoiceLineCard({ line, index = 0 }: { line: VoiceLine; in
             </motion.button>
           )}
         </div>
+      </div>
       </div>
 
       <MomentMaker

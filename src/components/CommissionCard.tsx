@@ -63,14 +63,15 @@ export default function CommissionCard({ item, index = 0 }: { item: CommissionIt
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.45, delay: (index % 8) * 0.06, ease: CARD_EASE }}
       whileHover={{ y: -6 }}
-      className="group"
+      className="group h-full"
     >
       <Link href={`/commissions/${item.id}`} className="block h-full">
-        <div
-          className="card-glow relative h-full overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)]"
-          style={{ "--glow-color": cat.color } as React.CSSProperties}
-        >
-          <div className="relative aspect-[4/3] overflow-hidden bg-[#0a0a14]">
+<div
+            className="card-glow relative h-full overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)]"
+            style={{ "--glow-color": cat.color } as React.CSSProperties}
+          >
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-px meme-hairline" />
+            <div className="relative aspect-[4/3] overflow-hidden bg-[#0a0a14]">
             {item.imageUrl ? (
               <Image
                 src={item.imageUrl}
@@ -118,6 +119,13 @@ export default function CommissionCard({ item, index = 0 }: { item: CommissionIt
                 ))}
               </div>
             )}
+
+            <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-md bg-black/50 px-2 py-1 text-[9px] font-semibold text-white/70 opacity-0 backdrop-blur-md transition-all duration-300 group-hover:opacity-100">
+              View Listing
+              <svg className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
           </div>
 
           <div className="relative z-10 flex flex-col gap-2 p-3.5">
@@ -133,12 +141,12 @@ export default function CommissionCard({ item, index = 0 }: { item: CommissionIt
 
             <div className="flex flex-wrap items-center gap-2">
               {item.priceMin != null && item.priceMax != null && (
-                <span className="rounded-md bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-400">
+                <span className="rounded-md border border-green-400/20 bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.15)]">
                   {formatPrice(item.priceMin)} - {formatPrice(item.priceMax)}
                 </span>
               )}
               {item.priceMin != null && item.priceMax == null && (
-                <span className="rounded-md bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-400">
+                <span className="rounded-md border border-green-400/20 bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.15)]">
                   From {formatPrice(item.priceMin)}
                 </span>
               )}

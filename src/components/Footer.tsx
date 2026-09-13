@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { t } from "@/lib/i18n";
 import FeedbackForm from "./FeedbackForm";
 
 const FADE_UP = { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5 } };
@@ -40,7 +41,6 @@ const LINK_COLUMNS: FooterColumn[] = [
       { href: "/seasonal", label: "Seasonal", icon: "calendar" },
       { href: "/schedule", label: "Schedule", icon: "clock" },
       { href: "/live-action", label: "Live Action", icon: "film" },
-      { href: "/streaming-calendar", label: "Streaming Calendar", icon: "tv" },
       { href: "/dubbed", label: "Regional Dubs", icon: "globe" },
       { href: "/indian-dubs", label: "Indian Dubs", icon: "globe" },
       { href: "/random", label: "Random Anime", icon: "shuffle" },
@@ -60,7 +60,6 @@ const LINK_COLUMNS: FooterColumn[] = [
       { href: "/extension", label: "Chrome Extension", icon: "code" },
       { href: "/toons", label: "Toons & Cartoons", icon: "tv" },
       { href: "/tv-schedule", label: "TV Channels", icon: "globe" },
-      { href: "/dub-schedule", label: "Dub Schedule", icon: "clock" },
       { href: "/blog", label: "Blog", icon: "edit" },
     ],
   },
@@ -179,7 +178,7 @@ export default function Footer() {
               className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/40 backdrop-blur-sm p-4 hover:bg-[var(--color-panel)]/70 transition-all duration-300"
             >
               <h4 className="font-display text-xs font-bold uppercase tracking-wider text-[var(--color-cyan)] mb-4 flex items-center gap-2 pb-2 border-b border-[var(--color-line)]/50">
-                {col.title}
+                {t(`footer.col.${col.title.toLowerCase()}`)}
               </h4>
               <ul className="space-y-0.5">
                 {col.links.map((link) => (

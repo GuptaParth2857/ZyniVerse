@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import CommissionCard from "./CommissionCard";
 import InfiniteScroll from "./InfiniteScroll";
 
@@ -33,84 +34,119 @@ const SORTS = [
   { value: "popular", label: "Popular" },
 ];
 
+const CARD_EASE = [0.22, 1, 0.36, 1] as const;
+
+function SkeletonCard() {
+  return (
+    <div className="animate-pulse overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)]">
+      <div className="aspect-[4/3] bg-white/[0.04]" />
+      <div className="space-y-2.5 p-4">
+        <div className="h-3 w-2/3 rounded-full bg-white/[0.06]" />
+        <div className="h-2.5 w-full rounded-full bg-white/[0.05]" />
+        <div className="h-2.5 w-4/5 rounded-full bg-white/[0.05]" />
+        <div className="flex gap-2 pt-1">
+          <div className="h-5 w-20 rounded-md bg-white/[0.06]" />
+          <div className="h-5 w-14 rounded-md bg-white/[0.06]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CommissionGrid() {
   const [items, setItems] = useState<CommissionItem[]>([]);
-  const [category, setCategory] = useState("all");
-  const [sort, setSort] = useState("recent");
-  const [search, setSearch] = useState("");
+  const [total, setTotal] = useState(0);
+  const [filters, setFilters] = useState({ category: "all", sort: "recent", search: "" });
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchCommissions = useCallback(async (reset: boolean) => {
-    setLoading(true);
-    if (reset) setError("");
-    try {
-      const params = new URLSearchParams();
-      if (category !== "all") params.set("category", category);
-      params.set("sort", sort);
-      if (search) params.set("search", search);
-      params.set("page", String(reset ? 1 : page));
-
-      const res = await fetch(`/api/commissions?${params}`);
-      if (!res.ok) {
-        if (reset) setError("Failed to load commissions");
-        setLoading(false);
-        return;
-      }
-      const data = await res.json();
-
-      setItems((prev) => (reset ? data.items : [...prev, ...data.items]));
-      setHasNextPage(data.hasNextPage);
-    } catch {
-      if (reset) setError("Failed to load commissions");
-    }
-    setLoading(false);
-  }, [category, sort, search, page]);
-
   useEffect(() => {
+    let cancelled = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPage(1);
-    fetchCommissions(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, sort, search]);
+    setLoading(true);
+    setError("");
+    const params = new URLSearchParams();
+    if (filters.category !== "all") params.set("category", filters.category);
+    params.set("sort", filters.sort);
+    if (filters.search) params.set("search", filters.search);
+    params.set("page", String(page));
 
-  useEffect(() => {
-    if (page > 1) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      fetchCommissions(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+    fetch(`/api/commissions?${params}`)
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load commissions");
+        return data;
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setTotal(data.total ?? 0);
+        setItems((prev) => (page === 1 ? data.items : [...prev, ...data.items]));
+        setHasNextPage(data.hasNextPage);
+      })
+      .catch(() => {
+        if (!cancelled && page === 1) setError("Failed to load commissions");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filters, page]);
+
+  const setFilter = (patch: Partial<typeof filters>) => {
+    setFilters((prev) => ({ ...prev, ...patch }));
+    setPage(1);
+  };
+
+  const loadMore = () => setPage((p) => p + 1);
+
+  const showSkeletons = loading && items.length === 0;
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-1.5">
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.value}
-              onClick={() => setCategory(c.value)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                category === c.value
-                  ? "bg-[var(--color-magenta)]/20 text-[var(--color-magenta)] border border-[var(--color-magenta)]/30"
-                  : "bg-white/5 text-white/40 border border-white/[0.06] hover:border-white/[0.14]"
-              }`}
-            >
-              {c.icon} {c.label}
-            </button>
-          ))}
-        </div>
+      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+          className="flex flex-wrap gap-1.5"
+        >
+          {CATEGORIES.map((c) => {
+            const active = filters.category === c.value;
+            return (
+              <motion.button
+                key={c.value}
+                variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}
+                onClick={() => setFilter({ category: c.value })}
+                className={`relative rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                  active ? "text-white" : "bg-white/5 text-white/40 hover:text-white/60"
+                }`}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="comm-cat-pill"
+                    className="absolute inset-0 rounded-lg border border-[var(--color-magenta)]/30 bg-[var(--color-magenta)]/15"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-1">{c.icon} {c.label}</span>
+              </motion.button>
+            );
+          })}
+        </motion.div>
 
         <div className="flex items-center gap-3">
           <div className="flex gap-1 rounded-lg bg-white/5 p-0.5">
             {SORTS.map((s) => (
               <button
                 key={s.value}
-                onClick={() => setSort(s.value)}
+                onClick={() => setFilter({ sort: s.value })}
                 className={`rounded-md px-3 py-1 text-[11px] font-medium transition-all ${
-                  sort === s.value ? "bg-[var(--color-panel)] text-white shadow-sm" : "text-white/40 hover:text-white/60"
+                  filters.sort === s.value ? "bg-[var(--color-panel)] text-white shadow-sm" : "text-white/40 hover:text-white/60"
                 }`}
               >
                 {s.label}
@@ -123,14 +159,22 @@ export default function CommissionGrid() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={filters.search}
+              onChange={(e) => setFilter({ search: e.target.value })}
               placeholder="Search..."
-              className="w-44 rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] py-1.5 pl-8 pr-3 text-xs text-white placeholder-white/30 outline-none focus:border-[var(--color-cyan)] transition-colors"
+              className="w-40 rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] py-1.5 pl-8 pr-3 text-xs text-white placeholder-white/30 outline-none focus:border-[var(--color-cyan)] transition-colors sm:w-44"
             />
           </div>
         </div>
       </div>
+
+      {!showSkeletons && (items.length > 0 || total > 0) && (
+        <p className="mb-4 text-[10px] font-mono uppercase tracking-[0.15em] text-[var(--color-mute)]">
+          {total} listing{total !== 1 ? "s" : ""}
+          {filters.category !== "all" && ` • ${CATEGORIES.find((c) => c.value === filters.category)?.label}`}
+          {filters.search && ` • matching &ldquo;${filters.search}&rdquo;`}
+        </p>
+      )}
 
       {error && (
         <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
@@ -138,25 +182,61 @@ export default function CommissionGrid() {
         </div>
       )}
 
-      {items.length === 0 && !loading ? (
-        <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-12 text-center">
-          <span className="text-4xl mb-3 block">🛒</span>
-          <p className="text-sm text-[var(--color-mute)]">No commissions found</p>
-          <p className="text-xs text-[var(--color-mute)]/60 mt-1">Try adjusting your filters or check back later</p>
-        </div>
-      ) : (
+      {showSkeletons ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((item, i) => (
-            <CommissionCard key={item.id} item={item} index={i} />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={i} />
           ))}
         </div>
+      ) : items.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: CARD_EASE }}
+          className="neon-rgb-ring relative overflow-hidden rounded-2xl p-12 text-center"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#120d1d] to-[#0a0812]" />
+          <div className="relative z-10">
+            <motion.span
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
+              className="mb-3 block text-4xl"
+            >
+              🖌️
+            </motion.span>
+            <p className="font-display text-lg font-bold">No commissions found</p>
+            <p className="mt-1 text-xs text-[var(--color-mute)]">
+              Try adjusting your filters or check back later
+            </p>
+            <button
+              onClick={() => setFilter({ category: "all", sort: "recent", search: "" })}
+              className="mt-5 rounded-lg border border-[var(--color-cyan)]/30 bg-[var(--color-cyan)]/10 px-4 py-2 text-xs font-semibold text-[var(--color-cyan)] transition-colors hover:bg-[var(--color-cyan)]/20"
+            >
+              Reset filters
+            </button>
+          </div>
+        </motion.div>
+      ) : (
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={filters.search + filters.category + filters.sort}
+            initial="hidden"
+            animate="show"
+            exit={{ opacity: 0, transition: { duration: 0.15 } }}
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {items.map((item) => (
+              <div key={item.id}>
+                <CommissionCard item={item} index={0} />
+              </div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
       )}
 
-      <InfiniteScroll
-        hasMore={hasNextPage}
-        loading={loading}
-        onLoadMore={() => setPage((p) => p + 1)}
-      />
+      <InfiniteScroll hasMore={hasNextPage} loading={loading} onLoadMore={loadMore} />
     </div>
   );
 }

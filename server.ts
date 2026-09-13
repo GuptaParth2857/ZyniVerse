@@ -1,6 +1,13 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
 import next from "next";
+import { EventEmitter } from "events";
+
+// Home page fires many parallel API calls; each in-flight compressed HTTP
+// response attaches its own Gzip stream listeners. Raise the per-emitter
+// listener cap to avoid the benign MaxListenersExceededWarning while keeping
+// all features/animations intact.
+EventEmitter.defaultMaxListeners = 50;
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "0.0.0.0";

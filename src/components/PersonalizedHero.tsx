@@ -3,11 +3,12 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface PersonalizedHeroProps {
-  userId?: string;
   fallbackItems?: MediaItem[];
+  className?: string;
 }
 
 interface WatchlistEntry {
@@ -45,7 +46,9 @@ function stripHtml(s: string | null): string {
   return s.replace(/<[^>]*>/g, "").slice(0, 160);
 }
 
-export default function PersonalizedHero({ userId, fallbackItems = [] }: PersonalizedHeroProps) {
+export default function PersonalizedHero({ fallbackItems = [], className = "" }: PersonalizedHeroProps) {
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
   const [items, setItems] = useState<MediaItem[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
   const [genre, setGenre] = useState<string>("");
@@ -126,8 +129,17 @@ export default function PersonalizedHero({ userId, fallbackItems = [] }: Persona
   const active = displayItems[activeIdx % displayItems.length];
   const title = bestTitle(active.title);
 
+  const rootClass = className
+    ? `w-full overflow-hidden bg-[var(--color-void)] ${className}`
+    : "relative h-[60vh] min-h-[400px] max-h-[700px] w-full overflow-hidden";
+
   return (
-    <div className="relative h-[60vh] min-h-[400px] max-h-[700px] w-full overflow-hidden">
+    <motion.div
+      className={rootClass}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={active.id}
@@ -222,6 +234,6 @@ export default function PersonalizedHero({ userId, fallbackItems = [] }: Persona
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

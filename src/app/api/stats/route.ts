@@ -10,6 +10,10 @@ export async function GET(req: NextRequest) {
   const userId = await resolveUserId();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const stats = await getUserStats(userId);
+  const url = new URL(req.url);
+  const yearParam = Number(url.searchParams.get("year"));
+  const year = Number.isInteger(yearParam) && yearParam >= 2010 ? yearParam : undefined;
+
+  const stats = await getUserStats(userId, year);
   return NextResponse.json(stats);
 }

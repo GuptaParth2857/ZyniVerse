@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { verifyApiKey } from "@/lib/api-key";
 import { searchMedia, bestTitle } from "@/lib/anilist";
 import { logError } from "@/lib/logger";
+import { notifyAllWebhooks } from "@/lib/webhook-dispatcher";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +76,22 @@ export async function POST(req: NextRequest) {
     update: {},
     create: { userId, mediaId, episode, title: `Episode ${episode}` },
   });
+
+  notifyAllWebhooks("episode.watched", {
+    mediaId,
+    title: matchedTitle,
+    episode,
+    progress: newProgress,
+    totalEpisodes,
+    userId,
+  });
+
+  if (!existing && status === "CURRENT") {
+    notifyAllWebhooks("anime.started", { mediaId, title: matchedTitle, episode, userId });
+  }
+  if (status === "COMPLETED" || (totalEpisodes > 0 && newProgress >= totalEpisodes)) {
+    notifyAllWebhooks("anime.completed", { mediaId, title: matchedTitle, totalEpisodes, userId });
+  }
 
   return NextResponse.json({
     ok: true,

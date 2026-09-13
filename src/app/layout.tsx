@@ -10,6 +10,7 @@ import CookieConsent from "@/components/CookieConsent";
 import AuthProvider from "@/components/AuthProvider";
 import BackToTop from "@/components/BackToTop";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import InstallPrompt from "@/components/InstallPrompt";
 import RouteTransition from "@/components/RouteTransition";
 import MobileNav from "@/components/MobileNav";
 import AdBanner from "@/components/AdBanner";
@@ -96,8 +97,11 @@ export const metadata: Metadata = {
   },
   robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   icons: {
-    icon: "/logo.png",
-    apple: "/icons/icon-192.png",
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || "",
@@ -282,6 +286,7 @@ export default function RootLayout({
             <Footer />
             <CookieConsent />
             <ServiceWorkerRegistration />
+            <InstallPrompt />
             <ChatWidget />
             <ToastFeed />
             <SplashScreen />

@@ -1,6 +1,15 @@
 {
   "nav.home": "Home",
+  "nav.explore": "Explore",
+  "nav.watchlist": "My List",
+  "nav.reels": "Reels",
+  "nav.more": "More",
+  "nav.cat.discover": "Discover",
+  "nav.cat.india": "India",
   "nav.anime": "Anime",
+  "nav.cat.reading": "Reading",
+  "nav.cat.events": "Events & Fun",
+  "nav.cat.community": "Community",
   "nav.manga": "Manga",
   "nav.lightNovels": "Light Novels",
   "nav.filler": "Filler Guides",
@@ -114,5 +123,9 @@
   "footer.community": "Community",
   "footer.privacy": "Privacy Policy",
   "footer.terms": "Terms of Service",
-  "footer.contact": "Contact"
+  "footer.contact": "Contact",
+  "footer.col.browse": "Browse",
+  "footer.col.content": "Content",
+  "footer.col.community": "Community",
+  "footer.col.account": "Account"
 }

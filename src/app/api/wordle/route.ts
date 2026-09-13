@@ -65,13 +65,12 @@ export async function GET() {
   });
 }
 
+const MAX_ATTEMPTS = 6;
+
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
-  const { guess } = await req.json();
+  const { guess, attempts: clientAttempts = 0 } = await req.json();
   if (!guess || typeof guess !== "string") {
     return NextResponse.json({ error: "Guess is required" }, { status: 400 });
   }
@@ -116,44 +115,55 @@ export async function POST(req: NextRequest) {
     hints.push(`Episodes:${daily.episodeCount > 100 ? "100+" : daily.episodeCount > 24 ? "25-100" : "<25"}`);
   }
 
-  const existing = await prisma.wordleGame.findFirst({
-    where: {
-      userId: session.user.id,
-      createdAt: {
-        gte: new Date(new Date().setHours(0, 0, 0, 0)),
-      },
-    },
-  });
+  // Logged-in users: attempts tracked server-side per day (source of truth).
+  // Anonymous users: attempts come from the client so a refresh keeps progress.
+  let currentAttempts = 0;
+  let existing: { id: string; attempts: number; guesses: string } | null = null;
 
-  const currentAttempts = existing ? existing.attempts : 0;
-  const newAttempts = currentAttempts + 1;
-  const isGameOver = correct || newAttempts >= 6;
-
-  const existingGuesses: string[] = existing ? JSON.parse(existing.guesses) : [];
-  const updatedGuesses = [...existingGuesses, guess];
-
-  if (existing) {
-    await prisma.wordleGame.update({
-      where: { id: existing.id },
-      data: {
-        attempts: newAttempts,
-        won: correct,
-        guesses: JSON.stringify(updatedGuesses),
-        completed: isGameOver,
-      },
-    });
-  } else {
-    await prisma.wordleGame.create({
-      data: {
+  if (session?.user?.id) {
+    existing = await prisma.wordleGame.findFirst({
+      where: {
         userId: session.user.id,
-        mediaId: daily.mediaId,
-        mediaTitle: daily.title,
-        attempts: newAttempts,
-        won: correct,
-        guesses: JSON.stringify(updatedGuesses),
-        completed: isGameOver,
+        createdAt: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        },
       },
     });
+    currentAttempts = existing ? existing.attempts : 0;
+  } else {
+    currentAttempts = Math.max(0, Math.min(Number(clientAttempts) || 0, MAX_ATTEMPTS - 1));
+  }
+
+  const newAttempts = currentAttempts + 1;
+  const isGameOver = correct || newAttempts >= MAX_ATTEMPTS;
+
+  if (session?.user?.id) {
+    const existingGuesses: string[] = existing ? JSON.parse(existing.guesses) : [];
+    const updatedGuesses = [...existingGuesses, guess];
+
+    if (existing) {
+      await prisma.wordleGame.update({
+        where: { id: existing.id },
+        data: {
+          attempts: newAttempts,
+          won: correct,
+          guesses: JSON.stringify(updatedGuesses),
+          completed: isGameOver,
+        },
+      });
+    } else {
+      await prisma.wordleGame.create({
+        data: {
+          userId: session.user.id,
+          mediaId: daily.mediaId,
+          mediaTitle: daily.title,
+          attempts: newAttempts,
+          won: correct,
+          guesses: JSON.stringify(updatedGuesses),
+          completed: isGameOver,
+        },
+      });
+    }
   }
 
   return NextResponse.json({

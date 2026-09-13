@@ -5,6 +5,7 @@ import { createActivity } from "@/lib/activity";
 import { autoCompleteAnimeForChallenge } from "@/lib/challenges";
 import { checkAndAwardAchievement } from "@/lib/achievements-server";
 import { resolveUserId } from "@/lib/resolve-user";
+import { notifyAllWebhooks } from "@/lib/webhook-dispatcher";
 
 export async function GET() {
   const userId = await resolveUserId();
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
   const userId = await resolveUserId();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { mediaId, type, action, status, mediaTitle, mediaImage, score, subScores, dropReason } = await req.json();
+  const { mediaId, type, action, status, mediaTitle, mediaImage, score, subScores, dropReason, progress, total } = await req.json();
 
   if (action === "rate") {
     const computed = computeScore(score, subScores);
@@ -68,6 +69,8 @@ export async function POST(req: NextRequest) {
 
     autoCompleteAnimeForChallenge(userId, mediaId, mediaTitle || "Unknown", mediaImage, "anime").catch(() => {});
 
+    notifyListEvent(userId, mediaId, type || "ANIME", status, mediaTitle);
+
     if (status === "COMPLETED") {
       checkCompletedAchievements(userId).catch(() => {});
     }
@@ -101,6 +104,8 @@ export async function POST(req: NextRequest) {
       checkCompletedAchievements(userId).catch(() => {});
     }
 
+    notifyListEvent(userId, mediaId, type || "ANIME", status, mediaTitle);
+
     if (["COMPLETED", "CURRENT", "PLANNING", "DROPPED", "PAUSED", "REWATCHING"].includes(status)) {
       await createActivity({
         userId,
@@ -109,6 +114,45 @@ export async function POST(req: NextRequest) {
         mediaTitle,
         mediaImage,
       });
+    }
+  } else if (action === "edit") {
+    const currentEntry = await prisma.listEntry.findUnique({
+      where: { userId_mediaId: { userId, mediaId } },
+      select: { status: true },
+    });
+    await prisma.listEntry.upsert({
+      where: { userId_mediaId: { userId, mediaId } },
+      update: {
+        ...(status !== undefined && { status }),
+        ...(progress !== undefined && { progress: parseInt(progress) }),
+        ...(total !== undefined && { total: parseInt(total) }),
+        ...(score !== undefined && { score: score !== null ? parseInt(score) : null }),
+        ...(subScores?.story !== undefined && { scoreStory: subScores.story }),
+        ...(subScores?.art !== undefined && { scoreArt: subScores.art }),
+        ...(subScores?.sound !== undefined && { scoreSound: subScores.sound }),
+        ...(subScores?.characters !== undefined && { scoreCharacters: subScores.characters }),
+        ...(subScores?.enjoyment !== undefined && { scoreEnjoyment: subScores.enjoyment }),
+        ...(dropReason !== undefined && { dropReason: dropReason || null }),
+      },
+      create: {
+        userId, mediaId, type: type || "ANIME",
+        status: status || "PLANNING",
+        progress: progress !== undefined ? parseInt(progress) : 0,
+        total: total !== undefined ? parseInt(total) : 0,
+        score: score !== null && score !== undefined ? parseInt(score) : null,
+        dropReason,
+      },
+    });
+
+    if (status && status !== currentEntry?.status) {
+      if (status === "COMPLETED") {
+        autoCompleteAnimeForChallenge(userId, mediaId, mediaTitle || "Unknown", mediaImage, "anime").catch(() => {});
+        checkCompletedAchievements(userId).catch(() => {});
+      }
+      notifyListEvent(userId, mediaId, type || "ANIME", status, mediaTitle);
+      if (["COMPLETED", "CURRENT", "PLANNING", "DROPPED", "PAUSED", "REWATCHING"].includes(status)) {
+        await createActivity({ userId, type: status, mediaId, mediaTitle, mediaImage });
+      }
     }
   }
   return NextResponse.json({ ok: true });
@@ -122,6 +166,15 @@ async function checkCompletedAchievements(userId: string) {
   if (count >= 10) checkAndAwardAchievement(userId, "TENTH_ANIME").catch(() => {});
   if (count >= 50) checkAndAwardAchievement(userId, "FIFTY_ANIME").catch(() => {});
   if (count >= 100) checkAndAwardAchievement(userId, "CENTURY_CLUB").catch(() => {});
+}
+
+function notifyListEvent(userId: string, mediaId: number, type: string, status: string, mediaTitle?: string) {
+  notifyAllWebhooks("list.updated", { mediaId, type, status, mediaTitle, userId });
+  if (status === "COMPLETED") {
+    notifyAllWebhooks("anime.completed", { mediaId, type, mediaTitle, userId });
+  } else if (status === "CURRENT") {
+    notifyAllWebhooks("anime.started", { mediaId, type, mediaTitle, userId });
+  }
 }
 
 function computeScore(score: number | null | undefined, subScores?: Record<string, number> | null): number | null {

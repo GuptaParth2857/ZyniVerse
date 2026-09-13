@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { logError } from "@/lib/logger";
+import { notifyAllWebhooks } from "@/lib/webhook-dispatcher";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
@@ -99,6 +100,14 @@ export async function POST(req: NextRequest) {
       include: {
         user: { select: { id: true, username: true, avatar: true } },
       },
+    });
+
+    notifyAllWebhooks("review.created", {
+      reviewId: review.id,
+      mediaId: review.mediaId,
+      mediaTitle: review.mediaTitle,
+      rating: review.rating,
+      userId: session.user.id,
     });
 
     return NextResponse.json({ review }, { status: 201 });

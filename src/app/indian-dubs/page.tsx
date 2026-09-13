@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "hindi dubbed anime", "tamil dubbed anime", "telugu dubbed anime", "anime in hindi",
     "anime in tamil", "anime in telugu", "indian dubbed anime list", "dubbed anime schedule india",
     "one piece hindi dub", "naruto hindi dub", "attack on titan hindi dub",
+    "anime hindi me kaise dekhe", "hindi dub anime", "anime hindi mein", "anime hindi me episode", "hindi anime list",
   ],
   openGraph: {
     title: "Hindi, Tamil & Telugu Dubbed Anime — Indian Dub Guides | ZyniVerse",
@@ -111,9 +112,9 @@ export default function IndianDubsPage() {
           className="rounded-xl bg-[var(--color-cyan)] px-5 py-2.5 text-sm font-bold text-black transition-opacity hover:opacity-90">
           Live Dub Tracker →
         </Link>
-        <Link href="/dub-schedule"
+        <Link href="/dubbed"
           className="neon-rgb-border rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-colors hover:text-[var(--color-cyan)]">
-          Weekly Dub Schedule
+          Dub Schedule
         </Link>
         <Link href="/voice-actors/indian"
           className="neon-rgb-border rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-colors hover:text-[var(--color-cyan)]">

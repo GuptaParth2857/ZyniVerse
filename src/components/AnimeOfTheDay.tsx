@@ -46,7 +46,7 @@ export default function AnimeOfTheDay() {
       <div className="relative overflow-hidden rounded-2xl border border-[var(--color-line)]">
         <div className="relative h-40 w-full sm:h-52">
           {data.anime.image ? (
-            <Image src={data.anime.image} alt={data.anime.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 1200px" />
+            <Image src={data.anime.image} alt={data.anime.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 1200px" loading="eager" priority />
           ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
           <div className="absolute left-4 top-4 rounded-full bg-[var(--color-magenta)] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-widest">

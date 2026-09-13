@@ -66,6 +66,32 @@ const FAQS = [
   { q: "Is there a free trial?", a: "The Free tier is always available. Pro features can be tested with no commitment." },
 ];
 
+const HERO_STATS = [
+  { icon: "💎", label: "3 Tiers" },
+  { icon: "🚀", label: "API Access" },
+  { icon: "📺", label: "Ad-Free Browsing" },
+];
+
+const HERO_TAGS = [
+  { label: "Free", emoji: "🆓", color: "#34d399" },
+  { label: "Pro", emoji: "⚡", color: "#22d3ee" },
+  { label: "Enterprise", emoji: "🏢", color: "#a78bfa" },
+  { label: "UPI / Cards", emoji: "💳", color: "#f97316" },
+];
+
+const TICKER_ITEMS = [
+  { label: "API Keys", emoji: "🔑", color: "#facc15" },
+  { label: "Ad-Free", emoji: "🛡️", color: "#4ade80" },
+  { label: "Analytics Dashboard", emoji: "📊", color: "#60a5fa" },
+  { label: "Priority Support", emoji: "🎧", color: "#f472b6" },
+  { label: "Early Access", emoji: "✨", color: "#a78bfa" },
+  { label: "CSV Export", emoji: "📥", color: "#fb923c" },
+  { label: "Custom Endpoints", emoji: "🧩", color: "#22d3ee" },
+  { label: "Watchlist Sync", emoji: "☁️", color: "#34d399" },
+  { label: "White-label", emoji: "🎨", color: "#f87171" },
+  { label: "SLA Guarantee", emoji: "🛡️", color: "#facc15" },
+];
+
 function MouseGlow() {
   const [pos, setPos] = useState({ x: -500, y: -500 });
   useEffect(() => {
@@ -223,22 +249,115 @@ function PremiumInner() {
         <Particles />
 
         <div className="relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <div className="text-center mb-12">
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-              className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">
-              Pricing
-            </motion.p>
-            <div className="neon-rgb-border rounded-xl px-4 py-2">
-              <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                className="font-display text-4xl font-bold sm:text-5xl mt-2 bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] bg-clip-text text-transparent">
-                ZyniVerse Premium
-              </motion.h1>
+          {/* ─────────── HERO ─────────── */}
+          <section className="neon-rgb-border relative mb-14 overflow-hidden rounded-3xl bg-[var(--color-panel)]/60 py-14 text-center backdrop-blur-sm sm:py-16">
+            <div className="neon-banner-card pointer-events-none absolute inset-0" />
+
+            {/* Top shine line */}
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+
+            {/* Scanline sweep */}
+            <div aria-hidden className="scanline-sweep" />
+
+            {/* HUD corner brackets */}
+            <div aria-hidden className="pointer-events-none absolute left-3 top-3 h-4 w-4 border-l-2 border-t-2 border-[var(--color-cyan)]/50" />
+            <div aria-hidden className="pointer-events-none absolute right-3 top-3 h-4 w-4 border-r-2 border-t-2 border-[var(--color-cyan)]/50" />
+            <div aria-hidden className="pointer-events-none absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-[var(--color-magenta)]/50" />
+            <div aria-hidden className="pointer-events-none absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-[var(--color-magenta)]/50" />
+
+            {/* Floating emojis (desktop) */}
+            <span aria-hidden className="pointer-events-none absolute left-10 top-10 hidden text-3xl opacity-40 float-anim md:block">💎</span>
+            <span aria-hidden className="pointer-events-none absolute right-12 top-14 hidden text-3xl opacity-40 float-anim md:block" style={{ animationDelay: "0.9s" }}>🛡️</span>
+            <span aria-hidden className="pointer-events-none absolute bottom-12 left-14 hidden text-2xl opacity-30 float-anim md:block" style={{ animationDelay: "0.45s" }}>🚀</span>
+            <span aria-hidden className="pointer-events-none absolute bottom-14 right-14 hidden text-2xl opacity-30 float-anim md:block" style={{ animationDelay: "1.3s" }}>✨</span>
+
+            {/* Breathing orbs */}
+            <div aria-hidden className="pointer-events-none absolute left-[10%] top-1/2 hidden h-28 w-28 -translate-y-1/2 rounded-full bg-[var(--color-cyan)]/25 blur-[55px] float-anim md:block" />
+            <div aria-hidden className="pointer-events-none absolute right-[10%] top-1/2 hidden h-28 w-28 -translate-y-1/2 rounded-full bg-[var(--color-magenta)]/25 blur-[55px] float-anim md:block" style={{ animationDelay: "1.5s" }} />
+
+            <div className="relative z-10 mx-auto max-w-3xl px-6">
+              {/* Rotating conic halo behind title */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-3xl"
+                style={{
+                  background: "conic-gradient(from 0deg, var(--color-magenta), var(--color-cyan), var(--color-violet), var(--color-magenta))",
+                  animation: "spin 10s linear infinite",
+                }}
+              />
+
+              <div className="relative">
+                <p className="console-label mb-4 flex animate-hero-text items-center justify-center gap-2" style={{ animationDelay: "0.05s" }}>
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-cyan)] opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--color-cyan)]" />
+                  </span>
+                  Pricing · Choose Your Tier
+                </p>
+
+                <h1
+                  className="neon-text-gradient animate-hero-text font-display text-4xl font-bold tracking-tight sm:text-6xl"
+                  style={{ filter: "drop-shadow(0 0 28px rgba(138,92,255,0.35))", animationDelay: "0.15s" }}
+                >
+                  ZyniVerse Premium
+                </h1>
+
+                <p className="mx-auto mt-4 max-w-xl animate-hero-text text-sm text-[var(--color-mute)] sm:text-base" style={{ animationDelay: "0.25s" }}>
+                  From API access for developers to ad-free browsing for fans. Choose what fits you.
+                </p>
+
+                {/* Stats */}
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                  {HERO_STATS.map((s) => (
+                    <span
+                      key={s.label}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-line)] bg-[var(--color-void)]/50 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--color-mute)] backdrop-blur-sm"
+                    >
+                      {s.icon} {s.label}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Content type chips */}
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                  {HERO_TAGS.map((tag) => (
+                    <span
+                      key={tag.label}
+                      className="inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:brightness-125"
+                      style={{ color: tag.color, borderColor: `${tag.color}55`, background: `${tag.color}14` }}
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full" style={{ background: tag.color, boxShadow: `0 0 8px ${tag.color}` }} />
+                      {tag.emoji} {tag.label}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Scroll hint */}
+                <div className="mt-6 flex flex-col items-center gap-1">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--color-mute)]">
+                    Scroll to explore
+                  </span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-bounce text-[var(--color-cyan)]">
+                    <path d="M12 5v14m0 0l-6-6m6 6l6-6" />
+                  </svg>
+                </div>
+              </div>
             </div>
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-              className="mt-3 text-[var(--color-mute)]">
-              From API access for developers to ad-free browsing for fans. Choose what fits you.
-            </motion.p>
-          </div>
+
+            {/* Neon marquee ticker band */}
+            <div aria-hidden className="ticker-window relative z-10 mt-8 border-t border-[var(--color-line)] bg-[var(--color-void)]/40 py-3">
+              <div className="ticker-track flex w-max items-center gap-10 whitespace-nowrap px-8">
+                {[...TICKER_ITEMS, ...TICKER_ITEMS].map((t, i) => (
+                  <span key={i} className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em]">
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: t.color, boxShadow: `0 0 8px ${t.color}` }} />
+                    <span className="text-base leading-none" style={{ textShadow: `0 0 10px ${t.color}aa` }}>{t.emoji}</span>
+                    <span className="text-[var(--color-mute)]">{t.label}</span>
+                    <span className="ml-6 select-none text-[var(--color-magenta)]/40">✦</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </section>
 
           <AnimatePresence>
             {success && (

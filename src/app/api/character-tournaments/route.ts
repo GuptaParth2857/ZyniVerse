@@ -54,20 +54,36 @@ export async function POST(req: NextRequest) {
     typeof body.description === "string" && body.description.trim() !== ""
       ? body.description.trim()
       : undefined;
+  const posterUrl =
+    typeof body.posterUrl === "string" && body.posterUrl.trim() !== ""
+      ? body.posterUrl.trim()
+      : undefined;
   const size = Number(body.size);
+  const mode = body.mode === "qualifying" ? "qualifying" : "bracket";
+  const bracketSize = Number(body.bracketSize) || (mode === "qualifying" ? 16 : size);
 
   if (!title) return NextResponse.json({ error: "Title is required" }, { status: 400 });
-  if (!TOURNAMENT_SIZES.includes(size as (typeof TOURNAMENT_SIZES)[number])) {
+
+  if (mode === "qualifying") {
+    if (!Number.isInteger(size) || size < 16 || size > 200) {
+      return NextResponse.json({ error: "Qualifying pool must be between 16 and 200 characters" }, { status: 400 });
+    }
+    if (!TOURNAMENT_SIZES.includes(bracketSize as (typeof TOURNAMENT_SIZES)[number])) {
+      return NextResponse.json({ error: "Invalid bracket size" }, { status: 400 });
+    }
+  } else if (!TOURNAMENT_SIZES.includes(size as (typeof TOURNAMENT_SIZES)[number])) {
     return NextResponse.json({ error: "Invalid tournament size" }, { status: 400 });
   }
 
   const participants = Array.isArray(body.participants)
     ? body.participants
-        .map((p: { charId?: unknown; charName?: unknown; charImage?: unknown }) => ({
+        .map((p: { charId?: unknown; charName?: unknown; charImage?: unknown; franchiseCover?: unknown }) => ({
           charId: Number(p?.charId),
           charName: typeof p?.charName === "string" ? p.charName.trim() : "",
           charImage:
             typeof p?.charImage === "string" && p.charImage.trim() !== "" ? p.charImage.trim() : undefined,
+          franchiseCover:
+            typeof p?.franchiseCover === "string" && p.franchiseCover.trim() !== "" ? p.franchiseCover.trim() : undefined,
         }))
         .filter((p: { charId: number; charName: string }) => p.charId && p.charName)
     : [];
@@ -83,7 +99,10 @@ export async function POST(req: NextRequest) {
     const tournament = await createTournament(session.user.id, {
       title,
       description,
+      posterUrl,
       size,
+      mode,
+      bracketSize,
       participants,
     });
     return NextResponse.json(tournament, { status: 201 });

@@ -96,6 +96,18 @@ export default async function AnimeLayout({ children, params }: { children: Reac
       anime.idMal ? `https://myanimelist.net/anime/${anime.idMal}` : null,
       anime.idMal ? `https://anilist.co/anime/${anime.id}` : null,
     ].filter(Boolean),
+    potentialAction: {
+      "@type": "WatchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${BASE_URL}/anime/${anime.id}`,
+        actionPlatform: [
+          "http://schema.org/DesktopWebPlatform",
+          "http://schema.org/IOSPlatform",
+          "http://schema.org/AndroidPlatform",
+        ],
+      },
+    },
     review: {
       "@type": "Review",
       reviewBody: desc || `Watch ${title} on ZyniVerse — filler guide, episodes, characters & more.`,

@@ -1257,6 +1257,7 @@ export interface MediaBasic {
   averageScore?: number;
   genres?: string[];
   season?: string;
+  nextAiringEpisode?: { airingAt: number; episode: number; timeUntilAiring: number } | null;
 }
 
 const MEDIA_BASIC_FIELDS = `
@@ -1270,6 +1271,7 @@ const MEDIA_BASIC_FIELDS = `
   averageScore
   genres
   season
+  nextAiringEpisode { airingAt episode timeUntilAiring }
 ` as const;
 
 export async function getRecommendationsByGenres(genres: string[], perPage = 18): Promise<Media[]> {

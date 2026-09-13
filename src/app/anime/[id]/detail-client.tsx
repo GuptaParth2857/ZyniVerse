@@ -37,7 +37,9 @@ import EpisodeDiscussion from "@/components/EpisodeDiscussion";
 import DubNotifyButton from "@/components/DubNotifyButton";
 import AnimeFollowButton from "@/components/AnimeFollowButton";
 import LongReviews from "@/components/LongReviews";
-import SeasonalTrackerWidget from "@/components/SeasonalTrackerWidget";
+import AiLab from "@/components/features/AiLab";
+import IndianDubCast from "@/components/IndianDubCast";
+import AiringAlertButton from "@/components/AiringAlertButton";
 import type { MediaAnimeFull } from "@/lib/anilist";
 
 const DUB_LANG_STYLES: Record<string, { bg: string; text: string; border: string }> = {
@@ -228,7 +230,10 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
               </div>
 
               {anime.nextAiringEpisode && (
-                <div className="mt-4"><CountdownChip target={anime.nextAiringEpisode} /></div>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <CountdownChip target={anime.nextAiringEpisode} />
+                  <AiringAlertButton mediaId={anime.id} nextAiringEpisode={anime.nextAiringEpisode} />
+                </div>
               )}
               {anime.nextAiringEpisode && (
                 <CalendarSync
@@ -303,6 +308,12 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
               <CommunityTagPanel mediaId={anime.id} />
             </div>
           </section>
+
+          {/* Zyni AI Lab */}
+          <AiLab animeId={anime.id} title={title} />
+
+          {/* India Dub Cast */}
+          <IndianDubCast mediaId={anime.id} />
 
           {/* Characters */}
           {chars.length > 0 && (
@@ -426,9 +437,6 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
 
         {/* ── Right Column (Sidebar) ── */}
         <aside className="space-y-6">
-          {/* Seasonal Tracker */}
-          <SeasonalTrackerWidget mediaId={anime.id} mediaTitle={title} mediaImage={anime.coverImage?.large || ""} totalEpisodes={anime.episodes} />
-
           {/* Episode Tracker */}
           {anime.episodes && (
             <EpisodeTracker mediaId={anime.id} totalEpisodes={anime.episodes} animeTitle={title} />

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { getMediaBatch } from "@/lib/anilist";
 
 const SEASON_MAP: Record<number, string> = {
   1: "winter", 2: "winter", 3: "spring", 4: "spring", 5: "spring",
@@ -122,10 +123,10 @@ export async function GET(req: NextRequest) {
       const monthNum = parseInt(monthStr);
       const monthName = MONTH_NAMES[monthNum - 1];
 
-      const animeMap: Record<number, { mediaId: number; title: string; episodeCount: number }> = {};
+      const animeMap: Record<number, { mediaId: number; title: string; episodeCount: number; coverImage: string | null }> = {};
       for (const ep of eps) {
         if (!animeMap[ep.mediaId]) {
-          animeMap[ep.mediaId] = { mediaId: ep.mediaId, title: `Anime #${ep.mediaId}`, episodeCount: 0 };
+          animeMap[ep.mediaId] = { mediaId: ep.mediaId, title: `Anime #${ep.mediaId}`, episodeCount: 0, coverImage: null };
         }
         animeMap[ep.mediaId].episodeCount++;
         if (ep.title) {
@@ -153,6 +154,32 @@ export async function GET(req: NextRequest) {
 
   const allWatchDays = episodes.map((ep) => new Date(ep.watchedAt).toISOString().split("T")[0]);
   const { currentStreak, longestStreak } = calculateStreaks(allWatchDays);
+
+  const uniqueIds = [...new Set(months.flatMap((m) => m.topAnime.map((a) => a.mediaId)))];
+  const mediaMap = new Map<number, { title: string; coverImage: string | null }>();
+  try {
+    const chunks: number[][] = [];
+    for (let i = 0; i < uniqueIds.length; i += 50) chunks.push(uniqueIds.slice(i, i + 50));
+    const batches = await Promise.all(chunks.map((chunk) => getMediaBatch(chunk)));
+    for (const batch of batches) {
+      for (const m of batch) {
+        mediaMap.set(m.id, {
+          title: m.title?.english || m.title?.romaji || m.title?.native || "",
+          coverImage: m.coverImage?.large || m.coverImage?.medium || null,
+        });
+      }
+    }
+  } catch (e) {
+    console.error("Timeline media enrichment failed:", e);
+  }
+
+  for (const month of months) {
+    for (const a of month.topAnime) {
+      const resolved = mediaMap.get(a.mediaId);
+      if (resolved?.title) a.title = resolved.title;
+      a.coverImage = resolved?.coverImage ?? null;
+    }
+  }
 
   const uniqueAnime = new Set(episodes.map((e) => e.mediaId));
   const totalHours = months.reduce((sum, m) => sum + m.totalHours, 0);

@@ -58,6 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/doujinshi`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
     { url: `${BASE_URL}/clubs`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
     { url: `${BASE_URL}/tierlist`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
+    { url: `${BASE_URL}/theories`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE_URL}/achievements`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
     { url: `${BASE_URL}/activity`, lastModified: now, changeFrequency: "daily", priority: 0.4 },
     { url: `${BASE_URL}/watch-party`, lastModified: now, changeFrequency: "weekly", priority: 0.4 },
