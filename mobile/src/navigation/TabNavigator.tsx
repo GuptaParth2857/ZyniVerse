@@ -3,6 +3,7 @@ import { Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParamList } from './types';
 import HomeScreen from '../screens/HomeScreen';
+import TournamentsScreen from '../screens/TournamentsScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ScheduleScreen from '../screens/ScheduleScreen';
 import ForumScreen from '../screens/ForumScreen';
@@ -14,6 +15,7 @@ const Tab = createBottomTabNavigator<TabParamList>();
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   const icons: Record<string, string> = {
     Home: '⌂',
+    Tournaments: '⚔',
     Search: '⌕',
     Schedule: '☰',
     Forum: '☷',
@@ -46,6 +48,7 @@ export default function TabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Tournaments" component={TournamentsScreen} />
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="Schedule" component={ScheduleScreen} />
       <Tab.Screen name="Forum" component={ForumScreen} />

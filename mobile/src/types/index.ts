@@ -56,3 +56,54 @@ export interface User {
     daysWatched: number;
   };
 }
+
+export interface CharacterTournament {
+  id: string;
+  title: string;
+  description?: string | null;
+  posterUrl?: string | null;
+  size: number;
+  bracketSize?: number | null;
+  mode: 'qualifying' | 'bracket';
+  status: 'qualifying' | 'active' | 'upcoming' | 'completed' | 'cancelled';
+  currentRound: number;
+  totalRounds: number;
+  qualifyingEndsAt?: string | null;
+  roundEndsAt?: string | null;
+  createdAt: string;
+  creator?: { id: string; username: string; avatar?: string | null } | null;
+  _count?: { participants: number; matches: number };
+}
+
+export interface TournamentParticipant {
+  id: string;
+  charId: number;
+  charName: string;
+  charImage?: string | null;
+  franchiseCover?: string | null;
+  pollVotes?: number;
+  seed?: number | null;
+}
+
+export interface TournamentMatch {
+  id: string;
+  round: number;
+  position: number;
+  votesA: number;
+  votesB: number;
+  winnerId?: string | null;
+  charA?: TournamentParticipant | null;
+  charB?: TournamentParticipant | null;
+  winner?: TournamentParticipant | null;
+  _count?: { votes: number };
+}
+
+export interface CharacterTournamentDetail {
+  tournament: CharacterTournament & { participants: TournamentParticipant[] };
+  rounds: { label: string; matches: TournamentMatch[] }[];
+  matches: TournamentMatch[];
+  totalVotes: number;
+  myVotes: Record<string, 'A' | 'B'>;
+  myPollVote: string | null;
+  isCreator?: boolean;
+}

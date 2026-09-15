@@ -36,7 +36,6 @@ import GamificationWidget from "@/components/GamificationWidget";
 import PoweredBy from "@/components/PoweredBy";
 import type { Media } from "@/lib/anilist";
 import { prisma } from "@/lib/prisma";
-import { logError } from "@/lib/logger";
 import { posterCategoryOf } from "@/lib/post-types";
 
 function AnimatedSection({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -47,51 +46,54 @@ function AnimatedSection({ children, className = "" }: { children: React.ReactNo
   );
 }
 
-export default async function Home() {
-  const [trending, popular, upcoming, topRated] = await Promise.allSettled([
-    getTrending(24), getPopular(18), getUpcoming(12), getTopRated(12),
-  ]);
+type FeaturedTournament = {
+  id: string;
+  title: string;
+  description: string | null;
+  size: number;
+  mode: string;
+  status: string;
+  currentRound: number;
+  qualifyingEndsAt: Date | null;
+  roundEndsAt: Date | null;
+  creator: { username: string };
+  _count: { participants: number };
+} | null;
 
+async function loadAiringSchedule(): Promise<Awaited<ReturnType<typeof getAiringSchedule>>> {
   const now = Math.floor(Date.now() / 1000);
-  let ticker: Awaited<ReturnType<typeof getAiringSchedule>> = [];
-  try { ticker = await getAiringSchedule(now - 3600 * 6, now + 3600 * 18); } catch (e) { logError(e); }
+  return getAiringSchedule(now - 3600 * 6, now + 3600 * 18);
+}
 
-  const getData = (r: PromiseSettledResult<Media[]>) => r.status === "fulfilled" ? r.value : [];
-  const trendingData = getData(trending);
-  const popularData = getData(popular);
-  const upcomingData = getData(upcoming);
-  const topRatedData = getData(topRated);
+function featuredEndsInOf(featuredTournament: FeaturedTournament): string | null {
+  if (!featuredTournament) return null;
+  const d =
+    featuredTournament.mode === "qualifying" ? featuredTournament.qualifyingEndsAt : featuredTournament.roundEndsAt;
+  if (!d) return null;
+  const days = Math.max(0, Math.ceil((d.getTime() - Date.now()) / 86400000));
+  if (featuredTournament.mode === "qualifying") {
+    return days === 0 ? "Voting closes today" : `Voting ends in ${days} day${days === 1 ? "" : "s"}`;
+  }
+  return days === 0
+    ? "This round closes today"
+    : `Round ${featuredTournament.currentRound} ends in ${days} day${days === 1 ? "" : "s"}`;
+}
 
-  let userCount = 0;
-  try {
-    userCount = await prisma.user.count();
-  } catch (e) { logError(e); }
-
-  let latestPosters: { id: string; title: string; image: string | null; type: string }[] = [];
-  try {
-    latestPosters = await prisma.post.findMany({
+export default async function Home() {
+  const [trending, popular, upcoming, topRated, tickerRes, userCountRes, latestPostersRes, featuredTournamentRes] = await Promise.allSettled([
+    getTrending(24),
+    getPopular(18),
+    getUpcoming(12),
+    getTopRated(12),
+    loadAiringSchedule(),
+    prisma.user.count(),
+    prisma.post.findMany({
       where: { image: { not: null } },
       orderBy: { createdAt: "desc" },
       take: 10,
       select: { id: true, title: true, image: true, type: true },
-    });
-  } catch (e) { logError(e); }
-
-  let featuredTournament: {
-    id: string;
-    title: string;
-    description: string | null;
-    size: number;
-    mode: string;
-    status: string;
-    currentRound: number;
-    qualifyingEndsAt: Date | null;
-    roundEndsAt: Date | null;
-    creator: { username: string };
-    _count: { participants: number };
-  } | null = null;
-  try {
-    featuredTournament = await prisma.characterTournament.findFirst({
+    }),
+    prisma.characterTournament.findFirst({
       where: { status: { in: ["qualifying", "active"] } },
       orderBy: { createdAt: "desc" },
       select: {
@@ -107,24 +109,32 @@ export default async function Home() {
         creator: { select: { username: true } },
         _count: { select: { participants: true } },
       },
-    });
-  } catch (e) { logError(e); }
+    }),
+  ] as const);
 
-  let featuredEndsIn: string | null = null;
-  if (featuredTournament) {
-    const d =
-      featuredTournament.mode === "qualifying" ? featuredTournament.qualifyingEndsAt : featuredTournament.roundEndsAt;
-    if (d) {
-      const days = Math.max(0, Math.ceil((d.getTime() - Date.now()) / 86400000));
-      if (featuredTournament.mode === "qualifying") {
-        featuredEndsIn = days === 0 ? "Voting closes today" : `Voting ends in ${days} day${days === 1 ? "" : "s"}`;
-      } else {
-        featuredEndsIn = days === 0
-          ? "This round closes today"
-          : `Round ${featuredTournament.currentRound} ends in ${days} day${days === 1 ? "" : "s"}`;
-      }
-    }
-  }
+  const getData = (r: PromiseSettledResult<Media[]>) => r.status === "fulfilled" ? r.value : [];
+  const trendingData = getData(trending);
+  const popularData = getData(popular);
+  const upcomingData = getData(upcoming);
+  const topRatedData = getData(topRated);
+  const ticker: Awaited<ReturnType<typeof getAiringSchedule>> = tickerRes.status === "fulfilled" ? tickerRes.value : [];
+  const userCount = userCountRes.status === "fulfilled" ? userCountRes.value : 0;
+  const latestPosters: { id: string; title: string; image: string | null; type: string }[] = latestPostersRes.status === "fulfilled" ? latestPostersRes.value : [];
+  const featuredTournament: {
+    id: string;
+    title: string;
+    description: string | null;
+    size: number;
+    mode: string;
+    status: string;
+    currentRound: number;
+    qualifyingEndsAt: Date | null;
+    roundEndsAt: Date | null;
+    creator: { username: string };
+    _count: { participants: number };
+  } | null = featuredTournamentRes.status === "fulfilled" ? featuredTournamentRes.value : null;
+
+  const featuredEndsIn = featuredEndsInOf(featuredTournament);
 
   const featuredHref = featuredTournament
     ? `/character-tournaments/${featuredTournament.id}`

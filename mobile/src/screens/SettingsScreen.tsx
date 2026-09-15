@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, fontSize, borderRadius } from '../theme';
+import { useOTAUpdate } from '../hooks/useOTAUpdate';
 
 interface SettingRowProps {
   label: string;
@@ -46,6 +47,15 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [theme, setTheme] = useState('dark');
+  const { status, isUpdatePending, runtimeVersion, downloadUpdate, reloadNow } = useOTAUpdate();
+
+  const onUpdatePress = async () => {
+    if (isUpdatePending) {
+      await reloadNow();
+    } else {
+      await downloadUpdate();
+    }
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -107,7 +117,8 @@ export default function SettingsScreen() {
         <View style={styles.group}>
           <Text style={styles.groupTitle}>About</Text>
           <View style={styles.groupContent}>
-            <SettingRow label="Version" value="1.0.0" type="info" />
+            <SettingRow label="Version" value={runtimeVersion || '1.0.0'} type="info" />
+            <SettingRow label="App update" value={status} onPress={onUpdatePress} />
             <SettingRow label="Website" value="zyverse.in" />
             <SettingRow label="Terms of Service" />
             <SettingRow label="Privacy Policy" />

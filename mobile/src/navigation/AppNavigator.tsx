@@ -8,6 +8,7 @@ import MangaScreen from '../screens/MangaScreen';
 import ForumScreen from '../screens/ForumScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import RecommendationsScreen from '../screens/RecommendationsScreen';
+import TournamentDetailScreen from '../screens/TournamentDetailScreen';
 import { colors } from '../theme';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -62,6 +63,11 @@ export default function AppNavigator() {
         name="Recommendations"
         component={RecommendationsScreen}
         options={{ title: 'Recommendations' }}
+      />
+      <Stack.Screen
+        name="TournamentDetail"
+        component={TournamentDetailScreen}
+        options={({ route }) => ({ title: route.params.title })}
       />
     </Stack.Navigator>
   );

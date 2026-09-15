@@ -7,10 +7,12 @@ export type RootStackParamList = {
   ForumCategory: { slug: string };
   Settings: undefined;
   Recommendations: undefined;
+  TournamentDetail: { id: string; title: string };
 };
 
 export type TabParamList = {
   Home: undefined;
+  Tournaments: undefined;
   Search: undefined;
   Schedule: undefined;
   Forum: undefined;

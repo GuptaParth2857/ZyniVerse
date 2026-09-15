@@ -34,10 +34,30 @@ npx expo start --web        # Web browser
 ## Building for Production
 
 ```bash
-eas build --platform android
-eas build --platform ios
-eas build --platform all    # Both platforms
+eas build --platform android --profile production
 ```
+
+## Pushing Updates (OTA) — no APK re-download
+
+After the first production build, code/UI changes reach users **automatically**
+(via `expo-updates`), without them re-installing the APK.
+
+```bash
+# 1. (one time, logged in) link the Expo project so OTA knows where to publish
+npx eas-cli login
+npx eas-cli update:configure
+
+# 2. push a code/JS change to all installed apps (apply on next app launch)
+npx eas-cli update --channel production
+
+# 3. only for NATIVE changes (new library/plugin, icon, splash, min OS) rebuild:
+eas build --platform android --profile production
+```
+
+The app checks for updates automatically on launch and downloads them in the
+background. Even a downloaded update applies on the next app launch (no forced
+restart mid-use). A manual "App update" row in **Settings** shows the status
+and can apply a downloaded update by restarting.
 
 ## Features
 
@@ -46,6 +66,7 @@ eas build --platform all    # Both platforms
 - **Filler Guides** — Color-coded episode lists distinguishing canon, mixed, and filler episodes
 - **Schedule** — Weekly airing schedule with notifications
 - **Forum** — Community discussions and categories
+- **Tournaments** — Live anime character tournaments: qualifying polls (one vote per app), live rankings, countdown, and bracket results
 - **Profile** — Track your anime lists, stats, and achievements
 - **Dub Status** — Check Hindi, Tamil, and Telugu dub availability
 - **Recommendations** — Personalized anime suggestions by genre

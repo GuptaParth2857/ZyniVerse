@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
-import TournamentDetail from "./client";
+import { auth } from "@/lib/auth";
+import { getTournamentRounds } from "@/lib/character-tournaments";
+import TournamentDetail, { type TournamentDetail as TournamentDetailData } from "./client";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
+const getView = cache((id: string) => getTournamentRounds(id));
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const t = await prisma.characterTournament
-    .findUnique({
-      where: { id },
-      select: { title: true, description: true, status: true, size: true, creator: { select: { username: true } } },
-    })
-    .catch(() => null);
+  const view = await getView(id);
+  const t = view?.tournament;
 
   const title = t
     ? `${t.title} — ${t.size}-Player Character Tournament | ZyniVerse`
@@ -36,6 +37,38 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   };
 }
 
-export default function CharacterTournamentPage() {
-  return <TournamentDetail />;
+export default async function CharacterTournamentPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const session = await auth();
+  const view = await getView(id);
+
+  const myVotes: Record<string, "A" | "B"> = {};
+  let myPollVote: string | null = null;
+  if (view && session?.user?.id) {
+    const [votes, pollVote] = await Promise.all([
+      prisma.characterTournamentVote.findMany({
+        where: { userId: session.user.id, match: { tournamentId: id } },
+        select: { matchId: true, choice: true },
+      }),
+      prisma.characterTournamentPollVote.findUnique({
+        where: { tournamentId_userId: { tournamentId: id, userId: session.user.id } },
+        select: { participantId: true },
+      }),
+    ]);
+    for (const v of votes) myVotes[v.matchId] = v.choice as "A" | "B";
+    myPollVote = pollVote?.participantId ?? null;
+  }
+
+  if (!view) {
+    return <TournamentDetail initial={null} serverResolved />;
+  }
+
+  const initial = {
+    ...(JSON.parse(JSON.stringify(view)) as typeof view),
+    myVotes,
+    myPollVote,
+    isCreator: !!session?.user?.id && session.user.id === view.tournament.creatorId,
+  };
+
+  return <TournamentDetail initial={initial as unknown as TournamentDetailData} serverResolved />;
 }

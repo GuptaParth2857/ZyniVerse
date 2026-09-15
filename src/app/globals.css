@@ -1034,6 +1034,13 @@ body {
   }
 }
 
+/* Tournament cards: pause the RGB border animation until the card is near the
+   viewport (avoids 200 continuous border repaints on mobile). Cards fully
+   resume their normal animation as soon as they scroll into view. */
+#participant-grid .neon-rgb-border:not([data-inview="1"]) {
+  animation-play-state: paused;
+}
+
 /* Meme cards: premium glass card with hover neon glow */
 .meme-card-border {
   border: 1px solid rgba(255, 255, 255, 0.08);

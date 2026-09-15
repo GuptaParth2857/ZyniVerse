@@ -50,6 +50,20 @@ export function proxy(request: NextRequest) {
       return new NextResponse("403 Forbidden", { status: 403 });
     }
   }
+
+  const path = request.nextUrl.pathname;
+  if (
+    request.method === "GET" &&
+    /^\/character-tournaments\/[^/]+$/.test(path) &&
+    !request.cookies.has("__Secure-authjs.session-token") &&
+    !request.cookies.has("authjs.session-token") &&
+    !request.cookies.has("next-auth.session-token")
+  ) {
+    const res = NextResponse.next();
+    res.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+    return res;
+  }
+
   return NextResponse.next();
 }
 

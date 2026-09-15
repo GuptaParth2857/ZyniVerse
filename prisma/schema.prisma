@@ -2264,14 +2264,16 @@ model CharacterTournamentPollVote {
   id            String   @id @default(cuid())
   tournamentId  String
   participantId String
-  userId        String
+  userId        String?
+  deviceId      String?
   createdAt     DateTime @default(now())
 
   tournament  CharacterTournament            @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   participant CharacterTournamentParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  user        User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User?                          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([tournamentId, userId])
+  @@unique([tournamentId, deviceId])
   @@index([tournamentId, participantId])
 }
 

@@ -21,9 +21,9 @@ const TICKER_ITEMS = [
   { label: "Fan Vote", emoji: "🗳️", color: "#fb923c" },
 ];
 
-type Status = "qualifying" | "upcoming" | "active" | "completed" | "cancelled";
+export type Status = "qualifying" | "upcoming" | "active" | "completed" | "cancelled";
 
-interface Participant {
+export interface Participant {
   id: string;
   charId: number;
   charName: string;
@@ -33,7 +33,7 @@ interface Participant {
   pollVotes: number;
 }
 
-interface Match {
+export interface Match {
   id: string;
   tournamentId: string;
   round: number;
@@ -49,12 +49,12 @@ interface Match {
   _count: { votes: number };
 }
 
-interface RoundGroup {
+export interface RoundGroup {
   label: string;
   matches: Match[];
 }
 
-interface TournamentDetail {
+export interface TournamentDetail {
   tournament: {
     id: string;
     title: string;
@@ -122,14 +122,20 @@ function useCountUp(target: number, duration = 900) {
   return text;
 }
 
-export default function TournamentDetailPage() {
+export default function TournamentDetailPage({
+  initial = null,
+  serverResolved = false,
+}: {
+  initial?: TournamentDetail | null;
+  serverResolved?: boolean;
+}) {
   const params = useParams<{ id: string }>();
   const id = params.id;
-  const { data: session } = useSession();
-  const [data, setData] = useState<TournamentDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
+  const [data, setData] = useState<TournamentDetail | null>(initial);
+  const [loading, setLoading] = useState(!serverResolved);
   const [error, setError] = useState<string | null>(null);
-  const [notFound, setNotFound] = useState(false);
+  const [notFound, setNotFound] = useState(serverResolved && initial === null);
   const [busy, setBusy] = useState(false);
   const [votingPoll, setVotingPoll] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -159,10 +165,53 @@ export default function TournamentDetailPage() {
       });
   }, [id]);
 
+  const deviceIdRef = useRef<string | null>(null);
+  const getDeviceId = useCallback(() => {
+    if (deviceIdRef.current) return deviceIdRef.current;
+    let id: string | null = null;
+    try {
+      id = window.localStorage.getItem("zt-ct-device");
+    } catch {
+      id = null;
+    }
+    if (!id || !/^[a-zA-Z0-9_-]{8,64}$/.test(id)) {
+      const gen = (window.crypto?.randomUUID?.() ?? `zt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`)
+        .replace(/[^a-zA-Z0-9_-]/g, "")
+        .slice(0, 48);
+      try {
+        window.localStorage.setItem("zt-ct-device", gen);
+        id = gen;
+      } catch {
+        id = gen;
+      }
+    }
+    deviceIdRef.current = id;
+    return id;
+  }, []);
+
   useEffect(() => {
+    if (serverResolved && data?.tournament?.id === id) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
-  }, [load]);
+  }, [load, serverResolved, data?.tournament?.id, id]);
+
+  useEffect(() => {
+    if (status !== "unauthenticated" || !serverResolved || data?.tournament?.id !== id) return;
+    const deviceId = getDeviceId();
+    if (!deviceId) return;
+    fetch(`/api/character-tournaments/${id}/poll-vote`, {
+      headers: { "X-Device-Id": deviceId },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((st) => {
+        if (typeof st?.myPollVote === "string") {
+          setData((prev) =>
+            prev && prev.myPollVote !== st.myPollVote ? { ...prev, myPollVote: st.myPollVote } : prev
+          );
+        }
+      })
+      .catch(() => {});
+  }, [status, serverResolved, data?.tournament?.id, id, getDeviceId]);
 
   const statusBadge = data ? STATUS_BADGE[data.tournament.status] : null;
   const canStart = !!data?.isCreator && data.tournament.status === "upcoming";
@@ -229,13 +278,17 @@ export default function TournamentDetailPage() {
   };
 
   const handlePollVote = async (participantId: string) => {
-    if (!session?.user?.id || votingPoll || data?.myPollVote) return;
+    const deviceId = getDeviceId();
+    if ((!session?.user?.id && !deviceId) || votingPoll || data?.myPollVote) return;
     setVotingPoll(true);
     setActionError(null);
     try {
       const res = await fetch(`/api/character-tournaments/${id}/poll-vote`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(deviceId ? { "X-Device-Id": deviceId } : {}),
+        },
         body: JSON.stringify({ participantId }),
       });
       const result = await res.json();
@@ -534,7 +587,6 @@ export default function TournamentDetailPage() {
             myPollVote={data.myPollVote}
             totalVotes={data.totalVotes}
             qualifyingEndsAt={tournament.qualifyingEndsAt}
-            loggedIn={!!session?.user?.id}
             canFinalize={canFinalizeQualifying}
             busy={busy}
             votingPoll={votingPoll}
@@ -623,12 +675,26 @@ function AnimeTint({ accent }: { accent: string }) {
   );
 }
 
+function VotingCountdownValue({ target }: { target: string | null }) {
+  const { left } = useCountdown(target);
+  return <>{left || "—"}</>;
+}
+
+function VotingClosedNote({ target }: { target: string | null }) {
+  const { done } = useCountdown(target);
+  if (!done) return null;
+  return (
+    <p className="mb-6 text-center text-xs font-semibold text-emerald-400">
+      Qualifying closed — bracket building on the way.
+    </p>
+  );
+}
+
 function QualifyingRound({
   participants,
   myPollVote,
   totalVotes,
   qualifyingEndsAt,
-  loggedIn,
   canFinalize,
   busy,
   votingPoll,
@@ -639,15 +705,34 @@ function QualifyingRound({
   myPollVote: string | null;
   totalVotes: number;
   qualifyingEndsAt: string | null;
-  loggedIn: boolean;
   canFinalize: boolean;
   busy: boolean;
   votingPoll: boolean;
   onVote: (participantId: string) => void;
   onFinalize: () => void;
 }) {
-  const { left, done } = useCountdown(qualifyingEndsAt);
   const tiltRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [search, setSearch] = useState("");
+  const filteredParticipants = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return participants;
+    return participants.filter((p) => p.charName.toLowerCase().includes(q));
+  }, [participants, search]);
+
+  useEffect(() => {
+    const root = document.getElementById("participant-grid");
+    if (!root || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) (e.target as HTMLElement).setAttribute("data-inview", "1");
+        }
+      },
+      { rootMargin: "300px 0px" }
+    );
+    for (const card of root.querySelectorAll(".neon-rgb-border:not([data-inview])")) io.observe(card);
+    return () => io.disconnect();
+  }, [filteredParticipants]);
 
   const handleTilt = useCallback((i: number, e: React.PointerEvent<HTMLDivElement>) => {
     const el = tiltRefs.current[i];
@@ -678,11 +763,50 @@ function QualifyingRound({
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-center gap-3 text-sm">
         <span className="rounded-full border border-cyan-400/40 bg-cyan-400/10 px-4 py-1.5 font-mono text-xs font-bold text-cyan-300 lg:text-sm">
-          ⏳ Voting ends in {left || "—"}
+          ⏳ Voting ends in <VotingCountdownValue target={qualifyingEndsAt} />
         </span>
         <span className="rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] px-4 py-1.5 font-mono text-xs text-[var(--color-mute)] lg:text-sm">
           {totalVotes.toLocaleString()} total votes
         </span>
+      </div>
+
+      <div className="mx-auto mb-6 w-full max-w-md">
+        <div className="relative">
+          <svg
+            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-mute)]"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search characters to vote…"
+            className="w-full rounded-xl border border-[var(--color-line)] bg-[#15121d]/90 py-3 pl-11 pr-10 text-sm font-medium text-[var(--color-ink)] outline-none transition-all placeholder:text-[var(--color-mute)]/70 focus:border-[var(--color-cyan)]/60 focus:bg-[#15121d] focus:shadow-[0_0_24px_-8px_var(--color-cyan)]"
+          />
+          {search ? (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              aria-label="Clear search"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-[var(--color-mute)] transition-colors hover:text-[var(--color-ink)]"
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          ) : (
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 font-mono text-[10px] uppercase tracking-widest text-[var(--color-mute)]/50">
+              {participants.length}
+            </span>
+          )}
+        </div>
       </div>
 
       {canFinalize && (
@@ -699,14 +823,10 @@ function QualifyingRound({
         </div>
       )}
 
-      {done && (
-        <p className="mb-6 text-center text-xs font-semibold text-emerald-400">
-          Qualifying closed — bracket building on the way.
-        </p>
-      )}
+      <VotingClosedNote target={qualifyingEndsAt} />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-        {participants.map((p, i) => {
+      <div id="participant-grid" className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+        {filteredParticipants.map((p, i) => {
           const voted = myPollVote === p.id;
           const rank = i + 1;
           const accent = rank <= 3 ? "#34d399" : "#22d3ee";
@@ -844,7 +964,7 @@ function QualifyingRound({
                     </motion.svg>
                     Voted
                   </motion.div>
-                ) : loggedIn ? (
+                ) : (
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => onVote(p.id)}
@@ -862,19 +982,21 @@ function QualifyingRound({
                       </>
                     )}
                   </motion.button>
-                ) : (
-                  <Link
-                    href="/login"
-                    className="flex h-11 w-full items-center justify-center rounded-[16px] border border-[rgba(0,255,224,0.2)] text-xs font-bold text-[var(--color-ink)] transition-all hover:border-[#00ffe0]/40 hover:bg-[rgba(0,255,224,0.03)]"
-                  >
-                    Login to Vote
-                  </Link>
                 )}
               </div>
             </motion.div>
           );
         })}
       </div>
+
+      {filteredParticipants.length === 0 && (
+        <div className="mt-2 rounded-2xl border border-dashed border-[var(--color-line)] bg-[var(--color-panel)]/50 p-10 text-center">
+          <p className="font-display text-lg font-bold text-[var(--color-ink)]">
+            No characters match “{search.trim()}”
+          </p>
+          <p className="mt-1 text-xs text-[var(--color-mute)]">Try a different name.</p>
+        </div>
+      )}
     </div>
   );
 }

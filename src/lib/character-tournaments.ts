@@ -185,7 +185,19 @@ export async function castTournamentVote(matchId: string, userId: string, choice
 }
 
 /** Cast one favorite vote during the qualifying poll (one per user per tournament). */
-export async function castPollVote(tournamentId: string, userId: string, participantId: string) {
+export type PollVoteActor = { userId?: string | null; deviceId?: string | null };
+
+/**
+ * Cast a qualifying poll vote. A voter is identified either by their user
+ * account (userId) or an anonymous device id (deviceId). One vote per
+ * identity per tournament. A device guest vote is merged into the account
+ * when the same device votes again while logged in (no double counting).
+ */
+export async function castPollVote(tournamentId: string, actor: PollVoteActor, participantId: string) {
+  const userId = actor?.userId || null;
+  const rawDeviceId = actor?.deviceId || null;
+  if (!userId && !rawDeviceId) throw new Error("Vote requires a device");
+
   const tournament = await prisma.characterTournament.findUnique({ where: { id: tournamentId } });
   if (!tournament || tournament.status !== "qualifying" || tournament.mode !== "qualifying") {
     throw new Error("Qualifying is not open");
@@ -196,19 +208,83 @@ export async function castPollVote(tournamentId: string, userId: string, partici
   });
   if (!participant) throw new Error("Character not found in this tournament");
 
-  try {
-    await prisma.characterTournamentPollVote.create({
-      data: { tournamentId, participantId, userId },
-    });
-  } catch {
-    throw new Error("You already voted in this qualifier");
-  }
+  return prisma.$transaction(async (tx) => {
+    if (userId) {
+      const userVote = await tx.characterTournamentPollVote.findUnique({
+        where: { tournamentId_userId: { tournamentId, userId } },
+      });
+      if (userVote) throw new Error("You already voted in this qualifier");
 
-  const updated = await prisma.characterTournamentParticipant.update({
-    where: { id: participantId },
-    data: { pollVotes: { increment: 1 } },
+      if (rawDeviceId) {
+        const guestVote = await tx.characterTournamentPollVote.findFirst({
+          where: { tournamentId, deviceId: rawDeviceId, userId: null },
+        });
+        if (guestVote) {
+          if (guestVote.participantId !== participantId) {
+            throw new Error("You already voted in this qualifier");
+          }
+          await tx.characterTournamentPollVote.update({
+            where: { id: guestVote.id },
+            data: { userId, deviceId: null },
+          });
+          return participant;
+        }
+      }
+
+      try {
+        await tx.characterTournamentPollVote.create({
+          data: { tournamentId, participantId, userId },
+        });
+      } catch (e) {
+        if ((e as { code?: string })?.code === "P2002") throw new Error("You already voted in this qualifier");
+        throw e;
+      }
+    } else {
+      if (!rawDeviceId) throw new Error("Vote requires a device");
+      const guestVote = await tx.characterTournamentPollVote.findFirst({
+        where: { tournamentId, deviceId: rawDeviceId },
+      });
+      if (guestVote) throw new Error("You already voted in this qualifier");
+      try {
+        await tx.characterTournamentPollVote.create({
+          data: { tournamentId, participantId, deviceId: rawDeviceId },
+        });
+      } catch (e) {
+        if ((e as { code?: string })?.code === "P2002") throw new Error("You already voted in this qualifier");
+        throw e;
+      }
+    }
+
+    const updated = await tx.characterTournamentParticipant.update({
+      where: { id: participantId },
+      data: { pollVotes: { increment: 1 } },
+    });
+    return updated;
   });
-  return updated;
+}
+
+/** Return the participant the identity already voted for in a qualifying poll, if any. */
+export async function getPollVoteState(
+  tournamentId: string,
+  actor: PollVoteActor
+): Promise<string | null> {
+  const userId = actor?.userId || null;
+  const deviceId = actor?.deviceId || null;
+  if (userId) {
+    const v = await prisma.characterTournamentPollVote.findUnique({
+      where: { tournamentId_userId: { tournamentId, userId } },
+      select: { participantId: true },
+    });
+    return v?.participantId ?? null;
+  }
+  if (deviceId) {
+    const v = await prisma.characterTournamentPollVote.findFirst({
+      where: { tournamentId, deviceId },
+      select: { participantId: true },
+    });
+    return v?.participantId ?? null;
+  }
+  return null;
 }
 
 /** Close the qualifying poll and build the final bracket from the top vote-getters. */
@@ -317,17 +393,6 @@ export async function finalizeRound(tournamentId: string) {
 
 /** Build a flattened bracket map keyed by round for the view. */
 export async function getTournamentRounds(tournamentId: string) {
-  const matches = await prisma.characterTournamentMatch.findMany({
-    where: { tournamentId },
-    orderBy: [{ round: "asc" }, { position: "asc" }],
-    include: {
-      charA: true,
-      charB: true,
-      winner: true,
-      _count: { select: { votes: true } },
-    },
-  });
-
   const tourney = await prisma.characterTournament.findUnique({
     where: { id: tournamentId },
     include: {
@@ -347,6 +412,17 @@ export async function getTournamentRounds(tournamentId: string) {
       totalVotes: totalPollVotes,
     };
   }
+
+  const matches = await prisma.characterTournamentMatch.findMany({
+    where: { tournamentId },
+    orderBy: [{ round: "asc" }, { position: "asc" }],
+    include: {
+      charA: true,
+      charB: true,
+      winner: true,
+      _count: { select: { votes: true } },
+    },
+  });
 
   const totalVotes = matches.reduce((s, m) => s + m.votesA + m.votesB, 0);
 

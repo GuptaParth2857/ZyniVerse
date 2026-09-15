@@ -4,8 +4,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/AppNavigator';
+import { useOTAUpdate } from './src/hooks/useOTAUpdate';
 
-export default function App() {
+function App() {
+  useOTAUpdate();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -35,3 +37,5 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
+
+export default App;
