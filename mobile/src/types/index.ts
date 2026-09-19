@@ -1,7 +1,9 @@
 export interface Anime {
   id: number;
+  idMal?: number;
+  malId?: number;
   title: { english?: string; romaji?: string; native?: string };
-  coverImage: { large?: string; medium?: string; extraLarge?: string };
+  coverImage: { large?: string; medium?: string; extraLarge?: string; color?: string };
   bannerImage?: string;
   episodes?: number;
   duration?: number;
@@ -10,12 +12,13 @@ export interface Anime {
   seasonYear?: number;
   format?: string;
   genres?: string[];
-  studios?: { name: string }[];
+  studios?: { name: string }[] | { nodes?: { name: string }[] };
   averageScore?: number;
   popularity?: number;
   description?: string;
   nextAiringEpisode?: { episode: number; airingAt: number };
   streamingEpisodes?: { title: string; url: string }[];
+  type?: string;
 }
 
 export interface FillerData {
@@ -24,7 +27,7 @@ export interface FillerData {
   totalEpisodes: number;
   totalFillers: number;
   fillerPercentage: number;
-  episodes: { episode: number; type: string; title?: string }[];
+  episodes: { episode: number; type: 'canon' | 'filler' | 'mixed'; title?: string }[];
 }
 
 export interface ScheduleItem {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BingoCardComponent from "@/components/BingoCard";
-import { generateSquares, seasonLabel, type BingoCard, type BingoSquare } from "@/lib/bingo";
+import { generateSquares, generateSquaresFromPool, seasonLabel, type BingoCard, type BingoSquare, type BingoTemplateData, parsePool } from "@/lib/bingo";
 
 const SEASONS = [
   { value: "WINTER", label: "Winter", icon: "❄️" },
@@ -30,6 +30,12 @@ function loadLocalCards(): BingoCard[] {
   return [];
 }
 
+function generateLocalSquares(template?: BingoTemplateData): BingoSquare[] {
+  if (!template) return generateSquares();
+  const pool = parsePool(template.squares);
+  return pool.length >= 24 ? generateSquaresFromPool(pool) : generateSquares();
+}
+
 export default function BingoPage() {
   const [cards, setCards] = useState<BingoCard[]>([]);
   const [mode, setMode] = useState<Mode>("server");
@@ -39,6 +45,9 @@ export default function BingoPage() {
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
   const [showHowTo, setShowHowTo] = useState(false);
   const [error, setError] = useState("");
+  const [templates, setTemplates] = useState<BingoTemplateData[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState<BingoTemplateData | null>(null);
 
   const persistLocal = useCallback((next: BingoCard[]) => {
     setCards(next);
@@ -47,6 +56,17 @@ export default function BingoPage() {
     } catch {
       // ignore
     }
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/bingo/templates")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        setTemplates(d?.templates || []);
+        if (d?.templates?.length) setSelectedTemplate(d.templates[0]);
+      })
+      .catch(() => {})
+      .finally(() => setTemplatesLoading(false));
   }, []);
 
   const fetchCards = useCallback(async () => {
@@ -83,7 +103,7 @@ export default function BingoPage() {
         const res = await fetch("/api/bingo", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ season: selectedSeason, year: selectedYear }),
+          body: JSON.stringify({ season: selectedSeason, year: selectedYear, templateId: selectedTemplate?.id }),
         });
         if (res.ok) {
           const data = await res.json();
@@ -106,10 +126,10 @@ export default function BingoPage() {
   };
 
   const addLocalCard = () => {
-    const squares = generateSquares();
+    const squares = generateLocalSquares(selectedTemplate ?? undefined);
     const card: BingoCard = {
       id: `local-${selectedSeason}-${selectedYear}-${Date.now()}`,
-      title: `${seasonLabel(selectedSeason)} ${selectedYear} Anime Bingo`,
+      title: `${seasonLabel(selectedSeason)} ${selectedYear} Anime Bingo${selectedTemplate ? ` · ${selectedTemplate.title}` : ""}`,
       season: selectedSeason,
       year: selectedYear,
       squares: JSON.stringify(squares),
@@ -309,6 +329,56 @@ export default function BingoPage() {
               </motion.button>
             </div>
           </div>
+
+          {/* Template picker */}
+          {!templatesLoading && templates.length > 0 && (
+            <div className="mt-5">
+              <div className="mb-2 flex items-center gap-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-mute)]">Choose a Card Theme</p>
+                <span className="rounded-full border border-[#ffd700]/30 bg-[#ffd700]/10 px-2 py-0.5 text-[9px] font-black text-[#ffd700]">CURATED</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.94 }}
+                  onClick={() => setSelectedTemplate(null)}
+                  className={`relative rounded-xl border px-3 py-2.5 text-left transition-colors ${!selectedTemplate ? "border-[#00ffff]/60 bg-[#00ffff]/10" : "border-white/[0.08] bg-black/20 hover:border-white/[0.2]"}`}
+                >
+                  {!selectedTemplate && (
+                    <motion.span layoutId="tpl-pill" className="absolute inset-0 rounded-xl" transition={spring} style={{ border: "1px solid rgba(0,255,255,0.4)", boxShadow: "0 0 16px rgba(0,255,255,0.25)" }} />
+                  )}
+                  <span className="relative z-10 block text-xs font-bold text-white">🎲 Classic <span className="text-[10px] text-[var(--color-mute)]">DIY</span></span>
+                  <span className="relative z-10 block text-[9px] text-[var(--color-mute)]">Random challenges</span>
+                </motion.button>
+                {templates.map((t) => {
+                  const count = parsePool(t.squares).length;
+                  return (
+                    <motion.button
+                      key={t.id}
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.94 }}
+                      onClick={() => setSelectedTemplate(t)}
+                      className={`relative rounded-xl border px-3 py-2.5 text-left transition-colors ${selectedTemplate?.id === t.id ? "border-[#00ffff]/60 bg-[#00ffff]/10" : "border-white/[0.08] bg-black/20 hover:border-white/[0.2]"}`}
+                    >
+                      {selectedTemplate?.id === t.id && (
+                        <motion.span layoutId="tpl-pill" className="absolute inset-0 rounded-xl" transition={spring} style={{ border: "1px solid rgba(0,255,255,0.4)", boxShadow: "0 0 16px rgba(0,255,255,0.25)" }} />
+                      )}
+                      <span className="relative z-10 block text-xs font-bold text-white">
+                        <span className="mr-1">{t.emoji}</span>{t.title}
+                        {t.isFeatured && <span className="ml-1.5 text-[#ffd700]">★</span>}
+                      </span>
+                      <span className="relative z-10 block text-[9px] text-[var(--color-mute)]">{count} squares · {t.usesCount} plays</span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+              {selectedTemplate?.description && (
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2.5 text-xs text-[var(--color-mute)]">
+                  <span className="font-bold text-[var(--color-cyan)]">{selectedTemplate.emoji} {selectedTemplate.title}:</span> {selectedTemplate.description}
+                </motion.p>
+              )}
+            </div>
+          )}
           {error && (
             <motion.p initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="mt-3 text-xs font-semibold text-[#ff5050]">
               ⚠ {error}

@@ -7,6 +7,7 @@ import {
   TextInput,
   StyleSheet,
   RefreshControl,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -101,11 +102,9 @@ export default function ForumScreen() {
               style={[styles.submitButton, !newTitle.trim() && { opacity: 0.5 }]}
               disabled={!newTitle.trim()}
               onPress={() => {
-                if (newTitle.trim()) {
-                  navigation.navigate('ForumCreate', { title: newTitle.trim() });
-                  setShowCreate(false);
-                  setNewTitle('');
-                }
+                setShowCreate(false);
+                setNewTitle('');
+                Linking.openURL('https://zyverse.in/forum').catch(() => {});
               }}
             >
               <Text style={styles.submitText}>Create</Text>
@@ -137,7 +136,7 @@ export default function ForumScreen() {
                 <TouchableOpacity
                   key={cat.id}
                   style={styles.categoryCard}
-                  onPress={() => navigation.navigate('ForumCategory', { id: cat.id, name: cat.name })}
+                  onPress={() => navigation.navigate('ForumCategory', { slug: cat.slug })}
                 >
                   <Text style={styles.categoryIcon}>{cat.icon || '💬'}</Text>
                   <Text style={styles.categoryName}>{cat.name}</Text>
@@ -167,7 +166,7 @@ export default function ForumScreen() {
               <TouchableOpacity
                 key={thread.id}
                 style={styles.threadItem}
-                onPress={() => navigation.navigate('ForumThread', { id: thread.id, title: thread.title })}
+                onPress={() => navigation.navigate('ThreadDetail', { id: thread.id })}
               >
                 <View style={styles.threadInfo}>
                   <Text style={styles.threadTitle} numberOfLines={1}>{thread.title}</Text>

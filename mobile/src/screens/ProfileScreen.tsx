@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,10 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { colors, spacing, fontSize, borderRadius } from '../theme';
 import { getStatusColor } from '../utils/helpers';
-
-const API_BASE = 'https://zyverse.in';
+import { getCurrentUser, api } from '../services/api';
 
 type ProfileTab = 'lists' | 'stats' | 'achievements' | 'settings';
 type StatusTab = 'watching' | 'completed' | 'planning' | 'dropped';
@@ -42,18 +41,40 @@ export default function ProfileScreen() {
 
   const fetchProfile = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/user/profile`);
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
+      const user = await getCurrentUser();
+      if (user) {
+        setProfile({
+          id: user.id,
+          username: user.username,
+          avatar: user.avatar || null,
+          bio: user.bio || null,
+          stats: { completed: 0, episodesWatched: 0, daysWatched: 0 },
+          achievements: [],
+          lists: [],
+          genreDistribution: [],
+        });
+      } else {
+        setProfile(null);
       }
-    } catch {}
+    } catch {
+      setProfile(null);
+    }
     setLoading(false);
     setRefreshing(false);
   }, []);
 
-  useEffect(() => { fetchProfile(); }, [fetchProfile]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+    }, [fetchProfile])
+  );
+
   const onRefresh = () => { setRefreshing(true); fetchProfile(); };
+
+  const signOut = async () => {
+    await api.auth.logout();
+    setProfile(null);
+  };
 
   if (!profile && !loading) {
     return (

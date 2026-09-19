@@ -29,7 +29,7 @@ const responseCache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000;
 
 let degradedUntil = 0;
-const DEGRADED_COOLDOWN_MS = 5 * 60 * 1000;
+const DEGRADED_COOLDOWN_MS = 2 * 60 * 1000;
 
 export class AniListUnavailableError extends Error {
   constructor() {
@@ -72,8 +72,8 @@ export function getAnilistCacheStats(): { size: number } {
   return { size: responseCache.size };
 }
 
-const FETCH_TIMEOUT = 8_000;
-const MAX_RETRIES = 0;
+const FETCH_TIMEOUT = 5_000;
+const MAX_RETRIES = 2;
 
 async function gql(query: string, variables: Record<string, unknown> = {}) {
   const cacheKey = getCacheKey(query, variables);
@@ -81,7 +81,6 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
   if (cached) return cached;
 
   let lastError: Error | null = null;
-  let retried429 = false;
 
   if (!isDegraded()) {
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -104,19 +103,22 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
           if (res.status === 429) {
             // AniList rate limits per IP (~30 req/min). Serverless platforms
             // share egress IPs, so bursts can 429 even at modest traffic.
-            // Ride out one short Retry-After window instead of failing hard.
+            // Ride out short Retry-After windows across attempts — transient.
             const raSec = Number(res.headers.get("retry-after") || 0);
-            const waitMs = Math.min(Math.max(raSec, 2) * 1000, 8000);
-            if (!retried429 && waitMs < FETCH_TIMEOUT) {
-              retried429 = true;
-              attempt--;
+            const waitMs = Math.min(Math.max(raSec, 2) * 1000, 6000);
+            if (attempt < MAX_RETRIES && waitMs < FETCH_TIMEOUT) {
               await new Promise((r) => setTimeout(r, waitMs));
               continue;
             }
+            enterDegradedMode();
             throw new Error("Rate limited by AniList — try again later.");
           }
-          enterDegradedMode();
           const body = await res.text().catch(() => "");
+          if (attempt < MAX_RETRIES && res.status >= 500) {
+            await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+            continue;
+          }
+          enterDegradedMode();
           throw new Error(`AniList request failed (${res.status}): ${body.slice(0, 200)}`);
         }
 
@@ -142,8 +144,14 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
         if (lastError.name === "AbortError") {
           lastError = new Error("AniList request timed out — try again.");
         }
-        if (attempt < MAX_RETRIES) {
-          await new Promise((r) => setTimeout(r, 800));
+        if (attempt >= MAX_RETRIES) {
+          enterDegradedMode();
+        }
+        // Timeouts usually mean the network path is slow/dead — retry a hung
+        // request at most once, then fail over to stale cache / degraded UI.
+        const timeoutRetryable = lastError.name !== "AniList request timed out — try again." || attempt === 0;
+        if (attempt < MAX_RETRIES && timeoutRetryable) {
+          await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
           continue;
         }
       }

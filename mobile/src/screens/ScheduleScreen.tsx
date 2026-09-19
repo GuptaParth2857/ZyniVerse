@@ -12,10 +12,10 @@ import { colors, spacing, fontSize, borderRadius } from '../theme';
 import { formatTimeUntilAiring } from '../utils/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorView from '../components/ErrorView';
+import { api } from '../services/api';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const FULL_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const API_BASE = 'https://zyverse.in';
 
 interface ScheduleItem {
   mediaId: number;
@@ -37,10 +37,8 @@ export default function ScheduleScreen() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/schedule`);
-      if (!res.ok) throw new Error('Failed to load');
-      const data = await res.json();
-      setSchedule(Array.isArray(data) ? data : data.schedule || []);
+      const data = await api.schedule.get();
+      setSchedule(data);
     } catch {
       setError('Could not load schedule');
       setSchedule([]);

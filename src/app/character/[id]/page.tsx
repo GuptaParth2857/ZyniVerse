@@ -1,7 +1,8 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { getCharacter } from "@/lib/anilist";
+import { getCharacter, AniListUnavailableError } from "@/lib/anilist";
 import CharacterDetailClient from "./character-client";
+import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 export const revalidate = 43200;
 
@@ -36,8 +37,12 @@ export default async function CharacterDetailsPage({
   let char;
   try {
     char = await getCharacterCached(id);
-  } catch {
+  } catch (err) {
+    if (err instanceof AniListUnavailableError) {
+      return <AnimeUnavailableCard href={`/character/${id}`} />;
+    }
     notFound();
   }
+  if (!char) notFound();
   return <CharacterDetailClient initialChar={char} />;
 }

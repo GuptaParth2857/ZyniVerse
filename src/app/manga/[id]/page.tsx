@@ -1,8 +1,9 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getMangaDetailFull } from "@/lib/anilist";
+import { getMangaDetailFull, AniListUnavailableError } from "@/lib/anilist";
 import MangaDetailClient from "./manga-client";
+import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 export const revalidate = 21600;
 
@@ -45,8 +46,12 @@ export default async function MangaDetailsPage({
   let manga;
   try {
     manga = await getMangaCached(id);
-  } catch {
+  } catch (err) {
+    if (err instanceof AniListUnavailableError) {
+      return <AnimeUnavailableCard href={`/manga/${id}`} />;
+    }
     notFound();
   }
+  if (!manga) notFound();
   return <MangaDetailClient initialManga={manga} />;
 }

@@ -52,6 +52,7 @@ const QUICK_ACTIONS = [
   { href: "/admin/affiliate", icon: "🛒", label: "Affiliate", desc: "Links & conversions", color: "#00d4ff" },
   { href: "/admin/awards", icon: "🏆", label: "Awards", desc: "Annual award entries", color: "#ffd700" },
   { href: "/admin/reels", icon: "🎬", label: "Reels", desc: "Moderate community reels", color: "#ff69b4" },
+  { href: "/admin/bingo", icon: "🎱", label: "Bingo", desc: "Curate bingo card templates", color: "#00ff7c" },
 ];
 
 function useCountUp(target: number, duration = 900): number {

@@ -13,8 +13,7 @@ import { getEpisodeTypeColor } from '../utils/helpers';
 import FillerProgress from '../components/FillerProgress';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorView from '../components/ErrorView';
-
-const API_BASE = 'https://zyverse.in';
+import { api } from '../services/api';
 
 interface FillerEpisode {
   episode: number;
@@ -43,24 +42,13 @@ export default function FillerGuideScreen() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/filler/${id}`);
-      if (!res.ok) throw new Error('Failed to load');
-      const result = await res.json();
-      if (result.episodes && Array.isArray(result.episodes)) {
-        const episodes = result.episodes.map((e: any, i: number) => ({
-          episode: e.episode || i + 1,
-          type: e.type || 'canon',
-          title: e.title || `Episode ${e.episode || i + 1}`,
-          score: e.score,
-        }));
-        const fillers = episodes.filter((e: FillerEpisode) => e.type === 'filler').length;
-        const mixed = episodes.filter((e: FillerEpisode) => e.type === 'mixed').length;
-        const total = episodes.length;
+      const result = await api.filler.get(id);
+      if (result && result.episodes && result.episodes.length > 0) {
         setData({
-          totalEpisodes: total,
-          totalFillers: fillers,
-          fillerPercentage: total > 0 ? Math.round((fillers / total) * 100) : 0,
-          episodes,
+          totalEpisodes: result.totalEpisodes,
+          totalFillers: result.totalFillers,
+          fillerPercentage: result.fillerPercentage,
+          episodes: result.episodes,
         });
       } else {
         setData(null);

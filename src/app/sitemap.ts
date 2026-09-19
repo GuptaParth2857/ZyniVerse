@@ -266,70 +266,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // Creators hub + creator pages (users with published reels)
-  let creatorPages: MetadataRoute.Sitemap = [];
-  try {
-    const creators = await prisma.user.findMany({
-      where: { reels: { some: {} } },
-      select: { username: true, createdAt: true },
-      take: 200,
-    });
-    creatorPages = creators.map((c) => ({
-      url: `${BASE_URL}/creators/${c.username}`,
-      lastModified: c.createdAt || now,
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    }));
-  } catch (e) { logError(e); }
-
-  // Public shareable anime/manga list hubs (users with tracked entries)
-  let listPages: MetadataRoute.Sitemap = [];
-  try {
-    const tracked = await prisma.user.findMany({
-      where: { OR: [{ entries: { some: {} } }, { mangaEntries: { some: {} } }] },
-      select: { username: true, createdAt: true },
-      take: 500,
-    });
-    listPages = tracked.map((u) => ({
-      url: `${BASE_URL}/list/${u.username}`,
-      lastModified: u.createdAt || now,
-      changeFrequency: "weekly" as const,
-      priority: 0.5,
-    }));
-  } catch (e) { logError(e); }
-
-  // Individual reel pages (indexable, video object schema)
-  let reelPages: MetadataRoute.Sitemap = [];
-  try {
-    const reels = await prisma.reel.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 300,
-      select: { id: true, updatedAt: true, createdAt: true },
-    });
-    reelPages = reels.map((r) => ({
-      url: `${BASE_URL}/reels/${r.id}`,
-      lastModified: r.updatedAt || r.createdAt || now,
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    }));
-  } catch (e) { logError(e); }
-
-  // Poster / post detail pages (main-attraction feed, image posts carry individual URLs)
-  let postPages: MetadataRoute.Sitemap = [];
-  try {
-    const posts = await prisma.post.findMany({
-      where: { image: { not: null } },
-      select: { id: true, updatedAt: true, createdAt: true },
-      orderBy: { createdAt: "desc" },
-      take: 500,
-    });
-    postPages = posts.map((p) => ({
-      url: `${BASE_URL}/posts/${p.id}`,
-      lastModified: p.updatedAt || p.createdAt || now,
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    }));
-  } catch (e) { logError(e); }
+  // NOTE: UGC pages (user posts, reels, creator hubs, user list hubs, forum
+  // threads) are intentionally EXCLUDED from the sitemap. They are thin,
+  // template-driven pages with no SEO value and were inflating the crawl
+  // budget, matching Google's "crawled/discovered - currently not indexed"
+  // wave. Only curated, original-content pages belong here.
 
   const allPages: MetadataRoute.Sitemap = [
     ...staticPages,
@@ -344,10 +285,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...alternativePages,
     ...indianDubGuidePages,
     ...newsDeskPages,
-    ...creatorPages,
-    ...listPages,
-    ...reelPages,
-    ...postPages,
     ...popularAnimePages,
     ...popularMangaPages,
     ...popularCharacterPages,

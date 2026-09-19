@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, fontSize, borderRadius } from '../theme';
 import { useOTAUpdate } from '../hooks/useOTAUpdate';
+import { api } from '../services/api';
 
 interface SettingRowProps {
   label: string;
@@ -126,7 +127,10 @@ export default function SettingsScreen() {
         </View>
 
         {/* Sign Out */}
-        <TouchableOpacity style={styles.signOutButton}>
+        <TouchableOpacity
+          style={styles.signOutButton}
+          onPress={() => { api.auth.logout(); }}
+        >
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
 

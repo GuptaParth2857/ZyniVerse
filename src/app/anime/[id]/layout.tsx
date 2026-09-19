@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cache } from "react";
 import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
+import { getAnimeEditorial } from "@/lib/anime-editorials";
 
 const getAnimeDetailCached = cache(getAnimeDetailFull);
 
@@ -15,9 +16,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { id } = await params;
     const anime = await getAnimeDetailCached(id);
     const title = bestTitle(anime.title);
-    const desc = anime.description
-      ? anime.description.replace(/<[^>]*>/g, "").slice(0, 200)
-      : `Discover ${title} — anime details, characters, episodes, filler guide, and more on ZyniVerse.`;
+    const editorial = getAnimeEditorial(anime.title);
+    const desc = editorial
+      ? editorial.verdict.slice(0, 150)
+      : anime.description
+        ? anime.description.replace(/<[^>]*>/g, "").slice(0, 200)
+        : `Discover ${title} — anime details, characters, episodes, filler guide, and more on ZyniVerse.`;
 
     const genres = anime.genres?.slice(0, 5).join(", ") || "";
     const fillerNote = "Skip filler episodes with our detailed guide.";
@@ -108,11 +112,16 @@ export default async function AnimeLayout({ children, params }: { children: Reac
         ],
       },
     },
-    review: {
-      "@type": "Review",
-      reviewBody: desc || `Watch ${title} on ZyniVerse — filler guide, episodes, characters & more.`,
-      author: { "@type": "Organization", name: "ZyniVerse" },
-    },
+    review: (() => {
+      const ed = anime?.title ? getAnimeEditorial(anime.title) : null;
+      return {
+        "@type": "Review",
+        reviewBody: ed
+          ? ed.verdict
+          : desc || `Watch ${title} on ZyniVerse — filler guide, episodes, characters & more.`,
+        author: { "@type": "Organization", name: "ZyniVerse" },
+      };
+    })(),
   } : null;
 
   return (

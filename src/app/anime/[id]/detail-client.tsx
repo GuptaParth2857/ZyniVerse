@@ -41,6 +41,7 @@ import AiLab from "@/components/features/AiLab";
 import IndianDubCast from "@/components/IndianDubCast";
 import AiringAlertButton from "@/components/AiringAlertButton";
 import type { MediaAnimeFull } from "@/lib/anilist";
+import type { AnimeEditorial } from "@/lib/anime-editorials";
 
 const DUB_LANG_STYLES: Record<string, { bg: string; text: string; border: string }> = {
   English: { bg: "#3b82f622", text: "#3b82f6", border: "#3b82f644" },
@@ -52,7 +53,7 @@ const DUB_LANG_STYLES: Record<string, { bg: string; text: string; border: string
 function stripHtml(str: string | null | undefined = "") { return str ? str.replace(/<[^>]*>/g, "") : ""; }
 function formatScore(score?: number) { return score ? (score / 10).toFixed(1) : "—"; }
 
-export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) {
+export default function AnimeDetailClient({ anime, editorial }: { anime: MediaAnimeFull; editorial?: AnimeEditorial | null }) {
   const [trailerOpen, setTrailerOpen] = useState(false);
   const [momentMakerOpen, setMomentMakerOpen] = useState(false);
   const [showAllStaff, setShowAllStaff] = useState(false);
@@ -308,6 +309,59 @@ export default function AnimeDetailClient({ anime }: { anime: MediaAnimeFull }) 
               <CommunityTagPanel mediaId={anime.id} />
             </div>
           </section>
+
+          {/* ZyniVerse Editorial */}
+          {editorial && (
+            <section className="relative overflow-hidden rounded-2xl border border-[var(--color-magenta)]/25 bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] p-5 sm:p-6">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[var(--color-magenta)]/10 blur-3xl" />
+              <div className="relative">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[var(--color-magenta)]/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[var(--color-magenta)]">
+                    ✦ ZyniVerse Editorial
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-sm font-bold">
+                    <span className="text-[var(--color-magenta)]">{editorial.rating.toFixed(1)}</span>
+                    <span className="text-[var(--color-mute)]">/ 5</span>
+                    <span className="ml-1 rounded-full bg-[var(--color-void)] px-2 py-0.5 text-[10px] text-[var(--color-mute)] border border-[var(--color-line)]">
+                      {editorial.ratingLabel}
+                    </span>
+                  </span>
+                </div>
+                <p className="mt-4 leading-relaxed text-[15px] text-[var(--color-mute)]">
+                  {editorial.verdict}
+                </p>
+                {editorial.highlights.length > 0 && (
+                  <ul className="mt-4 space-y-2">
+                    {editorial.highlights.map((h, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-[var(--color-mute)]">
+                        <span className="mt-0.5 text-[var(--color-magenta)]">✦</span>
+                        <span>{h}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {editorial.dubStatus && Object.values(editorial.dubStatus).some(Boolean) && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {Object.entries(editorial.dubStatus)
+                      .filter(([, v]) => Boolean(v))
+                      .map(([lang, status]) => {
+                        const style = DUB_LANG_STYLES[lang.charAt(0).toUpperCase() + lang.slice(1)] || DUB_LANG_STYLES[lang] || { bg: "#22d3ee22", text: "#22d3ee", border: "#22d3ee44" };
+                        return (
+                          <span key={lang} className="rounded-full border px-2.5 py-1 text-[10px] font-medium" style={{ background: style.bg, color: style.text, borderColor: style.border }}>
+                            {lang.charAt(0).toUpperCase() + lang.slice(1)} · {status}
+                          </span>
+                        );
+                      })}
+                  </div>
+                )}
+                {editorial.indianNote && (
+                  <p className="mt-4 rounded-xl bg-[var(--color-void)] px-4 py-3 text-[13px] leading-relaxed text-[var(--color-mute)]">
+                    🇮🇳 <span className="font-bold text-[var(--color-cyan)]">For Indian viewers:</span> {editorial.indianNote}
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
 
           {/* Zyni AI Lab */}
           <AiLab animeId={anime.id} title={title} />

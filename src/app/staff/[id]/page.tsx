@@ -1,7 +1,8 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { getStaffBasic, getStaffMedia } from "@/lib/anilist";
+import { getStaffBasic, getStaffMedia, AniListUnavailableError } from "@/lib/anilist";
 import StaffDetailClient from "./staff-client";
+import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 export const revalidate = 43200;
 
@@ -37,9 +38,13 @@ export default async function StaffDetailsPage({
   let staff;
   try {
     staff = await getStaffBasicCached(id);
-  } catch {
+  } catch (err) {
+    if (err instanceof AniListUnavailableError) {
+      return <AnimeUnavailableCard href={`/staff/${id}`} />;
+    }
     notFound();
   }
+  if (!staff) notFound();
   const mediaEdges = await getStaffMediaCached(id).catch(() => undefined);
   return <StaffDetailClient initialStaff={staff} initialEdges={mediaEdges} />;
 }

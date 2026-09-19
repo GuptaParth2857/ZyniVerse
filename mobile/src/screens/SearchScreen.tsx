@@ -56,7 +56,7 @@ export default function SearchScreen() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<Anime[]>('/search', { params: { q, type: filter } });
+      const data = await api.search(q, filter);
       setResults(data);
       saveHistory(q);
     } catch (e: any) {

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { AniListUnavailableError } from "@/lib/anilist";
+import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 import type { Metadata } from "next";
 import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
 import { getFillerForAnime } from "@/lib/filler";
@@ -63,9 +65,13 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
   let anime;
   try {
     anime = await getAnimeDetailFull(anilistId);
-  } catch {
+  } catch (err) {
+    if (err instanceof AniListUnavailableError) {
+      return <AnimeUnavailableCard href={`/anime/${anilistId}`} />;
+    }
     notFound();
   }
+  if (!anime) notFound();
 
   const title = bestTitle(anime.title);
   const filler = await getFillerForAnime(anime.id, title);

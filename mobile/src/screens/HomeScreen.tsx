@@ -96,7 +96,7 @@ export default function HomeScreen() {
           <View style={styles.actionRow}>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => navigation.navigate('FillerGuide', { id: 0, title: 'Filler Guide' })}
+              onPress={() => navigation.navigate('FillerGuide', { id: 21, title: 'One Piece — Filler Guide' })}
             >
               <Text style={styles.actionIcon}>📊</Text>
               <Text style={styles.actionLabel}>Filler Guide</Text>

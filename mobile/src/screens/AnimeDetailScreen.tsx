@@ -35,10 +35,15 @@ export default function AnimeDetailScreen() {
   useEffect(() => {
     if (anime?.malId) {
       api.dubStatus.get(anime.malId).then((data) => {
-        if (data) setDubStatus(data as any);
+        if (data) {
+          setDubStatus({
+            hindi: data.hindi?.available,
+            tamil: data.tamil?.available,
+            telugu: data.telugu?.available,
+          });
+        }
       }).catch(() => {});
-      fetch(`https://zyverse.in/api/v1/filler/${anime.id || anime.malId}`)
-        .then((r) => r.ok ? r.json() : null)
+      api.filler.get(anime.id || (anime.malId as number))
         .then((data) => {
           if (data?.fillerPercentage != null) {
             setFillerData({ fillerPercentage: data.fillerPercentage, totalFillers: data.totalFillers || 0 });

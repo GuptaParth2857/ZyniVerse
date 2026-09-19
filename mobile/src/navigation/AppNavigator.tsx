@@ -9,6 +9,7 @@ import ForumScreen from '../screens/ForumScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import RecommendationsScreen from '../screens/RecommendationsScreen';
 import TournamentDetailScreen from '../screens/TournamentDetailScreen';
+import LoginScreen from '../screens/LoginScreen';
 import { colors } from '../theme';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -68,6 +69,11 @@ export default function AppNavigator() {
         name="TournamentDetail"
         component={TournamentDetailScreen}
         options={({ route }) => ({ title: route.params.title })}
+      />
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ title: 'Sign In', presentation: 'modal' }}
       />
     </Stack.Navigator>
   );

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import { api } from '../services/api';
+import { api, getCurrentUser } from '../services/api';
 import { User } from '../types';
 
 export function useAuth() {
@@ -9,13 +8,10 @@ export function useAuth() {
 
   const checkAuth = useCallback(async () => {
     try {
-      const token = await SecureStore.getItemAsync('auth_token');
-      if (token) {
-        const userData = await api.get<User>('/auth/me');
-        setUser(userData);
-      }
+      const current = await getCurrentUser();
+      setUser(current);
     } catch {
-      await SecureStore.deleteItemAsync('auth_token');
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -26,15 +22,22 @@ export function useAuth() {
   }, [checkAuth]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const result = await api.post<{ token: string; user: User }>('/auth/login', { email, password });
-    await SecureStore.setItemAsync('auth_token', result.token);
-    setUser(result.user);
+    const result = await api.auth.login(email, password);
+    setUser(result);
   }, []);
 
+  const register = useCallback(
+    async (email: string, username: string, password: string) => {
+      const result = await api.auth.register(email, username, password);
+      setUser(result);
+    },
+    []
+  );
+
   const logout = useCallback(async () => {
-    await SecureStore.deleteItemAsync('auth_token');
+    await api.auth.logout();
     setUser(null);
   }, []);
 
-  return { user, loading, login, logout, refetch: checkAuth };
+  return { user, loading, login, register, logout, refetch: checkAuth };
 }

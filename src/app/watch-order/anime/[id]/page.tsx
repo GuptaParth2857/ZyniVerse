@@ -2,9 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
+import { getAnimeDetailFull, bestTitle, AniListUnavailableError } from "@/lib/anilist";
 import { buildWatchOrder } from "@/lib/watch-order";
 import AnimeWatchOrder from "./AnimeWatchOrder";
+import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -36,7 +37,10 @@ export default async function AnimeWatchOrderPage({ params }: Props) {
   let anime;
   try {
     anime = await getAnimeDetailFull(animeId);
-  } catch {
+  } catch (err) {
+    if (err instanceof AniListUnavailableError) {
+      return <AnimeUnavailableCard href={`/anime/${animeId}`} />;
+    }
     notFound();
   }
 

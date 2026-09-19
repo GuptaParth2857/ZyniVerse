@@ -98,6 +98,64 @@ export function generateSquares(): BingoSquare[] {
   return squares;
 }
 
+export function generateSquaresForTemplate(raw: string): BingoSquare[] {
+  return generateSquaresFromPool(parsePool(raw));
+}
+
 export function seasonLabel(season: string) {
   return season.charAt(0) + season.slice(1).toLowerCase();
+}
+
+export interface BingoPoolItem {
+  text: string;
+  category: string;
+  color: string;
+}
+
+export interface BingoTemplateData {
+  id: string;
+  title: string;
+  emoji: string;
+  description: string | null;
+  squares: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  usesCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function parsePool(raw: string): BingoPoolItem[] {
+  try {
+    const parsed = JSON.parse(raw || "[]");
+    return Array.isArray(parsed) ? parsed.filter((p) => p && typeof p.text === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+const DEFAULT_POOL: BingoPoolItem[] = (() => {
+  const all: BingoPoolItem[] = [];
+  for (const row of BINGO_CATEGORIES) for (const item of row) all.push({ ...item });
+  return all;
+})();
+
+export function generateSquaresFromPool(pool: BingoPoolItem[]): BingoSquare[] {
+  const source = pool.length >= 24 ? pool : [...DEFAULT_POOL, ...pool];
+  const shuffled = shuffle(source);
+  const squares: BingoSquare[] = [];
+  const used = new Set<string>();
+  let idx = 0;
+  for (let i = 0; i < 25; i++) {
+    if (i === 12) {
+      squares.push({ index: i, text: "FREE", category: "Free Space", color: "#ffffff", completed: true });
+      continue;
+    }
+    let item = shuffled[idx++];
+    while (item && used.has(item.text)) item = shuffled[idx++];
+    if (!item) item = DEFAULT_POOL[i % DEFAULT_POOL.length];
+    used.add(item.text);
+    squares.push({ index: i, text: item.text, category: item.category, color: item.color, completed: false });
+  }
+  return squares;
 }

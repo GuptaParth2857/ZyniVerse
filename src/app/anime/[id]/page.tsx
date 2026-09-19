@@ -1,7 +1,9 @@
 import { cache } from "react";
-import { getAnimeDetailFull, type MediaAnimeFull } from "@/lib/anilist";
-import { notFound } from "next/navigation";
+import { getAnimeDetailFull, AniListUnavailableError, type MediaAnimeFull } from "@/lib/anilist";
+import { notFound, redirect } from "next/navigation";
 import AnimeDetailClient from "./detail-client";
+import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
+import { getAnimeEditorial, type AnimeEditorial } from "@/lib/anime-editorials";
 
 export const revalidate = 21600;
 
@@ -52,6 +54,31 @@ function buildAnimeJsonLd(anime: MediaAnimeFull) {
   return [JSON.stringify(schema), JSON.stringify(breadcrumb)];
 }
 
+function buildEditorialJsonLd(anime: MediaAnimeFull, editorial: AnimeEditorial) {
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Review",
+    name: `ZyniVerse Editorial: ${anime.title?.english || anime.title?.romaji || "Anime"}`,
+    itemReviewed: {
+      "@type": "CreativeWork",
+      name: anime.title?.english || anime.title?.romaji || "Anime",
+      url: `${BASE_URL}/anime/${anime.id}`,
+      image: anime.coverImage?.extraLarge || anime.coverImage?.large || undefined,
+    },
+    author: { "@type": "Organization", name: "ZyniVerse", url: BASE_URL },
+    publisher: { "@type": "Organization", name: "ZyniVerse", url: BASE_URL },
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: editorial.rating,
+      bestRating: "5",
+      worstRating: "1",
+      alternateName: editorial.ratingLabel,
+    },
+    reviewBody: editorial.verdict,
+    datePublished: new Date().toISOString().slice(0, 10),
+  });
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
@@ -85,13 +112,20 @@ export default async function AnimeDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  let anime;
+let anime;
   try {
-    anime = await getAnimeDetailFull(id);
-  } catch {
+    anime = await getAnimeDetailCached(id);
+  } catch (err) {
+    if (err instanceof AniListUnavailableError) {
+      return <AnimeUnavailableCard href={`/anime/${id}`} />;
+    }
     notFound();
   }
+  if (!anime) notFound();
+  if (anime.type === "MANGA") redirect(`/manga/${anime.id}`);
+  const editorial = getAnimeEditorial(anime.title);
   const jsonLd = buildAnimeJsonLd(anime);
+  const reviewLd = editorial ? buildEditorialJsonLd(anime, editorial) : null;
   return (
     <>
       {jsonLd.map((json, i) => (
@@ -102,7 +136,14 @@ export default async function AnimeDetailsPage({
           dangerouslySetInnerHTML={{ __html: json }}
         />
       ))}
-      <AnimeDetailClient anime={anime} />
+      {reviewLd && (
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: reviewLd }}
+        />
+      )}
+      <AnimeDetailClient anime={anime} editorial={editorial} />
     </>
   );
 }

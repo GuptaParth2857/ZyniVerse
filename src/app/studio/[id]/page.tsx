@@ -1,7 +1,8 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { getStudio } from "@/lib/anilist";
+import { getStudio, AniListUnavailableError } from "@/lib/anilist";
 import StudioDetailClient from "./studio-client";
+import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 export const revalidate = 43200;
 
@@ -29,8 +30,12 @@ export default async function StudioDetailsPage({
   let studio;
   try {
     studio = await getStudioCached(Number(id));
-  } catch {
+  } catch (err) {
+    if (err instanceof AniListUnavailableError) {
+      return <AnimeUnavailableCard href={`/studio/${id}`} />;
+    }
     notFound();
   }
+  if (!studio) notFound();
   return <StudioDetailClient initialStudio={studio} />;
 }

@@ -8,6 +8,7 @@ export type RootStackParamList = {
   Settings: undefined;
   Recommendations: undefined;
   TournamentDetail: { id: string; title: string };
+  Login: undefined;
 };
 
 export type TabParamList = {

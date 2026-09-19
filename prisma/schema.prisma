@@ -142,6 +142,7 @@ model User {
   wallpapers             Wallpaper[]
   wallpaperLikes         WallpaperLike[]
   bingoCards             BingoCard[]
+  bingoTemplates         BingoTemplate[]       @relation("BingoTemplateCreator")
   ownedSharedWatchlists  SharedWatchlist[]      @relation("WatchlistOwner")
   sharedWatchlistMembers SharedWatchlistMember[]
   creatorProfile         CreatorProfile?
@@ -2438,12 +2439,35 @@ model BingoCard {
   season    String   // "WINTER", "SPRING", "SUMMER", "FALL"
   year      Int
   squares   String   @default("[]") // JSON array of 25 squares
+  templateId String? // optional BingoTemplate the card was generated from
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template BingoTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([season, year])
+  @@index([templateId])
+}
+
+model BingoTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  emoji       String   @default("🎱")
+  description String?
+  squares     String   @default("[]") // JSON: flat pool of { text, category, color }
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  usesCount   Int      @default(0)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator User        @relation("BingoTemplateCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  cards   BingoCard[]
+
+  @@index([createdById])
+  @@index([isActive, isFeatured])
 }
 
 // ── Collaborative Watchlists ──
