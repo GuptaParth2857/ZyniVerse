@@ -5,7 +5,7 @@ import { getMangaDetailFull, AniListUnavailableError } from "@/lib/anilist";
 import MangaDetailClient from "./manga-client";
 import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
-export const revalidate = 21600;
+export const revalidate = 86400;
 
 const getMangaCached = cache(getMangaDetailFull);
 

@@ -3,22 +3,48 @@ import type { NextRequest } from "next/server";
 
 // AI-training scrapers, SEO crawlers, and other high-volume non-human agents
 // that burn compute/invocations/origin-transfer without sending any users.
-// Googlebot and Bingbot are intentionally NOT blocked.
+// Googlebot and Bingbot are intentionally NOT blocked — they drive real
+// organic search traffic (including AI Overviews / AI Search answers).
 const BLOCKED_BOT_TOKENS = [
+  // AI-training + AI-search scrapers (no traffic return)
   "gptbot",
   "chatgpt-user",
+  "chatgpt",
   "oai-searchbot",
   "gpt-3.5-turbo",
   "perplexity",
   "pplx",
   "claudebot",
   "claude-web",
-  "anthropic-ai",
   "claude-external",
+  "anthropic-ai",
   "amazonbot",
   "google-extended",
   "googleother",
   "bytespider",
+  "ai2bot",
+  "ai2bot-dolma",
+  "bytedance-webcrawler",
+  "tiktok-webcrawler",
+  "cohere-ai",
+  "dataforseekbot",
+  "youbot",
+  "omgilibot",
+  "omgili",
+  "webzio-extractor",
+  "velenpublicwebcrawler",
+  "zumbot",
+  "mia-research",
+  "imagesiftbot",
+  "brightbot",
+  "checkthewebsite",
+  "magpie-crawler",
+  "komodia",
+  "dupax-ai-crawler",
+  "kangaroobot",
+  "awarios",
+  "zentcrawl",
+  // SEO/analytics scrapers
   "ccbot",
   "dataforseobot",
   "ahrefsbot",
@@ -32,15 +58,53 @@ const BLOCKED_BOT_TOKENS = [
   "meta-externalagent",
   "meta-externalfetcher",
   "diffbot",
-  "imagesiftbot",
-  "python-requests",
-  "python-urllib",
-  "scrapy",
   "yandexbot",
   "baiduspider",
   "sogou",
   "exabot",
+  "linkdexbot",
+  "meanpathbot",
+  // Generic non-browser clients (curl/wget/LIBS — never real users)
+  "python-requests",
+  "python-urllib",
+  "python-httpx",
+  "pantra",
+  "scrapy",
+  "node-fetch",
+  "go-http-client",
+  "curl/",
+  "wget/",
+  "java/",
+  "http-client",
+  "axios/",
+  "okhttp-utils",
 ];
+
+const AUTH_COOKIES = [
+  "__Secure-authjs.session-token",
+  "authjs.session-token",
+  "next-auth.session-token",
+];
+
+// Public, non-personalized content pages that crawlers + CDN hits hammer.
+// Anonymous GET responses get a short shared-cache TTL so Vercel's CDN serves
+// them cheaply instead of re-rendering. Never applied when auth cookies are
+// present (logged-in users get whatever the page decides to render).
+const PUBLIC_CDN_PATHS: Array<{ pattern: RegExp; sMaxAge: number }> = [
+  { pattern: /^\/character-tournaments\/[^/]+$/, sMaxAge: 300 },
+  { pattern: /^\/(?:anime|character|manga|staff|studio|watch-order|news|indian-dubs|live-action|toons|cosplay|posts|reels)\/[^/]+$/, sMaxAge: 600 },
+];
+
+function hasAuthCookie(request: NextRequest): boolean {
+  return AUTH_COOKIES.some((name) => request.cookies.has(name));
+}
+
+function getPublicCacheSeconds(path: string): number | null {
+  for (const { pattern, sMaxAge } of PUBLIC_CDN_PATHS) {
+    if (pattern.test(path)) return sMaxAge;
+  }
+  return null;
+}
 
 export function proxy(request: NextRequest) {
   const ua = request.headers.get("user-agent");
@@ -51,17 +115,16 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  const path = request.nextUrl.pathname;
-  if (
-    request.method === "GET" &&
-    /^\/character-tournaments\/[^/]+$/.test(path) &&
-    !request.cookies.has("__Secure-authjs.session-token") &&
-    !request.cookies.has("authjs.session-token") &&
-    !request.cookies.has("next-auth.session-token")
-  ) {
-    const res = NextResponse.next();
-    res.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
-    return res;
+  if (request.method === "GET") {
+    const path = request.nextUrl.pathname;
+    if (!hasAuthCookie(request)) {
+      const sMaxAge = getPublicCacheSeconds(path);
+      if (sMaxAge !== null) {
+        const res = NextResponse.next();
+        res.headers.set("Cache-Control", `public, s-maxage=${sMaxAge}, stale-while-revalidate=${sMaxAge * 2}`);
+        return res;
+      }
+    }
   }
 
   return NextResponse.next();

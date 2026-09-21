@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { NEWS_DESK, getNewsDeskItem } from "@/lib/news-desk";
 import NativeBannerAd from "@/components/NativeBannerAd";
 
-export const revalidate = 43200;
+export const revalidate = 172800;
 export const dynamicParams = false;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";

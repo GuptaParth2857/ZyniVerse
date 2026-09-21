@@ -6,6 +6,7 @@ import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 import type { Metadata } from "next";
 import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
 import { getFillerForAnime } from "@/lib/filler";
+import { getFillerNotes } from "@/lib/filler-notes";
 import AISummaryCard from "@/components/AISummaryCard";
 import FillerChecklist from "@/components/FillerChecklist";
 
@@ -87,6 +88,8 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
   const fillerEpisodes = filler.episodes.filter((e) => e.type === "filler");
   const canonEpisodes = filler.episodes.filter((e) => e.type !== "filler");
 
+  const notes = filler.slug ? getFillerNotes(filler.slug) : null;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -103,11 +106,69 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
     },
   };
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `How many filler episodes does ${title} have?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `${title} has ${total} total episodes, of which ${fillerCount} are filler (${fillerPct}%).`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Is ${title} worth watching?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            fillerPct > 30
+              ? `Most of ${title} can be skipped thanks to ${
+                  fillerCount
+                } filler episodes. Follow the canon list to watch only the essential story.`
+              : `${title} has minimal filler — the full run is worth watching.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `How much time do I save by skipping ${title} filler?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `Skipping ${fillerCount} filler episodes saves roughly ${Math.max(
+            1,
+            Math.round((fillerCount * 24) / 60)
+          )} hours at ~24 minutes per episode.`,
+        },
+      },
+      ...(notes && notes.arcs.length > 0
+        ? [
+            {
+              "@type": "Question",
+              name: `Which ${title} filler arcs are worth watching?`,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: notes.arcs
+                  .filter((a) => a.verdict === "watch")
+                  .map((a) => `${a.name} (episodes ${a.range})`)
+                  .join(", "),
+              },
+            },
+          ]
+        : []),
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 animate-page-in">
@@ -317,6 +378,49 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
             </p>
           </div>
         </section>
+
+        {notes && (
+          <section className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-6 sm:p-8 mb-10">
+            <h2 className="font-display text-lg font-bold mb-3">
+              Is {title} Filler Worth Watching?
+            </h2>
+            <p className="text-sm leading-relaxed text-[var(--color-mute)]">{notes.intro}</p>
+            {notes.arcs.length > 0 ? (
+              <div className="mt-5 space-y-3">
+                {notes.arcs.map((arc, i) => {
+                  const isWatch = arc.verdict === "watch";
+                  const isSkip = arc.verdict === "skip";
+                  return (
+                    <div key={i} className="flex flex-col gap-2 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 p-4 sm:flex-row sm:items-start">
+                      <div className="flex shrink-0 items-center gap-2 sm:w-40">
+                        <span className="rounded-lg bg-[var(--color-void)] px-2 py-1 font-mono text-xs font-bold text-[var(--color-ink)]">
+                          Ep. {arc.range}
+                        </span>
+                        <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                          isWatch
+                            ? "border-green-500/30 bg-green-500/10 text-green-400"
+                            : isSkip
+                            ? "border-red-500/30 bg-red-500/10 text-red-400"
+                            : "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                        }`}>
+                          {arc.verdict === "optional" ? "Optional" : isWatch ? "Watch" : "Skip"}
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-white">{arc.name}</p>
+                        <p className="mt-1 text-sm leading-relaxed text-[var(--color-mute)]">{arc.why}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="mt-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 p-4 text-sm leading-relaxed text-[var(--color-mute)]">
+                No filler arcs to worry about here — the entire run advances the main story.
+              </p>
+            )}
+          </section>
+        )}
 
         <div className="border-t border-[var(--color-line)] pt-8 mb-10">
           <h2 className="font-display text-lg font-bold mb-4">More Filler Guides</h2>

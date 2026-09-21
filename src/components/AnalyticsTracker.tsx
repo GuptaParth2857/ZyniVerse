@@ -4,8 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 const BATCH_KEY = "analytics_pending_pageviews";
-const BATCH_SIZE = 5;
-const FLUSH_INTERVAL_MS = 300000;
+const BATCH_SIZE = 10;
+const FLUSH_INTERVAL_MS = 900000;
 
 function getPending(): Array<{ path: string; sessionId: string; referrer: string | null; ts: number }> {
   try {
@@ -91,7 +91,7 @@ export default function AnalyticsTracker() {
     if (typeof window === "undefined" || !sessionId) return;
 
     const interval = setInterval(() => {
-      flushPending(sessionId);
+      if (!document.hidden) flushPending(sessionId);
     }, FLUSH_INTERVAL_MS);
 
     return () => clearInterval(interval);

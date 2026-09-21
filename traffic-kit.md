@@ -92,3 +92,51 @@ Ye posts ready hain. Copy-paste karo, link apni site ka daal do. Rule: har jagah
 - Discord list = steady 10-50/day
 - Ye traffic affiliate links pe paisa dega turant
 - Google SEO month 2-3 se organically aana start karega
+
+---
+
+## 6. Backlink Push — Google ko trust dilane ke liye (compounding)
+
+Ranking ke liye sirf content nahi, **backlinks** chahiye. Ye 4 tarike weekly karo (30-40 min/week), result 2-3 mahine me dikhega.
+
+### a) List/directory sites (free submission — 5 min each)
+
+- **IndieHackers** → Products → Add (zyverse.in) — stories + product link
+- **Product Hunt** — launch ek baar accha, gather supporters pehle
+- **AlternativeTo** → Add alternative — target: "Anime Filler List" (animefillerlist.com), "One Pace", "Aniwatch"
+- **TopTools / FreeStuff.dev / ToolFinder** — tool directory. Category: "anime", "filler", "watch order"
+- **Zenlist / dev resources wikis** (awesome-anime, awesome-list GitHub repos me PR)
+
+> Har submission me sabse strong hook: **"India ke liye Hindi/Tamil/Telugu dub tracker"** — ye kisi competitor ke paas nahi hai.
+
+### b) Guest post + niche blogs (link exchange)
+
+Target keywords: "anime india blog", "hindi dub anime", "anime filler list".
+- Query ki tarah (cold email ya contact form): "I built a free Hindi dub schedule tracker for India (zyverse.in/hindi-dub-schedule) — toh banta hai agar aap apne article me isko resource ke roop me link karo. Har hafte update hota hai."
+- Bloggers Indian anime community ke (medium-sized) — unko embed done FREE tool dene ka offer karo unke "crew dubs in hindi" articles me.
+
+### c) Reddit — helpful-thread replies (not self-promo posts)
+
+In threads me useful answers me natural link drop karo (rule: sirf jab user exact same cheez maange):
+- r/AnimeFiller — "which naruto episodes are filler" → link /filler/naruto + /filler/naruto-shippuden
+- r/animesuggest — "skip filler in one piece" → /filler/one-piece
+- r/IndianAnime / r/animeindia — "hindi dub kaise dekhe" → /indian-dubs + /hindi-dub-schedule
+- r/anime "watch order" threads → /watch-order (39 curated guides)
+- Quora/StackExchange anime — same pattern
+
+### d) Discord servers (resources channels)
+
+Join 5-10 anime Discords; #resources / #self-promo me yeh ek baar:
+> Free Indian anime hub: Hindi/Tamil/Telugu dub tracker + THIS WEEK schedule (auto-updated) → zyverse.in/hindi-dub-schedule · Filler lists for 180+ anime → zyverse.in/filler
+
+### e) Tere SEO-visible assets abhi (linkworthy pages)
+
+| Page | Tab kis cheez ke liye |
+|------|----------------------|
+| /indian-dubs | Hindi/Tamil/Telugu dub meter |
+| /hindi-dub-schedule | This-week dub schedule (freshest, searchable) |
+| /filler/one-piece, /filler/naruto-shippuden | Filler arcs, watch/skip verdicts |
+| /watch-order/fate, /monogatari | Watch order guides |
+| /news/desk/* | Dated anime news → Google News sitemap |
+
+> Tip: har hafte /hindi-dub-schedule update hota hai kyunki week range dynamic hai — isliye freshness signal strong hai.

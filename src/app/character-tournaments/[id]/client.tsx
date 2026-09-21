@@ -7,8 +7,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
-
 const CARD_EASE = [0.22, 1, 0.36, 1] as const;
+const MATCHES_PER_MATCHUP = 4;
 
 const TICKER_ITEMS = [
   { label: "Qualifying Open", emoji: "⚡", color: "#f87171" },
@@ -372,10 +372,7 @@ export default function TournamentDetailPage({
 
   const { tournament } = data;
 
-  const shareUrl =
-    typeof window !== "undefined"
-      ? window.location.href
-      : `https://zyverse.in/character-tournaments/${id}`;
+  const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in"}/character-tournaments/${id}`;
   const shareLine = `⚔️ ${tournament.title} — ${tournament.size}-player anime character tournament by @${tournament.creator.username} on ZyniVerse! Apna fav vote karo.`;
 
   async function copyShare() {
@@ -503,6 +500,26 @@ export default function TournamentDetailPage({
                 >
                   𝕏 / X
                 </a>
+                <a
+                  href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareLine)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/40 px-4 py-1.5 text-xs font-bold text-sky-300 hover:bg-sky-400/15 transition-colors"
+                >
+                  Telegram
+                </a>
+                <button
+                  onClick={() => {
+                    if (navigator.share) {
+                      void navigator.share({ title: tournament.title, text: shareLine, url: shareUrl }).catch(() => {});
+                    } else {
+                      void copyShare();
+                    }
+                  }}
+                  className="rounded-full border border-[var(--color-line)] px-4 py-1.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-magenta)] hover:text-[var(--color-magenta)] transition-colors"
+                >
+                  Share
+                </button>
                 <button
                   onClick={() => void copyShare()}
                   className="rounded-full border border-[var(--color-line)] px-4 py-1.5 text-xs font-semibold text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
@@ -685,7 +702,7 @@ function VotingClosedNote({ target }: { target: string | null }) {
   if (!done) return null;
   return (
     <p className="mb-6 text-center text-xs font-semibold text-emerald-400">
-      Qualifying closed — bracket building on the way.
+      Qualifying has closed — the final bracket is being prepared from your votes and fan favorites.
     </p>
   );
 }
@@ -1051,6 +1068,8 @@ function BracketLayout({
                   active={status === "active" && match.round === currentRound}
                   onVote={onVote}
                   loggedIn={loggedIn}
+                  reveal={status === "active" && !myVotes[match.id] && (match.round ?? 0) === currentRound}
+                  revealIndex={i * MATCHES_PER_MATCHUP * 2 + (match.position ?? 0)}
                 />
               ))}
             </div>
@@ -1068,6 +1087,8 @@ function MatchCard({
   active,
   onVote,
   loggedIn,
+  reveal,
+  revealIndex,
 }: {
   match: Match;
   voted: "A" | "B" | undefined;
@@ -1075,6 +1096,8 @@ function MatchCard({
   active: boolean;
   onVote: (matchId: string, choice: "A" | "B") => void;
   loggedIn: boolean;
+  reveal?: boolean;
+  revealIndex?: number;
 }) {
   const total = match.votesA + match.votesB;
   const pctA = total > 0 ? Math.round((match.votesA / total) * 100) : 50;
@@ -1086,9 +1109,14 @@ function MatchCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: CARD_EASE, delay: 0.05 }}
+      initial={reveal ? { opacity: 0, y: 22, rotateY: -90, scale: 0.86 } : { opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0, rotateY: 0, scale: 1 }}
+      transition={{
+        duration: 0.55,
+        ease: CARD_EASE,
+        delay: reveal ? Math.min((revealIndex ?? 0) * 0.09, 0.7) : 0.05,
+      }}
+      style={{ transformPerspective: 900 }}
       className="relative overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-colors"
     >
       {match.winnerId && (

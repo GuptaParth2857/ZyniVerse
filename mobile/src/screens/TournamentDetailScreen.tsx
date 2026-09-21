@@ -32,7 +32,7 @@ function Countdown({ endsAt }: { endsAt?: string | null }) {
   if (endsAt) {
     const diff = new Date(endsAt).getTime() - now;
     if (diff <= 0) {
-      text = 'Qualifying closed';
+      text = 'Qualifying has closed';
     } else {
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
@@ -236,7 +236,7 @@ export default function TournamentDetailScreen() {
 
           {isQualifying && tournament.status !== 'qualifying' ? (
             <View style={styles.countdownCard}>
-              <Text style={styles.countdownValue}>⏳ Qualifying closed</Text>
+              <Text style={styles.countdownValue}>⏳ Qualifying has closed</Text>
               <Text style={styles.countdownHint}>
                 {detail.totalVotes} votes cast in the poll
               </Text>

@@ -32,6 +32,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/voice-actors/indian`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE_URL}/light-novels`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE_URL}/dubbed`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/hindi-dub-schedule`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/hindi-dub-schedule/muse-india`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/hindi-dub-schedule/ani-one-india`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/hindi-dub-schedule/crunchyroll`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/manga-releases`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${BASE_URL}/anime-birthdays`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE_URL}/critiques`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE_URL}/voice-actors`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE_URL}/voice-lines`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
@@ -175,6 +181,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic: Popular anime detail pages (high SEO value)
   let popularAnimePages: MetadataRoute.Sitemap = [];
+  let watchGuidePages: MetadataRoute.Sitemap = [];
   try {
     const popular = await getPopular(100);
     popularAnimePages = popular.map((m) => ({
@@ -182,6 +189,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.8,
+    }));
+    watchGuidePages = popular.map((m) => ({
+      url: `${BASE_URL}/watch/${m.id}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
     }));
   } catch (e) { logError(e); }
 
@@ -258,6 +271,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  // Manga release countdowns (static, high SEO value — recurring weekly queries)
+  const mangaReleasePages: MetadataRoute.Sitemap = [
+    { url: `${BASE_URL}/manga-releases`, lastModified: now, changeFrequency: "daily" as const, priority: 0.8 },
+    ...["one-piece", "chainsaw-man", "solo-leveling-ragnarok", "boruto-two-blue-vortex", "spy-x-family", "frieren", "my-hero-academia", "jujutsu-kaisen", "hunter-x-hunter"].map((slug) => ({
+      url: `${BASE_URL}/manga-releases/${slug}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
+  ];
+
   // ZyniVerse News Desk (static, dated, high freshness value)
   const newsDeskPages: MetadataRoute.Sitemap = NEWS_DESK.map((n) => ({
     url: `${BASE_URL}/news/desk/${n.slug}`,
@@ -284,8 +308,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...newsPages,
     ...alternativePages,
     ...indianDubGuidePages,
+    ...mangaReleasePages,
     ...newsDeskPages,
     ...popularAnimePages,
+    ...watchGuidePages,
     ...popularMangaPages,
     ...popularCharacterPages,
   ];

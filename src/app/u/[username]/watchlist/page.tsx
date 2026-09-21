@@ -42,7 +42,7 @@ async function fetchAnimeDetails(mediaIds: number[]): Promise<Map<number, AniLis
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query, variables: { ids: mediaIds } }),
-      next: { revalidate: 60 },
+      next: { revalidate: 600 },
     });
     const json = await res.json();
     const media = json.data?.Media;

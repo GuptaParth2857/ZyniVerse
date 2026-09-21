@@ -4,7 +4,7 @@ import { getStaffBasic, getStaffMedia, AniListUnavailableError } from "@/lib/ani
 import StaffDetailClient from "./staff-client";
 import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
-export const revalidate = 43200;
+export const revalidate = 172800;
 
 const getStaffBasicCached = cache(getStaffBasic);
 const getStaffMediaCached = cache(getStaffMedia);

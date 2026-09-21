@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { INDIAN_DUB_GUIDES } from "@/lib/indian-dub-guides";
+import { getMediaBatch, type MediaBasic } from "@/lib/anilist";
 import NativeBannerAd from "@/components/NativeBannerAd";
+import IndianDubCountdown from "@/components/indian-dubs/IndianDubCountdown";
+import { nextAiringAt, formatIST } from "@/lib/indian-dub-schedule";
+import "../indian-dubs.css";
 
-export const revalidate = 43200;
+export const revalidate = 172800;
 export const dynamicParams = false;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
@@ -21,6 +25,7 @@ const STATUS_STYLES: Record<string, { label: string; cls: string; dot: string }>
   Airing: { label: "Still Airing", cls: "bg-cyan-500/15 text-cyan-300", dot: "bg-[var(--color-cyan)]" },
   Completed: { label: "Complete", cls: "bg-white/5 text-[var(--color-mute)]", dot: "bg-[var(--color-mute)]" },
   Upcoming: { label: "Coming Soon", cls: "bg-amber-500/15 text-amber-300", dot: "bg-[var(--color-amber)]" },
+  "On Hiatus": { label: "On Hiatus", cls: "bg-orange-500/15 text-orange-300", dot: "bg-orange-400" },
 };
 
 export function generateStaticParams() {
@@ -36,7 +41,7 @@ export async function generateMetadata({ params }: GuideParams): Promise<Metadat
   const langs = guide.languages.join(", ");
   const platforms = guide.platforms.join(" and ");
   const schedulePart = guide.status === "Airing" ? ` New episodes arrive ${guide.schedule.toLowerCase()}.` : "";
-  const description = `${guide.name} Hindi dub guide. Watch ${guide.name} in ${langs} on ${platforms} — ${guide.episodeCount.toLowerCase()}, dubbed by ${guide.studio}.${schedulePart} Updated weekly.`.slice(0, 160);
+  const description = `${guide.name} Hindi dub guide. Watch ${guide.name} in ${langs} on ${platforms} — ${guide.episodeCount.toLowerCase()}, dubbed by ${guide.studio}.${schedulePart} Compiled from public sources.`.slice(0, 160);
 
   return {
     title: `${guide.name} Hindi Dub — Schedule, Episodes & Where to Watch`,
@@ -76,6 +81,21 @@ export default async function IndianDubGuidePage({ params }: GuideParams) {
   const { slug } = await params;
   const guide = INDIAN_DUB_GUIDES.find((g) => g.slug === slug);
   if (!guide) notFound();
+
+  let poster: string | null = null;
+  let mediaScore: number | null = null;
+  if (guide.anilistId != null) {
+    try {
+      const batch = await getMediaBatch([guide.anilistId]);
+      const media = batch.find((m) => m.id === guide.anilistId) as MediaBasic | undefined;
+      poster = media?.coverImage?.large || media?.coverImage?.extraLarge || null;
+      mediaScore = media?.averageScore ?? null;
+    } catch {
+      // Decorative art only — the guide still renders without it.
+    }
+  }
+
+  const nextTarget = guide.status === "Airing" ? nextAiringAt(guide.schedule) : null;
 
   const url = `${BASE_URL}/indian-dubs/${guide.slug}`;
   const lastChecked = new Date().toISOString().slice(0, 10);
@@ -132,26 +152,55 @@ export default async function IndianDubGuidePage({ params }: GuideParams) {
 
       {/* Hero */}
       <header className="neon-rgb-border rounded-2xl p-6 sm:p-8">
-        <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--color-cyan)]">
-          <span>Regional Dub Guide</span>
-          <span className="text-white/20">•</span>
-          <span>{guide.platforms.join(" / ")}</span>
-        </div>
-        <h1 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-          {guide.name} <span className="text-[var(--color-cyan)]">Hindi Dub</span>
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-mute)]">{guide.tagline}</p>
+        <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--color-cyan)]">
+              <span>Regional Dub Guide</span>
+              <span className="text-white/20">•</span>
+              <span>{guide.platforms.join(" / ")}</span>
+            </div>
+            <h1 className="mt-2 font-display text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
+              {guide.name} <span className="text-[var(--color-cyan)]">Hindi Dub</span>
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--color-mute)]">{guide.tagline}</p>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          {guide.languages.map((l) => (
-            <span key={l} className={`rounded-full px-3 py-1 text-xs font-bold ${LANG_COLORS[l] || "bg-white/10 text-white"}`}>
-              {l} Dub
-            </span>
-          ))}
-          <span className={`rounded-full px-3 py-1 text-xs font-bold ${status.cls}`}>
-            <span className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${status.dot}`} />
-            {status.label}
-          </span>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {guide.languages.map((l) => (
+                <span key={l} className={`rounded-full px-3 py-1 text-xs font-bold ${LANG_COLORS[l] || "bg-white/10 text-white"}`}>
+                  {l} Dub
+                </span>
+              ))}
+              <span className={`rounded-full px-3 py-1 text-xs font-bold ${status.cls}`}>
+                <span className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${status.dot}`} />
+                {status.label}
+              </span>
+              {mediaScore != null && (
+                <span className="glass-score rounded-full px-3 py-1 font-mono text-xs font-bold">★ {mediaScore}</span>
+              )}
+            </div>
+
+            {guide.status === "Airing" && nextTarget != null && (
+              <div className="mt-5 border-t border-white/10 pt-4">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--color-magenta)]">
+                  Next episode drops in
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-4">
+                  <IndianDubCountdown target={nextTarget} />
+                  <span className="font-mono text-xs text-[var(--color-cyan)]">{formatIST(nextTarget)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {poster && (
+            <div className="mx-auto w-40 shrink-0 md:mx-0 md:w-44">
+              <div className="dub-poster-card overflow-hidden rounded-xl border border-white/10 shadow-[0_18px_60px_-18px_rgba(0,0,0,0.85)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={poster} alt={`${guide.name} poster`} className="block aspect-[2/3] w-full object-cover" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -193,7 +242,7 @@ export default async function IndianDubGuidePage({ params }: GuideParams) {
       <section className="mt-6 rounded-xl border border-[var(--color-cyan)]/30 bg-[var(--color-cyan)]/5 p-5">
         <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--color-cyan)]">Release Schedule</p>
         <p className="mt-2 font-display text-lg font-bold text-white">{guide.schedule}</p>
-        <p className="mt-1 text-xs text-[var(--color-mute)]">Times are in Indian Standard Time (IST). This guide is re-checked regularly and last verified on {lastChecked}.</p>
+        <p className="mt-1 text-xs text-[var(--color-mute)]">Times are in Indian Standard Time (IST). Indian dub availability changes often — always confirm the current schedule on the platform itself before watching.</p>
       </section>
 
       {/* Editorial */}

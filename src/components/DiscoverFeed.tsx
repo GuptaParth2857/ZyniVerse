@@ -236,7 +236,7 @@ export default function DiscoverFeed() {
       }
     }
 
-    const interval = setInterval(pollNewPosts, 60000);
+    const interval = setInterval(pollNewPosts, 120000);
     return () => {
       cancelled = true;
       clearInterval(interval);

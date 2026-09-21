@@ -1,0 +1,198 @@
+/* ═══ Indian Dub Hub — Page Scope ═══ */
+
+/* ─── Hero Aurora ─── */
+.dub-hero {
+  position: relative;
+  overflow: hidden;
+}
+.dub-hero-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(85% 130% at 8% -10%, rgba(255,153,51,0.18), transparent 60%),
+    radial-gradient(80% 110% at 90% 15%, rgba(19,136,8,0.16), transparent 50%),
+    radial-gradient(70% 120% at 50% 110%, rgba(41,242,224,0.10), transparent 65%),
+    radial-gradient(90% 90% at 25% 60%, rgba(138,92,251,0.14), transparent 70%),
+    linear-gradient(155deg, #120b20 0%, #0a0a0f 75%);
+}
+.dub-hero-glow {
+  position: absolute;
+  top: -40%;
+  left: 30%;
+  width: 55%;
+  height: 110%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(255,45,120,0.12), transparent 65%);
+  filter: blur(50px);
+  opacity: 0.7;
+}
+
+/* ─── Tricolor Beam ─── */
+.tricolor-beam {
+  height: 3px;
+  background: linear-gradient(90deg, #ff9933, #ffffff 40%, #ffffff 60%, #138808);
+  background-size: 200% 100%;
+  animation: tricolorSweep 5.5s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(255,153,51,0.35), 0 0 12px rgba(19,136,8,0.35);
+}
+@keyframes tricolorSweep {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* ─── Brand Wordmark ─── */
+.dub-wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  font-size: 0.65rem;
+  background: linear-gradient(90deg, #ff9933, #ffffff, #138808, #ff9933);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: tricolorSweep 4s ease-in-out infinite;
+}
+
+/* ─── Stats Strip ─── */
+.dub-stat-card {
+  position: relative;
+  border-radius: 1rem;
+  padding: 1px;
+  overflow: hidden;
+}
+.dub-stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    #00ffe0,
+    transparent,
+    #ff00e6,
+    transparent,
+    #7000ff,
+    transparent,
+    #00ffe0
+  );
+  animation: spin 6s linear infinite;
+  opacity: 0.18;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.dub-stat-card:hover::before {
+  opacity: 0.55;
+}
+.dub-stat-card::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: calc(1rem - 1px);
+  background: var(--color-panel);
+  z-index: 0;
+  pointer-events: none;
+}
+.dub-stat-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Poster Card Art ─── */
+.dub-poster-card {
+  position: relative;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+}
+.dub-poster-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow:
+    0 16px 50px -14px rgba(0,0,0,0.75),
+    0 0 20px -6px var(--color-magenta);
+}
+.dub-poster-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(255,255,255,0.10) 0%, transparent 55%, rgba(139,92,246,0.14) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+.dub-poster-card:hover::before {
+  opacity: 1;
+}
+
+/* ─── Week Board ─── */
+.dub-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+@media (max-width: 768px) {
+  .dub-week {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.5rem;
+  }
+  .dub-week > * {
+    flex: 0 0 140px;
+    scroll-snap-align: start;
+  }
+}
+.dub-week-col {
+  border-radius: 0.75rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 0.75rem;
+  min-height: 6rem;
+}
+.dub-week-col.is-today {
+  border-color: var(--color-magenta);
+  box-shadow: 0 0 14px rgba(255,45,120,0.22), inset 0 0 14px rgba(255,45,120,0.06);
+}
+.dub-week-header {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-mute);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.is-today .dub-week-header {
+  color: var(--color-magenta);
+}
+.dub-week-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* ─── Ticker Enhancements ─── */
+.dub-on-air-item {
+  transition: text-shadow 0.3s ease, color 0.3s ease;
+}
+.dub-on-air-item:hover {
+  color: var(--color-cyan);
+  text-shadow: 0 0 8px rgba(41,242,224,0.4);
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .tricolor-beam { animation: none; background-position: 0% 50%; }
+  .dub-wordmark { animation: none; background-position: 0% 50%; }
+  .dub-stat-card::before { animation: none; opacity: 0.3; }
+  .dub-poster-card:hover { transform: none; }
+  .dub-poster-card:hover::before { opacity: 0; }
+  .dub-on-air-item:hover { text-shadow: none; }
+}

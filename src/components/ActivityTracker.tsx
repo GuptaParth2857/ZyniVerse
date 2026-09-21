@@ -6,9 +6,9 @@ import { useSession } from "next-auth/react";
 import { logError } from "@/lib/logger";
 
 const BATCH_KEY = "activity_pending";
-const BATCH_SIZE = 5;
-const FLUSH_INTERVAL_MS = 300000;
-const ACHIEVEMENT_INTERVAL_MS = 600000;
+const BATCH_SIZE = 8;
+const FLUSH_INTERVAL_MS = 900000;
+const ACHIEVEMENT_INTERVAL_MS = 1800000;
 
 function getPending(): Array<{ action: string; data: Record<string, unknown>; ts: number }> {
   try {
@@ -93,7 +93,9 @@ export default function ActivityTracker() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const interval = setInterval(() => flushPending(), FLUSH_INTERVAL_MS);
+    const interval = setInterval(() => {
+      if (!document.hidden) flushPending();
+    }, FLUSH_INTERVAL_MS);
     return () => clearInterval(interval);
   }, []);
 

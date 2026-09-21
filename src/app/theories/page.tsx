@@ -3,7 +3,7 @@ import TheoryLeaderboard from "@/components/TheoryLeaderboard";
 import { getTheoryLeaderboard } from "@/lib/theory-leaderboard";
 import { PageTransition } from "@/components/PageTransition";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Top Fan Theories by Community Votes | ZyniVerse",

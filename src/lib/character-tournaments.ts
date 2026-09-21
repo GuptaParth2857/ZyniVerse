@@ -287,7 +287,7 @@ export async function getPollVoteState(
   return null;
 }
 
-/** Close the qualifying poll and build the final bracket from the top vote-getters. */
+/** Close the qualifying poll and build the final bracket from top vote-getters and fan favorites. */
 export async function finalizeQualifying(tournamentId: string) {
   const tournament = await prisma.characterTournament.findUnique({ where: { id: tournamentId } });
   if (!tournament) throw new Error("Tournament not found");
@@ -297,13 +297,32 @@ export async function finalizeQualifying(tournamentId: string) {
 
   const participants = await prisma.characterTournamentParticipant.findMany({
     where: { tournamentId },
-    orderBy: [{ pollVotes: "desc" }, { createdAt: "asc" }],
   });
   if (participants.length < bracketSize) {
     throw new Error(`Need at least ${bracketSize} candidates to form a bracket`);
   }
 
-  const qualifiers = participants.slice(0, bracketSize);
+  // Fan-base popularity = how often each character is favorited across the platform.
+  const favoriteGroups = await prisma.characterFavorite.groupBy({
+    by: ["characterId"],
+    _count: { _all: true },
+  });
+  const favoritesByCharId = new Map(
+    favoriteGroups.map((g) => [g.characterId, g._count._all])
+  );
+
+  const ranked = participants
+    .map((p) => ({ ...p, favoriteCount: favoritesByCharId.get(p.charId) ?? 0 }))
+    .sort(
+      (a, b) =>
+        // Top vote-getters first ...
+        b.pollVotes - a.pollVotes ||
+        // ... then fan-base favorites fill the rest of the bracket.
+        b.favoriteCount - a.favoriteCount ||
+        a.createdAt.getTime() - b.createdAt.getTime()
+    );
+
+  const qualifiers = ranked.slice(0, bracketSize);
   const qualifierIds = qualifiers.map((p) => p.id);
   const excluded = participants.filter((p) => !qualifierIds.includes(p.id)).map((p) => p.id);
 

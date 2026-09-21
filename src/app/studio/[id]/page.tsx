@@ -4,7 +4,7 @@ import { getStudio, AniListUnavailableError } from "@/lib/anilist";
 import StudioDetailClient from "./studio-client";
 import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
-export const revalidate = 43200;
+export const revalidate = 172800;
 
 const getStudioCached = cache(getStudio);
 

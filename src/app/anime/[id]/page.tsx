@@ -5,7 +5,7 @@ import AnimeDetailClient from "./detail-client";
 import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 import { getAnimeEditorial, type AnimeEditorial } from "@/lib/anime-editorials";
 
-export const revalidate = 21600;
+export const revalidate = 86400;
 
 const getAnimeDetailCached = cache(getAnimeDetailFull);
 

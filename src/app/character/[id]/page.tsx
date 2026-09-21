@@ -4,7 +4,7 @@ import { getCharacter, AniListUnavailableError } from "@/lib/anilist";
 import CharacterDetailClient from "./character-client";
 import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
-export const revalidate = 43200;
+export const revalidate = 172800;
 
 const getCharacterCached = cache(getCharacter);
 

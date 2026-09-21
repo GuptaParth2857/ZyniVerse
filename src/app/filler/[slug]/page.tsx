@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getFillerData, getFillerDataFromCache, type FillerEpisode, type FillerShow } from "@/lib/filler";
+import { getFillerNotes } from "@/lib/filler-notes";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
@@ -112,6 +113,8 @@ export default async function FillerSlugPage({ params }: Props) {
   }
   if (!show) notFound();
 
+  const notes = getFillerNotes(slug);
+
   const { total, filler, mangaCanon, animeCanon, mixed, fillerPercent, canonPercent } = summarize(show);
   const fillerEpisodes = show.episodes.filter((e) => e.type === "filler");
   const canonEpisodes = show.episodes.filter((e) => e.type !== "filler");
@@ -131,6 +134,11 @@ export default async function FillerSlugPage({ params }: Props) {
         name: `Which ${show.title} episodes are filler and can be skipped?`,
         acceptedAnswer: { "@type": "Answer", text: `You can skip ${show.title} filler episodes: ${skipRanges.join(", ")}.` },
       }] : []),
+      {
+        "@type": "Question",
+        name: `How much time can I save skipping ${show.title} filler?`,
+        acceptedAnswer: { "@type": "Answer", text: `Skipping ${filler} filler episodes saves roughly ${filler * 24} minutes, or about ${Math.max(1, Math.round((filler * 24) / 60))} hours, at a typical 24-minute runtime.` },
+      },
     ],
   };
 
@@ -246,6 +254,50 @@ export default async function FillerSlugPage({ params }: Props) {
                 </div>
               ))}
             </div>
+          </section>
+        )}
+
+        {notes && (
+          <section className="mb-10">
+            <h2 className="font-display text-xl font-bold mb-3 flex items-center gap-2">
+              <span className="h-4 w-1 rounded-full bg-cyan-500" />
+              Which {show.title} Filler Is Worth Watching?
+            </h2>
+            <p className="mb-5 max-w-3xl text-sm leading-relaxed text-[var(--color-mute)]">{notes.intro}</p>
+            {notes.arcs.length > 0 ? (
+              <div className="space-y-3">
+                {notes.arcs.map((arc, i) => {
+                  const isWatch = arc.verdict === "watch";
+                  const isSkip = arc.verdict === "skip";
+                  return (
+                    <div key={i} className="flex flex-col gap-2 rounded-xl neon-rgb-border bg-[var(--color-panel)] p-4 sm:flex-row sm:items-start">
+                      <div className="flex shrink-0 items-center gap-2 sm:w-56">
+                        <span className="rounded-lg bg-[var(--color-void)] px-2 py-1 font-mono text-xs font-bold text-[var(--color-ink)]">
+                          Ep. {arc.range}
+                        </span>
+                        <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                          isWatch
+                            ? "border-green-500/30 bg-green-500/10 text-green-400"
+                            : isSkip
+                            ? "border-red-500/30 bg-red-500/10 text-red-400"
+                            : "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                        }`}>
+                          {arc.verdict === "optional" ? "Optional" : isWatch ? "Watch" : "Skip"}
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-white">{arc.name}</p>
+                        <p className="mt-1 text-sm leading-relaxed text-[var(--color-mute)]">{arc.why}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5 text-sm leading-relaxed text-[var(--color-mute)]">
+                This series has no filler arcs to worry about — the entire run advances the main story.
+              </p>
+            )}
           </section>
         )}
 

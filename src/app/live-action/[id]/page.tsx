@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getAllLiveAction } from "@/lib/live-action-data";
 import LiveActionDetailClient from "./detail-client";
 
-export const revalidate = 86400;
+export const revalidate = 172800;
 
 export async function generateStaticParams() {
   const list = await getAllLiveAction();
