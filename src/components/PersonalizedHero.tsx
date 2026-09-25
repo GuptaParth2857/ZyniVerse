@@ -223,13 +223,15 @@ export default function PersonalizedHero({ fallbackItems = [], className = "" }:
               <button
                 key={item.id}
                 onClick={() => setActiveIdx(i)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
+                className="group flex h-6 w-6 items-center justify-center rounded-full"
+                aria-label={`Go to ${bestTitle(item.title)}`}
+              >
+                <span className={`h-1.5 rounded-full transition-all duration-300 ${
                   i === activeIdx
                     ? "w-8 bg-[var(--color-magenta)]"
-                    : "w-2 bg-white/30 hover:bg-white/50"
-                }`}
-                aria-label={`Go to ${bestTitle(item.title)}`}
-              />
+                    : "w-2 bg-white/30 group-hover:bg-white/50"
+                }`} />
+              </button>
             ))}
           </div>
         )}

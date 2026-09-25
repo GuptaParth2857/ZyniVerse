@@ -79,7 +79,7 @@ export default async function PublicMangaListPage({ params }: { params: Promise<
         <span className="text-[var(--color-ink)]">Manga List</span>
       </nav>
 
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-4 mb-8 flex-wrap">
         <div className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-[var(--color-violet)]/30 shrink-0">
           {user.avatar ? (
             <Image src={user.avatar} alt={user.username} fill className="object-cover" sizes="64px" />
@@ -90,8 +90,8 @@ export default async function PublicMangaListPage({ params }: { params: Promise<
           )}
         </div>
         <div className="min-w-0">
-          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
-            <h1 className="font-display text-2xl font-bold">{user.username}&apos;s Manga List</h1>
+          <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block max-w-full">
+            <h1 className="font-display text-2xl font-bold break-all">{user.username}&apos;s Manga List</h1>
           </div>
           <p className="text-sm text-[var(--color-mute)]">
             {entries.length} {entries.length === 1 ? "title" : "titles"} • {totalChapters} chapters read

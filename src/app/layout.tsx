@@ -23,6 +23,7 @@ import OnboardingGate from "@/components/OnboardingGate";
 
 import ActivityTracker from "@/components/ActivityTracker";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import AnimationPauser from "@/components/AnimationPauser";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -123,11 +124,11 @@ export default function RootLayout({
         <Script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-1B5P1BSEB9"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
         <Script
           id="gtag-init"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-1B5P1BSEB9');`,
           }}
@@ -258,9 +259,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">
-        <script
-          async
+        <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5241033119281791"
+          strategy="lazyOnload"
           crossOrigin="anonymous"
         />
         <AuthProvider>
@@ -271,6 +272,7 @@ export default function RootLayout({
             <AnalyticsTracker />
           </Suspense>
           <Providers>
+            <AnimationPauser />
             <OnboardingGate />
             <Navbar />
             <main className="flex-1"><RouteTransition>{children}</RouteTransition></main>
@@ -292,8 +294,15 @@ export default function RootLayout({
             <SplashScreen />
           </Providers>
         </AuthProvider>
-        <Analytics />
-        <SpeedInsights />
+        {/* Vercel Analytics/Speed Insights inject their own scripts — VERCEL_URL is
+            only populated by the Vercel runtime (this repo's local .env sets
+            VERCEL=1, which would otherwise 404 /_vercel/* here) */}
+        {process.env.VERCEL_URL && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   );

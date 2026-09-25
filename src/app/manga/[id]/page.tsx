@@ -1,11 +1,20 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getMangaDetailFull, AniListUnavailableError } from "@/lib/anilist";
+import { getMangaDetailFull, getMangaPopular, AniListUnavailableError } from "@/lib/anilist";
 import MangaDetailClient from "./manga-client";
 import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 export const revalidate = 86400;
+
+export async function generateStaticParams() {
+  try {
+    const popular = await getMangaPopular(30);
+    return popular.map((m) => ({ id: String(m.id) }));
+  } catch {
+    return [];
+  }
+}
 
 const getMangaCached = cache(getMangaDetailFull);
 

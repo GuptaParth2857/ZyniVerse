@@ -177,9 +177,9 @@ export default function Footer() {
             <motion.div key={col.title} {...FADE_UP} transition={{ duration: 0.5, delay: 0.1 * (i + 1) }}
               className="neon-rgb-border rounded-xl bg-[var(--color-panel)]/40 backdrop-blur-sm p-4 hover:bg-[var(--color-panel)]/70 transition-all duration-300"
             >
-              <h4 className="font-display text-xs font-bold uppercase tracking-wider text-[var(--color-cyan)] mb-4 flex items-center gap-2 pb-2 border-b border-[var(--color-line)]/50">
+              <h3 className="font-display text-xs font-bold uppercase tracking-wider text-[var(--color-cyan)] mb-4 flex items-center gap-2 pb-2 border-b border-[var(--color-line)]/50">
                 {t(`footer.col.${col.title.toLowerCase()}`)}
-              </h4>
+              </h3>
               <ul className="space-y-0.5">
                 {col.links.map((link) => (
                   <li key={link.href}>
@@ -317,10 +317,10 @@ export default function Footer() {
           <p className="text-xs text-[var(--color-mute)]">
             &copy; {year} ZyniVerse. All rights reserved.
           </p>
-          <p className="text-[10px] text-[var(--color-mute)]/50">
+          <p className="text-[10px] text-[var(--color-mute)]">
             Made with care for anime fans. No content is hosted here.
           </p>
-          <p className="text-[10px] text-[var(--color-mute)]/30">
+          <p className="text-[10px] text-[var(--color-mute)]">
             <a href="https://www.promotebusinessdirectory.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--color-cyan)] transition-colors">Promote Business Directory</a>
           </p>
         </div>

@@ -1,9 +1,48 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { cache } from "react";
-import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
+import { getAnimeDetailFull, getPopular, bestTitle } from "@/lib/anilist";
 import { getAnimeEditorial } from "@/lib/anime-editorials";
 
+export const revalidate = 86400;
+
+export async function generateStaticParams() {
+  try {
+    const popular = await getPopular(60);
+    return popular.map((m) => ({ id: String(m.id) }));
+  } catch {
+    return [];
+  }
+}
+
 const getAnimeDetailCached = cache(getAnimeDetailFull);
+
+type PopularMedia = Awaited<ReturnType<typeof getPopular>>[number];
+
+async function PopularAnimeLinks() {
+  const popular = await getPopular(60).catch(() => [] as PopularMedia[]);
+  if (popular.length === 0) return null;
+  return (
+    <nav className="mx-auto my-8 max-w-7xl px-4 sm:px-6" aria-label="Popular anime guides">
+      <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]/50 p-5">
+        <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wider text-[var(--color-mute)]">
+          Popular Anime Guides
+        </h2>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {popular.map((m) => (
+            <Link
+              key={m.id}
+              href={`/anime/${m.id}`}
+              className="text-sm text-[var(--color-mute)] underline decoration-[var(--color-line)] underline-offset-4 transition-colors hover:text-[var(--color-cyan)]"
+            >
+              {bestTitle(m.title)}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+}
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
@@ -133,6 +172,7 @@ export default async function AnimeLayout({ children, params }: { children: Reac
         />
       )}
       {children}
+      <PopularAnimeLinks />
     </>
   );
 }

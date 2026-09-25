@@ -10,6 +10,47 @@ const DEVICE_KEY = 'zt_ct_device';
 const SESSION_COOKIE_KEY = 'zt_session_cookie';
 let cachedDevice: string | null = null;
 
+// Lightweight last-known-good cache: serves fresh data when online and
+// falls back to the cached copy when the network is unavailable. This keeps
+// the app fully functional offline instead of showing a bare error screen.
+const CACHE_PREFIX = 'zt_cache_v1';
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+async function cacheGet<T>(key: string): Promise<T | null> {
+  try {
+    const raw = await AsyncStorage.getItem(`${CACHE_PREFIX}_${key}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { t: number; v: T };
+    if (Date.now() - parsed.t > CACHE_TTL_MS) return null;
+    return parsed.v;
+  } catch {
+    return null;
+  }
+}
+
+async function cacheSet<T>(key: string, value: T): Promise<void> {
+  try {
+    await AsyncStorage.setItem(
+      `${CACHE_PREFIX}_${key}`,
+      JSON.stringify({ t: Date.now(), v: value } as { t: number; v: T })
+    );
+  } catch {
+    /* storage unavailable — non-fatal */
+  }
+}
+
+async function fetchWithCache<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+  try {
+    const live = await fetcher();
+    await cacheSet(key, live);
+    return live;
+  } catch (e) {
+    const cached = await cacheGet<T>(key);
+    if (cached !== null) return cached;
+    throw e;
+  }
+}
+
 export async function getDeviceId(): Promise<string> {
   if (cachedDevice) return cachedDevice;
   try {
@@ -68,57 +109,63 @@ const ANIME_DETAIL_QUERY = `
       seasonYear
       studios(isMain: true) { nodes { id name } }
       nextAiringEpisode { episode airingAt }
-      streamingEpisodes { title url source }
     }
   }`;
 
 async function animeById(id: number): Promise<Anime> {
-  const res = await fetch(ANILIST_GQL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ query: ANIME_DETAIL_QUERY, variables: { id } }),
+  return fetchWithCache(`anime_${id}`, async () => {
+    const res = await fetch(ANILIST_GQL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ query: ANIME_DETAIL_QUERY, variables: { id } }),
+    });
+    if (!res.ok) throw new Error(`Could not load anime (${res.status})`);
+    const json = await res.json().catch(() => null);
+    if (json?.errors?.length) throw new Error(json.errors[0].message || 'Anime not found');
+    if (!json?.data?.Media) throw new Error('Anime not found');
+    return normalizeAnime(json.data.Media);
   });
-  if (!res.ok) throw new Error(`Could not load anime (${res.status})`);
-  const json = await res.json().catch(() => null);
-  if (json?.errors?.length) throw new Error(json.errors[0].message || 'Anime not found');
-  if (!json?.data?.Media) throw new Error('Anime not found');
-  return normalizeAnime(json.data.Media);
 }
 
 async function listAnime(
   path: string,
   params: Record<string, string> = {}
 ): Promise<Anime[]> {
-  const url = new URL(`${WEB_API}${path}`);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  const data = await fetchJson<any>(url.toString());
-  const arr = Array.isArray(data) ? data : data?.media || data?.results || [];
-  return (arr as any[]).map(normalizeAnime);
+  const key = `list_${path.replace(/[^a-zA-Z0-9]/g, '_')}_${Object.values(params).join('_')}`;
+  return fetchWithCache(key, async () => {
+    const url = new URL(`${WEB_API}${path}`);
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    const data = await fetchJson<any>(url.toString());
+    const arr = Array.isArray(data) ? data : data?.media || data?.results || [];
+    return (arr as any[]).map(normalizeAnime);
+  });
 }
 
 async function getFiller(id: number): Promise<FillerData> {
-  const data = await fetchJson<any>(`${WEB_API}/filler/${id}`);
-  const episodes = ((data?.episodes || []) as any[]).map((e) => {
-    const rawType = String(e.type || '').toLowerCase();
-    const type: FillerData['episodes'][number]['type'] =
-      rawType === 'filler' ? 'filler' : rawType.includes('mixed') ? 'mixed' : 'canon';
-    return { episode: e.episode, type, title: e.title };
+  return fetchWithCache(`filler_${id}`, async () => {
+    const data = await fetchJson<any>(`${WEB_API}/filler/${id}`);
+    const episodes = ((data?.episodes || []) as any[]).map((e) => {
+      const rawType = String(e.type || '').toLowerCase();
+      const type: FillerData['episodes'][number]['type'] =
+        rawType === 'filler' ? 'filler' : rawType.includes('mixed') ? 'mixed' : 'canon';
+      return { episode: e.episode, type, title: e.title };
+    });
+    const totalFillers = episodes.filter((e) => e.type === 'filler').length;
+    const total = Number(data?.total) || episodes.length;
+    return {
+      animeId: id,
+      title: data?.title || 'Unknown',
+      totalEpisodes: total,
+      totalFillers,
+      fillerPercentage:
+        data?.fillerPercent != null
+          ? Number(data.fillerPercent)
+          : total > 0
+            ? Math.round((totalFillers / total) * 100)
+            : 0,
+      episodes,
+    };
   });
-  const totalFillers = episodes.filter((e) => e.type === 'filler').length;
-  const total = Number(data?.total) || episodes.length;
-  return {
-    animeId: id,
-    title: data?.title || 'Unknown',
-    totalEpisodes: total,
-    totalFillers,
-    fillerPercentage:
-      data?.fillerPercent != null
-        ? Number(data.fillerPercent)
-        : total > 0
-          ? Math.round((totalFillers / total) * 100)
-          : 0,
-    episodes,
-  };
 }
 
 async function getDubStatus(malId: number): Promise<DubStatus> {

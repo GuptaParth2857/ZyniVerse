@@ -2,7 +2,7 @@
   "expo": {
     "name": "ZyniVerse",
     "slug": "zyniverse",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -23,12 +23,15 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0a0a0f"
       },
-      "package": "app.zyniverse.mobile"
+      "package": "app.zyniverse.mobile",
+      "versionCode": 2
     },
     "plugins": [
       "expo-secure-store",
       "expo-notifications",
-      "expo-asset"
+      "expo-asset",
+      "./plugins/withZyniManifest",
+      "./plugins/withZyniKotlinVersion"
     ],
     "updates": {
       "enabled": false,

@@ -215,8 +215,8 @@ export default function ProfilePage() {
               {/* User Info */}
               <div className="min-w-0 flex-1 text-center sm:text-left">
                 <div className="flex items-center gap-3 justify-center sm:justify-start">
-                  <div className="neon-rgb-border rounded-xl px-4 py-2">
-                    <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{user.username}</h1>
+                  <div className="neon-rgb-border rounded-xl px-4 py-2 min-w-0 max-w-full">
+                    <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight break-all">{user.username}</h1>
                   </div>
                   <RankBadge rank={rank} size="md" />
                   {user.signature && (

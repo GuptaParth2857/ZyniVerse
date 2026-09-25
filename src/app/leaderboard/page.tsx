@@ -605,7 +605,7 @@ export default function LeaderboardPage() {
                     <>
                       {/* Top 3 Podium */}
                       {top3.length >= 3 && (
-                        <div className="flex items-end justify-center gap-3 sm:gap-4 mb-8 px-4">
+                        <div className="flex items-end justify-start sm:justify-center gap-2 sm:gap-4 mb-8 px-4 overflow-x-auto scrollbar-none">
                           <PodiumCard item={top3[1]} rank={2} />
                           <PodiumCard item={top3[0]} rank={1} />
                           <PodiumCard item={top3[2]} rank={3} />

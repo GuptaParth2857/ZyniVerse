@@ -1,10 +1,19 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { getCharacter, AniListUnavailableError } from "@/lib/anilist";
+import { getCharacter, getPopularCharacters, AniListUnavailableError } from "@/lib/anilist";
 import CharacterDetailClient from "./character-client";
 import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 export const revalidate = 172800;
+
+export async function generateStaticParams() {
+  try {
+    const { characters } = await getPopularCharacters(1, 40);
+    return characters.map((c) => ({ id: String(c.id) }));
+  } catch {
+    return [];
+  }
+}
 
 const getCharacterCached = cache(getCharacter);
 

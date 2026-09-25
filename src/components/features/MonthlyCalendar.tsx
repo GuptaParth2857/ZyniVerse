@@ -83,7 +83,8 @@ export default function MonthlyCalendar() {
           </div>
           <div className="flex items-center gap-1.5">
             <button onClick={prevMonth}
-              className="flex items-center justify-center w-8 h-8 rounded-lg border border-[var(--color-line)] hover:border-[var(--color-cyan)]/40 hover:bg-[var(--color-cyan)]/5 text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all">
+              className="flex items-center justify-center w-8 h-8 rounded-lg border border-[var(--color-line)] hover:border-[var(--color-cyan)]/40 hover:bg-[var(--color-cyan)]/5 text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all"
+              aria-label="Previous month">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
             <button onClick={() => setDate(new Date())}
@@ -92,7 +93,8 @@ export default function MonthlyCalendar() {
               Today
             </button>
             <button onClick={nextMonth}
-              className="flex items-center justify-center w-8 h-8 rounded-lg border border-[var(--color-line)] hover:border-[var(--color-cyan)]/40 hover:bg-[var(--color-cyan)]/5 text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all">
+              className="flex items-center justify-center w-8 h-8 rounded-lg border border-[var(--color-line)] hover:border-[var(--color-cyan)]/40 hover:bg-[var(--color-cyan)]/5 text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-all"
+              aria-label="Next month">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>
           </div>

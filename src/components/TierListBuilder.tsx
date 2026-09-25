@@ -273,6 +273,12 @@ export default function TierListBuilder({ initialData }: { initialData?: TierLis
         </div>
       </div>
 
+      {/* Mobile drag-drop notice */}
+      <div className="mb-4 rounded-xl border border-[var(--color-cyan)]/20 bg-[var(--color-cyan)]/5 px-4 py-2.5 text-xs text-[var(--color-mute)] md:hidden">
+        <span className="mr-1">📱</span>
+        Drag-and-drop needs a desktop mouse. On mobile, tiles cannot be dragged — use the search / upload buttons to add items, and arrange a tier list on desktop.
+      </div>
+
       {/* Search Pool */}
       <div className="mb-6">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">

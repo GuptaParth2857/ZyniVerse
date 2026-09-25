@@ -248,7 +248,7 @@ export default function LongReviews({ mediaId, mediaTitle, mediaImage }: Props) 
               rows={8}
               className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm resize-y focus:outline-none focus:border-[var(--color-magenta)] transition-colors font-mono"
             />
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs text-[var(--color-mute)]">Rating:</span>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                 <button

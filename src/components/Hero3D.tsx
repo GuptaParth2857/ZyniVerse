@@ -170,11 +170,13 @@ export default function Hero3D({ items, stats }: { items: Media[]; stats?: HeroS
           <div className="mt-8 flex items-center gap-2">
             {items.slice(0, total).map((_, i) => (
               <button key={i} onClick={() => goTo(i)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === active ? "w-8 bg-[var(--color-magenta)]" : "w-1.5 bg-[var(--color-mute)]/30 hover:bg-[var(--color-mute)]/60"
-                }`}
+                className="group flex h-6 w-6 items-center justify-center rounded-full"
                 aria-label={`Slide ${i + 1}`}
-              />
+              >
+                <span className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === active ? "w-8 bg-[var(--color-magenta)]" : "w-1.5 bg-[var(--color-mute)]/30 group-hover:bg-[var(--color-mute)]/60"
+                }`} />
+              </button>
             ))}
             <span className="ml-3 font-mono text-[10px] text-[var(--color-mute)]">
               {String(active + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}

@@ -132,7 +132,7 @@ export default async function PublicWatchlistPage({ params }: { params: Promise<
         <span className="text-[var(--color-ink)]">Watchlist</span>
       </nav>
 
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-4 mb-8 flex-wrap">
         <div className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-[var(--color-magenta)]/30 shrink-0">
           {user.avatar ? (
             <Image src={user.avatar} alt={user.username} fill className="object-cover" sizes="64px" />
@@ -142,9 +142,9 @@ export default async function PublicWatchlistPage({ params }: { params: Promise<
             </div>
           )}
         </div>
-        <div>
-        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block">
-          <h1 className="font-display text-2xl font-bold">{user.username}&apos;s Watchlist</h1>
+        <div className="min-w-0">
+        <div className="neon-rgb-border rounded-xl px-4 py-2 inline-block max-w-full">
+          <h1 className="font-display text-2xl font-bold break-all">{user.username}&apos;s Watchlist</h1>
         </div>
           <p className="text-sm text-[var(--color-mute)]">
             {entries.length} {entries.length === 1 ? "anime" : "anime"} in list

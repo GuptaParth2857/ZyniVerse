@@ -249,7 +249,7 @@ export default function ProfileEditor({ user: initial }: ProfileEditorProps) {
 
       <div>
         <label className="block text-sm text-white/60 mb-2">Theme Color</label>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           {THEME_COLORS.map((color) => (
             <button key={color} onClick={() => save("themeColor", color)}
               className={`w-9 h-9 rounded-full border-2 transition-all ${

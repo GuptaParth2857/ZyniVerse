@@ -93,22 +93,22 @@ export default function CookieConsent() {
                 </div>
 
                 {/* Right: buttons */}
-                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
                   <button
                     onClick={() => setExpanded((o) => !o)}
-                    className="cookie-btn-secondary px-3 py-2 text-xs font-semibold rounded-xl border border-white/10 text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50 hover:text-white/80 transition-all"
+                    className="cookie-btn-secondary px-4 py-2.5 text-xs font-semibold rounded-xl border border-white/10 text-[var(--color-mute)] hover:border-[var(--color-cyan)]/50 hover:text-white/80 transition-all"
                   >
                     {expanded ? "Less" : "Customize"}
                   </button>
                   <button
                     onClick={() => saveConsent("rejected")}
-                    className="cookie-btn-secondary px-4 py-2 text-xs font-semibold rounded-xl border border-white/10 text-[var(--color-mute)] hover:border-[var(--color-magenta)]/50 hover:text-white/80 transition-all"
+                    className="cookie-btn-secondary px-5 py-2.5 text-xs font-semibold rounded-xl border border-white/10 text-[var(--color-mute)] hover:border-[var(--color-magenta)]/50 hover:text-white/80 transition-all"
                   >
                     Reject All
                   </button>
                   <button
                     onClick={() => saveConsent("accepted")}
-                    className="cookie-btn-accept px-5 py-2 text-xs font-bold rounded-xl text-black transition-all relative overflow-hidden group"
+                    className="cookie-btn-accept px-5 py-2.5 text-xs font-bold rounded-xl text-black transition-all relative overflow-hidden group"
                   >
                     <span className="relative z-10">Accept All</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-cyan)] via-[var(--color-magenta)] to-[var(--color-cyan)] opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -188,10 +188,10 @@ export default function CookieConsent() {
                         </div>
                       ))}
                     </div>
-                    <div className="mt-3 flex items-center gap-2">
+                    <div className="mt-3 flex items-center gap-2.5">
                       <button
                         onClick={() => saveConsent("analytics_only")}
-                        className="cookie-btn-accept px-4 py-2 text-xs font-bold rounded-xl text-black transition-all relative overflow-hidden group"
+                        className="cookie-btn-accept px-4 py-2.5 text-xs font-bold rounded-xl text-black transition-all relative overflow-hidden group"
                       >
                         <span className="relative z-10">Accept Essential Only</span>
                         <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-cyan)] via-[var(--color-magenta)] to-[var(--color-cyan)] opacity-0 group-hover:opacity-100 transition-opacity" />

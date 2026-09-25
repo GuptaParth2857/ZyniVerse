@@ -62,7 +62,7 @@ export default function ReviewsSection({ mediaId }: { mediaId: number }) {
       {/* Review Form */}
       {session ? (
         <form onSubmit={submitReview} className="mb-6 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-4 space-y-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
               <button key={n} type="button" onClick={() => setRating(n)}
                 className={`h-7 w-7 rounded text-xs font-bold transition-all ${

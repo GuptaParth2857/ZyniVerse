@@ -3,12 +3,22 @@ import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
 import { getPopular, getMangaPopular, getPopularCharacters } from "@/lib/anilist";
 import { getFillerData } from "@/lib/filler";
-import { getAllRSSNews } from "@/lib/news";
 import { SHUT_DOWN_SITES } from "@/lib/data/dead-site-alternatives";
 import { INDIAN_DUB_GUIDES } from "@/lib/indian-dub-guides";
 import { NEWS_DESK } from "@/lib/news-desk";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
+// Stable freshness anchor for template/detail pages: page content tracks the
+// show's release date, not the sitemap regen cycle. Reporting `now` for every
+// entry made Google treat everything as constantly-updated, triggering endless
+// re-crawls ("crawled — currently not indexed") instead of indexation.
+function stableLastModified(
+  d: { year?: number | null; month?: number | null; day?: number | null } | undefined | null,
+): Date | undefined {
+  if (!d?.year) return undefined;
+  return new Date(d.year, (d.month || 1) - 1, d.day || 1);
+}
 
 // Cache the sitemap so crawler fetches are served fast instead of repeatedly
 // hitting the DB, AniList, RSS, and Wikipedia. 6-hour refresh keeps it fresh
@@ -120,22 +130,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic: Forum threads (UGC, low value — exclude from sitemap to focus crawl on SEO pages)
 
-  // Dynamic: Events
-  let eventPages: MetadataRoute.Sitemap = [];
-  try {
-    const events = await prisma.animeEvent.findMany({
-      where: {},
-      select: { slug: true, updatedAt: true, startDate: true },
-      orderBy: { startDate: "desc" },
-      take: 100,
-    });
-    eventPages = events.map((e) => ({
-      url: `${BASE_URL}/events/${e.slug}`,
-      lastModified: e.updatedAt || now,
-      changeFrequency: "monthly" as const,
-      priority: 0.4,
-    }));
-  } catch (e) { logError(e); }
+  // Dynamic: Events (UGC, thin — excluded from sitemap so Google's crawl
+  // budget stays on editorial/substantive pages; they're still discoverable
+  // via internal links).
 
   // Dynamic: Anime filler pages (high SEO value)
   const fillerAnimeIds = [
@@ -147,18 +144,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
   const fillerPages: MetadataRoute.Sitemap = fillerAnimeIds.map((id) => ({
     url: `${BASE_URL}/anime/${id}/filler`,
-    lastModified: now,
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
 
-  // Dynamic: Per-anime long-tail filler guide pages (static, high SEO value)
+  // Dynamic: Per-anime long-tail filler guide pages (static, high SEO value).
+  // Only the richest guides (most episodes) are submitted so the crawl budget
+  // isn't flooded with 180 near-identical templates. No lastModified — these
+  // don't change, and lying to Google with `now` forced constant re-crawls.
   let fillerSlugPages: MetadataRoute.Sitemap = [];
   try {
     const fillerShows = await getFillerData();
-    fillerSlugPages = fillerShows.map((s) => ({
+    const topFillerShows = [...fillerShows]
+      .sort((a, b) => (b.episodes?.length || 0) - (a.episodes?.length || 0))
+      .slice(0, 40);
+    fillerSlugPages = topFillerShows.map((s) => ({
       url: `${BASE_URL}/filler/${s.slug}`,
-      lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.7,
     }));
@@ -186,13 +187,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const popular = await getPopular(100);
     popularAnimePages = popular.map((m) => ({
       url: `${BASE_URL}/anime/${m.id}`,
-      lastModified: now,
+      lastModified: stableLastModified(m.startDate),
       changeFrequency: "weekly" as const,
       priority: 0.8,
     }));
     watchGuidePages = popular.map((m) => ({
       url: `${BASE_URL}/watch/${m.id}`,
-      lastModified: now,
+      lastModified: stableLastModified(m.startDate),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     }));
@@ -204,7 +205,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const manga = await getMangaPopular(100);
     popularMangaPages = manga.map((m) => ({
       url: `${BASE_URL}/manga/${m.id}`,
-      lastModified: now,
+      lastModified: stableLastModified(m.startDate),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     }));
@@ -216,7 +217,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const { characters } = await getPopularCharacters(1, 50);
     popularCharacterPages = characters.map((c) => ({
       url: `${BASE_URL}/character/${c.id}`,
-      lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.6,
     }));
@@ -224,10 +224,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic: Shut-down anime site alternatives (high SEO value)
   const alternativePages: MetadataRoute.Sitemap = [
-    { url: `${BASE_URL}/alternatives`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.8 },
+    { url: `${BASE_URL}/alternatives`, changeFrequency: "weekly" as const, priority: 0.8 },
     ...SHUT_DOWN_SITES.map((s) => ({
       url: `${BASE_URL}/alternatives/${s.slug}`,
-      lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
@@ -246,22 +245,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
   const watchOrderPages: MetadataRoute.Sitemap = watchOrderSlugs.map((slug) => ({
     url: `${BASE_URL}/watch-order/${slug}`,
-    lastModified: now,
     changeFrequency: "monthly" as const,
     priority: 0.7,
   }));
 
-  // Dynamic: RSS news detail pages
-  let newsPages: MetadataRoute.Sitemap = [];
-  try {
-    const newsItems = await getAllRSSNews();
-    newsPages = newsItems.slice(0, 30).map((n) => ({
-      url: `${BASE_URL}/news/${encodeURIComponent(n.id)}`,
-      lastModified: n.publishedAt ? new Date(n.publishedAt) : now,
-      changeFrequency: "daily" as const,
-      priority: 0.5,
-    }));
-  } catch (e) { logError(e); }
+  // RSS news detail pages (scraped headlines, near-duplicate of the source,
+  // thin — excluded so they stop draining the crawl budget).
+  const newsPages: MetadataRoute.Sitemap = [];
 
   // Indian dub guides (static, high SEO value — unique editorial content)
   const indianDubGuidePages: MetadataRoute.Sitemap = INDIAN_DUB_GUIDES.map((g) => ({
@@ -302,7 +292,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...wikiPages,
     ...wikiSeedPages,
     ...watchOrderPages,
-    ...eventPages,
     ...fillerPages,
     ...fillerSlugPages,
     ...newsPages,

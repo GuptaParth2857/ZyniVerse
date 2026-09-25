@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Linking,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { colors, spacing, fontSize, borderRadius } from '../theme';
@@ -15,7 +16,6 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorView from '../components/ErrorView';
 import FillerProgress from '../components/FillerProgress';
 import DubBadge from '../components/DubBadge';
-import AdPlaceholder from '../components/AdPlaceholder';
 import { formatScore, getScoreColor, getStatusColor } from '../utils/helpers';
 import { api } from '../services/api';
 
@@ -196,26 +196,18 @@ export default function AnimeDetailScreen() {
           </View>
         )}
 
-        {/* Streaming Platforms */}
-        {anime.streamingEpisodes && anime.streamingEpisodes.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Streaming</Text>
-            {anime.streamingEpisodes.slice(0, 5).map((ep, i) => (
-              <TouchableOpacity key={i} style={styles.streamingItem}>
-                <Text style={styles.streamingText}>{ep.title}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
         {/* Discussion */}
         <View style={styles.section}>
-          <TouchableOpacity style={styles.discussionButton}>
+          <TouchableOpacity
+            style={styles.discussionButton}
+            onPress={() =>
+              Linking.openURL(`https://zyverse.in/anime/${anime.malId || anime.id}`).catch(() => {})
+            }
+          >
             <Text style={styles.discussionText}>💬 View Discussion</Text>
           </TouchableOpacity>
         </View>
 
-        <AdPlaceholder height={100} />
         <View style={{ height: spacing.xxl * 2 }} />
       </ScrollView>
     </View>
@@ -371,15 +363,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: fontSize.sm,
     marginTop: spacing.xs,
-  },
-  streamingItem: {
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 0.5,
-    borderBottomColor: colors.border,
-  },
-  streamingText: {
-    color: colors.text,
-    fontSize: fontSize.sm,
   },
   discussionButton: {
     backgroundColor: colors.surface,

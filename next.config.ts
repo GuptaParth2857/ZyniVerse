@@ -12,6 +12,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Hashed, immutable Next.js build assets — cache forever.
+        source: "/_next/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
         source: "/(.*)",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
@@ -55,6 +62,24 @@ const nextConfig: NextConfig = {
       {
         source: "/browse",
         destination: "/search",
+        permanent: true,
+      },
+      // Old locale-prefix routes (Hindi/Telugu/Tamil) existed in an earlier
+      // build. Pages are gone for good; 301 them to the homepage so Google
+      // consolidates instead of logging permanent 404s.
+      {
+        source: "/hi",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/te",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/ta",
+        destination: "/",
         permanent: true,
       },
     ];

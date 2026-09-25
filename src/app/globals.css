@@ -1538,6 +1538,32 @@ body {
   animation: pageFadeIn 0.4s ease-out both;
 }
 
+/*
+ * Lighthouse performance: below-fold homepage sections get their own
+ * rendering containment so the browser skips their style/layout/paint
+ * until they scroll near the viewport. Visuals, animations and features
+ * are completely unchanged — the cost is just deferred.
+ */
+.content-vis {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+/*
+ * Homepage: everything below the hero (children #3+) is below the fold on
+ * mobile, so defer its rendering work. The first two children (featured
+ * banner + hero) stay fully visible for a fast LCP.
+ */
+.zy-home > * {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+.zy-home > :nth-child(1),
+.zy-home > :nth-child(2) {
+  content-visibility: visible;
+  contain-intrinsic-size: none;
+}
+
 .animate-page-slide {
   animation: pageSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

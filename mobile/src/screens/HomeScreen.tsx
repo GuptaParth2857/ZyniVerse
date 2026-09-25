@@ -15,7 +15,6 @@ import { Anime } from '../types';
 import AnimeRow from '../components/AnimeRow';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorView from '../components/ErrorView';
-import AdPlaceholder from '../components/AdPlaceholder';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -88,8 +87,6 @@ export default function HomeScreen() {
           onSeeAll={() => {}}
         />
 
-        <AdPlaceholder height={100} />
-
         {/* Quick Actions */}
         <View style={styles.quickActions}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -134,8 +131,6 @@ export default function HomeScreen() {
             </TouchableOpacity>
           ))}
         </View>
-
-        <AdPlaceholder height={100} />
 
         <View style={{ height: spacing.xxl }} />
       </ScrollView>

@@ -153,7 +153,7 @@ export default function ForumThreadDetail({ threadId }: ForumThreadDetailProps) 
           )}
         </div>
         <h1 className="font-display text-2xl font-bold">{thread.title}</h1>
-        <div className="flex items-center gap-3 mt-2 text-sm text-[var(--color-mute)]">
+        <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-[var(--color-mute)]">
           <div className="flex items-center gap-1.5">
             <div className="relative h-6 w-6 rounded-full overflow-hidden bg-[var(--color-line)]">
               {thread.user.avatar ? (

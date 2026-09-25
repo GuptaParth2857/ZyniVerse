@@ -26,16 +26,38 @@ export default function SocialBarAd() {
     if (session === undefined) return; // still loading
     if (!showAds) return;             // premium user
     if (injectedRef.current) return;  // already injected
-    injectedRef.current = true;
 
-    const script = document.createElement("script");
-    script.src =
-      "https://formssternlystately.com/79/88/46/798846c18dea1cf9f50c54e73acf1380.js";
-    script.type = "text/javascript";
-    document.head.appendChild(script);
+    // Social bar is a global widget — defer it until after the page has
+    // settled so it never competes with first-paint/LCP or the main thread.
+    const inject = () => {
+      if (injectedRef.current) return;
+      injectedRef.current = true;
+
+      const script = document.createElement("script");
+      script.src =
+        "https://formssternlystately.com/79/88/46/798846c18dea1cf9f50c54e73acf1380.js";
+      script.type = "text/javascript";
+      document.head.appendChild(script);
+    };
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = () => {
+      timer = setTimeout(inject, 2000);
+    };
+    const onLoad = () => {
+      window.removeEventListener("load", onLoad);
+      schedule();
+    };
+
+    if (document.readyState === "complete") {
+      schedule();
+    } else {
+      window.addEventListener("load", onLoad);
+    }
 
     return () => {
-      // Don't remove on unmount — Social Bar is a global widget
+      if (timer) clearTimeout(timer);
+      window.removeEventListener("load", onLoad);
     };
   }, [showAds, session]);
 

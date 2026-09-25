@@ -84,8 +84,8 @@ function ActivityPill({ activity }: { activity: Activity }) {
           <Link href={`/anime/${activity.mediaId}`} className="font-semibold text-white/90 hover:opacity-80 ml-1">{activity.mediaTitle}</Link>
         )}
       </span>
-      {activity.mediaImage && (
-        <Link href={`/anime/${activity.mediaId}`} className="shrink-0">
+      {activity.mediaImage && activity.mediaId && (
+        <Link href={`/anime/${activity.mediaId}`} className="shrink-0" aria-label={activity.mediaTitle ? `View ${activity.mediaTitle}` : "View anime"}>
           <div className="relative h-6 w-5 rounded overflow-hidden" style={{ border: `1px solid ${c.border}` }}>
             <Image src={activity.mediaImage} alt="" fill className="object-cover" sizes="20px" />
           </div>
@@ -161,7 +161,7 @@ export default function FriendActivityFeed() {
       <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
         <div className="animate-pulse space-y-3">
           <div className="h-4 w-32 rounded bg-white/5" />
-          <div className="flex gap-3">{[1, 2, 3, 4].map((i) => <div key={i} className="flex-shrink-0 w-[calc(25%-9px)] min-w-[200px] h-40 rounded-xl bg-white/5" />)}</div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-none">{[1, 2, 3, 4].map((i) => <div key={i} className="flex-shrink-0 w-[calc(25%-9px)] min-w-[200px] h-40 rounded-xl bg-white/5" />)}</div>
         </div>
       </div>
     );

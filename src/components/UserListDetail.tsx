@@ -273,7 +273,7 @@ export default function UserListDetail({
           </div>
         ) : (
           <>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <div className="neon-rgb-border rounded-xl px-4 py-2">
@@ -309,7 +309,7 @@ export default function UserListDetail({
                   {!editPublic && <span className="text-red-400">Private</span>}
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
                 <div className="flex items-center rounded-lg neon-rgb-border overflow-hidden">
                   <button
                     onClick={() => vote(1)}

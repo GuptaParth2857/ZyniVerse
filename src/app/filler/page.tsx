@@ -35,6 +35,8 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+export const revalidate = 3600;
+
 export default async function FillerListingPage() {
   const [popular, all] = await Promise.allSettled([
     getPopularFillerAnime(20),

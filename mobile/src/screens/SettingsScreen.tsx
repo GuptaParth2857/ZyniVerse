@@ -6,11 +6,14 @@ import {
   TouchableOpacity,
   Switch,
   StyleSheet,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, fontSize, borderRadius } from '../theme';
 import { useOTAUpdate } from '../hooks/useOTAUpdate';
 import { api } from '../services/api';
+
+const openLink = (url: string) => Linking.openURL(url).catch(() => {});
 
 interface SettingRowProps {
   label: string;
@@ -118,11 +121,11 @@ export default function SettingsScreen() {
         <View style={styles.group}>
           <Text style={styles.groupTitle}>About</Text>
           <View style={styles.groupContent}>
-            <SettingRow label="Version" value={runtimeVersion || '1.0.0'} type="info" />
+            <SettingRow label="Version" value={runtimeVersion || '1.1.0'} type="info" />
             <SettingRow label="App update" value={status} onPress={onUpdatePress} />
-            <SettingRow label="Website" value="zyverse.in" />
-            <SettingRow label="Terms of Service" />
-            <SettingRow label="Privacy Policy" />
+            <SettingRow label="Website" value="zyverse.in" onPress={() => openLink('https://zyverse.in')} />
+            <SettingRow label="Terms of Service" onPress={() => openLink('https://zyverse.in/terms')} />
+            <SettingRow label="Privacy Policy" onPress={() => openLink('https://zyverse.in/privacy')} />
           </View>
         </View>
 

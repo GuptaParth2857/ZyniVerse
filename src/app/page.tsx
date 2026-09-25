@@ -154,7 +154,7 @@ export default async function Home() {
 
   return (
     <PageTransition>
-      <div className="animate-page-in">
+      <div className="animate-page-in zy-home">
       <FadeIn>
             <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6">
               <Link

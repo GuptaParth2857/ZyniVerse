@@ -42,8 +42,8 @@ function useAdNetworkAvailable(code: string): boolean | null {
       clearTimeout(timer);
       setAvailable(v);
     };
-    // If the request hangs (blockers sometimes stall), assume blocked.
-    const timer = setTimeout(() => settle(false), 7000);
+    // Abort fast on hosts that stall (blockers): assume blocked after 4s.
+    const timer = setTimeout(() => settle(false), 4000);
     fetch(key, { mode: "no-cors", cache: "no-store" })
       .then(() => settle(true))
       .catch(() => settle(false));
@@ -180,9 +180,25 @@ export default function AdBanner({
 
   const showAds = adsEnabled() && shouldShowAds(user);
 
+  // ── Dev: never render ad containers (they inject external scripts) ─────
+  if (!adsEnabled()) {
+    return null;
+  }
+
+  // ── Premium users: show ad-free badge ─────────────────────────────────
+  if (!showAds) {
+    return (
+      <div className={`flex items-center justify-center rounded-xl border border-[var(--color-line)] bg-gradient-to-r from-[var(--color-magenta)]/5 to-[var(--color-violet)]/5 py-3 px-4 ${className}`}>
+        <span className="text-xs font-semibold text-[var(--color-magenta)] tracking-wide">
+          ⭐ Ad-Free (Premium)
+        </span>
+      </div>
+    );
+  }
+
   // Probe the ad network once per slot; if an ad blocker on the visitor's PC
   // blocks/hangs invoke.js, the whole slot (box + label) is collapsed.
-  const candidateAd = getAdsForLocation(placement, liveAds)[0];
+  const candidateAd = getAdsForLocation(placement, liveAds)[0] ?? getAdsForLocation(placement)[0];
   const networkAvailable = useAdNetworkAvailable(candidateAd?.code ?? "");
 
   // Track impressions
@@ -221,33 +237,26 @@ export default function AdBanner({
     }).catch(() => {});
   };
 
-  // ── Dev: never render ad containers (they inject external scripts) ─────
-  if (!adsEnabled()) {
-    return null;
-  }
-
-  // ── Premium users: show ad-free badge ─────────────────────────────────
-  if (!showAds) {
-    return (
-      <div className={`flex items-center justify-center rounded-xl border border-[var(--color-line)] bg-gradient-to-r from-[var(--color-magenta)]/5 to-[var(--color-violet)]/5 py-3 px-4 ${className}`}>
-        <span className="text-xs font-semibold text-[var(--color-magenta)] tracking-wide">
-          ⭐ Ad-Free (Premium)
-        </span>
-      </div>
-    );
-  }
-
   const ads = getAdsForLocation(placement, liveAds);
   const ad = ads[0];
 
-  // ── No ad configured for this placement ───────────────────────────────
-  if (!ad) {
-    return null;
-  }
+  // Reserve a *constant* slot height before the network probe / live config
+  // resolve, so the ad box can never pop in, collapse, or resize and shift
+  // the layout beneath it.
+  const isNative = candidateAd?.renderMode === "native-async";
+  const slotH = isNative ? 340 : (candidateAd?.dimensions?.height ?? 90) + 16;
 
-  // ── Ad blocker detected: hide the slot entirely ───────────────────────
-  if (networkAvailable === false) {
-    return null;
+  // ── No ad configured / network blocked: keep the reserved slot (no CLS) ─
+  if (!ad || networkAvailable === false) {
+    return (
+      <div
+        ref={containerRef}
+        className={`relative flex w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-[var(--color-line)]/20 bg-[var(--color-panel)]/30 ${className}`}
+        style={{ height: slotH, maxHeight: slotH }}
+      >
+        <AdLabel />
+      </div>
+    );
   }
 
   // ── Native async ad ───────────────────────────────────────────────────
@@ -257,7 +266,7 @@ export default function AdBanner({
         ref={containerRef}
         onClick={handleClick}
         className={`relative w-full overflow-hidden rounded-xl ${className}`}
-        style={{ minHeight: 340 }}
+        style={{ height: 340, maxHeight: 340, overflow: "hidden" }}
       >
         <AdLabel />
         <NativeAsyncAd containerId={containerId} />
@@ -269,13 +278,12 @@ export default function AdBanner({
   const w = ad.dimensions?.width ?? 728;
   const h = ad.dimensions?.height ?? 90;
 
-  // Responsive: on mobile always show the 300×250 if available
   return (
     <div
       ref={containerRef}
       onClick={handleClick}
       className={`relative flex flex-col items-center overflow-hidden rounded-xl border border-[var(--color-line)]/40 bg-[var(--color-panel)]/60 backdrop-blur-sm py-2 ${className}`}
-      style={{ minHeight: h + 16 }}
+      style={{ height: h + 16, maxHeight: h + 16 }}
     >
       <AdLabel />
       <div className="pt-1">

@@ -331,7 +331,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
       </div>
 
       {/* Filter Toggle */}
-      <div className="mx-5 mb-3 flex items-center gap-2">
+      <div className="mx-5 mb-3 flex flex-wrap items-center gap-2">
         {baseFilters.map((bf) => (
           <button key={bf.label} onClick={() => setFilter(filter === bf.value ? null : bf.value)}
             className={`rounded-full px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all ${
@@ -457,7 +457,8 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
       )}
 
       {/* Episode List */}
-      <div className="border-t border-[var(--color-line)]">
+      <div className="border-t border-[var(--color-line)] overflow-x-auto">
+        <div className="min-w-[620px]">
         <div className="flex items-center gap-3 px-5 py-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-mute)] bg-black/20">
           <span className="w-8 text-right">#</span>
           <span className={`${showTitles ? "flex-1" : "w-0 overflow-hidden"}`}>Title</span>
@@ -601,6 +602,7 @@ export default function FillerGuide({ anilistId, animeTitle }: { anilistId: numb
             </motion.div>
           );
         })}
+        </div>
       </div>
 
       {/* Unauthenticated vote prompt */}
