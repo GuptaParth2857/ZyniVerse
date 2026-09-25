@@ -12,27 +12,30 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 3600;
-import Section from "@/components/Section";
-import MediaCarousel from "@/components/MediaCarousel";
-import OnAirTicker from "@/components/OnAirTicker";
 import { FadeIn, PageTransition } from "@/components/PageTransition";
-import { DynamicHero3D as Hero3D, DynamicHorizontalScroll as HorizontalScroll } from "@/components/lazy";
-import ExpandingFlexCard from "@/components/ExpandingFlexCard";
-import ContinueWatching from "@/components/ContinueWatching";
-import Recommendations from "@/components/Recommendations";
+import {
+  DynamicSection as Section,
+  DynamicMediaCarousel as MediaCarousel,
+  DynamicOnAirTicker as OnAirTicker,
+  DynamicExpandingFlexCard as ExpandingFlexCard,
+  DynamicContinueWatching as ContinueWatching,
+  DynamicRecommendations as Recommendations,
+  DynamicFriendActivityFeed as FriendActivityFeed,
+  DynamicMonthlyCalendar as MonthlyCalendar,
+  DynamicGamificationWidget as GamificationWidget,
+  DynamicHero3D as Hero3D,
+  DynamicHorizontalScroll as HorizontalScroll,
+} from "@/components/lazy";
 import PersonalizedHero from "@/components/PersonalizedHero";
 import AdBanner from "@/components/AdBanner";
 import NativeBannerAd from "@/components/NativeBannerAd";
 import QuoteOfTheDay from "@/components/QuoteOfTheDay";
 import HomeMomentButton from "@/components/HomeMomentButton";
 import AnimeOfTheDay from "@/components/AnimeOfTheDay";
-import FriendActivityFeed from "@/components/features/FriendActivityFeed";
-import MonthlyCalendar from "@/components/features/MonthlyCalendar";
 import FeaturedFeedbackCarousel from "@/components/FeaturedFeedbackCarousel";
 import WhyZyniVerse from "@/components/WhyZyniVerse";
 import NeonBanner from "@/components/NeonBanner";
 import BrandPartners from "@/components/BrandPartners";
-import GamificationWidget from "@/components/GamificationWidget";
 import PoweredBy from "@/components/PoweredBy";
 import type { Media } from "@/lib/anilist";
 import { prisma } from "@/lib/prisma";

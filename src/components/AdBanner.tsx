@@ -252,7 +252,7 @@ export default function AdBanner({
       <div
         ref={containerRef}
         className={`relative flex w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-[var(--color-line)]/20 bg-[var(--color-panel)]/30 ${className}`}
-        style={{ height: slotH, maxHeight: slotH }}
+        style={{ height: slotH, maxHeight: slotH, contain: "layout paint" }}
       >
         <AdLabel />
       </div>
@@ -266,7 +266,7 @@ export default function AdBanner({
         ref={containerRef}
         onClick={handleClick}
         className={`relative w-full overflow-hidden rounded-xl ${className}`}
-        style={{ height: 340, maxHeight: 340, overflow: "hidden" }}
+        style={{ height: 340, maxHeight: 340, overflow: "hidden", contain: "layout paint" }}
       >
         <AdLabel />
         <NativeAsyncAd containerId={containerId} />
@@ -283,7 +283,7 @@ export default function AdBanner({
       ref={containerRef}
       onClick={handleClick}
       className={`relative flex flex-col items-center overflow-hidden rounded-xl border border-[var(--color-line)]/40 bg-[var(--color-panel)]/60 backdrop-blur-sm py-2 ${className}`}
-      style={{ height: h + 16, maxHeight: h + 16 }}
+      style={{ height: h + 16, maxHeight: h + 16, contain: "layout paint" }}
     >
       <AdLabel />
       <div className="pt-1">
