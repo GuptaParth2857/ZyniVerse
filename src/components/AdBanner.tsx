@@ -201,9 +201,19 @@ export default function AdBanner({
   const candidateAd = getAdsForLocation(placement, liveAds)[0] ?? getAdsForLocation(placement)[0];
   const networkAvailable = useAdNetworkAvailable(candidateAd?.code ?? "");
 
-  // Track impressions
+  // Track impressions — at most once per page-visit per slot, so ad stats
+  // stay meaningful without firing a POST + DB write on every intersection.
   useEffect(() => {
     if (!showAds || impressionTracked) return;
+    const dedupeKey = `zy_ad_imp_${placement}_${window.location.pathname}`;
+    let alreadySent = false;
+    try {
+      alreadySent = sessionStorage.getItem(dedupeKey) === "1";
+    } catch {}
+    if (alreadySent) {
+      setImpressionTracked(true);
+      return;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
@@ -216,6 +226,9 @@ export default function AdBanner({
               page: window.location.pathname,
             }),
           }).catch(() => {});
+          try {
+            sessionStorage.setItem(dedupeKey, "1");
+          } catch {}
           setImpressionTracked(true);
         }
       },

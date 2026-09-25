@@ -93,6 +93,11 @@ const AUTH_COOKIES = [
 const PUBLIC_CDN_PATHS: Array<{ pattern: RegExp; sMaxAge: number }> = [
   { pattern: /^\/character-tournaments\/[^/]+$/, sMaxAge: 300 },
   { pattern: /^\/(?:anime|character|manga|staff|studio|watch-order|news|indian-dubs|live-action|toons|cosplay|posts|reels)\/[^/]+$/, sMaxAge: 600 },
+  // Static list/knowledge pages — heavy anonymous traffic, no per-user SSR.
+  // (proxy only applies this when there are no auth cookies, so logged-in
+  // users still get fully personal/up-to-date markup.)
+  { pattern: /^\/(?:schedule|seasonal|top-anime|top-characters|indian-dubs|dubbed|manga-million|filler|tools|manga|challenges|forum|quiz|community|news|blog|wiki|voice-actors|wallpapers|watch-order)$/, sMaxAge: 600 },
+  { pattern: /^\/(?:schedule|seasonal|top-anime|dubbed|indian-dubs|filler|manga|news|blog|wiki|voice-actors|wallpapers|watch-order)\/(?:page\/)?\d*$/, sMaxAge: 300 },
 ];
 
 function hasAuthCookie(request: NextRequest): boolean {

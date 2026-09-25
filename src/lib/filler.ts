@@ -29,7 +29,11 @@ async function fetchFillerData(): Promise<FillerShow[]> {
     return fillerCache.data;
   }
   const res = await fetch(FILLER_JSON_URL, {
-    cache: "no-store",
+    // Cacheable (1h) instead of no-store: /sitemap.xml + /filler pages use this
+    // data, and no-store forced the sitemap route to be dynamic (ƒ) — every
+    // crawler fetch re-ran this GitHub call + DB + AniList work. Cached fetches
+    // let the sitemap become static ○ and serve from the CDN.
+    next: { revalidate: 3600 },
     signal: AbortSignal.timeout(30000),
   });
   if (!res.ok) throw new Error("Failed to fetch filler data");
