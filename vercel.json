@@ -2,39 +2,5 @@
   "buildCommand": "npx prisma generate && next build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "fluid": false,
-  "crons": [
-    {
-      "path": "/api/cron/refresh-schedules",
-      "schedule": "0 0 1 * *"
-    },
-    {
-      "path": "/api/cron/refresh-awards",
-      "schedule": "0 2 1 * *"
-    },
-    {
-      "path": "/api/cron/refresh-posters",
-      "schedule": "0 4 1 * *"
-    },
-    {
-      "path": "/api/cron/analytics",
-      "schedule": "0 6 1 * *"
-    },
-    {
-      "path": "/api/cron/event-alerts",
-      "schedule": "0 5 * * 1"
-    },
-    {
-      "path": "/api/cron/indexnow",
-      "schedule": "0 8 * * 1"
-    },
-    {
-      "path": "/api/cron/db-prune",
-      "schedule": "0 3 * * 0"
-    },
-    {
-      "path": "/api/cron/character-tournaments",
-      "schedule": "0 9 * * *"
-    }
-  ]
+  "fluid": false
 }

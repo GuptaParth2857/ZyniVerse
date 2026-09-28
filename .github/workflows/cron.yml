@@ -1,0 +1,106 @@
+name: ZyniVerse crons
+
+# Vercel Hobby allows only 2 cron jobs, each running at most once per day, so
+# the 8 schedules this app needs could not live in vercel.json (a Hobby deploy
+# with more than 2 crons fails config validation outright). GitHub Actions has
+# no per-job count or frequency limit, so the same schedules run here instead.
+#
+# The /api/cron/* routes authenticate with `Authorization: Bearer $CRON_SECRET`.
+#
+# Required repo settings (Settings -> Secrets and variables -> Actions):
+#   - secret  CRON_SECRET      must match the value in Vercel's env vars
+#   - variable BASE_URL        e.g. https://zyverse.in
+#
+# Note: schedules are UTC, and GitHub queues them during peak load, so a run
+# can land up to ~15 minutes late. These jobs are daily/weekly/monthly batch
+# jobs, so that drift is harmless.
+
+on:
+  schedule:
+    - cron: "0 9 * * *" # character-tournaments (daily)
+    - cron: "0 3 * * 0" # db-prune (Sunday)
+    - cron: "0 5 * * 1" # event-alerts (Monday)
+    - cron: "0 8 * * 1" # indexnow (Monday)
+    - cron: "0 0 1 * *" # refresh-schedules (1st, 00:00)
+    - cron: "0 2 1 * *" # refresh-awards (1st, 02:00)
+    - cron: "0 4 1 * *" # refresh-posters (1st, 04:00)
+    - cron: "0 6 1 * *" # analytics (1st, 06:00)
+  workflow_dispatch:
+    inputs:
+      endpoint:
+        description: "Run a single endpoint instead of the scheduled set (e.g. db-prune)"
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zyniverse-crons
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Work out which endpoints are due
+        id: due
+        env:
+          MANUAL: ${{ inputs.endpoint }}
+        run: |
+          set -euo pipefail
+          DOW=$(date -u +%w)   # 0 = Sunday
+          DOM=$(date -u +%d)   # 01-31
+          HOUR=$(date -u +%H)
+
+          if [ -n "${MANUAL:-}" ]; then
+            echo "list=${MANUAL}" >> "$GITHUB_OUTPUT"
+            echo "Manual run: ${MANUAL}"
+            exit 0
+          fi
+
+          # Each of the 8 original vercel.json schedules had a distinct hour, so
+          # routing on the hour reproduces them exactly — including keeping
+          # event-alerts (Mon 05:00) and indexnow (Mon 08:00) as separate runs.
+          LIST=""
+          case "$HOUR" in
+            00) [ "$DOM" = "01" ] && LIST="refresh-schedules" ;;
+            02) [ "$DOM" = "01" ] && LIST="refresh-awards" ;;
+            03) [ "$DOW" = "0" ]  && LIST="db-prune" ;;
+            04) [ "$DOM" = "01" ] && LIST="refresh-posters" ;;
+            05) [ "$DOW" = "1" ]  && LIST="event-alerts" ;;
+            06) [ "$DOM" = "01" ] && LIST="analytics" ;;
+            08) [ "$DOW" = "1" ]  && LIST="indexnow" ;;
+            09) LIST="character-tournaments" ;;
+          esac
+
+          echo "list=${LIST}" >> "$GITHUB_OUTPUT"
+          echo "UTC $(date -u) (dow=$DOW dom=$DOM hour=$HOUR) -> due: ${LIST:-<nothing>}"
+
+      - name: Hit cron endpoints
+        if: steps.due.outputs.list != ''
+        env:
+          BASE: ${{ vars.BASE_URL }}
+          SECRET: ${{ secrets.CRON_SECRET }}
+          LIST: ${{ steps.due.outputs.list }}
+        run: |
+          set -uo pipefail
+          if [ -z "${BASE:-}" ] || [ -z "${SECRET:-}" ]; then
+            echo "::error::BASE_URL variable or CRON_SECRET secret is missing"
+            exit 1
+          fi
+
+          failed=0
+          for name in $LIST; do
+            code=$(curl -sS -o "/tmp/${name}.out" -w '%{http_code}' --max-time 540 \
+              -H "Authorization: Bearer ${SECRET}" \
+              "${BASE%/}/api/cron/${name}" || echo "000")
+            echo "${name} -> ${code}"
+            if [ "$code" != "200" ]; then
+              failed=1
+              echo "::error::${name} returned ${code}"
+              head -c 2000 "/tmp/${name}.out" || true
+              echo
+            fi
+          done
+          exit $failed
