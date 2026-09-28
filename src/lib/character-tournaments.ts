@@ -15,7 +15,11 @@ export const TOURNAMENT_SIZES = [8, 16, 32] as const;
 export type TournamentSize = (typeof TOURNAMENT_SIZES)[number];
 
 export const QUALIFYING_DAYS = 7;
-export const ROUND_DAYS = 3;
+// Two weeks per round. The first tournament's rounds were three days and closed
+// with barely any votes cast, which made every matchup a foregone conclusion. A
+// 16-bracket is four rounds, so this is the window in which the fan vote
+// actually has to land.
+export const ROUND_DAYS = 14;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function totalRoundsForSize(size: number): number {
@@ -558,11 +562,14 @@ export async function getTournamentRounds(tournamentId: string) {
   const totalVotes = matches.reduce((s, m) => s + m.votesA + m.votesB, 0);
 
   const rounds: {
+    round: number;
     label: string;
     matches: (typeof matches)[number][];
   }[] = [];
   for (let r = 1; r <= tourney.totalRounds; r++) {
-    rounds.push({ label: roundLabel(r, tourney.totalRounds), matches: matches.filter((m) => m.round === r) });
+    // The round number is carried explicitly because later rounds have no match
+    // rows yet, and the client needs a stable id for its round switcher.
+    rounds.push({ round: r, label: roundLabel(r, tourney.totalRounds), matches: matches.filter((m) => m.round === r) });
   }
 
   return { tournament: tourney, rounds, matches, totalVotes };
