@@ -142,29 +142,6 @@ export default function TournamentDetailPage({
   const [actionError, setActionError] = useState<string | null>(null);
   const [votingMatch, setVotingMatch] = useState<string | null>(null);
 
-  const load = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    setNotFound(false);
-    fetch(`/api/character-tournaments/${id}`)
-      .then(async (r) => {
-        if (r.status === 404) {
-          setNotFound(true);
-          return null;
-        }
-        if (!r.ok) throw new Error("Failed to load");
-        return r.json();
-      })
-      .then((d) => {
-        setData(d);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Failed to load tournament");
-        setLoading(false);
-      });
-  }, [id]);
-
   const deviceIdRef = useRef<string | null>(null);
   const getDeviceId = useCallback(() => {
     if (deviceIdRef.current) return deviceIdRef.current;
@@ -188,6 +165,39 @@ export default function TournamentDetailPage({
     deviceIdRef.current = id;
     return id;
   }, []);
+
+  // Sent on every read and write so both signed-in and guest voters keep their
+  // own "Voted" state, and so voting never requires a login.
+  const voteHeaders = useCallback(
+    () => ({ "Content-Type": "application/json", "X-Device-Id": getDeviceId() }),
+    [getDeviceId]
+  );
+
+  const load = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    setNotFound(false);
+    const deviceId = getDeviceId();
+    fetch(`/api/character-tournaments/${id}`, {
+      headers: deviceId ? { "X-Device-Id": deviceId } : undefined,
+    })
+      .then(async (r) => {
+        if (r.status === 404) {
+          setNotFound(true);
+          return null;
+        }
+        if (!r.ok) throw new Error("Failed to load");
+        return r.json();
+      })
+      .then((d) => {
+        setData(d);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to load tournament");
+        setLoading(false);
+      });
+  }, [id, getDeviceId]);
 
   useEffect(() => {
     if (serverResolved && data?.tournament?.id === id) return;
@@ -238,14 +248,14 @@ export default function TournamentDetailPage({
   };
 
   const handleVote = async (matchId: string, choice: "A" | "B") => {
-    if (!session?.user?.id || votingMatch) return;
+    if (votingMatch) return;
     if (data?.myVotes[matchId]) return;
     setVotingMatch(matchId);
     setActionError(null);
     try {
       const res = await fetch(`/api/character-tournaments/${id}/matches/${matchId}/vote`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: voteHeaders(),
         body: JSON.stringify({ choice }),
       });
       const result = await res.json();
@@ -618,7 +628,6 @@ export default function TournamentDetailPage({
             status={tournament.status}
             currentRound={tournament.currentRound}
             onVote={handleVote}
-            loggedIn={!!session?.user?.id}
           />
         )}
 
@@ -1025,7 +1034,6 @@ function BracketLayout({
   status,
   currentRound,
   onVote,
-  loggedIn,
 }: {
   rounds: RoundGroup[];
   myVotes: Record<string, "A" | "B">;
@@ -1033,49 +1041,108 @@ function BracketLayout({
   status: Status;
   currentRound: number;
   onVote: (matchId: string, choice: "A" | "B") => void;
-  loggedIn: boolean;
 }) {
+  // On phones a 4-column horizontal scroll is unusable, so rounds stack
+  // vertically with a clear heading per round instead.
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const apply = () => setCompact(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  const activeRoundIndex = rounds.findIndex((r) => r.matches.some((m) => m.round === currentRound));
+
+  // Round headers are sticky so the reader always knows which round they are in.
+  const roundHeader = (label: string, isCurrent: boolean, count: number, idx: number) => (
+    <div className="mb-3 flex items-center gap-2">
+      <span className={`h-6 w-1 rounded-full ${isCurrent ? "bg-[var(--color-magenta)]" : "bg-[var(--color-line)]"}`} />
+      <h3
+        className={`font-display text-sm font-bold ${
+          isCurrent ? "text-[var(--color-magenta)]" : "text-[var(--color-ink)]"
+        }`}
+      >
+        {label}
+      </h3>
+      {count > 0 && (
+        <span className="font-mono text-[9px] uppercase tracking-wider text-[var(--color-mute)]">
+          {count} {count === 1 ? "match" : "matches"}
+        </span>
+      )}
+      {isCurrent && (
+        <motion.span
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.8, repeat: Infinity }}
+          className="h-1.5 w-1.5 rounded-full bg-[var(--color-magenta)]"
+        />
+      )}
+      {isCurrent && !compact && (
+        <span className="ml-auto text-[10px] font-semibold text-[var(--color-magenta)]/80">
+          Voting open
+        </span>
+      )}
+      {isCurrent && compact && idx !== activeRoundIndex && null}
+    </div>
+  );
+
+  const renderRound = (round: RoundGroup, i: number) => {
+    const isCurrent = status === "active" && round.matches.some((m) => m.round === currentRound);
+
+    // Rounds beyond the current one have no match rows yet. Rendering them as an
+    // empty column with "0 matches" reads as broken, so they get a locked
+    // placeholder that still shows the shape of the bracket.
+    if (round.matches.length === 0) {
+      return (
+        <div key={round.label} className={compact ? "mb-8" : "w-60 shrink-0"}>
+          {roundHeader(round.label, false, 0, i)}
+          <div className="flex aspect-[3/4] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-[var(--color-line)] bg-[var(--color-panel)]/30 px-4 text-center">
+            <span className="text-xl opacity-40">🔒</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-mute)]">
+              Upcoming
+            </span>
+            <span className="text-[10px] leading-relaxed text-[var(--color-mute)]/70">
+              {round.label === "Final"
+                ? "One character left standing."
+                : "Winners of this round meet here."}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div key={round.label} className={compact ? "mb-8" : "w-60 shrink-0"}>
+        {roundHeader(round.label, isCurrent, round.matches.length, i)}
+        <div className={compact ? "space-y-4" : "space-y-3"}>
+          {round.matches.map((match) => (
+            <MatchCard
+              key={match.id}
+              match={match}
+              voted={myVotes[match.id]}
+              voting={votingMatch === match.id}
+              active={status === "active" && match.round === currentRound}
+              onVote={onVote}
+              reveal={status === "active" && !myVotes[match.id] && (match.round ?? 0) === currentRound}
+              revealIndex={i * MATCHES_PER_MATCHUP * 2 + (match.position ?? 0)}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // On a phone the current round comes first so voting is immediately reachable.
+  const ordered = compact && activeRoundIndex > 0 ? [rounds[activeRoundIndex], ...rounds.filter((_, i) => i !== activeRoundIndex)] : rounds;
+
+  if (compact) {
+    return <div className="space-y-2">{ordered.map(renderRound)}</div>;
+  }
+
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">
-      {rounds.map((round, i) => {
-        const isCurrent = status === "active" && round.matches.some((m) => m.round === currentRound);
-        return (
-          <div key={i} className="w-60 shrink-0">
-            <div className="mb-3 flex items-center gap-2">
-              <span
-                className={`h-6 w-1 rounded-full ${
-                  isCurrent ? "bg-[var(--color-magenta)]" : "bg-[var(--color-line)]"
-                }`}
-              />
-              <h3 className={`font-display text-sm font-bold ${isCurrent ? "text-[var(--color-magenta)]" : "text-[var(--color-ink)]"}`}>
-                {round.label}
-              </h3>
-              {isCurrent && (
-                <motion.span
-                  animate={{ opacity: [0.4, 1, 0.4] }}
-                  transition={{ duration: 1.8, repeat: Infinity }}
-                  className="h-1.5 w-1.5 rounded-full bg-[var(--color-magenta)]"
-                />
-              )}
-            </div>
-            <div className="space-y-3">
-              {round.matches.map((match) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  voted={myVotes[match.id]}
-                  voting={votingMatch === match.id}
-                  active={status === "active" && match.round === currentRound}
-                  onVote={onVote}
-                  loggedIn={loggedIn}
-                  reveal={status === "active" && !myVotes[match.id] && (match.round ?? 0) === currentRound}
-                  revealIndex={i * MATCHES_PER_MATCHUP * 2 + (match.position ?? 0)}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+      {rounds.map(renderRound)}
     </div>
   );
 }
@@ -1086,7 +1153,6 @@ function MatchCard({
   voting,
   active,
   onVote,
-  loggedIn,
   reveal,
   revealIndex,
 }: {
@@ -1095,7 +1161,6 @@ function MatchCard({
   voting: boolean;
   active: boolean;
   onVote: (matchId: string, choice: "A" | "B") => void;
-  loggedIn: boolean;
   reveal?: boolean;
   revealIndex?: number;
 }) {
@@ -1117,76 +1182,90 @@ function MatchCard({
         delay: reveal ? Math.min((revealIndex ?? 0) * 0.09, 0.7) : 0.05,
       }}
       style={{ transformPerspective: 900 }}
-      className="relative overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] transition-colors"
+      className={`relative overflow-hidden rounded-2xl border bg-[var(--color-panel)] transition-colors ${
+        active ? "border-[var(--color-magenta)]/40" : "border-[var(--color-line)]"
+      }`}
     >
       {match.winnerId && (
         <div aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-emerald-500/40" />
       )}
 
-      <MatchSide
-        participant={match.charA}
-        votes={match.votesA}
-        pct={pctA}
-        seed={match.charA?.seed}
-        isWinner={winnerIsA}
-        side="A"
-        voted={voted === "A"}
-        canVote={canVote}
-        active={active}
-        voting={voting}
-        onVote={() => onVote(match.id, "A")}
-        loggedIn={loggedIn}
-      />
+      <div className="grid grid-cols-[1fr_auto_1fr]">
+        <MatchPanel
+          participant={match.charA}
+          votes={match.votesA}
+          pct={pctA}
+          isWinner={winnerIsA}
+          decided={!!match.winnerId}
+          side="A"
+          voted={voted === "A"}
+          canVote={canVote}
+          voting={voting}
+          onVote={() => onVote(match.id, "A")}
+        />
 
-      <div className="flex items-center justify-center gap-2 border-y border-[var(--color-line)] bg-[var(--color-void)]/60 py-1.5">
-        <span className="font-display text-[10px] font-black tracking-widest text-[var(--color-magenta)]">VS</span>
-        <span className="font-mono text-[9px] text-[var(--color-mute)]">pos {match.position}</span>
+        <div className="relative flex w-9 flex-col items-center justify-center gap-2 border-x border-[var(--color-line)] bg-[var(--color-void)]/70">
+          <span className="font-display text-[11px] font-black tracking-[0.2em] text-[var(--color-magenta)]">
+            VS
+          </span>
+          <span className="font-mono text-[9px] tabular-nums text-[var(--color-mute)]">
+            {match.votesA + match.votesB}
+          </span>
+        </div>
+
+        <MatchPanel
+          participant={match.charB}
+          votes={match.votesB}
+          pct={pctB}
+          isWinner={winnerIsB}
+          decided={!!match.winnerId}
+          side="B"
+          voted={voted === "B"}
+          canVote={canVote}
+          voting={voting}
+          onVote={() => onVote(match.id, "B")}
+        />
       </div>
 
-      <MatchSide
-        participant={match.charB}
-        votes={match.votesB}
-        pct={pctB}
-        seed={match.charB?.seed}
-        isWinner={winnerIsB}
-        side="B"
-        voted={voted === "B"}
-        canVote={canVote}
-        active={active}
-        voting={voting}
-        onVote={() => onVote(match.id, "B")}
-        loggedIn={loggedIn}
-      />
+      {match.winnerId && (
+        <div className="flex items-center justify-center gap-1.5 border-t border-emerald-500/30 bg-emerald-500/10 py-1.5">
+          <span className="text-[10px]">👑</span>
+          <span className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-400">
+            {winnerIsA ? match.charA?.charName : match.charB?.charName} advances
+          </span>
+        </div>
+      )}
     </motion.div>
   );
 }
 
-function MatchSide({
+/**
+ * One side of a matchup. The whole panel is the vote target — a far bigger tap
+ * area than the old inline 10px button, which was the main thing making the
+ * bracket view feel cramped next to the qualifying cards.
+ */
+function MatchPanel({
   participant,
   votes,
   pct,
-  seed,
   isWinner,
+  decided,
   side,
   voted,
   canVote,
-  active,
   voting,
   onVote,
-  loggedIn,
 }: {
   participant: Participant | null;
   votes: number;
   pct: number;
-  seed?: number;
   isWinner?: boolean;
+  decided: boolean;
   side: "A" | "B";
   voted?: boolean;
   canVote: boolean;
-  active: boolean;
   voting: boolean;
   onVote: () => void;
-  loggedIn: boolean;
 }) {
   const votesText = useCountUp(votes);
   const [imgError, setImgError] = useState(false);
@@ -1194,103 +1273,160 @@ function MatchSide({
 
   if (!participant) {
     return (
-      <div className="relative flex items-center gap-3 px-3 py-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-[var(--color-line)] text-lg text-[var(--color-mute)]">
-          ?
-        </div>
-        <div className="min-w-0">
-          <p className="font-mono text-sm font-bold text-[var(--color-mute)]">TBD</p>
-          <p className="text-[10px] uppercase tracking-wider text-[var(--color-mute)] opacity-60">Seed {seed ?? "—"}</p>
-        </div>
+      <div className="flex aspect-[3/4] flex-col items-center justify-center gap-1 bg-[var(--color-void)]/40">
+        <span className="text-2xl opacity-40">?</span>
+        <span className="font-mono text-[9px] uppercase tracking-wider text-[var(--color-mute)]">
+          To be decided
+        </span>
       </div>
     );
   }
 
   const img = participant.charImage;
   const showImg = img && !imgError;
+  const dimmed = decided && !isWinner;
 
-  return (
-    <div className={`relative px-3 py-3 transition-opacity ${isWinner ? "" : ""}`}>
-      {isWinner && (
-        <div aria-hidden className="absolute inset-0 bg-emerald-500/5" />
-      )}
-      <div className="relative flex items-center gap-3">
-        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[var(--color-void)]">
-          {showImg ? (
-            <Image
-              src={img!}
-              alt={participant.charName}
-              fill
-              unoptimized={img!.includes("anilist.co")}
-              onError={() => setImgError(true)}
-              className="tourney-char-img object-cover"
-              sizes="48px"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[var(--color-panel)] text-lg">🎴</div>
-          )}
-          <AnimeTint accent={accent} />
-          {isWinner && (
-            <div className="absolute inset-0 flex items-center justify-center bg-emerald-500/40 backdrop-blur-[1px]">
-              <span className="text-sm">👑</span>
-            </div>
-          )}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <Link
-              href={`/character/${participant.charId}`}
-              onClick={(e) => e.stopPropagation()}
-              className="line-clamp-1 font-display text-sm font-bold text-[var(--color-ink)] transition-colors hover:text-[var(--color-cyan)]"
-            >
-              {participant.charName}
-            </Link>
-            {isWinner && <span className="shrink-0 text-[10px] font-bold text-emerald-400">WINNER</span>}
+  const inner = (
+    <>
+      {/* artwork */}
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[var(--color-void)]">
+        {showImg ? (
+          <Image
+            src={img!}
+            alt={participant.charName}
+            fill
+            unoptimized={img!.includes("anilist.co")}
+            onError={() => setImgError(true)}
+            className="tourney-char-img object-cover"
+            sizes="(max-width: 768px) 45vw, 150px"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-[var(--color-panel)] text-3xl">
+            🎴
           </div>
-          <p className="text-[10px] uppercase tracking-wider text-[var(--color-mute)]">
-            Seed {seed} · {votesText} vote{votes !== 1 ? "s" : ""} · {pct}%
-          </p>
-          <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/10">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-              className="h-full rounded-full"
-              style={{ background: isWinner ? "#10b981" : accent }}
-            />
+        )}
+        <AnimeTint accent={accent} />
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(8,7,14,0.96) 0%, rgba(8,7,14,0.55) 34%, transparent 62%)",
+          }}
+        />
+        {isWinner && (
+          <div className="absolute left-2 top-2 rounded-full bg-emerald-500/90 px-2 py-0.5 text-[9px] font-bold text-black">
+            WINNER
           </div>
-        </div>
+        )}
+        {voted && (
+          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-black">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+          </div>
+        )}
 
-        <div className="shrink-0">
-          {voted ? (
-            <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/40 bg-emerald-500/15 px-2 py-1 text-[10px] font-bold text-emerald-400">
-              ✓ Voted
+        {/* name + tally sit over the artwork */}
+        <div className="absolute inset-x-0 bottom-0 p-2.5">
+          <Link
+            href={`/character/${participant.charId}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            className="line-clamp-2 font-display text-[13px] font-bold leading-tight text-white transition-colors hover:text-[var(--color-cyan)]"
+          >
+            {participant.charName}
+          </Link>
+          <div className="mt-1 flex items-baseline gap-1.5">
+            <span className="text-sm font-bold tabular-nums text-white">{votesText}</span>
+            <span className="font-mono text-[9px] uppercase tracking-wider text-white/60">
+              {votes === 1 ? "vote" : "votes"} · {pct}%
             </span>
-          ) : canVote && loggedIn ? (
-            <button
-              onClick={onVote}
-              disabled={voting}
-              className="rounded-md px-2.5 py-1.5 text-[10px] font-bold transition-all hover:opacity-80 disabled:opacity-50"
-              style={{
-                background: `color-mix(in srgb, ${accent} 30%, transparent)`,
-                border: `1px solid color-mix(in srgb, ${accent} 55%, transparent)`,
-                color: accent,
-              }}
-            >
-              {voting ? "…" : `Vote ${side}`}
-            </button>
-          ) : active && !loggedIn ? (
-            <Link
-              href="/login"
-              className="rounded-md border border-[var(--color-line)] px-2.5 py-1.5 text-[10px] font-bold text-[var(--color-mute)] transition-colors hover:text-[var(--color-magenta)]"
-            >
-              Login
-            </Link>
-          ) : null}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* share-of-vote bar + vote CTA */}
+      <div className="space-y-2 p-2.5">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="h-full rounded-full"
+            style={{ background: isWinner ? "#10b981" : accent }}
+          />
+        </div>
+
+        {voted ? (
+          <div className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 text-[11px] font-bold text-emerald-400">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+            Your vote
+          </div>
+        ) : canVote ? (
+          <div
+            className="flex h-9 items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold text-black transition-transform"
+            style={{
+              background: `linear-gradient(90deg, ${accent}, color-mix(in srgb, ${accent} 55%, var(--color-violet)))`,
+              boxShadow: `0 6px 20px -8px ${accent}`,
+            }}
+          >
+            {voting ? (
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-black/70 border-t-transparent" />
+            ) : (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+              </svg>
+            )}
+            {voting ? "" : "Vote"}
+          </div>
+        ) : (
+          <div className="flex h-9 items-center justify-center rounded-lg border border-[var(--color-line)] text-[10px] font-semibold uppercase tracking-wider text-[var(--color-mute)]">
+            {isWinner ? "Advanced" : "Eliminated"}
+          </div>
+        )}
+      </div>
+    </>
+  );
+
+  const frame = `relative flex flex-col overflow-hidden bg-[var(--color-panel)] transition-all ${
+    dimmed ? "opacity-45 grayscale" : ""
+  }`;
+
+  if (!canVote) {
+    return <div className={frame}>{inner}</div>;
+  }
+
+  // A div with role="button" rather than a real <button>, because the panel
+  // contains a Link to the character page and anchors are not allowed inside
+  // buttons. Keyboard activation is wired up to match native button behaviour.
+  return (
+    <motion.div
+      role="button"
+      tabIndex={0}
+      aria-disabled={voting}
+      aria-label={`Vote for ${participant.charName}`}
+      onClick={onVote}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          if (!voting) onVote();
+        }
+      }}
+      whileTap={{ scale: 0.97 }}
+      className={`${frame} cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-cyan)]`}
+    >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100"
+        style={{ boxShadow: `inset 0 0 0 2px ${accent}` }}
+      />
+      {inner}
+    </motion.div>
   );
 }
 

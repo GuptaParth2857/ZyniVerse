@@ -2302,15 +2302,21 @@ model CharacterTournamentMatch {
 model CharacterTournamentVote {
   id        String   @id @default(cuid())
   matchId   String
-  userId    String
+  // A voter is identified by their account or, for guests, by an anonymous
+  // device id — same shape as CharacterTournamentPollVote. Login is not
+  // required to vote, so userId must stay optional.
+  userId    String?
+  deviceId  String?
   choice    String
   createdAt DateTime @default(now())
 
   match CharacterTournamentMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  user  User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User?                     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([matchId, userId])
+  @@unique([matchId, deviceId])
   @@index([matchId])
+  @@index([deviceId])
 }
 
 // ── Fan Art Gallery ──

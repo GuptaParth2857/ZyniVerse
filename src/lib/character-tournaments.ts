@@ -155,8 +155,25 @@ async function generateRoundMatches(tournamentId: string, round: number) {
   await prisma.characterTournamentMatch.createMany({ data });
 }
 
-/** Cast a vote on a match (one per user per match). */
-export async function castTournamentVote(matchId: string, userId: string, choice: "A" | "B") {
+/** Cast a vote on a match (one per identity per match). */
+export type MatchVoteActor = { userId?: string | null; deviceId?: string | null };
+
+/**
+ * Cast a bracket-match vote. A voter is identified either by their account
+ * (userId) or an anonymous device id (deviceId), exactly like the qualifying
+ * poll — login is not required to vote. One vote per identity per match, and a
+ * guest vote is claimed by the account if the same device votes again while
+ * signed in, so it is never counted twice.
+ */
+export async function castTournamentVote(
+  matchId: string,
+  actor: MatchVoteActor,
+  choice: "A" | "B"
+) {
+  const userId = actor?.userId || null;
+  const rawDeviceId = actor?.deviceId || null;
+  if (!userId && !rawDeviceId) throw new Error("Vote requires a device");
+
   const match = await prisma.characterTournamentMatch.findUnique({ where: { id: matchId } });
   if (!match) throw new Error("Match not found");
   const tournament = await prisma.characterTournament.findUnique({
@@ -165,23 +182,61 @@ export async function castTournamentVote(matchId: string, userId: string, choice
   if (!tournament || tournament.status !== "active" || tournament.mode !== "bracket") {
     throw new Error("Tournament is not active");
   }
-
-  const existing = await prisma.characterTournamentVote.findUnique({
-    where: { matchId_userId: { matchId, userId } },
-  });
-  if (existing) throw new Error("Already voted in this match");
+  if (match.winnerId) throw new Error("This match is already decided");
 
   const targetField = choice === "A" ? "charAId" : "charBId";
   if (!match[targetField]) throw new Error("This side has no character");
 
-  await prisma.characterTournamentVote.create({
-    data: { matchId, userId, choice },
+  await prisma.$transaction(async (tx) => {
+    if (userId) {
+      const userVote = await tx.characterTournamentVote.findUnique({
+        where: { matchId_userId: { matchId, userId } },
+      });
+      if (userVote) throw new Error("Already voted in this match");
+
+      if (rawDeviceId) {
+        const guestVote = await tx.characterTournamentVote.findFirst({
+          where: { matchId, deviceId: rawDeviceId, userId: null },
+        });
+        if (guestVote) {
+          if (guestVote.choice !== choice) throw new Error("Already voted in this match");
+          // Claim the guest vote for the account instead of adding a second one,
+          // so the running tally is not incremented for the same person.
+          await tx.characterTournamentVote.update({
+            where: { id: guestVote.id },
+            data: { userId, deviceId: null },
+          });
+          return false;
+        }
+      }
+
+      try {
+        await tx.characterTournamentVote.create({ data: { matchId, userId, choice } });
+      } catch (e) {
+        if ((e as { code?: string })?.code === "P2002") throw new Error("Already voted in this match");
+        throw e;
+      }
+    } else {
+      const guestVote = await tx.characterTournamentVote.findFirst({
+        where: { matchId, deviceId: rawDeviceId, userId: null },
+      });
+      if (guestVote) throw new Error("Already voted in this match");
+      try {
+        await tx.characterTournamentVote.create({ data: { matchId, deviceId: rawDeviceId, choice } });
+      } catch (e) {
+        if ((e as { code?: string })?.code === "P2002") throw new Error("Already voted in this match");
+        throw e;
+      }
+    }
+
+    await tx.characterTournamentMatch.update({
+      where: { id: matchId },
+      data: choice === "A" ? { votesA: { increment: 1 } } : { votesB: { increment: 1 } },
+    });
   });
 
-  const updated = await prisma.characterTournamentMatch.update({
-    where: { id: matchId },
-    data: choice === "A" ? { votesA: { increment: 1 } } : { votesB: { increment: 1 } },
-  });
+  const updated = await prisma.characterTournamentMatch.findUnique({ where: { id: matchId } });
+  if (!updated) throw new Error("Match not found after voting");
   return updated;
 }
 
