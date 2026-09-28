@@ -13,6 +13,10 @@ export async function GET(request: Request) {
 
   const now = new Date();
   const results: { task: string; status: number; detail: string }[] = [];
+  // Per-invocation, not module-level: a warm lambda reused this array across
+  // requests, so it grew for the life of the container and re-sent the same
+  // notifications on every later run.
+  const pendingNotifications: { title: string; body: string; link: string }[] = [];
 
   // 1. Close qualifying polls whose window has ended → build the bracket.
   const qualifying = await prisma.characterTournament.findMany({
@@ -26,18 +30,26 @@ export async function GET(request: Request) {
     try {
       const res = await finalizeQualifying(t.id);
       qualified++;
+      const d = res.decidedBy;
+      console.log(
+        `[cron] qualified "${t.title}": ${res.qualifiers.length} seeds ` +
+          `(votes=${d.withVotes}, popularity=${d.byPopularityTiebreak}, insertion=${d.byInsertionOrder}, totalVotes=${d.totalVotesCast})`
+      );
       pendingNotifications.push({
         title: `⚔️ "${t.title}" — bracket is LIVE!`,
         body: `${res.qualifiers.length} characters qualified. Round 1 voting is open for ${3} days!`,
         link: `/character-tournaments/${t.id}`,
       });
-    } catch {
+    } catch (e) {
       qualErrors++;
+      // Previously swallowed entirely, so a tournament could sit past its window
+      // with status "qualifying" and nobody could tell why.
+      console.error(`[cron] finalizeQualifying failed for ${t.id} (${t.title}):`, e);
     }
   }
   results.push({
     task: "close-qualifying",
-    status: 200,
+    status: qualErrors > 0 ? 207 : 200,
     detail: `closed=${qualified} errors=${qualErrors}`,
   });
 
@@ -71,14 +83,15 @@ export async function GET(request: Request) {
             link: `/character-tournaments/${t.id}`,
           });
         }
-      } catch {
+      } catch (e) {
         roundErrors++;
+        console.error(`[cron] finalizeRound failed for ${t.id} (${t.title}):`, e);
       }
     }
   }
   results.push({
     task: "advance-rounds",
-    status: 200,
+    status: roundErrors > 0 ? 207 : 200,
     detail: `advanced=${advanced} champions=${championed} errors=${roundErrors}`,
   });
 
@@ -117,5 +130,3 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ ok: true, results });
 }
-
-const pendingNotifications: { title: string; body: string; link: string }[] = [];

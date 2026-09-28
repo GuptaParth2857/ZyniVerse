@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getPopularCharacters } from "@/lib/anilist";
 import type { Prisma } from "@prisma/client";
 
 // ── Character Tournament core logic ─────────────────────────────────────
@@ -287,6 +288,32 @@ export async function getPollVoteState(
   return null;
 }
 
+/**
+ * AniList `favourites` count per character id, used as a public, third-party
+ * popularity signal when votes do not separate the candidates.
+ *
+ * AniList caps `perPage` at 50, so we page a bounded number of times and only
+ * populate the map for the globally most-favourited characters. Anything absent
+ * from the map scores 0. Returns an empty map if AniList is unreachable, which
+ * degrades the ranking to the remaining tiebreakers rather than failing.
+ */
+export async function fetchAniListPopularity(pages = 5): Promise<Map<number, number>> {
+  const map = new Map<number, number>();
+  for (let page = 1; page <= pages; page++) {
+    try {
+      const res = await getPopularCharacters(page, 50);
+      for (const c of res.characters) {
+        const favs = (c as { favourites?: number | null }).favourites;
+        if (typeof favs === "number" && favs > 0) map.set(c.id, favs);
+      }
+      if (!res.pageInfo?.hasNextPage) break;
+    } catch {
+      break;
+    }
+  }
+  return map;
+}
+
 /** Close the qualifying poll and build the final bracket from top vote-getters and fan favorites. */
 export async function finalizeQualifying(tournamentId: string) {
   const tournament = await prisma.characterTournament.findUnique({ where: { id: tournamentId } });
@@ -311,14 +338,25 @@ export async function finalizeQualifying(tournamentId: string) {
     favoriteGroups.map((g) => [g.characterId, g._count._all])
   );
 
+  // AniList favourites fill the bracket when the poll did not produce enough
+  // distinct votes to separate every candidate. Without this, a thin poll left
+  // the lower seeds to `createdAt`, i.e. arbitrary insert order.
+  const anilistPopularity = await fetchAniListPopularity();
+
   const ranked = participants
-    .map((p) => ({ ...p, favoriteCount: favoritesByCharId.get(p.charId) ?? 0 }))
+    .map((p) => ({
+      ...p,
+      favoriteCount: favoritesByCharId.get(p.charId) ?? 0,
+      anilistFavourites: anilistPopularity.get(p.charId) ?? 0,
+    }))
     .sort(
       (a, b) =>
         // Top vote-getters first ...
         b.pollVotes - a.pollVotes ||
-        // ... then fan-base favorites fill the rest of the bracket.
+        // ... then fan-base favorites ...
         b.favoriteCount - a.favoriteCount ||
+        // ... then public AniList popularity, then insertion order as a last resort.
+        b.anilistFavourites - a.anilistFavourites ||
         a.createdAt.getTime() - b.createdAt.getTime()
     );
 
@@ -328,9 +366,20 @@ export async function finalizeQualifying(tournamentId: string) {
 
   const now = new Date();
 
+  // `@@unique([tournamentId, seed])` means a qualifier cannot be moved straight
+  // to its final seed: the target slot is still held by another qualifier that
+  // has not been reseeded yet, so the update fails with P2002. Shifting every
+  // qualifier by the same constant in one statement keeps their seeds distinct
+  // while clearing the 1..bracketSize range the final seeds need.
+  const SEED_SHIFT = 100_000;
+
   await prisma.$transaction([
     prisma.characterTournamentParticipant.deleteMany({
       where: { tournamentId, id: { in: excluded } },
+    }),
+    prisma.characterTournamentParticipant.updateMany({
+      where: { tournamentId, id: { in: qualifierIds } },
+      data: { seed: { increment: SEED_SHIFT } },
     }),
     ...qualifiers.map((p, i) =>
       prisma.characterTournamentParticipant.update({
@@ -356,6 +405,14 @@ export async function finalizeQualifying(tournamentId: string) {
   return {
     tournamentId,
     qualifiers: qualifiers.map((p, i) => ({ ...p, seed: i + 1 })),
+    // How each qualifying seed was actually decided, so the bracket can be
+    // explained honestly instead of implying every seed won a vote.
+    decidedBy: {
+      withVotes: qualifiers.filter((p) => p.pollVotes > 0).length,
+      byPopularityTiebreak: qualifiers.filter((p) => p.pollVotes === 0 && p.anilistFavourites > 0).length,
+      byInsertionOrder: qualifiers.filter((p) => p.pollVotes === 0 && p.anilistFavourites === 0).length,
+      totalVotesCast: participants.reduce((sum, p) => sum + p.pollVotes, 0),
+    },
   };
 }
 
