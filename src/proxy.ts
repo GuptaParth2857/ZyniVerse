@@ -1,90 +1,19 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// AI-training scrapers, SEO crawlers, and other high-volume non-human agents
-// that burn compute/invocations/origin-transfer without sending any users.
-// Googlebot and Bingbot are intentionally NOT blocked — they drive real
-// organic search traffic (including AI Overviews / AI Search answers).
-const BLOCKED_BOT_TOKENS = [
-  // AI-training + AI-search scrapers (no traffic return)
-  "gptbot",
-  "chatgpt-user",
-  "chatgpt",
-  "oai-searchbot",
-  "gpt-3.5-turbo",
-  "perplexity",
-  "pplx",
-  "claudebot",
-  "claude-web",
-  "claude-external",
-  "anthropic-ai",
-  "amazonbot",
-  "google-extended",
-  "googleother",
-  "bytespider",
-  "ai2bot",
-  "ai2bot-dolma",
-  "bytedance-webcrawler",
-  "tiktok-webcrawler",
-  "cohere-ai",
-  "dataforseekbot",
-  "youbot",
-  "omgilibot",
-  "omgili",
-  "webzio-extractor",
-  "velenpublicwebcrawler",
-  "zumbot",
-  "mia-research",
-  "imagesiftbot",
-  "brightbot",
-  "checkthewebsite",
-  "magpie-crawler",
-  "komodia",
-  "dupax-ai-crawler",
-  "kangaroobot",
-  "awarios",
-  "zentcrawl",
-  // SEO/analytics scrapers
-  "ccbot",
-  "dataforseobot",
-  "ahrefsbot",
-  "semrushbot",
-  "mj12bot",
-  "dotbot",
-  "seznambot",
-  "barkrowler",
-  "petalbot",
-  "applebot-extended",
-  "meta-externalagent",
-  "meta-externalfetcher",
-  "diffbot",
-  "yandexbot",
-  "baiduspider",
-  "sogou",
-  "exabot",
-  "linkdexbot",
-  "meanpathbot",
-  // Generic non-browser clients (curl/wget/LIBS — never real users)
-  "python-requests",
-  "python-urllib",
-  "python-httpx",
-  "pantra",
-  "scrapy",
-  "node-fetch",
-  "go-http-client",
-  "curl/",
-  "wget/",
-  "java/",
-  "http-client",
-  "axios/",
-  "okhttp-utils",
-];
-
-const AUTH_COOKIES = [
-  "__Secure-authjs.session-token",
-  "authjs.session-token",
-  "next-auth.session-token",
-];
+// ---------------------------------------------------------------------------
+// Proxy runs on the Node.js runtime in Next.js 16 (middleware was renamed to
+// Proxy and the Edge default was dropped in v16). That makes every matched
+// request a *billed Node function invocation* against Function Duration, not
+// a free Edge Request. `runtime` is not a valid option in Proxy files.
+//
+// So this file is kept deliberately cheap and narrow:
+//   - Bot blocking moved to the WAF (see VERCEL_WAF_RULES.md) where it is
+//     evaluated at the CDN edge and costs nothing.
+//   - The matcher excludes /api/* entirely, so API beacons no longer pay
+//     "proxy + route handler" = 2 invocations per browser request.
+// Only the public page CDN cache rules remain here.
+// ---------------------------------------------------------------------------
 
 // Public, non-personalized content pages that crawlers + CDN hits hammer.
 // Anonymous GET responses get a short shared-cache TTL so Vercel's CDN serves
@@ -100,6 +29,12 @@ const PUBLIC_CDN_PATHS: Array<{ pattern: RegExp; sMaxAge: number }> = [
   { pattern: /^\/(?:schedule|seasonal|top-anime|dubbed|indian-dubs|filler|manga|news|blog|wiki|voice-actors|wallpapers|watch-order)\/(?:page\/)?\d*$/, sMaxAge: 300 },
 ];
 
+const AUTH_COOKIES = [
+  "__Secure-authjs.session-token",
+  "authjs.session-token",
+  "next-auth.session-token",
+];
+
 function hasAuthCookie(request: NextRequest): boolean {
   return AUTH_COOKIES.some((name) => request.cookies.has(name));
 }
@@ -112,14 +47,6 @@ function getPublicCacheSeconds(path: string): number | null {
 }
 
 export function proxy(request: NextRequest) {
-  const ua = request.headers.get("user-agent");
-  if (ua) {
-    const lower = ua.toLowerCase();
-    if (BLOCKED_BOT_TOKENS.some((token) => lower.includes(token))) {
-      return new NextResponse("403 Forbidden", { status: 403 });
-    }
-  }
-
   if (request.method === "GET") {
     const path = request.nextUrl.pathname;
     if (!hasAuthCookie(request)) {
@@ -136,7 +63,11 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // `api/` is excluded on purpose: every API request (analytics beacons,
+  // activity tracking, ad impressions, /api/anilist/* fan-out) previously ran
+  // through Proxy first, doubling its function invocations for no benefit —
+  // those routes set their own Cache-Control headers in their handlers.
   matcher: [
-    "/((?!api/og|api/v1|api/streaming|api/extension|_next/static|_next/image|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js|txt|xml|json|woff|woff2|map|webmanifest)$).*)",
+    "/((?!api/|_next/static|_next/image|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js|txt|xml|json|woff|woff2|map|webmanifest)$).*)",
   ],
 };

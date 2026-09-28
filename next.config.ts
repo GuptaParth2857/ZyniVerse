@@ -11,13 +11,12 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client"],
   async headers() {
     return [
-      {
-        // Hashed, immutable Next.js build assets — cache forever.
-        source: "/_next/static/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
+      // No Cache-Control rule for /_next/static here on purpose. Next only
+      // applies its own asset cache header when one isn't already set:
+      //   production -> `public, max-age=31536000, immutable`
+      //   dev        -> `no-cache, must-revalidate`
+      // A custom rule short-circuits that check, so dev builds got pinned to a
+      // 1-year cache and served stale chunks on reload.
       {
         source: "/(.*)",
         headers: [

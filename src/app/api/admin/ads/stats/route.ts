@@ -1,7 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 import { requireAdmin } from "@/lib/admin";
+import { createRateLimiter } from "@/lib/rate-limiter";
+import { getSessionUserId } from "@/lib/session-user";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// AdBanner fires an impression POST for every unique path a visitor lands on
+// (deduped client-side in sessionStorage only), so a single browsing session
+// produced many DB inserts. Server-side we now count at most one impression
+// per visitor+placement per day, which is what the analytics dashboard
+// actually needs. Redis-backed via createRateLimiter, so it holds across
+// instances and regions rather than per-lambda.
+const impressionDeduper = createRateLimiter("ad-impression", {
+  maxRequests: 1,
+  windowMs: DAY_MS,
+});
+const clickLimiter = createRateLimiter("ad-click", {
+  maxRequests: 20,
+  windowMs: 60 * 1000,
+});
+const statsAbuseLimiter = createRateLimiter("ad-stats", {
+  maxRequests: 120,
+  windowMs: 60 * 1000,
+});
 
 export async function GET() {
   if (!(await requireAdmin())) {
@@ -68,31 +90,50 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  const body = await req.json();
-  const { action, placement, page } = body;
+  const body = await req.json().catch(() => null);
+  const { action, placement, page } = body ?? {};
 
   if (!placement || !page) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
+  if (typeof placement !== "string" || typeof page !== "string") {
+    return NextResponse.json({ error: "Invalid fields" }, { status: 400 });
+  }
+
+  const ip = statsAbuseLimiter.getClientIp(req);
+  if (!statsAbuseLimiter.checkSync(ip).allowed) {
+    return NextResponse.json({ success: true });
+  }
+
+  const userId = await getSessionUserId(req.headers);
 
   if (action === "impression") {
+    // One impression per visitor+placement per day. Anonymous visitors are
+    // keyed by IP (they have no userId to key on).
+    const dayKey = new Date().toISOString().slice(0, 10);
+    const key = `${userId ? `u:${userId}` : `a:${ip}`}|${placement}|${dayKey}`;
+    if (!(await impressionDeduper.check(key)).allowed) {
+      return NextResponse.json({ success: true, deduped: true });
+    }
     await prisma.adImpression.create({
       data: {
         placement,
         page,
-        userId: session?.user?.id || null,
+        userId: userId || null,
       },
     });
     return NextResponse.json({ success: true });
   }
 
   if (action === "click") {
+    if (!clickLimiter.checkSync(`${ip}|${placement}`).allowed) {
+      return NextResponse.json({ success: true });
+    }
     await prisma.adClick.create({
       data: {
         placement,
         page,
-        userId: session?.user?.id || null,
+        userId: userId || null,
       },
     });
     return NextResponse.json({ success: true });

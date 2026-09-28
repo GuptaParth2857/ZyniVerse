@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { createRateLimiter } from "@/lib/rate-limiter";
+import { getSessionUserId } from "@/lib/session-user";
+
+// ActivityTracker batches client-side, but each batch still cost a full
+// `auth()` + a `createMany` write. Cap per-visitor write volume here so a
+// runaway tab (or a script replaying the endpoint) cannot flood the table.
+const activityLimiter = createRateLimiter("activity-track", {
+  maxRequests: 20,
+  windowMs: 60 * 1000,
+});
 
 const VALID_ACTIONS = [
   "view_anime",
@@ -23,9 +32,13 @@ const VALID_ACTIONS = [
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = activityLimiter.getClientIp(req);
+    if (!activityLimiter.checkSync(ip).allowed) {
+      return NextResponse.json({ success: true });
+    }
+
     const body = await req.json();
-    const session = await auth();
-    const userId = session?.user?.id || null;
+    const userId = await getSessionUserId(req.headers);
 
     if (Array.isArray(body.batch)) {
       const entries = body.batch

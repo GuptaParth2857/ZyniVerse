@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { getSessionUserId } from "@/lib/session-user";
 import { consumeAiQuota, geminiGenerate, parseGeminiJson, aiCacheKey, isGeminiConfigured, AiQuotaError } from "@/lib/gemini";
 import { searchMedia, bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
@@ -22,12 +22,16 @@ function toCard(m: Media, reason: string): {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Sign in to use Smart Search." }, { status: 401 });
+  // Most callers of this endpoint are anonymous and get a 401. Resolving the
+  // session only when a session cookie is actually present avoids a next-auth
+  // round trip (and its `prisma.user.findUnique` in the session callback) on
+  // every one of those requests.
+  const userId = await getSessionUserId(req.headers);
+  if (!userId) return NextResponse.json({ error: "Sign in to use Smart Search." }, { status: 401 });
   if (!isGeminiConfigured()) return NextResponse.json({ error: "AI is not configured yet." }, { status: 503 });
 
   try {
-    await consumeAiQuota(session.user.id);
+    await consumeAiQuota(userId);
   } catch (e) {
     if (e instanceof AiQuotaError) return NextResponse.json({ error: e.message }, { status: 429 });
     throw e;
