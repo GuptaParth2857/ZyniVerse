@@ -1,8 +1,9 @@
 import { getPopular } from "@/lib/anilist";
 import { anilistLimiter } from "@/lib/rate-limiter";
+import { anilistRoute } from "@/lib/anilist-route";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export const GET = anilistRoute(async (req) => {
   const rateCheck = anilistLimiter.middleware(req);
   if (rateCheck) return rateCheck;
   const url = new URL(req.url);
@@ -11,4 +12,4 @@ export async function GET(req: Request) {
   return Response.json(data, {
     headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
   });
-}
+});

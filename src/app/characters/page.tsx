@@ -9,6 +9,9 @@ import type { CharacterBasic, Media, CharacterEdge } from "@/lib/anilist";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ExpandingFlexCard from "@/components/ExpandingFlexCard";
 import { CharCard, hashColor } from "@/components/CharCard";
+import { fetchJson, fetchList } from "@/lib/safe-json";
+
+type PageInfo = { hasNextPage: boolean; total: number };
 
 const QUICK_SEARCH = ["Naruto Uzumaki", "Monkey D. Luffy", "Goku", "Saitama", "Light Yagami", "Eren Yeager"];
 
@@ -62,12 +65,12 @@ function AnimeCharacterRow({ mediaId, visible }: { mediaId: number; visible: boo
     setEdges(null);
     setPageInfo({ hasNextPage: false, total: 0 });
     setPage(1);
-    fetch(`/api/anilist/characters/${mediaId}?page=1&perPage=25`)
-      .then((r) => r.json())
+    fetchJson<{ edges?: CharacterEdge[]; pageInfo?: PageInfo }>(`/api/anilist/characters/${mediaId}?page=1&perPage=25`)
       .then((d) => {
-        setEdges(d.edges || []);
-        setPageInfo(d.pageInfo || { hasNextPage: false, total: 0 });
+        setEdges(d.edges ?? []);
+        setPageInfo(d.pageInfo ?? { hasNextPage: false, total: 0 });
       })
+
       .catch(() => setEdges([]))
       .finally(() => setLoading(false));
   }, [mediaId, visible]);
@@ -76,12 +79,12 @@ function AnimeCharacterRow({ mediaId, visible }: { mediaId: number; visible: boo
     if (loadingMore) return;
     setLoadingMore(true);
     try {
-      const d = await fetch(`/api/anilist/characters/${mediaId}?page=${page + 1}&perPage=25`).then((r) => r.json());
+      const d = await fetchJson<{ edges?: CharacterEdge[]; pageInfo?: PageInfo }>(`/api/anilist/characters/${mediaId}?page=${page + 1}&perPage=25`);
       setEdges((prev) => {
         const seen = new Set((prev || []).map((e) => e.node.id));
-        return [...(prev || []), ...((d.edges || []) as CharacterEdge[]).filter((e) => !seen.has(e.node.id))];
+        return [...(prev || []), ...(d.edges ?? []).filter((e) => !seen.has(e.node.id))];
       });
-      setPageInfo(d.pageInfo || { hasNextPage: false, total: 0 });
+      setPageInfo(d.pageInfo ?? { hasNextPage: false, total: 0 });
       setPage((p) => p + 1);
     } catch {
       // ignore — user can retry with the button
@@ -191,8 +194,8 @@ export default function CharactersBrowsePage() {
     const timer = setTimeout(async () => {
       setSearching(true);
       try {
-        const data = await fetch(`/api/anilist/characters?q=${encodeURIComponent(searchQuery.trim())}`).then((r) => r.json());
-        setSearchResults(data.results);
+        const data = await fetchJson<{ results?: CharacterBasic[] }>(`/api/anilist/characters?q=${encodeURIComponent(searchQuery.trim())}`);
+        setSearchResults(data.results ?? []);
       } catch { setSearchResults([]); }
       setSearching(false);
     }, 300);
@@ -200,14 +203,16 @@ export default function CharactersBrowsePage() {
   }, [searchQuery]);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/anilist/popular-characters?perPage=50").then((r) => r.json()),
-      fetch("/api/anilist/trending?perPage=18").then((r) => r.json()),
-      fetch("/api/anilist/popular?perPage=30").then((r) => r.json()),
-    ]).then(([popularChars, trending, popular]) => {
-      setChars(popularChars.characters || []);
-      setTrendingAnime(trending);
-      setPopularAnime(popular);
+    // allSettled, not all: these three sections are independent, so one failing
+    // upstream should not blank the other two.
+    Promise.allSettled([
+      fetchJson<{ characters?: CharacterBasic[] }>("/api/anilist/popular-characters?perPage=50"),
+      fetchList<Media>("/api/anilist/trending?perPage=18"),
+      fetchList<Media>("/api/anilist/popular?perPage=30"),
+    ]).then(([charsRes, trendingRes, popularRes]) => {
+      if (charsRes.status === "fulfilled") setChars(charsRes.value.characters ?? []);
+      if (trendingRes.status === "fulfilled") setTrendingAnime(trendingRes.value);
+      if (popularRes.status === "fulfilled") setPopularAnime(popularRes.value);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);

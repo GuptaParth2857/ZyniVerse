@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import type { CharacterBasic } from "@/lib/anilist";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CharCard } from "@/components/CharCard";
+import { fetchJson } from "@/lib/safe-json";
 
 const PAGE_SIZE = 50;
 
@@ -19,10 +20,9 @@ export default function PopularCharactersPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    fetch(`/api/anilist/popular-characters?page=1&perPage=${PAGE_SIZE}`)
-      .then((r) => r.json())
+    fetchJson<{ characters?: CharacterBasic[]; pageInfo?: { hasNextPage?: boolean } }>(`/api/anilist/popular-characters?page=1&perPage=${PAGE_SIZE}`)
       .then((d) => {
-        setChars(d.characters || []);
+        setChars(d.characters ?? []);
         setHasNext(!!d.pageInfo?.hasNextPage);
       })
       .catch(() => setChars([]))
@@ -33,10 +33,10 @@ export default function PopularCharactersPage() {
     if (loadingMore) return;
     setLoadingMore(true);
     try {
-      const d = await fetch(`/api/anilist/popular-characters?page=${page + 1}&perPage=${PAGE_SIZE}`).then((r) => r.json());
+      const d = await fetchJson<{ characters?: CharacterBasic[]; pageInfo?: { hasNextPage?: boolean } }>(`/api/anilist/popular-characters?page=${page + 1}&perPage=${PAGE_SIZE}`);
       setChars((prev) => {
         const seen = new Set((prev || []).map((c) => c.id));
-        return [...(prev || []), ...((d.characters || []) as CharacterBasic[]).filter((c) => !seen.has(c.id))];
+        return [...(prev || []), ...(d.characters ?? []).filter((c) => !seen.has(c.id))];
       });
       setHasNext(!!d.pageInfo?.hasNextPage);
       setPage((p) => p + 1);

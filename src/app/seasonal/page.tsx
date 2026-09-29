@@ -10,6 +10,7 @@ import NativeBannerAd from "@/components/NativeBannerAd";
 import HotEpisodes from "@/components/HotEpisodes";
 import SeasonalFilters, { type SeasonalFiltersState } from "@/components/SeasonalFilters";
 import type { Media } from "@/lib/anilist";
+import { fetchJson, fetchList } from "@/lib/safe-json";
 
 const SEASONS = ["WINTER", "SPRING", "SUMMER", "FALL"] as const;
 
@@ -46,7 +47,8 @@ export default function SeasonalPage() {
   }, [yearOpen]);
 
   const filteredList = useMemo(() => {
-    let r = [...list];
+    // Defensive: a non-array here would throw on spread and blank the page.
+    let r = Array.isArray(list) ? [...list] : [];
     if (filters.format.length) r = r.filter((m) => m.format && filters.format.includes(m.format));
     if (filters.genres.length) r = r.filter((m) => m.genres?.some((g) => filters.genres.includes(g)));
     if (filters.minScore > 0) r = r.filter((m) => (m.averageScore || 0) >= filters.minScore);
@@ -66,9 +68,9 @@ export default function SeasonalPage() {
     setError(null);
     /* eslint-enable react-hooks/set-state-in-effect */
     const p = type === "ANIME"
-      ? fetch(`/api/anilist/seasonal?year=${year}&season=${season}&perPage=50`).then((r) => r.json()).then((d) => { if (!cancelled) { setList(d.media); setTotalCount(d.pageInfo?.total || d.media.length); } })
-      : fetch("/api/anilist/popular?perPage=50").then((r) => r.json()).then((d) => { if (!cancelled) { setList(d); setTotalCount(d.length); } });
-    p.catch((e: Error) => { if (!cancelled) setError(e.message); }).finally(() => { if (!cancelled) setLoading(false); });
+      ? fetchJson<{ media?: Media[]; pageInfo?: { total?: number } }>(`/api/anilist/seasonal?year=${year}&season=${season}&perPage=50`).then((d) => { if (!cancelled) { setList(Array.isArray(d.media) ? d.media : []); setTotalCount(d.pageInfo?.total || 0); } })
+      : fetchList<Media>("/api/anilist/popular?perPage=50").then((d) => { if (!cancelled) { setList(d); setTotalCount(d.length); } });
+    p.catch((e: Error) => { if (!cancelled) { setList([]); setError(e.message); } }).finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [year, season, type]);
 

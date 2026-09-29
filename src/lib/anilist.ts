@@ -28,22 +28,42 @@ export function registerAniListCache(adapter: AniListCacheAdapter): void {
 const responseCache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000;
 
-let degradedUntil = 0;
+// Degraded mode is tracked per query key, not per instance.
+//
+// It used to be one global `degradedUntil` timestamp for the whole lambda. A
+// single 429 from AniList (which rate-limits per IP, and serverless egress IPs
+// are shared) therefore froze live fetching for *every* query on that instance
+// for 2 minutes. Because 21 of 27 pages are client-rendered, that surfaced as
+// the entire site going blank at once.
+const degradedUntilByKey = new Map<string, number>();
 const DEGRADED_COOLDOWN_MS = 2 * 60 * 1000;
+const MAX_DEGRADED_KEYS = 500;
 
 export class AniListUnavailableError extends Error {
-  constructor() {
-    super("AniList is temporarily unavailable");
+  constructor(cause?: string) {
+    // Keep the upstream reason (rate limited / timeout / 5xx) in the message so
+    // logs and the client's error banner say what actually happened, instead of
+    // a flat "temporarily unavailable".
+    super(cause ? `AniList is temporarily unavailable (${cause})` : "AniList is temporarily unavailable");
     this.name = "AniListUnavailableError";
   }
 }
 
-function isDegraded(): boolean {
-  return Date.now() < degradedUntil;
+function isDegraded(key: string): boolean {
+  const until = degradedUntilByKey.get(key);
+  if (until === undefined) return false;
+  if (Date.now() >= until) {
+    degradedUntilByKey.delete(key);
+    return false;
+  }
+  return true;
 }
 
-function enterDegradedMode(): void {
-  degradedUntil = Date.now() + DEGRADED_COOLDOWN_MS;
+function enterDegradedMode(key: string): void {
+  // This map is a circuit breaker, not storage. If it somehow grows past the
+  // cap, reset it wholesale rather than tracking every key indefinitely.
+  if (degradedUntilByKey.size >= MAX_DEGRADED_KEYS) degradedUntilByKey.clear();
+  degradedUntilByKey.set(key, Date.now() + DEGRADED_COOLDOWN_MS);
 }
 
 function getCacheKey(query: string, variables: Record<string, unknown>): string {
@@ -66,6 +86,11 @@ function setCache(key: string, data: unknown): void {
 
 export function clearAnilistCache(): void {
   responseCache.clear();
+  // Degraded cooldowns are module state too. Without this, one test (or one
+  // unlucky burst of traffic) leaves later callers in degraded mode with an
+  // empty cache, and every subsequent request fails without ever touching the
+  // network.
+  degradedUntilByKey.clear();
 }
 
 export function getAnilistCacheStats(): { size: number } {
@@ -82,7 +107,7 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
 
   let lastError: Error | null = null;
 
-  if (!isDegraded()) {
+  if (!isDegraded(cacheKey)) {
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       try {
         const controller = new AbortController();
@@ -110,7 +135,7 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
               await new Promise((r) => setTimeout(r, waitMs));
               continue;
             }
-            enterDegradedMode();
+            enterDegradedMode(cacheKey);
             throw new Error("Rate limited by AniList — try again later.");
           }
           const body = await res.text().catch(() => "");
@@ -118,7 +143,7 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
             await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
             continue;
           }
-          enterDegradedMode();
+          enterDegradedMode(cacheKey);
           throw new Error(`AniList request failed (${res.status}): ${body.slice(0, 200)}`);
         }
 
@@ -129,7 +154,7 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
             await new Promise((r) => setTimeout(r, 500));
             continue;
           }
-          enterDegradedMode();
+          enterDegradedMode(cacheKey);
           throw new Error(msg);
         }
 
@@ -145,7 +170,7 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
           lastError = new Error("AniList request timed out — try again.");
         }
         if (attempt >= MAX_RETRIES) {
-          enterDegradedMode();
+          enterDegradedMode(cacheKey);
         }
         // Timeouts usually mean the network path is slow/dead — retry a hung
         // request at most once, then fail over to stale cache / degraded UI.
@@ -171,8 +196,12 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
     }
   }
 
-  if (isDegraded()) {
-    throw new AniListUnavailableError();
+  if (isDegraded(cacheKey)) {
+    // Thrown only after the persistent stale cache was tried above, so a
+    // 5xx here means we genuinely have nothing. Routes wrap this into a
+    // non-cacheable 503 (see anilistRoute) rather than letting it 500.
+    // lastError carries the real reason (rate limited, timeout, 5xx).
+    throw new AniListUnavailableError(lastError?.message);
   }
 
   throw lastError || new Error("AniList request failed");

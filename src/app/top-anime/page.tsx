@@ -8,6 +8,7 @@ import { bestTitle } from "@/lib/anilist";
 import { CardSkeleton } from "@/components/Loader";
 import { PageTransition } from "@/components/PageTransition";
 import type { Media } from "@/lib/anilist";
+import { fetchList } from "@/lib/safe-json";
 
 const TABS = [
   { id: "SCORE_DESC", label: "Top Rated" },
@@ -66,8 +67,7 @@ export default function TopAnimePage() {
     let c = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    fetch(fetcher[tab as keyof typeof fetcher])
-      .then((r) => r.json())
+    fetchList<Media>(fetcher[tab as keyof typeof fetcher])
       .then((d) => { if (!c) setList(d); })
       .catch(() => { if (!c) setList([]); })
       .finally(() => { if (!c) setLoading(false); });
@@ -78,7 +78,7 @@ export default function TopAnimePage() {
     let c = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setGenreLoading(true);
-    Promise.all(GENRE_CATEGORIES.map((g) => fetch(`/api/anilist/recommendations?genre=${encodeURIComponent(g.id)}&perPage=5`).then((r) => r.json())))
+    Promise.all(GENRE_CATEGORIES.map((g) => fetchList<Media>(`/api/anilist/recommendations?genre=${encodeURIComponent(g.id)}&perPage=5`)))
       .then((results) => {
         if (!c) {
           const map: Record<string, Media[]> = {};
