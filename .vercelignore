@@ -1,0 +1,25 @@
+# Vercel CLI only honours .vercelignore - it does NOT fall back to .gitignore,
+# so without this file .env / .env.local / .env.production / .env.vercel-import
+# get uploaded into the deployment source. Keep this list in sync with .gitignore.
+
+node_modules
+.next
+.git
+.gitignore
+.vercel
+
+# Secrets. Never ship these in the deployment source; the real values live in
+# Project Settings > Environment Variables.
+.env
+.env.*
+.env*
+
+# Local-only data and scratch files
+/data/
+prisma/dev.db
+dist
+build_error.txt
+build_output.txt
+*.tsbuildinfo
+*.log
+scripts/_*
