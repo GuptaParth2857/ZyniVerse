@@ -25,8 +25,49 @@ export function registerAniListCache(adapter: AniListCacheAdapter): void {
   (globalThis as Record<string, unknown>)[GLOBAL_ADAPTER_KEY] = adapter;
 }
 
+// `instrumentation.ts` registers the Prisma-backed cache, but `register()` does
+// not run while `next build` prerenders pages. Without the adapter the build has
+// no shared cache at all, so every one of the ~500 AniList-backed prerendered
+// pages fires its own request from the same IP and AniList rate-limits the
+// build into baking empty HTML. Load the adapter on demand on the fallback path
+// so it is active during builds too. A dynamic import is used deliberately: the
+// adapter module statically imports this one, so a static import would cycle.
+async function ensureAdapter(): Promise<AniListCacheAdapter | null> {
+  const existing = getActiveAdapter();
+  if (existing) return existing;
+  if (typeof window !== "undefined") return null;
+  try {
+    await import("./anilist-cache");
+  } catch {
+    // No database available (e.g. no DATABASE_URL). In-memory stale still works.
+  }
+  return getActiveAdapter();
+}
+
+// Failure is currently swallowed by callers that map it to `[]`, which is how an
+// empty homepage got baked and served from the CDN without a single log line.
+// Surface it so Vercel's logs actually show the rate limiting.
+function logAnilistFailure(cacheKey: string, error: Error | null): void {
+  const preview = cacheKey.length > 120 ? `${cacheKey.slice(0, 120)}…` : cacheKey;
+  console.error(
+    `[anilist] live fetch failed (${error?.message ?? "unknown error"}) — serving stale if available. query: ${preview}`,
+  );
+}
+
 const responseCache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000;
+
+// How long a previous response may still be served once AniList becomes
+// unreachable. AniList rate-limits at 30 req/min per IP and serverless egress
+// IPs are shared, so a 429 during a build (hundreds of prerendered pages share
+// one IP) is guaranteed rather than unlikely. That must degrade to "slightly
+// stale data", never to a blank page baked into the static HTML.
+const STALE_TTL = 24 * 60 * 60 * 1000;
+
+// Expired entries are now retained for STALE_TTL instead of being dropped at
+// 5 minutes, so the map holds far more keys than it used to. Cap it and evict
+// the oldest entries so it cannot grow without bound across a long-lived server.
+const MAX_CACHE_ENTRIES = 500;
 
 // Degraded mode is tracked per query key, not per instance.
 //
@@ -73,7 +114,17 @@ function getCacheKey(query: string, variables: Record<string, unknown>): string 
 function getFromCache(key: string): unknown | null {
   const entry = responseCache.get(key);
   if (!entry) return null;
-  if (Date.now() - entry.timestamp > CACHE_TTL) {
+  // Expired entries are deliberately kept around for getStaleFromCache().
+  if (Date.now() - entry.timestamp > CACHE_TTL) return null;
+  return entry.data;
+}
+
+// Returns a past response regardless of freshness, so a failed refetch can be
+// answered with the last known-good payload instead of nothing.
+function getStaleFromCache(key: string): unknown | null {
+  const entry = responseCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > STALE_TTL) {
     responseCache.delete(key);
     return null;
   }
@@ -81,6 +132,11 @@ function getFromCache(key: string): unknown | null {
 }
 
 function setCache(key: string, data: unknown): void {
+  if (responseCache.size >= MAX_CACHE_ENTRIES) {
+    // Map preserves insertion order, so the first key is the oldest write.
+    const oldest = responseCache.keys().next().value;
+    if (oldest !== undefined) responseCache.delete(oldest);
+  }
   responseCache.set(key, { data, timestamp: Date.now() });
 }
 
@@ -119,7 +175,11 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
           body: JSON.stringify({ query, variables }),
           signal: controller.signal,
           cache: "force-cache",
-          next: { revalidate: 86400 },
+          // Was 86400 (24h). That made a single rate-limited response stick
+          // for a whole day, so an ISR revalidation would re-bake the empty
+          // page from the 24h cache instead of retrying. Trending/discovery
+          // data does not need day-long freshness.
+          next: { revalidate: 1800 },
         });
 
         clearTimeout(timer);
@@ -183,10 +243,22 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
     }
   }
 
-  const activeAdapter = getActiveAdapter();
-  if (activeAdapter) {
+  // Everything below here is the failure path: the live fetch and all retries
+  // are exhausted. Order matters — in-memory stale first (free), then the
+  // persistent adapter (shared across processes and deploys), and only then give
+  // up. Previously an in-memory expired entry was deleted outright, so this
+  // path had nothing in memory to fall back on.
+  logAnilistFailure(cacheKey, lastError);
+
+  const inMemoryStale = getStaleFromCache(cacheKey);
+  if (inMemoryStale !== null && inMemoryStale !== undefined) {
+    return inMemoryStale;
+  }
+
+  const adapter = await ensureAdapter();
+  if (adapter) {
     try {
-      const stale = await activeAdapter.load(cacheKey);
+      const stale = await adapter.load(cacheKey);
       if (stale !== null && stale !== undefined) {
         setCache(cacheKey, stale);
         return stale;
@@ -955,6 +1027,54 @@ export async function getSpotlight() {
   const q = `query { Page(page: 1, perPage: 10) { media(sort: [TRENDING_DESC, POPULARITY_DESC], type: ANIME, isAdult: false) { ${MEDIA_FIELDS} } } }`;
   const data = await gql(q);
   return data.Page.media as Media[];
+}
+
+export interface HomepageData {
+  trending: Media[];
+  popular: Media[];
+  upcoming: Media[];
+  topRated: Media[];
+}
+
+/**
+ * The homepage's four rails in one round trip.
+ *
+ * They used to be four separate `getTrending` / `getPopular` / `getUpcoming` /
+ * `getTopRated` calls. Against a 30 req/min per-IP budget that is four times
+ * the quota for a single page render, and the homepage is the most heavily
+ * requested route on the site.
+ */
+export async function getHomepageData(
+  counts: { trending?: number; popular?: number; upcoming?: number; topRated?: number } = {},
+): Promise<HomepageData> {
+  const trending = counts.trending ?? 24;
+  const popular = counts.popular ?? 18;
+  const upcoming = counts.upcoming ?? 12;
+  const topRated = counts.topRated ?? 12;
+
+  const q = `
+    query ($trending: Int, $popular: Int, $upcoming: Int, $topRated: Int) {
+      trending: Page(page: 1, perPage: $trending) {
+        media(sort: TRENDING_DESC, type: ANIME, isAdult: false) { ${MEDIA_FIELDS} }
+      }
+      popular: Page(page: 1, perPage: $popular) {
+        media(sort: POPULARITY_DESC, type: ANIME, isAdult: false) { ${MEDIA_FIELDS} }
+      }
+      upcoming: Page(page: 1, perPage: $upcoming) {
+        media(sort: POPULARITY_DESC, type: ANIME, status: NOT_YET_RELEASED, isAdult: false) { ${MEDIA_FIELDS} }
+      }
+      topRated: Page(page: 1, perPage: $topRated) {
+        media(sort: SCORE_DESC, type: ANIME, isAdult: false) { ${MEDIA_FIELDS} }
+      }
+    }`;
+
+  const data = await gql(q, { trending, popular, upcoming, topRated });
+  return {
+    trending: (data.trending?.media ?? []) as Media[],
+    popular: (data.popular?.media ?? []) as Media[],
+    upcoming: (data.upcoming?.media ?? []) as Media[],
+    topRated: (data.topRated?.media ?? []) as Media[],
+  };
 }
 
 export async function getAnimeListFromAniList(username: string) {

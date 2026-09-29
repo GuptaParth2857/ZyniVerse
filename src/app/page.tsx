@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  getTrending, getPopular, getUpcoming, getTopRated, getAiringSchedule,
+  getHomepageData, getAiringSchedule,
 } from "@/lib/anilist";
 
 export const metadata: Metadata = {
@@ -37,7 +37,6 @@ import WhyZyniVerse from "@/components/WhyZyniVerse";
 import NeonBanner from "@/components/NeonBanner";
 import BrandPartners from "@/components/BrandPartners";
 import PoweredBy from "@/components/PoweredBy";
-import type { Media } from "@/lib/anilist";
 import { prisma } from "@/lib/prisma";
 import { posterCategoryOf } from "@/lib/post-types";
 
@@ -83,11 +82,8 @@ function featuredEndsInOf(featuredTournament: FeaturedTournament): string | null
 }
 
 export default async function Home() {
-  const [trending, popular, upcoming, topRated, tickerRes, userCountRes, latestPostersRes, featuredTournamentRes] = await Promise.allSettled([
-    getTrending(24),
-    getPopular(18),
-    getUpcoming(12),
-    getTopRated(12),
+  const [homepage, tickerRes, userCountRes, latestPostersRes, featuredTournamentRes] = await Promise.allSettled([
+    getHomepageData(),
     loadAiringSchedule(),
     prisma.user.count(),
     prisma.post.findMany({
@@ -115,11 +111,37 @@ export default async function Home() {
     }),
   ] as const);
 
-  const getData = (r: PromiseSettledResult<Media[]>) => r.status === "fulfilled" ? r.value : [];
-  const trendingData = getData(trending);
-  const popularData = getData(popular);
-  const upcomingData = getData(upcoming);
-  const topRatedData = getData(topRated);
+  // The homepage is statically prerendered, so whatever AniList returns during
+  // `next build` is what gets baked into the HTML and served from the CDN.
+  // When the four rails all come back empty the old code stored `[]` silently,
+  // shipping a blank hero to every visitor with no error anywhere. Surface it
+  // instead of letting it ship.
+  const homepageData =
+    homepage.status === "fulfilled"
+      ? homepage.value
+      : { trending: [], popular: [], upcoming: [], topRated: [] };
+
+  const isBuild = process.env.NEXT_PHASE === "phase-production-build";
+  const hasAnyAnime =
+    homepageData.trending.length > 0 ||
+    homepageData.popular.length > 0 ||
+    homepageData.upcoming.length > 0 ||
+    homepageData.topRated.length > 0;
+
+  if (isBuild && !hasAnyAnime) {
+    throw new Error(
+      "Homepage prerender produced no AniList data. AniList rate-limits at 30 req/min " +
+        "per IP and a build prerenders hundreds of pages from one IP, so the live fetch " +
+        "is rate-limited and the shared Prisma cache had nothing to fall back on. " +
+        "Bailing out instead of shipping an empty homepage to the CDN.",
+    );
+  }
+
+  const trendingData = homepageData.trending;
+  const popularData = homepageData.popular;
+  const upcomingData = homepageData.upcoming;
+  const topRatedData = homepageData.topRated;
+
   const ticker: Awaited<ReturnType<typeof getAiringSchedule>> = tickerRes.status === "fulfilled" ? tickerRes.value : [];
   const userCount = userCountRes.status === "fulfilled" ? userCountRes.value : 0;
   const latestPosters: { id: string; title: string; image: string | null; type: string }[] = latestPostersRes.status === "fulfilled" ? latestPostersRes.value : [];

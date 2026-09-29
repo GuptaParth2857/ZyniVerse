@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
     "build": "prisma generate && next build",
     "start": "npx tsx server.ts",
-    "dev:app": "next dev",
+    "dev:app": "next dev -p 3000",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",

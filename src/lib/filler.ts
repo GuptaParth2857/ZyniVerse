@@ -10,6 +10,11 @@ interface CacheEntry {
 let fillerCache: CacheEntry | null = null;
 const CACHE_TTL = 3600 * 1000;
 
+// Serve the last good copy even past the TTL. This file is a single 3.2MB
+// GitHub download, so a transient failure would otherwise blank every filler
+// page and the sitemap at once.
+const STALE_TTL = 7 * 24 * 60 * 60 * 1000;
+
 export interface FillerEpisode {
   episode: number;
   title: string;
@@ -29,21 +34,32 @@ async function fetchFillerData(): Promise<FillerShow[]> {
     return fillerCache.data;
   }
   const res = await fetch(FILLER_JSON_URL, {
-    // Cacheable (1h) instead of no-store: /sitemap.xml + /filler pages use this
-    // data, and no-store forced the sitemap route to be dynamic (ƒ) — every
-    // crawler fetch re-ran this GitHub call + DB + AniList work. Cached fetches
-    // let the sitemap become static ○ and serve from the CDN.
-    next: { revalidate: 3600 },
+    // Next's data cache caps entries at 2MB and this file is 3.2MB, so the
+    // build logged "items over 2MB can not be cached" twice and re-downloaded
+    // the whole thing on every prerender. Caching it ourselves (in-memory plus
+    // the stale window below) keeps the sitemap and /filler pages static without
+    // asking Next to hold an oversized entry.
+    cache: "no-store",
     signal: AbortSignal.timeout(30000),
   });
-  if (!res.ok) throw new Error("Failed to fetch filler data");
+  if (!res.ok) throw new Error(`Failed to fetch filler data (${res.status})`);
   const data: FillerShow[] = await res.json();
   fillerCache = { data, timestamp: Date.now() };
   return data;
 }
 
 export async function getFillerData(): Promise<FillerShow[]> {
-  return fetchFillerData();
+  try {
+    return await fetchFillerData();
+  } catch (error) {
+    if (fillerCache && Date.now() - fillerCache.timestamp < STALE_TTL) {
+      console.warn(
+        `[filler] AniFiller download failed (${error instanceof Error ? error.message : String(error)}) — serving cached copy.`,
+      );
+      return fillerCache.data;
+    }
+    throw error;
+  }
 }
 
 export function getFillerDataFromCache(): FillerShow[] {
