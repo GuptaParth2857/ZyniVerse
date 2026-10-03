@@ -249,9 +249,46 @@ export default function TournamentDetailPage({
 
   const handleVote = async (matchId: string, choice: "A" | "B") => {
     if (votingMatch) return;
-    if (data?.myVotes[matchId]) return;
+    const alreadyVoted = data?.myVotes[matchId];
+    if (alreadyVoted) {
+      // The sibling side now renders a non-interactive "Already voted" label, so
+      // this is only reachable from a stale render or a double click. Say
+      // something rather than failing silently.
+      setActionError(
+        alreadyVoted === choice
+          ? "You already voted for this character."
+          : "You already voted in this matchup — one vote per match."
+      );
+      return;
+    }
     setVotingMatch(matchId);
     setActionError(null);
+
+    // Snapshot for rollback. `data` here is still the pre-vote value because
+    // setData has only been queued, not applied.
+    const before = data;
+
+    // Optimistic update. Waiting for the round trip made the tally pop in a
+    // beat after the click, which read as lag. The server's authoritative
+    // counts replace this below; on failure we restore the snapshot.
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        myVotes: { ...prev.myVotes, [matchId]: choice },
+        totalVotes: prev.totalVotes + 1,
+        rounds: prev.rounds.map((round) => ({
+          ...round,
+          matches: round.matches.map((m) => {
+            if (m.id !== matchId) return m;
+            const votesA = m.votesA + (choice === "A" ? 1 : 0);
+            const votesB = m.votesB + (choice === "B" ? 1 : 0);
+            return { ...m, votesA, votesB, _count: { votes: votesA + votesB } };
+          }),
+        })),
+      };
+    });
+
     try {
       const res = await fetch(`/api/character-tournaments/${id}/matches/${matchId}/vote`, {
         method: "POST",
@@ -260,6 +297,7 @@ export default function TournamentDetailPage({
       });
       const result = await res.json();
       if (!res.ok) {
+        setData(before);
         setActionError(result.error || "Failed to vote");
         setVotingMatch(null);
         return;
@@ -269,7 +307,6 @@ export default function TournamentDetailPage({
         return {
           ...prev,
           myVotes: { ...prev.myVotes, [matchId]: choice },
-          totalVotes: prev.totalVotes + 1,
           rounds: prev.rounds.map((round) => ({
             ...round,
             matches: round.matches.map((m) =>
@@ -282,6 +319,7 @@ export default function TournamentDetailPage({
       });
       setVotingMatch(null);
     } catch {
+      setData(before);
       setActionError("Failed to vote");
       setVotingMatch(null);
     }
@@ -1183,7 +1221,7 @@ function MatchCard({
   const pctA = total > 0 ? Math.round((match.votesA / total) * 100) : 0;
   const pctB = total > 0 ? Math.round((match.votesB / total) * 100) : 0;
   const hasBoth = !!match.charA && !!match.charB;
-  const canVote = active && hasBoth && !match.winnerId && !voting;
+  const canVote = active && hasBoth && !match.winnerId && !voting && !voted;
   const winnerIsA = !!match.winnerId && match.winnerId === match.charAId;
   const winnerIsB = !!match.winnerId && match.winnerId === match.charBId;
 
@@ -1208,6 +1246,7 @@ function MatchCard({
           decided={!!match.winnerId}
           side="A"
           voted={voted === "A"}
+          matchVoted={voted}
           canVote={canVote}
           voting={voting}
           onVote={() => onVote(match.id, "A")}
@@ -1222,6 +1261,7 @@ function MatchCard({
           decided={!!match.winnerId}
           side="B"
           voted={voted === "B"}
+          matchVoted={voted}
           canVote={canVote}
           voting={voting}
           onVote={() => onVote(match.id, "B")}
@@ -1268,6 +1308,7 @@ function DuelSide({
   decided,
   side,
   voted,
+  matchVoted,
   canVote,
   voting,
   onVote,
@@ -1280,6 +1321,9 @@ function DuelSide({
   decided: boolean;
   side: "A" | "B";
   voted?: boolean;
+  /** The viewer's vote for this matchup, whichever side it was cast on. Lets a
+   *  side show "Already voted" instead of a button that silently does nothing. */
+  matchVoted?: "A" | "B";
   canVote: boolean;
   voting: boolean;
   onVote: () => void;
@@ -1459,6 +1503,20 @@ function DuelSide({
             </motion.svg>
             Voted
           </motion.div>
+        ) : matchVoted ? (
+          /* The viewer already voted for the other side of this matchup. Render
+             a non-interactive label rather than a button that looks live but
+             quietly does nothing. */
+          <div
+            title="You already voted in this matchup — one vote per match."
+            className="flex h-11 w-full items-center justify-center gap-1.5 rounded-[16px] border border-[var(--color-line)] bg-black/25 px-2 text-xs font-bold text-[var(--color-mute)]"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="shrink-0 opacity-70">
+              <rect x="4" y="11" width="16" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 1 1 8 0v4" />
+            </svg>
+            <span className="truncate">Already voted</span>
+          </div>
         ) : canVote ? (
           <motion.button
             type="button"
@@ -1468,17 +1526,20 @@ function DuelSide({
             aria-label={`Vote for ${participant.charName}`}
             className="flex h-11 w-full items-center justify-center gap-1.5 rounded-[16px] bg-gradient-to-r from-[#00ffe0] via-[#7000ff] to-[#ff00e6] text-xs font-bold text-white shadow-[0_0_30px_-8px_rgba(0,255,224,0.3)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_50px_-6px_rgba(0,255,224,0.5),0_0_80px_-20px_rgba(255,0,230,0.2)] disabled:pointer-events-none disabled:opacity-50"
           >
-            {voting ? (
-              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/80 border-t-transparent" />
-            ) : (
-              <>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
-                </svg>
-                Vote
-              </>
-            )}
+            {/* The in-flight state is handled by the `voting` branch above, so
+                this button only ever renders when no vote is pending. */}
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+            </svg>
+            Vote
           </motion.button>
+        ) : voting ? (
+          /* A vote is in flight for this matchup. This used to fall through to
+             the "Voting closed" branch, which read as if voting had ended. */
+          <div className="flex h-11 w-full items-center justify-center gap-2 rounded-[16px] border border-[var(--color-line)] bg-black/25 text-xs font-bold text-[var(--color-mute)]">
+            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            Voting…
+          </div>
         ) : (
           <div className="flex h-11 w-full items-center justify-center rounded-[16px] border border-[var(--color-line)] bg-black/20 text-xs font-bold uppercase tracking-wider text-[var(--color-mute)]">
             {decided ? (isWinner ? "Advanced" : "Eliminated") : "Voting closed"}
