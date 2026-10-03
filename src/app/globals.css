@@ -25,6 +25,26 @@
   --color-glass-pink: #EC4899;
 }
 
+/* Page shell width.
+   `max-w-7xl` is the single page container used 144 times across 32 files, and
+   the navbar and footer are bound to the same token — so changing it here
+   aligns every page at once without touching a single call site.
+
+   Tailwind's default is a flat 80rem (1280px), which is why a 1080p monitor
+   lost 320px per side to dead space (33% of the screen) and why the layout only
+   started to look right once zoom was pushed to 110%. The clamp grows the shell
+   with the window instead.
+
+   - Floor 80rem keeps every viewport <= 1280px pixel-identical to before; phones
+     and small laptops do not move at all.
+   - 96% is a percentage, not vw, so the vertical scrollbar is not counted and
+     the shell can never overflow horizontally.
+   - Ceiling 105rem (1680px) still lets ultra-wide monitors breathe; past that,
+     full-bleed text gets genuinely hard to read. */
+@theme {
+  --container-7xl: clamp(80rem, 96%, 105rem);
+}
+
 * {
   box-sizing: border-box;
 }

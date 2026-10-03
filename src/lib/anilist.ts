@@ -1048,7 +1048,14 @@ export async function getHomepageData(
   counts: { trending?: number; popular?: number; upcoming?: number; topRated?: number } = {},
 ): Promise<HomepageData> {
   const trending = counts.trending ?? 24;
-  const popular = counts.popular ?? 18;
+  // 27, not 18. The homepage renders this rail through MediaCarousel with
+  // rows={3} and fixed-width cards (`md:w-[180px]`, 12px gap), so a row holds
+  // exactly `ceil(count / 3)` posters. At 18 that is 6 cards = 1140px, which
+  // leaves ~490px of dead space on the right now that the page shell grows on
+  // wide monitors. 27 gives 9 per row = 1716px, which fills the row at every
+  // desktop width (overflowing slightly, so the row stays scrollable) instead
+  // of trailing off into empty space.
+  const popular = counts.popular ?? 27;
   const upcoming = counts.upcoming ?? 12;
   const topRated = counts.topRated ?? 12;
 
