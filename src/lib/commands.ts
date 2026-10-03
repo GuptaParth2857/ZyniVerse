@@ -60,6 +60,7 @@ export const COMMANDS: Command[] = [
   { id: "random", label: "Random Anime", path: "/random", group: "Discover", keywords: "surprise me shuffle roulette dice", emoji: "🎲" },
   { id: "recommendations", label: "Recommendations", path: "/recommendations", group: "Discover", keywords: "suggestions for you picks", emoji: "✨" },
   { id: "popular-characters", label: "Popular Characters", path: "/popular-characters", group: "Discover", keywords: "famous best loved characters", emoji: "❤️" },
+  { id: "graph", label: "Knowledge Graph", path: "/graph", group: "Discover", keywords: "connections degrees of separation between characters linked path map network six", emoji: "🕸️" },
 
   // ── Anime ──────────────────────────────────────────────────────────────────
   { id: "search", label: "Search", path: "/search", group: "Anime", keywords: "find lookup query", emoji: "🔍", hotkey: "/" },
