@@ -10,6 +10,7 @@ import CookieConsent from "@/components/CookieConsent";
 import AuthProvider from "@/components/AuthProvider";
 import BackToTop from "@/components/BackToTop";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import OfflineStatus from "@/components/OfflineStatus";
 import InstallPrompt from "@/components/InstallPrompt";
 import RouteTransition from "@/components/RouteTransition";
 import MobileNav from "@/components/MobileNav";
@@ -289,6 +290,7 @@ export default function RootLayout({
             <Footer />
             <CookieConsent />
             <ServiceWorkerRegistration />
+            <OfflineStatus />
             <InstallPrompt />
             <ChatWidget />
             <ToastFeed />
