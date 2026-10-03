@@ -20,18 +20,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#0a0a0f"
+        "foregroundImage": "./assets/adaptive-icon-foreground.png",
+        "backgroundColor": "#000000"
       },
       "package": "app.zyniverse.mobile",
       "versionCode": 2
     },
     "plugins": [
       "expo-secure-store",
-      "expo-notifications",
       "expo-asset",
       "./plugins/withZyniManifest",
-      "./plugins/withZyniKotlinVersion"
+      "./plugins/withZyniKotlinVersion",
+      "./plugins/withAndroidArchitectures"
     ],
     "updates": {
       "enabled": false,

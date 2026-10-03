@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Switch,
   StyleSheet,
   Linking,
 } from 'react-native';
@@ -18,24 +17,15 @@ const openLink = (url: string) => Linking.openURL(url).catch(() => {});
 interface SettingRowProps {
   label: string;
   value?: string;
-  type?: 'toggle' | 'navigate' | 'info';
+  type?: 'navigate' | 'info';
   onPress?: () => void;
-  enabled?: boolean;
-  onToggle?: (val: boolean) => void;
 }
 
-function SettingRow({ label, value, type = 'navigate', onPress, enabled, onToggle }: SettingRowProps) {
+function SettingRow({ label, value, type = 'navigate', onPress }: SettingRowProps) {
   return (
     <TouchableOpacity style={styles.settingItem} onPress={onPress} disabled={type === 'info'}>
       <Text style={styles.settingLabel}>{label}</Text>
-      {type === 'toggle' ? (
-        <Switch
-          value={enabled}
-          onValueChange={onToggle}
-          trackColor={{ false: colors.surfaceLight, true: colors.primary + '66' }}
-          thumbColor={enabled ? colors.primary : colors.textDim}
-        />
-      ) : type === 'info' ? (
+      {type === 'info' ? (
         <Text style={styles.settingValue}>{value}</Text>
       ) : (
         <View style={styles.navigateRow}>
@@ -49,7 +39,6 @@ function SettingRow({ label, value, type = 'navigate', onPress, enabled, onToggl
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [theme, setTheme] = useState('dark');
   const { status, isUpdatePending, runtimeVersion, downloadUpdate, reloadNow } = useOTAUpdate();
 
@@ -72,29 +61,6 @@ export default function SettingsScreen() {
               label="Theme"
               value={theme.charAt(0).toUpperCase() + theme.slice(1)}
               onPress={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            />
-          </View>
-        </View>
-
-        {/* Notifications */}
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Notifications</Text>
-          <View style={styles.groupContent}>
-            <SettingRow
-              label="Push Notifications"
-              type="toggle"
-              enabled={notificationsEnabled}
-              onToggle={setNotificationsEnabled}
-            />
-            <SettingRow
-              label="Airing Reminders"
-              type="toggle"
-              enabled={true}
-            />
-            <SettingRow
-              label="Forum Replies"
-              type="toggle"
-              enabled={false}
             />
           </View>
         </View>
