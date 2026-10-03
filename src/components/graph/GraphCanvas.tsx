@@ -8,13 +8,19 @@
  * lines of physics anyway. Everything runs in a single rAF loop against refs,
  * never React state, so the graph animates without re-rendering the tree.
  *
- * Layout is seeded from a golden-angle spiral rather than Math.random() so the
- * same graph always settles into the same picture - otherwise every visit
- * reshuffles and a shared URL looks like a different graph each time.
+ * The physics itself lives in `@/lib/force-layout`, which is pure and unit
+ * tested. This file owns only what genuinely needs a browser: the 2D context,
+ * the rAF loop, and hit testing.
  */
 
 import { useCallback, useEffect, useRef } from "react";
 import type { GraphEdge, GraphNode } from "@/lib/graph";
+import {
+  isSettled,
+  seedLayout,
+  stepLayout,
+  type Particle,
+} from "@/lib/force-layout";
 
 const TYPE_COLOR: Record<string, string> = {
   anime: "#29f2e0",
@@ -27,24 +33,6 @@ const INK = "#f0eef8";
 const MUTE = "#807ba3";
 const LINE = "#1f1d33";
 const ROUTE = "#ffb020";
-
-const REPULSE = 9200;
-const SPRING_LEN = 92;
-const SPRING_K = 0.022;
-const GRAVITY = 0.014;
-const DAMPING = 0.86;
-const MAX_STEP = 14;
-/** Below this the layout is considered settled and the rAF loop parks itself. */
-const ALPHA_FLOOR = 0.004;
-
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  r: number;
-  pinned: boolean;
-}
 
 interface Props {
   nodes: GraphNode[];
@@ -76,28 +64,10 @@ export default function GraphCanvas({ nodes, edges, seed, route, onNavigate }: P
 
   // Rebuild the particle layout when the graph itself changes.
   useEffect(() => {
-    const map = new Map<string, Particle>();
-    const golden = Math.PI * (3 - Math.sqrt(5));
-    const n = Math.max(nodes.length, 1);
-    const maxWeight = Math.max(1, ...nodes.map((x) => x.weight ?? 0));
-
-    nodes.forEach((node, i) => {
-      // Spiral placement: deterministic, and already spread out, so the first
-      // few frames do not have to push everyone apart from a single point.
-      const radius = 34 * Math.sqrt(i + 1) * Math.sqrt(n / 26);
-      map.set(node.id, {
-        x: Math.cos(i * golden) * radius + (i % 7) * 3,
-        y: Math.sin(i * golden) * radius - (i % 5) * 3,
-        vx: 0,
-        vy: 0,
-        // sqrt keeps a runaway weight from producing a disc that swallows the
-        // graph; linear scaling made popular nodes absurdly large.
-        r: 5 + 9 * Math.sqrt((node.weight ?? 0) / maxWeight),
-        pinned: node.id === seed,
-      });
-    });
-
-    parts.current = map;
+    // Seeded from a golden-angle spiral rather than Math.random() so the same
+    // graph always settles into the same picture - otherwise every visit
+    // reshuffles and a shared URL looks like a different graph each time.
+    parts.current = seedLayout(nodes, seed);
     alpha.current = 1;
   }, [nodes, seed]);
 
@@ -149,74 +119,10 @@ export default function GraphCanvas({ nodes, edges, seed, route, onNavigate }: P
 
     const step = () => {
       const map = parts.current;
-      const list = [...map.entries()];
       const cx = view.current.w / 2;
       const cy = view.current.h / 2;
 
-      if (alpha.current > ALPHA_FLOOR) {
-        for (let i = 0; i < list.length; i++) {
-          const a = list[i][1];
-          for (let j = i + 1; j < list.length; j++) {
-            const b = list[j][1];
-            let dx = a.x - b.x;
-            let dy = a.y - b.y;
-            // Two nodes can land on the same pixel from the spiral rounding;
-            // without this nudge the inverse distance explodes to Infinity.
-            if (dx === 0 && dy === 0) {
-              dx = (i - j) * 0.5 + 0.1;
-              dy = (j - i) * 0.3 + 0.1;
-            }
-            const d2 = dx * dx + dy * dy;
-            const f = REPULSE / d2;
-            const d = Math.sqrt(d2);
-            const fx = (dx / d) * f;
-            const fy = (dy / d) * f;
-            a.vx += fx;
-            a.vy += fy;
-            b.vx -= fx;
-            b.vy -= fy;
-          }
-        }
-
-        for (const e of edges) {
-          const a = map.get(e.source);
-          const b = map.get(e.target);
-          if (!a || !b) continue;
-          const dx = b.x - a.x;
-          const dy = b.y - a.y;
-          const d = Math.max(0.01, Math.hypot(dx, dy));
-          const f = (d - SPRING_LEN) * SPRING_K;
-          const fx = (dx / d) * f;
-          const fy = (dy / d) * f;
-          a.vx += fx;
-          a.vy += fy;
-          b.vx -= fx;
-          b.vy -= fy;
-        }
-
-        for (const p of map.values()) {
-          if (p.pinned) {
-            p.x = cx;
-            p.y = cy;
-            p.vx = 0;
-            p.vy = 0;
-            continue;
-          }
-          p.vx += (cx - p.x) * GRAVITY;
-          p.vy += (cy - p.y) * GRAVITY;
-          p.vx *= DAMPING;
-          p.vy *= DAMPING;
-          const sp = Math.hypot(p.vx, p.vy);
-          if (sp > MAX_STEP) {
-            p.vx = (p.vx / sp) * MAX_STEP;
-            p.vy = (p.vy / sp) * MAX_STEP;
-          }
-          p.x += p.vx;
-          p.y += p.vy;
-        }
-
-        alpha.current *= 0.986;
-      }
+      alpha.current = stepLayout(map, edges, alpha.current, { x: cx, y: cy });
 
       // --- draw ---------------------------------------------------------
       ctx.clearRect(0, 0, view.current.w, view.current.h);
@@ -288,7 +194,7 @@ export default function GraphCanvas({ nodes, edges, seed, route, onNavigate }: P
 
       ctx.restore();
 
-      if (alpha.current > ALPHA_FLOOR || dirty) {
+      if (!isSettled(alpha.current) || dirty) {
         dirty = false;
         raf = requestAnimationFrame(step);
       } else {
