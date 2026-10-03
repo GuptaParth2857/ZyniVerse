@@ -64,6 +64,7 @@ export const COMMANDS: Command[] = [
 
   // ── Anime ──────────────────────────────────────────────────────────────────
   { id: "search", label: "Search", path: "/search", group: "Anime", keywords: "find lookup query", emoji: "🔍", hotkey: "/" },
+  { id: "search-semantic", label: "Search by Meaning", path: "/search/semantic", group: "Anime", keywords: "semantic meaning natural language describe similar related articles guides wiki", emoji: "🧭" },
   { id: "top-anime", label: "Top Anime", path: "/top-anime", group: "Anime", keywords: "best anime ranked chart popular trending greatest", emoji: "🏆" },
   { id: "genre", label: "Genres", path: "/genre/shounen", group: "Anime", keywords: "action romance comedy category shounen", emoji: "🎭" },
   { id: "tags", label: "Tags", path: "/tags", group: "Anime", keywords: "themes motifs descriptors", emoji: "🏷️" },

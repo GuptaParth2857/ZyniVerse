@@ -9,6 +9,7 @@
     "dev:app": "next dev -p 3000",
     "lint": "eslint",
     "test": "vitest run",
+    "embed:content": "tsx scripts/embed-content.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:seed": "prisma db seed",

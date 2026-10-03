@@ -32,17 +32,46 @@ async function bump(day: string, userId: string): Promise<number> {
 }
 
 export async function consumeAiQuota(userId: string): Promise<void> {
+  await consumeScopedQuota({
+    scope: "",
+    userId,
+    perUserLimit: PER_USER_DAILY_LIMIT,
+    globalLimit: GLOBAL_DAILY_LIMIT,
+    perUserMessage: `You've used all ${PER_USER_DAILY_LIMIT} free AI requests today. Come back tomorrow!`,
+    globalMessage: "Zyni AI is resting for today — the free daily budget is used up. Come back tomorrow!",
+  });
+}
+
+/**
+ * Shared quota gate for every Gemini-backed feature.
+ *
+ * `AiUsageDaily` is keyed on (day, userId) with no feature column, so a feature
+ * gets its own budget by prefixing the userId it stores. Without that, semantic
+ * search — which runs on every keystroke of a typeahead — would burn the same
+ * 20/day counter as the AI chat feature and lock users out of both.
+ */
+export async function consumeScopedQuota(opts: {
+  scope: string;
+  userId: string;
+  perUserLimit: number;
+  globalLimit: number;
+  perUserMessage: string;
+  globalMessage: string;
+}): Promise<void> {
+  const { scope, userId, perUserLimit, globalLimit, perUserMessage, globalMessage } = opts;
   const day = today();
+  const key = scope ? `${scope}:${userId}` : userId;
+
   const global = await prisma.aiUsageDaily.findUnique({
     where: { day_userId: { day, userId: GLOBAL_SENTINEL } },
   });
-  if ((global?.count ?? 0) >= GLOBAL_DAILY_LIMIT) {
-    throw new AiQuotaError("Zyni AI is resting for today — the free daily budget is used up. Come back tomorrow!");
+  if ((global?.count ?? 0) >= globalLimit) {
+    throw new AiQuotaError(globalMessage);
   }
   await bump(day, GLOBAL_SENTINEL);
-  const used = await bump(day, userId);
-  if (used > PER_USER_DAILY_LIMIT) {
-    throw new AiQuotaError(`You've used all ${PER_USER_DAILY_LIMIT} free AI requests today. Come back tomorrow!`);
+  const used = await bump(day, key);
+  if (used > perUserLimit) {
+    throw new AiQuotaError(perUserMessage);
   }
 }
 

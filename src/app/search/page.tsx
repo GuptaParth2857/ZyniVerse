@@ -514,6 +514,17 @@ function SearchInner() {
                     className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2 text-sm outline-none focus:border-[var(--color-cyan)]"
                   />
                 </div>
+                {/* This page only knows about AniList media. Written content
+                    (wiki, blog, forum) is searched by meaning on its own
+                    surface, so the two do not compete for the same box. */}
+                <div className="mt-2 flex justify-end">
+                  <Link
+                    href="/search/semantic"
+                    className="text-xs text-[var(--color-mute)] underline-offset-2 hover:text-[var(--color-violet)] hover:underline"
+                  >
+                    Looking for articles or guides? Search by meaning →
+                  </Link>
+                </div>
               </div>
               <div className="flex items-center gap-3 pt-2 border-t border-[var(--color-line)]">
                 <span className="text-xs text-[var(--color-mute)]">
