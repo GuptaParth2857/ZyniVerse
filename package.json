@@ -10,6 +10,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "embed:content": "tsx scripts/embed-content.ts",
+      "build:sw": "tsx scripts/build-sw.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:seed": "prisma db seed",
