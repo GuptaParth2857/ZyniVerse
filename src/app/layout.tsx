@@ -19,6 +19,7 @@ import NativeBannerAd from "@/components/NativeBannerAd";
 import ChatWidget from "@/components/ChatWidget";
 import ToastFeed from "@/components/ToastFeed";
 import SplashScreen from "@/components/SplashScreen";
+import CommandPalette from "@/components/CommandPalette";
 import OnboardingGate from "@/components/OnboardingGate";
 
 import ActivityTracker from "@/components/ActivityTracker";
@@ -292,6 +293,7 @@ export default function RootLayout({
             <ChatWidget />
             <ToastFeed />
             <SplashScreen />
+            <CommandPalette />
           </Providers>
         </AuthProvider>
         {/* Vercel Analytics/Speed Insights inject their own scripts — VERCEL_URL is
