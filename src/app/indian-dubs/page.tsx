@@ -452,7 +452,7 @@ export default async function IndianDubsPage() {
             <Link href="/dubbed" className="btn-magnetic rounded-xl bg-[var(--color-cyan)] px-6 py-3 text-sm font-bold text-black">
               Open Live Dub Tracker
             </Link>
-            <Link href="/dub-schedule" className="neon-rgb-border rounded-xl px-6 py-3 text-sm font-bold text-white transition-colors hover:text-[var(--color-cyan)]">
+            <Link href="/dubbed" className="neon-rgb-border rounded-xl px-6 py-3 text-sm font-bold text-white transition-colors hover:text-[var(--color-cyan)]">
               Week Schedule
             </Link>
           </div>

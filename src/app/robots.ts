@@ -85,6 +85,9 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: [`${BASE_URL}/sitemap.xml`, `${BASE_URL}/news-sitemap.xml`],
+    // Only the real sitemap is advertised. An empty news-sitemap.xml used to be
+    // listed here too; Google fetched it, found zero <url> entries and logged a
+    // "sitemap could not be read" warning for the whole file.
+    sitemap: [`${BASE_URL}/sitemap.xml`],
   };
 }
