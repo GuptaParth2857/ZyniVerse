@@ -6,19 +6,15 @@ import {
   isEmbeddingConfigured,
 } from "@/lib/embeddings";
 import { AiQuotaError, consumeScopedQuota } from "@/lib/gemini";
-import { searchSemantic, SOURCES, type Source } from "@/lib/semantic-index";
+import { isSource, searchSemantic, SOURCES, SOURCE_LABEL } from "@/lib/semantic-index";
 import { getSessionUserId } from "@/lib/session-user";
 
 export const dynamic = "force-dynamic";
 
 const MAX_QUERY_CHARS = 300;
 
-function isSource(v: string | null): v is Source {
-  return v === "wiki" || v === "blog" || v === "forum";
-}
-
 /**
- * Meaning-based search over wiki pages, blog posts and forum threads.
+ * Meaning-based search over the site's written and structured content.
  *
  * Signed-out visitors are allowed, but they share the anonymous quota bucket:
  * embeddings cost real money per call, and this endpoint is reachable by anyone
@@ -75,10 +71,18 @@ export async function GET(req: NextRequest) {
     {
       q,
       sources: sources ?? SOURCES,
+      // The client builds its filter row from this rather than keeping its own
+      // copy. It used to hardcode wiki/blog/forum in three places, which is why
+      // the new sources were invisible in the UI until this was wired up.
+      labels: Object.fromEntries(SOURCES.map((s) => [s, SOURCE_LABEL[s]])),
       hits: result.hits,
       count: result.hits.length,
       scanned: result.scanned,
       degraded: result.degraded,
+      // Which engine answered: the pgvector mirror once the DocEmbedding
+      // migration is applied, otherwise the in-memory scan. Mainly a debugging
+      // affordance for confirming the fast path is actually live.
+      engine: result.engine ?? "scan",
       ...(result.reason ? { notice: result.reason } : {}),
     },
     {

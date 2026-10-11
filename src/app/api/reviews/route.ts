@@ -7,7 +7,7 @@ import { checkAndAwardAchievement } from "@/lib/achievements-server";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
   const { searchParams } = new URL(req.url);
   const mediaId = Number(searchParams.get("mediaId"));
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const session = await auth();

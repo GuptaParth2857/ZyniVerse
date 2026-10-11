@@ -7,7 +7,7 @@ import { checkAndAwardAchievement } from "@/lib/achievements-server";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ entries: [] });
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const session = await auth();
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const session = await auth();

@@ -8,11 +8,14 @@ import Loader from "@/components/Loader";
 import type { FeedCard } from "@/lib/feed";
 
 const TYPE_META: Record<FeedCard["type"], { label: string; color: string; accent: string; emoji: string }> = {
-  MEME: { label: "Meme", color: "text-amber-400", accent: "#facc15", emoji: "😂" },
-  REEL: { label: "Reel", color: "text-pink-400", accent: "#f472b6", emoji: "🎬" },
+  POST: { label: "Post", color: "text-blue-400", accent: "#60a5fa", emoji: "💬" },
   MOMENT: { label: "Moment", color: "text-violet-400", accent: "#a78bfa", emoji: "💬" },
+  REEL: { label: "Reel", color: "text-pink-400", accent: "#f472b6", emoji: "🎬" },
+  MEME: { label: "Meme", color: "text-amber-400", accent: "#facc15", emoji: "😂" },
+  CLIP: { label: "Clip", color: "text-orange-400", accent: "#fb923c", emoji: "🎞️" },
   FANART: { label: "Fan Art", color: "text-cyan-400", accent: "#22d3ee", emoji: "🎨" },
   COSPLAY: { label: "Cosplay", color: "text-emerald-400", accent: "#34d399", emoji: "📸" },
+  WALLPAPER: { label: "Wallpaper", color: "text-teal-300", accent: "#5eead4", emoji: "🖼️" },
   BLOG: { label: "Blog", color: "text-blue-400", accent: "#60a5fa", emoji: "✍️" },
   NEWS: { label: "News", color: "text-red-400", accent: "#f87171", emoji: "📰" },
 };
@@ -20,11 +23,14 @@ const TYPE_META: Record<FeedCard["type"], { label: string; color: string; accent
 const TYPE_OPTIONS: { key: FeedCard["type"] | "ALL"; label: string; emoji: string }[] = [
   { key: "ALL", label: "All", emoji: "✨" },
   { key: "NEWS", label: "News", emoji: "📰" },
+  { key: "POST", label: "Posts", emoji: "💬" },
   { key: "MEME", label: "Memes", emoji: "😂" },
   { key: "REEL", label: "Reels", emoji: "🎬" },
+  { key: "CLIP", label: "Clips", emoji: "🎞️" },
   { key: "MOMENT", label: "Moments", emoji: "💬" },
   { key: "FANART", label: "Fan Art", emoji: "🎨" },
   { key: "COSPLAY", label: "Cosplay", emoji: "📸" },
+  { key: "WALLPAPER", label: "Wallpapers", emoji: "🖼️" },
   { key: "BLOG", label: "Blogs", emoji: "✍️" },
 ];
 

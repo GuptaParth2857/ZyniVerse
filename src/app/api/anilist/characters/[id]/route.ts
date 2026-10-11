@@ -7,7 +7,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const rateCheck = anilistLimiter.middleware(req);
+  const rateCheck = await anilistLimiter.middleware(req);
   if (rateCheck) return rateCheck;
   const { id } = await params;
   const url = new URL(req.url);

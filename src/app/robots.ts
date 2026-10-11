@@ -56,10 +56,6 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        userAgent: AI_BOTS,
-        disallow: "/",
-      },
-      {
         userAgent: "*",
         allow: "/",
         disallow: [

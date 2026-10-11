@@ -4,7 +4,7 @@ import { anilistRoute } from "@/lib/anilist-route";
 export const dynamic = "force-dynamic";
 
 export const GET = anilistRoute(async (req) => {
-  const rateCheck = anilistLimiter.middleware(req);
+  const rateCheck = await anilistLimiter.middleware(req);
   if (rateCheck) return rateCheck;
   const url = new URL(req.url);
   const perPage = Math.min(Number(url.searchParams.get("perPage")) || 50, 100);

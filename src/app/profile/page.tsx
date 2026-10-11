@@ -14,6 +14,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import RankBadge, { RankPill } from "@/components/RankBadge";
 import ProfileMoments from "@/components/ProfileMoments";
 import DailyRewardCard from "@/components/DailyRewardCard";
+import EconomyWallet from "@/components/EconomyWallet";
 import FollowedAnimeStrip from "@/components/FollowedAnimeStrip";
 import AccountDataManager from "@/components/AccountDataManager";
 import StreamingSyncCard from "@/components/StreamingSyncCard";
@@ -450,6 +451,7 @@ export default function ProfilePage() {
             {tab === "overview" && (
               <div className="space-y-6">
                 <DailyRewardCard />
+                <EconomyWallet />
                 <FollowedAnimeStrip />
                 {/* Top Anime Showcase */}
                 {user.entries.filter((e) => e.type === "ANIME" && e.status === "COMPLETED" && e.score && e.score > 0).length > 0 && (

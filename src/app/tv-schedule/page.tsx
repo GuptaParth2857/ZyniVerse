@@ -6,13 +6,13 @@ import Image from "next/image";
 import {
   TV_CHANNELS,
   getScheduleForChannel,
-  getNowPlaying,
   getDayName,
   getNext7Days,
   type TimeSlot,
   type TvChannel,
 } from "@/lib/tv-channels";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import NowNextRail from "@/components/NowNextRail";
 
 interface LiveAiringEntry {
   id: number;
@@ -165,155 +165,6 @@ function isPast(slot: TimeSlot): boolean {
     return cur >= end && cur < start;
   }
   return cur >= end && end !== 0;
-}
-
-function NowPlayingBanner({ liveData }: { liveData?: LiveScheduleData | null }) {
-  const [tick, setTick] = useState(() => Date.now());
-  useEffect(() => {
-    const interval = setInterval(() => setTick(Date.now()), 60000);
-    return () => clearInterval(interval);
-  }, []);
-  const nowPlaying = useMemo(() => {
-    const hardcoded = getNowPlaying();
-
-    const liveNowPlaying: { channel: TvChannel; slot: TimeSlot }[] = [];
-    if (liveData?.channels) {
-      const now = new Date(tick);
-      const curMinutes = now.getHours() * 60 + now.getMinutes();
-      const todayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
-
-      for (const ch of liveData.channels) {
-        const channel = TV_CHANNELS[ch.channelId];
-        if (!channel) continue;
-        const daySlots = ch.days[todayName] || [];
-        const liveSlot = daySlots.find((s) => {
-          const [sh, sm] = s.start.split(":").map(Number);
-          const [eh, em] = s.end.split(":").map(Number);
-          const start = sh * 60 + sm;
-          const end = eh * 60 + em;
-          return curMinutes >= start && curMinutes < end;
-        });
-        if (liveSlot && !hardcoded.some((h) => h.channel.id === channel.id)) {
-          liveNowPlaying.push({ channel, slot: liveSlot });
-        }
-      }
-    }
-
-    return [...hardcoded, ...liveNowPlaying];
-  }, [tick, liveData]);
-  if (nowPlaying.length === 0) return null;
-
-  const now = new Date();
-  const curMinutes = now.getHours() * 60 + now.getMinutes();
-  const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="mb-8 relative"
-    >
-      <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-cyan-500/20 via-emerald-500/10 to-cyan-500/20 blur-xl opacity-60" />
-
-      <NeonBorder glowColor="#00ffe0">
-        <div className="rounded-[24px] border border-cyan-400/20 bg-[var(--color-panel)]/80 backdrop-blur-xl overflow-hidden">
-          <div className="h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
-
-          <div className="px-5 pt-4 pb-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <span className="absolute inset-0 rounded-full bg-cyan-400 animate-ping opacity-30" />
-                <span className="relative flex h-3 w-3 items-center justify-center">
-                  <span className="h-3 w-3 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(0,188,212,0.8)]" />
-                </span>
-              </div>
-              <div>
-                <h2 className="font-display text-sm font-bold uppercase tracking-wider text-cyan-400">
-                  Live Now
-                </h2>
-                <p className="text-[10px] text-[var(--color-mute)] mt-0.5">
-                  {nowPlaying.length} channel{nowPlaying.length > 1 ? "s" : ""} currently broadcasting
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/5 px-3 py-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="text-[10px] font-mono font-bold text-cyan-400">{timeStr}</span>
-            </div>
-          </div>
-
-        <div className="px-5 pb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-          {nowPlaying.map(({ channel, slot }, idx) => {
-            const slotStart = parseMinutes(slot.start);
-            const slotEnd = parseMinutes(slot.end);
-            const slotDuration = slotEnd > slotStart ? slotEnd - slotStart : (1440 - slotStart) + slotEnd;
-            const elapsed = slotEnd > slotStart
-              ? Math.max(0, Math.min(curMinutes - slotStart, slotDuration))
-              : Math.max(0, curMinutes >= slotStart ? curMinutes - slotStart : (1440 - slotStart) + curMinutes);
-            const progress = slotDuration > 0 ? Math.min((elapsed / slotDuration) * 100, 100) : 0;
-
-            return (
-              <motion.div
-                key={channel.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.07, duration: 0.4 }}
-                className="group relative rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-[var(--color-panel)]/90 to-cyan-400/5 backdrop-blur-xl p-4 overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_rgba(0,188,212,0.12)]"
-              >
-                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ boxShadow: `inset 0 0 0 1px rgba(0,188,212,0.2), 0 0 20px rgba(0,188,212,0.08)` }} />
-
-                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent opacity-50" />
-
-                <div className="relative flex items-start gap-3">
-                  <ChannelLogo channel={channel} size={40} />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-bold truncate leading-tight bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                      {slot.show}
-                    </p>
-                    <p className="text-[10px] text-[var(--color-ink)] font-medium mt-0.5">
-                      {channel.name}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-1.5">
-                      <span className="text-[9px] font-mono text-[var(--color-mute)]">
-                        {slot.start} — {slot.end}
-                      </span>
-                      <span className="text-[8px] text-[var(--color-mute)]">·</span>
-                      <span className="text-[9px] text-cyan-400/70 font-semibold">
-                        {slot.duration}m
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 rounded-xl overflow-hidden border border-[var(--color-line)] relative h-28">
-                  <Image
-                    src={channel.logoUrl ?? ""}
-                    alt={channel.name}
-                    fill
-                    className="object-cover opacity-30"
-                    sizes="(max-width: 640px) 100vw, 300px"
-                    style={channel.logoInvert ? { filter: "brightness(0) invert(1)" } : undefined}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-[10px] font-bold text-[var(--color-ink)]/60 text-center px-2 leading-tight">{slot.show}</span>
-                  </div>
-                </div>
-
-                <div className="relative mt-3 h-1 rounded-full bg-[var(--color-panel)] overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-1000"
-                    style={{ width: `${progress}%`, boxShadow: "0 0 8px rgba(0,188,212,0.6)" }}
-                  />
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-        </div>
-      </NeonBorder>
-    </motion.div>
-  );
 }
 
 function LiveAiringSection({ selectedDay }: { selectedDay: string }) {
@@ -652,6 +503,7 @@ function ChannelScheduleCard({
 
   return (
     <motion.div
+      id={`channel-${channel.id}`}
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -947,7 +799,7 @@ function TvSchedulePage() {
           </div>
         </motion.div>
 
-        <NowPlayingBanner liveData={liveData} />
+        <NowNextRail data={liveData} />
 
         <LiveAiringSection selectedDay={selectedDay} />
 

@@ -18,7 +18,7 @@ function pickBestMatch(results: { id: string; title: string; altTitles: string[]
 }
 
 export async function POST(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const { mediaId, title } = await req.json();

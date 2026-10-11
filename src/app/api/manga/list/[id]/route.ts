@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const session = await auth();
@@ -39,7 +39,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const session = await auth();

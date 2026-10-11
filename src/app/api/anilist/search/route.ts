@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const rateCheck = anilistLimiter.middleware(req);
+  const rateCheck = await anilistLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const { searchParams } = new URL(req.url);

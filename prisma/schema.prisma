@@ -106,6 +106,9 @@ model User {
   figureCollection       FigureCollection[]
   dailyLogin             DailyLogin?
   streakFreeze           StreakFreeze?
+  coinWallet             CoinWallet?
+  economyLedger          EconomyLedger[]
+  aiConversation         AiConversation?
   animeFollows           AnimeFollow[]
   discordAccount         DiscordAccount?
   externalAccounts       ExternalAccount[]
@@ -750,6 +753,29 @@ model AiCache {
   @@index([kind, createdAt])
 }
 
+/// Postgres-copy of the semantic index in `AiCache`, stored as real vectors so a
+/// query is answered with a pgvector index scan instead of shipping the whole
+/// corpus to the JS runtime. A pure projection of `AiCache`: rebuilt by
+/// `syncPgvectorNow()` and only reachable after the
+/// `20261009090000_add_doc_embedding` migration (which also creates the `vector`
+/// extension) is applied. The `embedding` column is `Unsupported` because Prisma
+/// has no native vector type - all reads/writes go through `$queryRaw`.
+model DocEmbedding {
+  source    String
+  docId     String
+  title     String
+  href      String
+  snippet   String
+  tags      String   @default("")
+  model     String
+  dims      Int
+  embedding Unsupported("vector(768)")?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([source, docId])
+}
+
 model AiUsageDaily {
   id     String @id @default(cuid())
   day    String // YYYY-MM-DD (UTC)
@@ -757,6 +783,38 @@ model AiUsageDaily {
   count  Int    @default(0)
 
   @@unique([day, userId])
+}
+
+/// One rolling conversation per user is the concierge's memory. Keeping it a
+/// single thread (rather than many named sessions) matches the command palette,
+/// where "Zyni AI" is one assistant you keep talking to. `summary` is reserved
+/// for a future compacted digest so history can be trimmed without losing the
+/// gist; today the recent `messages` are replayed as model turns.
+model AiConversation {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  summary   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AiMessage[]
+}
+
+/// A single turn. `role` is Gemini's vocabulary ("user" | "model"). `href` is
+/// only ever set after the route validated it against the viewer's allowed page
+/// list, so a persisted link is safe to replay without re-checking.
+model AiMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String // "user" | "model"
+  text           String
+  href           String?
+  createdAt      DateTime @default(now())
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
 }
 
 model ThemeSong {
@@ -2985,6 +3043,40 @@ model DailyLogin {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([streak])
+}
+
+// Coins are the spendable half of the economy: earned from activity, spent in
+// the shop (streak freezes today). Balance never goes below zero; every
+// movement is mirrored in EconomyLedger.
+model CoinWallet {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  balance        Int      @default(0)
+  lifetimeEarned Int      @default(0)
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Append-only audit trail for every coin and XP movement. A row records *what
+// happened*; CoinWallet/UserPoints hold the derived balances. `dedupeKey`
+// (unique when set) is the idempotency key so a retried claim or a replayed
+// webhook cannot double-award.
+model EconomyLedger {
+  id           String   @id @default(cuid())
+  userId       String
+  currency     String // "coin" | "xp"
+  amount       Int // signed: + earn, − spend
+  balanceAfter Int
+  reason       String
+  ref          String? // e.g. the day key for DAILY_LOGIN
+  dedupeKey    String? @unique
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([currency, createdAt])
 }
 
 // Streak freeze/shield tokens (earned, redeemable to protect a streak)

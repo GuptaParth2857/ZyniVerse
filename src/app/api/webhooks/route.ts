@@ -5,7 +5,7 @@ import { apiLimiter } from "@/lib/rate-limiter";
 import crypto from "crypto";
 
 export async function GET(req: NextRequest) {
-  const rateLimited = apiLimiter.middleware(req);
+  const rateLimited = await apiLimiter.middleware(req);
   if (rateLimited) return rateLimited;
 
   const session = await auth();
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const rateLimited = apiLimiter.middleware(req);
+  const rateLimited = await apiLimiter.middleware(req);
   if (rateLimited) return rateLimited;
 
   const session = await auth();

@@ -16,8 +16,6 @@ import {
 } from "@/lib/indian-dub-schedule";
 import "./indian-dubs.css";
 
-export const revalidate = 172800;
-
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {

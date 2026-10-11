@@ -72,7 +72,7 @@ export default async function PublicMangaListPage({ params }: { params: Promise<
       <nav className="mb-6 flex items-center gap-2 text-xs text-[var(--color-mute)]">
         <Link href="/" className="hover:text-[var(--color-cyan)] transition-colors">Home</Link>
         <span>/</span>
-        <Link href="/u" className="hover:text-[var(--color-cyan)] transition-colors">Users</Link>
+        <span>Users</span>
         <span>/</span>
         <span className="text-[var(--color-ink)]">{user.username}</span>
         <span>/</span>

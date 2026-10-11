@@ -68,7 +68,7 @@ function firstAnime(c: { media?: { edges: { characterRole: string; node: { popul
 }
 
 export async function GET(req: Request) {
-  const rateCheck = anilistLimiter.middleware(req);
+  const rateCheck = await anilistLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const today = new Date();

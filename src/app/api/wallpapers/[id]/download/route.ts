@@ -6,7 +6,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const rateLimited = apiLimiter.middleware(req);
+  const rateLimited = await apiLimiter.middleware(req);
   if (rateLimited) return rateLimited;
 
   const { id } = await params;

@@ -5,7 +5,7 @@ import { generateApiKey, getTierLimit, canCreateKey } from "@/lib/api-key";
 import { apiLimiter } from "@/lib/rate-limiter";
 
 export async function GET(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const session = await auth();
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const session = await auth();

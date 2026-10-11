@@ -4,7 +4,7 @@ import { anilistRoute } from "@/lib/anilist-route";
 export const dynamic = "force-dynamic";
 
 export const GET = anilistRoute(async (req) => {
-  const rateCheck = anilistLimiter.middleware(req);
+  const rateCheck = await anilistLimiter.middleware(req);
   if (rateCheck) return rateCheck;
   const url = new URL(req.url);
   const year = url.searchParams.get("year") ? Number(url.searchParams.get("year")) : undefined;

@@ -9,6 +9,9 @@ EventEmitter.defaultMaxListeners = 50;
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client"],
+  // output: "export",  // REMOVED to fix ISR writes overage
+  // This was causing ISR writes exceeding free tier limits (1.2M vs 200K)
+  // Normal serverless function mode will reduce Vercel usage
   async headers() {
     return [
       // No Cache-Control rule for /_next/static here on purpose. Next only
@@ -30,24 +33,7 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.zyverse.in" }],
-        destination: "https://zyverse.in/:path*",
-        permanent: true,
-      },
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.zyniverse.vercel.app" }],
-        destination: "https://zyverse.in/:path*",
-        permanent: true,
-      },
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "zyniverse.vercel.app" }],
-        destination: "https://zyverse.in/:path*",
-        permanent: true,
-      },
+      // Keep only legitimate redirects - no wildcard homepage redirects
       {
         source: "/dub-schedule",
         destination: "/dubbed",
@@ -58,13 +44,14 @@ const nextConfig: NextConfig = {
         destination: "/schedule",
         permanent: true,
       },
+      // Old /browse route -> /search. Still linked from genre empty-states,
+      // so without this the internal link 404s.
       {
         source: "/browse",
         destination: "/search",
         permanent: true,
       },
-      // Old locale-prefix routes (Hindi/Telugu/Tamil) existed in an earlier
-      // build. Pages are gone for good; 301 them to the homepage so Google
+      // Old locale-prefix routes (Hindi/Telugu/Tamil) - 301 to homepage so Google
       // consolidates instead of logging permanent 404s.
       {
         source: "/hi",
@@ -79,6 +66,16 @@ const nextConfig: NextConfig = {
       {
         source: "/ta",
         destination: "/",
+        permanent: true,
+      },
+      // www -> non-www canonicalisation (301, path preserved).
+      // Canonical <link> already points to the non-www host, but Google was
+      // still crawling the www copies separately (both appear in Search
+      // Console). A real 301 is the correct signal to consolidate them.
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.zyverse.in" }],
+        destination: "https://zyverse.in/:path*",
         permanent: true,
       },
     ];

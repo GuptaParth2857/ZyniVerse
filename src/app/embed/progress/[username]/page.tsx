@@ -159,7 +159,7 @@ export default async function ProgressEmbedPage({
             })}
 
             <a
-              href={`https://zyverse.in/profile/${encodeURIComponent(username)}`}
+              href={`https://zyverse.in/u/${encodeURIComponent(username)}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{

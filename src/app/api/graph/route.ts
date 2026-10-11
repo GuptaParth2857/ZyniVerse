@@ -8,7 +8,6 @@ import {
   parseNodeId,
   pruneDanglingEdges,
   shortestPaths,
-  type Graph,
   type GraphEdge,
   type GraphNode,
 } from "@/lib/graph";
@@ -232,7 +231,13 @@ async function fromAnime(id: string): Promise<Built> {
     label: bestTitle(res.title),
     href: `/anime/${res.id}`,
     image: res.coverImage?.large ?? null,
-    weight: 0,
+    // Carried over from the resolved node when AniList gives it to us, so the
+    // seed is sized by its real prominence. It used to be hardcoded 0, which made
+    // the hub the smallest disc on screen while every character around it drew
+    // larger - the centre of the graph rendered as the least important thing in
+    // it. `fromCharacter` reads popularity off the character's media edges, but
+    // `getAnimeCharacters` does not select it for the requested anime itself.
+    weight: res.popularity ?? 0,
   });
 
   const cast = [...(res.edges ?? [])]

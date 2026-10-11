@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { awardForReason } from "@/lib/economy";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const session = await auth();
@@ -35,6 +36,10 @@ export async function POST(req: NextRequest) {
     data: { postId, userId: session.user.id, content: content.trim() },
     include: { author: { select: { id: true, username: true } } },
   });
+
+  // One award per comment (ref = comment id), fire-and-forget so a ledger
+  // hiccup never fails the comment the user just wrote.
+  awardForReason(session.user.id, "COMMENT_POSTED", comment.id).catch(() => {});
 
   return NextResponse.json({ comment }, { status: 201 });
 }

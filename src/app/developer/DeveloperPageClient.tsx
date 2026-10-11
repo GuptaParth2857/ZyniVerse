@@ -541,7 +541,7 @@ export default function DeveloperPageClient() {
                 >
                   Get Free Key →
                 </Link>
-                <Link href="/signup" className="text-sm text-[var(--color-cyan)] hover:underline">
+                <Link href="/register" className="text-sm text-[var(--color-cyan)] hover:underline">
                   Create an account
                 </Link>
               </div>

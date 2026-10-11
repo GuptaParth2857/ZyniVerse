@@ -21,10 +21,10 @@ function stableLastModified(
 }
 
 // Cache the sitemap so crawler fetches are served fast instead of repeatedly
-// hitting the DB, AniList, RSS, and Wikipedia. 6-hour refresh keeps it fresh
+// hitting the DB, AniList, RSS, and Wikipedia. 24-hour refresh keeps it fresh
 // enough while making Bing's discovery reliable (a slow/timing-out sitemap is
 // the #1 reason Bing under-indexes a site).
-export const revalidate = 21600;
+export const revalidate = 86400;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -62,6 +62,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/schedule`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/reels`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE_URL}/creators`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/discover`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
+    { url: `${BASE_URL}/feed`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE_URL}/posts`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/awards`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/developer`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },

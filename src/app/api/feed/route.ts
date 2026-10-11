@@ -1,130 +1,77 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getAllRSSNews } from "@/lib/news";
-import type { FeedCard } from "@/lib/feed";
+import { getUnifiedFeed, type FeedMode } from "@/lib/feed";
+import { auth } from "@/lib/auth";
 
-export const revalidate = 900;
+// Personalized ranking (follows + engagement) means every request can
+// legitimately differ, so the route is dynamic by design.
+export const dynamic = "force-dynamic";
+
+// Pagination is OFFSET-based on one deterministic ranked+interleaved list.
+// Time-based cursors don't work for a score-sorted feed: the page-1 winners
+// still rank at the top of any older-than-cursor corpus, so they'd reappear.
+const CAP = 760;
+const DEFAULT_LIMIT = 20;
+const MIN_LIMIT = 6;
+const MAX_LIMIT = 40;
+const DEFAULT_PER_PAGE = 12;
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
-  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
-  const perPage = Math.min(24, Math.max(6, parseInt(searchParams.get("perPage") || "12", 10) || 12));
+  const mode: FeedMode = searchParams.get("mode") === "following" ? "following" : "foryou";
+  const limit = Math.min(
+    MAX_LIMIT,
+    Math.max(MIN_LIMIT, parseInt(searchParams.get("limit") || String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT),
+  );
 
-  const take = 40;
+  // Legacy pagination (used by DiscoverFeed on /discover).
+  const isLegacy = searchParams.has("page");
+  const page = isLegacy ? Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1) : 1;
+  const perPage = isLegacy
+    ? Math.min(
+        24,
+        Math.max(MIN_LIMIT, parseInt(searchParams.get("perPage") || String(DEFAULT_PER_PAGE), 10) || DEFAULT_PER_PAGE),
+      )
+    : DEFAULT_PER_PAGE;
 
-  const [memes, reels, moments, fanArts, cosplays, blogPosts] = await Promise.all([
-    prisma.meme.findMany({
-      where: {},
-      orderBy: { createdAt: "desc" },
-      take,
-      select: { id: true, title: true, imageUrl: true, mediaTitle: true, createdAt: true, user: { select: { username: true, avatar: true } } },
-    }),
-    prisma.reel.findMany({
-      where: {},
-      orderBy: { createdAt: "desc" },
-      take,
-      select: { id: true, caption: true, videoUrl: true, thumbnailUrl: true, createdAt: true, user: { select: { username: true, avatar: true } } },
-    }),
-    prisma.moment.findMany({
-      where: { isPublic: true },
-      orderBy: { createdAt: "desc" },
-      take,
-      select: { id: true, quote: true, character: true, animeTitle: true, animeCover: true, createdAt: true, user: { select: { username: true, avatar: true } } },
-    }),
-    prisma.fanArt.findMany({
-      where: {},
-      orderBy: { createdAt: "desc" },
-      take,
-      select: { id: true, title: true, description: true, imageUrl: true, createdAt: true, user: { select: { username: true, avatar: true } } },
-    }),
-    prisma.cosplay.findMany({
-      where: {},
-      orderBy: { createdAt: "desc" },
-      take,
-      select: { id: true, title: true, description: true, imageUrl: true, createdAt: true, user: { select: { username: true, avatar: true } } },
-    }),
-    prisma.blogPost.findMany({
-      where: { isDraft: false, isDeleted: false },
-      orderBy: { createdAt: "desc" },
-      take,
-      select: { id: true, title: true, excerpt: true, coverImage: true, slug: true, createdAt: true, user: { select: { username: true, avatar: true } } },
-    }),
-  ]);
+  // Offset-based pagination for the /feed client.
+  const after = isLegacy ? 0 : Math.max(0, Math.min(CAP, Math.trunc(parseInt(searchParams.get("after") || "0", 10) || 0)));
 
-  let news: Awaited<ReturnType<typeof getAllRSSNews>> = [];
+  let userId: string | undefined;
   try {
-    news = await getAllRSSNews();
-  } catch { /* keep empty */ }
-
-  const cards: FeedCard[] = [];
-  for (const m of memes) {
-    cards.push({
-      id: `meme-${m.id}`, type: "MEME", title: m.title || m.mediaTitle || "Meme",
-      image: m.imageUrl, href: "/memes",
-      author: m.user ?? null, createdAt: m.createdAt.toISOString(),
-    });
-  }
-  for (const r of reels) {
-    cards.push({
-      id: `reel-${r.id}`, type: "REEL", title: r.caption || "Reel",
-      image: r.thumbnailUrl, video: r.videoUrl, href: `/reels/${r.id}`,
-      author: r.user ?? null, createdAt: r.createdAt.toISOString(),
-    });
-  }
-  for (const mt of moments) {
-    cards.push({
-      id: `moment-${mt.id}`, type: "MOMENT",
-      title: mt.quote || "Moment",
-      body: mt.character ? `${mt.character}${mt.animeTitle ? ` — ${mt.animeTitle}` : ""}` : null,
-      image: mt.animeCover, href: `/moments/${mt.id}`,
-      author: mt.user ?? null, createdAt: mt.createdAt.toISOString(),
-    });
-  }
-  for (const fa of fanArts) {
-    cards.push({
-      id: `fanart-${fa.id}`, type: "FANART", title: fa.title || "Fan Art",
-      body: fa.description, image: fa.imageUrl, href: `/fanart/${fa.id}`,
-      author: fa.user ?? null, createdAt: fa.createdAt.toISOString(),
-    });
-  }
-  for (const c of cosplays) {
-    cards.push({
-      id: `cosplay-${c.id}`, type: "COSPLAY", title: c.title || "Cosplay",
-      body: c.description, image: c.imageUrl, href: `/cosplay/${c.id}`,
-      author: c.user ?? null, createdAt: c.createdAt.toISOString(),
-    });
-  }
-  for (const b of blogPosts) {
-    cards.push({
-      id: `blog-${b.id}`, type: "BLOG", title: b.title,
-      body: b.excerpt, image: b.coverImage, href: `/blog/${b.slug}`,
-      author: b.user ?? null, createdAt: b.createdAt.toISOString(),
-    });
-  }
-  for (const n of news.slice(0, 40)) {
-    cards.push({
-      id: `news-${n.id}`, type: "NEWS", title: n.title,
-      body: n.summary, image: n.image || null, href: `/news/${n.id}`,
-      author: null, createdAt: new Date(n.publishedAt).toISOString(),
-    });
+    const session = await auth();
+    userId = session?.user?.id;
+  } catch {
+    // Anonymous visitors get the global ranked feed — still useful, just unpersonalized.
   }
 
-  cards.sort((a, b) => (b.createdAt < a.createdAt ? -1 : b.createdAt > a.createdAt ? 1 : 0));
+  let served: Awaited<ReturnType<typeof getUnifiedFeed>>["items"] = [];
+  let hasNextPage = false;
+  let nextOffset: number | null = null;
 
-  const total = cards.length;
-  const totalPages = Math.max(1, Math.ceil(total / perPage));
-  const start = (page - 1) * perPage;
-  const items = cards.slice(start, start + perPage);
+  if (isLegacy) {
+    // Fetch one extra item so `hasNextPage` knows whether something sits beyond
+    // this page's slice (offset pagination can't tell otherwise).
+    const { items } = await getUnifiedFeed({ userId, mode, limit: Math.min(CAP, page * perPage + 1) });
+    served = items.slice((page - 1) * perPage, page * perPage);
+    hasNextPage = items.length > page * perPage;
+  } else {
+    const requested = Math.min(CAP, after + limit + 1);
+    const { items } = await getUnifiedFeed({ userId, mode, limit: requested });
+    served = items.slice(after, after + limit);
+    hasNextPage = items.length > after + limit;
+    nextOffset = hasNextPage ? after + limit : null;
+  }
 
-  return NextResponse.json({
-    items,
-    page,
-    perPage,
-    total,
-    hasNextPage: page < totalPages,
-  }, {
-    headers: {
-      "Cache-Control": "public, s-maxage=900, stale-while-revalidate=1800",
+  return NextResponse.json(
+    {
+      items: served,
+      nextCursor: nextOffset,
+      hasNextPage,
+      mode,
+      page: isLegacy ? page : undefined,
+      perPage: isLegacy ? perPage : undefined,
+      perRequestLimit: isLegacy ? undefined : limit,
     },
-  });
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }

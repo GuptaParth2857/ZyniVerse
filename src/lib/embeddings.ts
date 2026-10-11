@@ -13,13 +13,12 @@
  *
  * ## Why pgvector is optional rather than required
  *
- * Measured against the live corpus: 28 documents, ~0.3MB of stored vectors,
- * ~21k multiply-adds per query. A full table scan with cosine in JS is
- * effectively instant at that size, so shipping a migration that cannot be
- * applied without a database-owner approval would buy nothing. The migration
- * exists in `prisma/migrations` as a ready upgrade for when the corpus is big
- * enough to need it; `pgvectorEnabled()` detects it and the search path uses
- * `<=>` when it is there.
+ * Measured against the live corpus the JS scan is effectively instant, so it
+ * stays the default read path until `prisma/migrations/20261009090000_add_doc_embedding`
+ * (which also creates the `vector` extension) has been applied. The search path
+ * in `semantic-index.ts` probes for it via `pgvectorEnabled()` and switches to a
+ * pgvector KNN query (`<=>`) against the `DocEmbedding` mirror table when it is
+ * there; until then the in-memory scan is the fallback, not the other way around.
  */
 
 import { createHash } from "crypto";

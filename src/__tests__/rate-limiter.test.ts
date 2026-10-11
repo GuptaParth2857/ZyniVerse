@@ -59,9 +59,9 @@ describe("createRateLimiter", () => {
     expect(limiter.getClientIp(req)).toBe("198.51.100.1");
   });
 
-  it("middleware returns null when under limit", () => {
+  it("middleware returns null when under limit", async () => {
     const req = new Request("http://localhost");
-    expect(limiter.middleware(req)).toBeNull();
+    expect(await limiter.middleware(req)).toBeNull();
   });
 
   it("middleware returns 429 when over limit", async () => {
@@ -69,7 +69,7 @@ describe("createRateLimiter", () => {
       headers: { "x-forwarded-for": "203.0.113.1" },
     });
     for (let i = 0; i < 5; i++) await limiter.check("203.0.113.1");
-    const response = limiter.middleware(req);
+    const response = await limiter.middleware(req);
     expect(response).not.toBeNull();
     expect(response!.status).toBe(429);
   });

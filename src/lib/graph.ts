@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Knowledge-graph primitives for "six degrees of anime".
  *
  * Everything in this file is pure: no network, no React, no Prisma. The API
@@ -258,4 +258,69 @@ export function dedupe(graph: Graph): Graph {
 export function pruneDanglingEdges(graph: Graph): Graph {
   const ids = new Set(graph.nodes.map((n) => n.id));
   return { nodes: graph.nodes, edges: graph.edges.filter((e) => ids.has(e.source) && ids.has(e.target)) };
+}
+
+/** Anything a prominence score can be derived from. */
+export interface Weighed {
+  id: string;
+  type: NodeType;
+  weight: number;
+}
+
+/**
+ * Rescale prominence into 0..1 *within each node type*.
+ *
+ * The raw numbers cannot be compared across types. A character's `favourites`
+ * tops out around 21,000 while an anime's `popularity` runs to 600,000+, so
+ * plotting both against one maximum made every character collapse to the same
+ * tiny dot: measured on a 27-node Naruto graph, 19 of 27 nodes landed under a
+ * 7px radius and were indistinguishable. Normalising per type means the most
+ * prominent character and the most prominent anime both reach 1.0, and the
+ * spread within each type is preserved.
+ *
+ * Ranks rather than a min/max ratio, because these distributions are extremely
+ * long-tailed - a single Naruto-scale anime would otherwise compress everything
+ * else into the bottom 1% of the range.
+ *
+ * The seed is held at or above the 70th percentile of its own type. It is the
+ * thing the user asked about and the hub every edge radiates from, so it must
+ * not render as the smallest node on screen. That was happening for real: the
+ * anime seed was sent with `weight: 0`, which put Naruto at the minimum radius
+ * while all sixteen of its characters drew larger.
+ */
+export function normaliseProminence(
+  nodes: readonly Weighed[],
+  opts: { seed?: string; seedFloor?: number } = {}
+): Map<string, number> {
+  const out = new Map<string, number>();
+  const seedFloor = opts.seedFloor ?? 0.7;
+
+  const byType = new Map<NodeType, Weighed[]>();
+  for (const n of nodes) {
+    const list = byType.get(n.type);
+    if (list) list.push(n);
+    else byType.set(n.type, [n]);
+  }
+
+  for (const group of byType.values()) {
+    // Ascending, ties broken by id so the same graph always sizes identically.
+    const sorted = [...group].sort((a, b) => a.weight - b.weight || a.id.localeCompare(b.id));
+    const distinct = new Set(sorted.map((n) => n.weight));
+
+    for (let i = 0; i < sorted.length; i++) {
+      // Every node of this type carries the same raw weight (a one-node graph, or
+      // a type whose members AniList reports identically). There is no ranking
+      // information to extract, so treat them as equally prominent rather than
+      // letting position in the array decide.
+      const score = distinct.size === 1 ? 1 : i / (sorted.length - 1);
+      out.set(sorted[i].id, score);
+    }
+  }
+
+  if (opts.seed) {
+    const seedNode = nodes.find((n) => n.id === opts.seed);
+    if (seedNode) out.set(opts.seed, Math.max(out.get(opts.seed) ?? 0, seedFloor));
+  }
+
+  return out;
 }

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
 import { getStreamingSources } from "@/lib/streaming";
 import { getDubInfo } from "@/lib/dub-data";
+import { getFillerForAnime } from "@/lib/filler";
+import { getWatchOrderSlugForAnilistId } from "@/lib/watch-order-index";
 import { PageTransition } from "@/components/PageTransition";
 import NativeBannerAd from "@/components/NativeBannerAd";
 import Link from "next/link";
@@ -58,6 +60,12 @@ export default async function WatchGuidePage({ params }: Props) {
   const title = bestTitle(media.title);
   const streamingSources = getStreamingSources(title);
   const dubInfo = getDubInfo(mediaId);
+
+  // Resolve optional deep links by AniList id so we never emit a link that
+  // 404s: `/filler/[slug]` expects a text slug and `/watch-order/[id]` expects
+  // a slug key, not a numeric AniList media id.
+  const fillerShow = await getFillerForAnime(mediaId).catch(() => null);
+  const watchOrderSlug = getWatchOrderSlugForAnilistId(mediaId);
 
   return (
     <PageTransition>
@@ -180,14 +188,14 @@ export default async function WatchGuidePage({ params }: Props) {
               <p className="text-xs text-[var(--color-mute)]">View full anime information</p>
             </Link>
             <Link
-              href={`/filler/${mediaId}`}
+              href={fillerShow ? `/filler/${fillerShow.slug}` : "/filler"}
               className="rounded-xl neon-rgb-border bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)]"
             >
               <h3 className="text-sm font-bold">Filler Guide</h3>
               <p className="text-xs text-[var(--color-mute)]">Check which episodes to skip</p>
             </Link>
             <Link
-              href={`/watch-order/${mediaId}`}
+              href={watchOrderSlug ? `/watch-order/${watchOrderSlug}` : "/watch-order"}
               className="rounded-xl neon-rgb-border bg-[var(--color-surface1)] p-4 transition-all hover:border-[var(--color-cyan)]"
             >
               <h3 className="text-sm font-bold">Watch Order</h3>

@@ -6,8 +6,33 @@ import {
 } from "@/lib/anilist";
 
 export const metadata: Metadata = {
+  title: "ZyniVerse | India's #1 Anime Platform - Filler Guides, Indian Dubs & Community",
+  description:
+    "ZyniVerse: Free anime platform with filler guides for 200+ anime, Indian dub tracking (Hindi, Tamil, Telugu), AI recommendations, manga reader, cosplay gallery, and community. Join millions of Indian anime fans.",
+  keywords: [
+    "anime",
+    "filler guides",
+    "indian dubs",
+    "anime community",
+    "anime website",
+    "zyverse",
+    "anime tracker",
+  ],
   alternates: {
     canonical: process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in",
+  },
+  openGraph: {
+    title: "ZyniVerse | India's #1 Anime Platform",
+    description:
+      "Free anime platform with filler guides, Indian dub tracking, AI recommendations, and community.",
+    url: process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ZyniVerse | India's #1 Anime Platform",
+    description:
+      "Free anime platform with filler guides, Indian dub tracking, AI recommendations, and community.",
   },
 };
 

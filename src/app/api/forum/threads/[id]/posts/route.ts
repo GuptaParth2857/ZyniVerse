@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { checkAndAwardAchievement } from "@/lib/achievements-server";
+import { awardForReason } from "@/lib/economy";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -55,6 +56,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     where: { id },
     data: { postCount: { increment: 1 }, updatedAt: new Date() },
   });
+
+  awardForReason(session.user.id, "FORUM_POST", post.id).catch(() => {});
 
   const replyCount = await prisma.forumPost.count({
     where: { userId: session.user.id, isDeleted: false },

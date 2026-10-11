@@ -4,10 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { logError } from "@/lib/logger";
 import { notifyAllWebhooks } from "@/lib/webhook-dispatcher";
+import { awardForReason } from "@/lib/economy";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   try {
@@ -62,7 +63,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const session = await auth();
@@ -109,6 +110,8 @@ export async function POST(req: NextRequest) {
       rating: review.rating,
       userId: session.user.id,
     });
+
+    awardForReason(session.user.id, "REVIEW_CREATED", review.id).catch(() => {});
 
     return NextResponse.json({ review }, { status: 201 });
   } catch (e) {

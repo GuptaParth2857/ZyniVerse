@@ -31,7 +31,7 @@ describe("Rate limiter", () => {
   it("should allow requests within limit", async () => {
     const { apiLimiter } = await import("@/lib/rate-limiter");
     const req = new Request("http://localhost:3000/api/test");
-    const res = apiLimiter.middleware(req);
+    const res = await apiLimiter.middleware(req);
     expect(res).toBeNull();
   });
 
@@ -39,9 +39,9 @@ describe("Rate limiter", () => {
     const { apiLimiter } = await import("@/lib/rate-limiter");
     const req = new Request("http://localhost:3000/api/test");
     for (let i = 0; i < 60; i++) {
-      apiLimiter.middleware(req);
+      await apiLimiter.middleware(req);
     }
-    const res = apiLimiter.middleware(req);
+    const res = await apiLimiter.middleware(req);
     expect(res).not.toBeNull();
     if (res) {
       const body = await res.json();

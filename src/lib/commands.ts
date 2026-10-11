@@ -81,7 +81,7 @@ export const COMMANDS: Command[] = [
   { id: "watchlist", label: "Watchlist", path: "/watchlist", group: "Track", keywords: "wl my list watch progress", emoji: "📺" },
   { id: "status", label: "My Anime Status", path: "/status", group: "Track", keywords: "watching completed dropped progress", emoji: "📊" },
   { id: "watch-order", label: "Watch Order", path: "/watch-order", group: "Track", keywords: "order to watch sequence", emoji: "1️⃣" },
-  { id: "doujin-mine", label: "My Doujin", path: "/doujinshi/mine", group: "Track", keywords: "favorites saved doujinshi", emoji: "🔞" },
+  { id: "doujin-mine", label: "My Doujin", path: "/doujinshi/my", group: "Track", keywords: "favorites saved doujinshi", emoji: "🔞" },
   { id: "my-characters", label: "My Characters", path: "/my-characters", group: "Track", keywords: "favourites favorites collection", emoji: "⭐" },
   { id: "saved", label: "Saved", path: "/saved", group: "Track", keywords: "bookmarks saved items", emoji: "🔖" },
   { id: "shared-watchlists", label: "Shared Watchlists", path: "/shared-watchlists", group: "Track", keywords: "collaborate shared team list", emoji: "👥" },

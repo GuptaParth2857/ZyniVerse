@@ -9,7 +9,7 @@ const MAX_SIZE = 5 * 1024 * 1024;
 
 export async function POST(req: NextRequest) {
   try {
-    const rateLimited = apiLimiter.middleware(req);
+    const rateLimited = await apiLimiter.middleware(req);
     if (rateLimited) return rateLimited;
 
     const session = await auth();

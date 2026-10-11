@@ -20,13 +20,13 @@ import type { NextRequest } from "next/server";
 // them cheaply instead of re-rendering. Never applied when auth cookies are
 // present (logged-in users get whatever the page decides to render).
 const PUBLIC_CDN_PATHS: Array<{ pattern: RegExp; sMaxAge: number }> = [
-  { pattern: /^\/character-tournaments\/[^/]+$/, sMaxAge: 300 },
-  { pattern: /^\/(?:anime|character|manga|staff|studio|watch-order|news|indian-dubs|live-action|toons|cosplay|posts|reels)\/[^/]+$/, sMaxAge: 600 },
+  { pattern: /^\/character-tournaments\/[^/]+$/, sMaxAge: 900 },
+  { pattern: /^\/(?:anime|character|manga|staff|studio|watch-order|news|indian-dubs|live-action|toons|cosplay|posts|reels)\/[^/]+$/, sMaxAge: 1800 },
   // Static list/knowledge pages — heavy anonymous traffic, no per-user SSR.
   // (proxy only applies this when there are no auth cookies, so logged-in
   // users still get fully personal/up-to-date markup.)
-  { pattern: /^\/(?:schedule|seasonal|top-anime|top-characters|indian-dubs|dubbed|manga-million|filler|tools|manga|challenges|forum|quiz|community|news|blog|wiki|voice-actors|wallpapers|watch-order)$/, sMaxAge: 600 },
-  { pattern: /^\/(?:schedule|seasonal|top-anime|dubbed|indian-dubs|filler|manga|news|blog|wiki|voice-actors|wallpapers|watch-order)\/(?:page\/)?\d*$/, sMaxAge: 300 },
+  { pattern: /^\/(?:schedule|seasonal|top-anime|top-characters|indian-dubs|dubbed|manga-million|filler|tools|manga|challenges|forum|quiz|community|news|blog|wiki|voice-actors|wallpapers|watch-order)$/, sMaxAge: 1800 },
+  { pattern: /^\/(?:schedule|seasonal|top-anime|dubbed|indian-dubs|filler|manga|news|blog|wiki|voice-actors|wallpapers|watch-order)\/(?:page\/)?\d*$/, sMaxAge: 900 },
 ];
 
 const AUTH_COOKIES = [
@@ -63,11 +63,47 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // `api/` is excluded on purpose: every API request (analytics beacons,
-  // activity tracking, ad impressions, /api/anilist/* fan-out) previously ran
-  // through Proxy first, doubling its function invocations for no benefit —
-  // those routes set their own Cache-Control headers in their handlers.
+  // Scoped to the only paths this handler can act on — the PUBLIC_CDN_PATHS
+  // prefixes below. Previously the matcher caught *every* page route, so the
+  // Node runtime spun up a billed function for e.g. /about, /profile and
+  // /settings just to return NextResponse.next() without setting anything.
+  // This is a deliberate superset of PUBLIC_CDN_PATHS (whole subtrees, not the
+  // exact per-page regexes) so no page that used to get the shared-cache header
+  // loses it — the handler still re-checks the precise shape + auth cookie.
+  //
+  // `api/`, `_next/*` and static assets stay excluded: they set their own
+  // Cache-Control in their handlers and must not pay a "proxy + route" double
+  // invocation.
   matcher: [
-    "/((?!api/|_next/static|_next/image|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js|txt|xml|json|woff|woff2|map|webmanifest)$).*)",
+    "/character-tournaments/:path*",
+    "/anime/:path*",
+    "/character/:path*",
+    "/manga/:path*",
+    "/staff/:path*",
+    "/studio/:path*",
+    "/watch-order/:path*",
+    "/news/:path*",
+    "/indian-dubs/:path*",
+    "/live-action/:path*",
+    "/toons/:path*",
+    "/cosplay/:path*",
+    "/posts/:path*",
+    "/reels/:path*",
+    "/schedule/:path*",
+    "/seasonal/:path*",
+    "/top-anime/:path*",
+    "/top-characters/:path*",
+    "/dubbed/:path*",
+    "/manga-million/:path*",
+    "/filler/:path*",
+    "/tools/:path*",
+    "/challenges/:path*",
+    "/forum/:path*",
+    "/quiz/:path*",
+    "/community/:path*",
+    "/blog/:path*",
+    "/wiki/:path*",
+    "/voice-actors/:path*",
+    "/wallpapers/:path*",
   ],
 };

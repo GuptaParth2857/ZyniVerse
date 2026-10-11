@@ -13,7 +13,7 @@ function readDeviceId(req: NextRequest): string | null {
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string; matchId: string }> }) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   // Voting is open to guests, matching the qualifying poll. getSessionUserId

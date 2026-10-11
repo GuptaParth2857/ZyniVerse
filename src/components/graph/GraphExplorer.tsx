@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import EntityPicker, { type EntityPick } from "@/components/graph/EntityPicker";
 import type { GraphEdge, GraphNode } from "@/lib/graph";
@@ -47,18 +47,33 @@ const PRESETS: Array<{ label: string; seed: string; to?: string }> = [
 
 export default function GraphPage() {
   const router = useRouter();
+  // Read through the router rather than `window.location`. This component used to
+  // open on Naruto at depth 1 no matter what a shared `?seed=`/`?depth=` link
+  // claimed, so the initial state was moved into the lazy `useState` initialiser
+  // - which put `window.location.search` inside render. That is fine in a
+  // browser and fatal in the prerender worker, and because the page had nothing
+  // else dynamic about it the build only discovered it while prerendering:
+  // `ReferenceError: window is not defined`, and the whole build failed.
+  //
+  // `useSearchParams` is the supported way to read this. It makes the page
+  // dynamic instead, which is the correct trade - a graph is drawn from a live
+  // AniList query anyway, so there was never anything static here to cache.
+  const params = useSearchParams();
 
   // Naruto is the most connected thing on AniList, so the first picture is
-  // never sparse. Lazy initial value rather than an effect: an effect that
-  // sets state on mount costs an extra render pass before anything is drawn.
-  const [seed, setSeed] = useState<EntityPick | null>(() => ({
-    id: "anime:20",
-    label: "Naruto",
-    sub: "Anime",
-    image: null,
-  }));
+  // never sparse.
+  const urlSeed = params.get("seed");
+  const urlDepth = params.get("depth");
+  const [seed, setSeed] = useState<EntityPick | null>(() =>
+    urlSeed
+      ? { id: urlSeed, label: urlSeed.replace(":", " #"), sub: "", image: null }
+      : { id: "anime:20", label: "Naruto", sub: "Anime", image: null }
+  );
   const [target, setTarget] = useState<EntityPick | null>(null);
-  const [depth, setDepth] = useState<1 | 2>(1);
+  // Depth 2 by default. Depth 1 is a pure hub-and-spoke: one cast list and
+  // nothing between the spokes, which is a list wearing a graph's clothes. It is
+  // still one click away for when someone wants the plain cast.
+  const [depth, setDepth] = useState<1 | 2>(() => (urlDepth === "1" ? 1 : 2));
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

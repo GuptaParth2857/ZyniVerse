@@ -76,7 +76,7 @@ function calculateStreaks(watchDays: string[]): { currentStreak: number; longest
 }
 
 export async function GET(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const session = await auth();

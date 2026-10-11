@@ -5,7 +5,7 @@ import { apiLimiter } from "@/lib/rate-limiter";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const { searchParams } = new URL(req.url);

@@ -94,23 +94,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        const dbId = (token.dbId as string) || "";
-        session.user.id = dbId;
-        let avatar: string | null = null;
-        if (dbId) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: dbId },
-          select: { avatar: true, onboarded: true, createdAt: true },
-        });
-        avatar = dbUser?.avatar && !isDefaultAvatar(dbUser.avatar) ? dbUser.avatar : null;
-        session.user.onboarded = dbUser?.onboarded ?? false;
-        session.user.createdAt = dbUser?.createdAt;
-      }
-        session.user.image = avatar;
+        session.user.id = (token.dbId as string) || "";
+        // Served straight from the JWT (refreshed by the `jwt` callback at most
+        // every PROFILE_TTL_MS) so a session read no longer costs a DB query.
+        session.user.onboarded = (token.onboarded as boolean) ?? false;
+        session.user.createdAt = token.createdAt as Date | undefined;
+        session.user.image = (token.avatar as string | null) ?? null;
       }
       return session;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger }) {
       if (user) {
         if (account?.provider === "credentials") {
           token.dbId = user.id;
@@ -132,6 +125,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           select: { id: true },
         });
         if (dbUser) token.dbId = dbUser.id;
+      }
+
+      // Profile fields (avatar/onboarded/createdAt) used to be fetched from the
+      // DB inside the `session` callback on every authenticated request. Cache
+      // them on the JWT and refresh at most every PROFILE_TTL_MS, or immediately
+      // on an explicit `update()` from the client.
+      const PROFILE_TTL_MS = 5 * 60 * 1000;
+      const profileStale =
+        trigger === "update" ||
+        token.profileAt === undefined ||
+        Date.now() - (token.profileAt as number) > PROFILE_TTL_MS;
+
+      if (token.dbId && profileStale) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.dbId as string },
+          select: { avatar: true, onboarded: true, createdAt: true },
+        });
+        if (dbUser) {
+          token.avatar = dbUser.avatar && !isDefaultAvatar(dbUser.avatar) ? dbUser.avatar : null;
+          token.onboarded = dbUser.onboarded ?? false;
+          token.createdAt = dbUser.createdAt;
+        }
+        token.profileAt = Date.now();
       }
 
       if (account) token.provider = account.provider;

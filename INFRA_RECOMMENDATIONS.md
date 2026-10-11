@@ -82,3 +82,25 @@ REDIS_URL=redis://...  # Upstash or ElastiCache
 3. **CDN** — reduces origin load by 80%
 4. **Horizontal scaling** — handles traffic spikes
 5. **Search index** — Meilisearch per route (doujinshi, conventions, voice-actors)
+
+---
+
+## Implemented in code (no infra change required)
+
+These are already in the branch and activate automatically where applicable:
+
+- **DB connection pooling** — `src/lib/prisma.ts` forces `connection_limit=1` (plus `pool_timeout=20`, and `pgbouncer=true` on port `6543`) whenever it detects a serverless runtime (`VERCEL` / `AWS_LAMBDA_FUNCTION_NAME`), and caches the Prisma client on `globalThis` in every environment. Self-hosted keeps a small pool (`connection_limit=3`).
+- **One fewer DB round-trip per request** — profile fields (`avatar` / `onboarded` / `createdAt`) are cached on the JWT and refreshed at most every 5 minutes (or immediately on `update()`), instead of a `user.findUnique` inside the `session` callback on every authenticated request.
+- **Distributed rate limiting** — `rate-limiter.ts` `middleware()` is now async and Redis-aware; previously it always used the per-instance in-memory counter even when Redis was configured.
+- **AniList request coalescing** — concurrent identical GraphQL queries now share one in-flight promise, so they hit AniList once instead of N times.
+
+### Required environment action
+
+- **`REDIS_URL`** (e.g. Upstash) — enables a single global rate-limit counter across all instances. Without it the code falls back to per-instance memory (no crash, just weaker limits).
+- On Vercel, confirm **`DATABASE_URL`** points at the Supabase **transaction** pooler on port `6543` (with `?pgbouncer=true`). The code enforces `connection_limit=1` automatically.
+
+### Still open (from the scale audit)
+
+- Realtime (socket.io in `server.ts`) does **not** run on Vercel — needs a dedicated realtime service or managed provider.
+- Several unbounded queries / all-users cron jobs (`chat`, `event-alerts`, `airing-alerts`, admin analytics).
+- Uploads proxied through serverless functions (`cosplay`, `fanart`) — move to presigned direct uploads.

@@ -270,7 +270,7 @@ export default function CommissionDetailPage() {
                 transition={{ delay: 0.28, ...SPRING }}
               >
                 <Link
-                  href={`/profile/${commission.user.username}`}
+                  href={`/u/${commission.user.username}`}
                   className="group mt-6 flex items-center gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-3 transition-colors hover:border-[var(--color-cyan)]"
                 >
                   <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[var(--color-magenta)] to-[var(--color-cyan)]">

@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getLevel } from "@/lib/achievements";
+import { awardEconomy, EARN_RATES } from "@/lib/economy";
 import { createNotification } from "@/lib/notifications";
 import { NextResponse } from "next/server";
 
@@ -38,6 +38,9 @@ export async function GET() {
     totalXpAwarded: daily?.totalXpAwarded ?? 0,
     claimedToday,
     freezes: frozen?.count ?? 0,
+    // Fixed coin leg of the reward, shown before the claim so the button can
+    // advertise what it pays. XP is streak-scaled and computed server-side.
+    coinReward: EARN_RATES.DAILY_LOGIN.coins,
   });
 }
 
@@ -59,17 +62,17 @@ export async function POST() {
     );
   }
 
-  // Compute streak. If yesterday not active and no freeze, streak resets to 1.
+  // Compute the streak, but do not consume a freeze yet: the award below is the
+  // point of no return, and a duplicate (retry / race) must not burn a freeze.
   let streak = 1;
   let usedFreeze = false;
   if (daily?.lastClaimed) {
     if (isConsecutive(daily.lastClaimed)) {
       streak = daily.streak + 1;
     } else if (frozen && frozen.count > 0) {
-      // freeze saves the previous streak; claim continues it
+      // freeze saves the previous streak; the claim continues it
       streak = daily.streak + 1;
       usedFreeze = true;
-      await prisma.streakFreeze.update({ where: { userId }, data: { count: { decrement: 1 } } });
     }
     // else: break -> restart at 1
   }
@@ -77,25 +80,36 @@ export async function POST() {
   const streakBonus = Math.min(streak * STREAK_BONUS_PER_DAY, MAX_STREAK_BONUS);
   const xpEarned = DAILY_BASE_XP + streakBonus;
 
-  // Award XP
-  const up = await prisma.userPoints.upsert({
-    where: { userId },
-    update: { points: { increment: xpEarned } },
-    create: { userId, points: xpEarned, level: 1 },
-  });
-  const newLevel = getLevel(up.points);
-  if (newLevel !== up.level) {
-    await prisma.userPoints.update({ where: { userId }, data: { level: newLevel } });
+  // XP + coins both flow through the economy ledger. The day key is the
+  // idempotency ref, so a double-submit pays once even though the once-per-day
+  // check above is only a fast path (not a lock).
+  const award = await awardEconomy(
+    userId,
+    "DAILY_LOGIN",
+    { xp: xpEarned, coins: EARN_RATES.DAILY_LOGIN.coins },
+    dayKey(now)
+  );
+  if (award.duplicate) {
+    return NextResponse.json(
+      { error: "Already claimed today. Come back tomorrow!", already: true, streak: daily?.streak ?? 0 },
+      { status: 409 }
+    );
+  }
+
+  if (usedFreeze) {
+    await prisma.streakFreeze.update({ where: { userId }, data: { count: { decrement: 1 } } });
+  }
+  if (award.leveledUp && award.newLevel) {
     void createNotification({
       userId,
       type: "SYSTEM",
       title: "Level Up!",
-      body: `You reached level ${newLevel} 🎉`,
+      body: `You reached level ${award.newLevel} 🎉`,
       link: "/profile",
     });
   }
 
-  const totalXpAwarded = (daily?.totalXpAwarded || 0) + xpEarned;
+  const totalXpAwarded = (daily?.totalXpAwarded || 0) + award.xp;
   await prisma.dailyLogin.upsert({
     where: { userId },
     update: { streak, lastClaimed: now, totalClaims: { increment: 1 }, totalXpAwarded },
@@ -109,12 +123,13 @@ export async function POST() {
     userId,
     type: "SYSTEM",
     title: "Daily Bonus Claimed 🔥",
-    body: `You earned ${xpEarned} XP. Current login streak: ${streak} day${streak > 1 ? "s" : ""}.`,
+    body: `You earned ${award.xp} XP and ${award.coins} coins. Current login streak: ${streak} day${streak > 1 ? "s" : ""}.`,
     link: "/profile",
   });
 
   return NextResponse.json({
-    xp: xpEarned,
+    xp: award.xp,
+    coins: award.coins,
     streak,
     usedFreeze,
     totalXpAwarded,

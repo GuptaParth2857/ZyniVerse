@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Reads and queries the semantic index that lives in the existing `AiCache`
  * table.
  *
@@ -7,34 +7,78 @@
  * `AiCache` is `{ key @unique, kind, response, createdAt }` with an index on
  * `(kind, createdAt)`. A document embedding is an immutable, content-addressed
  * blob keyed by a hash of the text that produced it - which is exactly the shape
- * of a cache entry. Reusing the table means this feature ships without a
- * migration, and migrations against the production database need an owner's
- * approval we do not have.
+ * of a cache entry. Reusing the table means the index itself still ships without
+ * a migration; the pgvector *mirror* (see below) is the one thing that does need
+ * one, and it is written as `20261009090000_add_doc_embedding` and applied only
+ * when a database owner runs it.
  *
  * ## What this costs at today's scale
  *
  * The corpus is 28 documents / ~0.3MB of vectors, so one query is ~21k
- * multiply-adds - microseconds. Scanning is not the bottleneck and adding
- * pgvector now would buy nothing measurable. A migration is included under
- * `prisma/migrations` for when the corpus is orders of magnitude larger; until
- * then a full scan is the correct amount of engineering.
+ * multiply-adds - microseconds. Scanning is not the bottleneck, so it stays the
+ * default read path until the `20261009090000_add_doc_embedding` migration
+ * (which also creates the `vector` extension) has been applied. `pgvectorEnabled()`
+ * probes for it, and once it is true `searchSemantic` switches to a pgvector KNN
+ * query over the `DocEmbedding` mirror table - an approximate index scan (HNSW)
+ * instead of streaming the whole corpus into the JS runtime. Until the migration
+ * is applied nothing changes: the scan path is the fallback, not the other way
+ * around.
  */
 
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { bestTitle, getMediaBatch } from "@/lib/anilist";
 import {
   buildEmbedInput,
   cosine,
   contentHash,
   EMBED_DIMS,
+  EMBED_MODEL,
   embedText,
   docEmbedKey,
   MIN_SIMILARITY,
   queryEmbedKey,
 } from "@/lib/embeddings";
 
-export type Source = "wiki" | "blog" | "forum";
+export type Source = "wiki" | "blog" | "forum" | "review" | "tags" | "clip" | "moment" | "award";
 
-export const SOURCES: Source[] = ["wiki", "blog", "forum"];
+export const SOURCES: Source[] = ["wiki", "blog", "forum", "review", "tags", "clip", "moment", "award"];
+
+/**
+ * Human-facing label per source, shared by the API and the filter row so the two
+ * cannot drift.
+ */
+export const SOURCE_LABEL: Record<Source, string> = {
+  wiki: "Wiki",
+  blog: "Blog",
+  forum: "Forum",
+  review: "Reviews",
+  tags: "Community tags",
+  clip: "Clips",
+  moment: "Moments",
+  award: "Awards",
+};
+
+/**
+ * Narrowing guard for values arriving from the query string.
+ *
+ * Derived from `SOURCES` rather than written out. Hardcoding the list here is
+ * what let the index grow to eight sources while `?sources=award` was still
+ * rejected as invalid - the filter and the index disagreed, and the code that
+ * disagreed was the validation.
+ */
+export function isSource(v: string | null): v is Source {
+  return v !== null && (SOURCES as string[]).includes(v);
+}
+
+/** What one source contributes to the index, before it is embedded. */
+export interface SourceDoc {
+  id: string;
+  title: string;
+  href: string;
+  body: string;
+  tags: string;
+}
 
 export interface SemanticDoc {
   id: string;
@@ -77,7 +121,7 @@ function snippet(body: string, max = 180): string {
   const text = plain(body);
   if (text.length <= max) return text;
   // Cut on a space so the excerpt never ends mid-word.
-  return `${text.slice(0, max).replace(/\s+\S*$/, "")}…`;
+  return `${text.slice(0, max).replace(/\s+\S*$/, "")}â€¦`;
 }
 
 /** The text that actually gets embedded, kept in one place so embed and re-embed agree. */
@@ -85,9 +129,7 @@ export function embeddableText(doc: { title: string; body: string; tags?: string
   return buildEmbedInput(doc);
 }
 
-export async function sourceDocuments(
-  source: Source
-): Promise<Array<{ id: string; title: string; href: string; body: string; tags: string }>> {
+export async function sourceDocuments(source: Source): Promise<SourceDoc[]> {
   if (source === "wiki") {
     const rows = await prisma.wikiPage.findMany({
       where: { isPublished: true },
@@ -114,21 +156,167 @@ export async function sourceDocuments(
       tags: r.tags ?? "",
     }));
   }
-  const rows = await prisma.forumThread.findMany({
-    where: { isDeleted: false },
-    select: { id: true, slug: true, title: true, content: true },
-  });
-  return rows.map((r) => ({
-    // Slug stays the cache identity (readable and stable); the href uses the
-    // primary key, because `/forum/thread/[id]` is what every other link in the
-    // codebase points at - the segment is named [id] even though the route
-    // accepts a slug in that slot elsewhere.
-    id: r.slug,
-    title: r.title,
-    href: `/forum/thread/${r.id}`,
-    body: r.content,
-    tags: "",
-  }));
+  if (source === "forum") {
+    const rows = await prisma.forumThread.findMany({
+      where: { isDeleted: false },
+      select: { id: true, slug: true, title: true, content: true },
+    });
+    return rows.map((r) => ({
+      // Slug stays the cache identity (readable and stable); the href uses the
+      // primary key, because `/forum/thread/[id]` is what every other link in the
+      // codebase points at - the segment is named [id] even though the route
+      // accepts a slug in that slot elsewhere.
+      id: r.slug,
+      title: r.title,
+      href: `/forum/thread/${r.id}`,
+      body: r.content,
+      tags: "",
+    }));
+  }
+  return structuredDocuments(source);
+}
+
+/**
+ * Media titles for the sources that only store an AniList id.
+ *
+ * Batched, because the alternative - one request per row - meant 84 community-tag
+ * rows would spend 84 of AniList's 30-requests-per-minute budget on titles alone,
+ * starving every other route on the site. Cached, because the same media id shows
+ * up under several tags and re-requesting it is what turned this into a problem.
+ *
+ * Bounded, because a map that only ever grows is a leak wearing a cache's
+ * clothes. AniList media titles are immutable, so nothing here needs to expire -
+ * it only has to stop being unbounded. Evicting the oldest insertions is fine:
+ * a miss costs one batched request, not a wrong answer.
+ *
+ * A lookup failure degrades to `Anime #id` rather than dropping the document. A
+ * result with an ugly title is recoverable; a silently missing row is not.
+ */
+const titleCache = new Map<number, string>();
+const TITLE_CACHE_MAX = 2_000;
+
+function rememberTitle(id: number, title: string): void {
+  // Re-insert so the key moves to the end of the insertion order, which is what
+  // makes the eviction below actually least-recently-used rather than
+  // first-in-first-out.
+  titleCache.delete(id);
+  titleCache.set(id, title);
+  if (titleCache.size > TITLE_CACHE_MAX) {
+    const oldest = titleCache.keys().next();
+    if (!oldest.done) titleCache.delete(oldest.value);
+  }
+}
+
+async function mediaTitles(ids: readonly number[]): Promise<Map<number, string>> {
+  const wanted = [...new Set(ids)].filter((id) => !titleCache.has(id));
+  // `getMediaBatch` caps at perPage 50, so chunk rather than silently truncate.
+  for (let i = 0; i < wanted.length; i += 50) {
+    const chunk = wanted.slice(i, i + 50);
+    try {
+      for (const m of await getMediaBatch(chunk)) {
+        const title = bestTitle(m.title);
+        if (title) rememberTitle(m.id, title);
+      }
+    } catch {
+      // Fall through to the `#id` fallback below.
+    }
+  }
+  const out = new Map<number, string>();
+  for (const id of new Set(ids)) out.set(id, titleCache.get(id) ?? `Anime #${id}`);
+  return out;
+}
+
+/**
+ * Sources built out of structured rows rather than authored prose.
+ *
+ * The original three covered only wiki/blog/forum - 28 documents, which is the
+ * entire editorial content of the site. Anything outside that narrow set
+ * ("what does the community think of...", "what won anime of the year") had
+ * nothing to match against, so the page read as broken rather than small. These
+ * five come from tables that were already populated and already linked from the
+ * UI, so they cost one backfill rather than new content.
+ *
+ * Each row is rendered into a short sentence rather than embedded as bare fields,
+ * because the embedder sees text: "long-running" against a media id carries no more
+ * meaning than `tag:long-running` against `mediaId:21` would, and the surrounding
+ * words are what let it match a question phrased in English.
+ */
+async function structuredDocuments(source: Source): Promise<SourceDoc[]> {
+  if (source === "review") {
+    const rows = await prisma.review.findMany({
+      select: { id: true, mediaId: true, rating: true, comment: true },
+      orderBy: { createdAt: "desc" },
+    });
+    const titles = await mediaTitles(rows.map((r) => r.mediaId));
+    return rows.map((r) => ({
+      id: `review-${r.id}`,
+      title: `Review of ${titles.get(r.mediaId)}`,
+      href: `/anime/${r.mediaId}`,
+      body: `${titles.get(r.mediaId)} â€” rated ${r.rating} out of 10. ${r.comment}`.trim(),
+      tags: "review",
+    }));
+  }
+
+  if (source === "tags") {
+    const rows = await prisma.communityTag.findMany({
+      where: { isApproved: true },
+      select: { id: true, mediaId: true, tag: true, score: true },
+      orderBy: { score: "desc" },
+    });
+    const titles = await mediaTitles(rows.map((r) => r.mediaId));
+    return rows.map((r) => ({
+      id: `tag-${r.id}`,
+      title: `${titles.get(r.mediaId)} â€” ${r.tag}`,
+      href: `/anime/${r.mediaId}`,
+      body: `Fans describe ${titles.get(r.mediaId)} as ${r.tag}. ${r.score} people agreed with that description.`,
+      tags: r.tag,
+    }));
+  }
+
+  if (source === "clip") {
+    const rows = await prisma.sceneClip.findMany({
+      select: { id: true, title: true, description: true, mediaTitle: true, tags: true },
+    });
+    return rows.map((r) => ({
+      id: `clip-${r.id}`,
+      // No `/clips/[id]` route exists - only the gallery - so these link to the
+      // gallery rather than to a URL that would 404.
+      title: r.title,
+      href: "/clips",
+      body: `${r.description ?? ""}${r.mediaTitle ? ` From ${r.mediaTitle}.` : ""}`.trim(),
+      tags: r.tags ?? "",
+    }));
+  }
+
+  if (source === "moment") {
+    const rows = await prisma.moment.findMany({
+      where: { isPublic: true },
+      select: { id: true, animeTitle: true, quote: true, character: true },
+    });
+    return rows.map((r) => ({
+      id: `moment-${r.id}`,
+      title: `${r.animeTitle ?? "Moment"}${r.character ? ` â€” ${r.character}` : ""}`,
+      href: `/moments/${r.id}`,
+      body: r.quote,
+      tags: r.character ?? "",
+    }));
+  }
+
+  if (source === "award") {
+    const rows = await prisma.externalAward.findMany({
+      select: { id: true, year: true, category: true, winner: true, platform: true },
+      orderBy: [{ year: "desc" }, { category: "asc" }],
+    });
+    return rows.map((r) => ({
+      id: `award-${r.id}`,
+      title: `${r.category} (${r.year}) â€” ${r.winner}`,
+      href: `/awards/${r.year}`,
+      body: `${r.winner} won ${r.category} in ${r.year}${r.platform ? ` (${r.platform})` : ""}.`,
+      tags: r.category,
+    }));
+  }
+
+  return [];
 }
 
 /**
@@ -163,6 +351,7 @@ export async function storeEmbedding(
   });
   if (existing) {
     cache.delete(source);
+    invalidatePgvectorMirror();
     return true;
   }
 
@@ -177,6 +366,7 @@ export async function storeEmbedding(
   });
 
   cache.delete(source);
+  invalidatePgvectorMirror();
   return true;
 }
 
@@ -226,6 +416,7 @@ export async function pruneStale(source: Source): Promise<number> {
     await prisma.aiCache.deleteMany({ where: { key: { in: dead } } });
   }
   cache.delete(source);
+  invalidatePgvectorMirror();
   return dead.length;
 }
 
@@ -306,6 +497,8 @@ export interface SemanticResult {
   /** True when results came from a lexical fallback because embeddings were unavailable. */
   degraded: boolean;
   reason?: string;
+  /** Which engine answered: the pgvector mirror or the in-memory scan. */
+  engine?: "pgvector" | "scan";
 }
 
 /** The shape the keyword fallback needs: no vector, just text to match on. */
@@ -363,6 +556,22 @@ export async function searchSemantic(
   const limit = Math.min(Math.max(opts.limit ?? 12, 1), 50);
   const minScore = opts.minScore ?? MIN_SIMILARITY;
 
+  // pgvector fast path: only reachable once the DocEmbedding migration has been
+  // applied (see the module comment). Anything that could go wrong - the table
+  // being empty, the embed provider being down, a SQL hiccup - falls through to
+  // the scan path below rather than 500-ing, because the scan path already owns
+  // every degradation story from keyword fallback to "nothing embedded yet".
+  if (await pgvectorEnabled()) {
+    try {
+      const result = await searchSemanticPgIndex(query, { sources, limit, minScore });
+      // An empty mirror means nothing has been embedded at all; the scan path's
+      // "search the live tables by keyword" fallback is the better answer there.
+      if (result.scanned > 0) return result;
+    } catch {
+      // fall through to the scan path
+    }
+  }
+
   const loaded = await Promise.all(sources.map((s) => loadIndex(s)));
   const docs = loaded.flat();
   const scanned = docs.length;
@@ -389,6 +598,7 @@ export async function searchSemantic(
       scanned: 0,
       degraded: true,
       reason: "Nothing is embedded yet. Run `npm run embed:content` to build the index.",
+      engine: "scan",
     };
   }
 
@@ -399,6 +609,7 @@ export async function searchSemantic(
       scanned,
       degraded: true,
       reason: "Gemini embeddings are unavailable right now, so these are keyword matches.",
+      engine: "scan",
     };
   }
 
@@ -408,5 +619,224 @@ export async function searchSemantic(
     .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.item.id < b.item.id ? -1 : 1))
     .slice(0, limit);
 
-  return { hits: scored.map(({ item, score }) => ({ ...item, score })), scanned, degraded: false };
+  return { hits: scored.map(({ item, score }) => ({ ...item, score })), scanned, degraded: false, engine: "scan" };
+}
+
+// ── pgvector mirror ──────────────────────────────────────────────────────────
+//
+// `AiCache` stays the source of truth for the index; `DocEmbedding` is a mirrored
+// copy stored as real `vector(768)` columns so Postgres can answer a query with
+// an approximate KNN index scan instead of streaming every embedding into the JS
+// runtime. Everything here is optional at runtime: if the migration has not been
+// applied (or the `vector` extension is missing) `pgvectorEnabled()` probes to
+// false and `searchSemantic` uses the scan path above, unchanged.
+//
+// The mirror is a pure projection of `AiCache`. `syncPgvectorOnce()` rebuilds it
+// by replaying the same content-addressed rows (newest-wins per document, the
+// same rule `loadIndex` uses) and then deletes rows whose document no longer
+// exists - it cannot drift from the cache, only lag it.
+//
+// The rebuild upserts in batches of `UPSERT_CHUNK` rows (`INSERT ... VALUES
+// (...),(...) ... ON CONFLICT`) rather than one statement per row. The old
+// per-row loop cost one round-trip per document - measured at ~50s for a
+// 281-row corpus on a pooled connection - so batching cuts hundreds of TLS
+// round-trips down to a handful. `Prisma.join` keeps every column parameterised,
+// which sidesteps the multi-column array inference the per-row loop also avoided.
+
+/** TTL for the pgvector "is it live yet" probe. */
+const PG_PROBE_TTL_MS = 60_000;
+/** How long a mirror nothing has touched can go without a rebuild. */
+const MIRROR_SYNC_TTL_MS = 10 * 60 * 1000;
+/** Rows per batched upsert during a mirror rebuild. */
+const UPSERT_CHUNK = 50;
+
+let pgProbe: { at: number; ok: boolean } | null = null;
+let mirrorDirty = true; // a fresh process never trusts a mirror it has not seen
+let lastMirrorSyncAt = 0;
+
+/** Set when AiCache rows change, so the mirror rebuilds on the next query. */
+export function invalidatePgvectorMirror(): void {
+  mirrorDirty = true;
+}
+
+/**
+ * Test-only seam: forget every TTL cache and staleness flag in this module, so a
+ * test can start from a cold process without waiting out the probe/index/mirror
+ * TTLs. Does not touch the database.
+ */
+export function resetSemanticCachesForTests(): void {
+  pgProbe = null;
+  mirrorDirty = true;
+  lastMirrorSyncAt = 0;
+  cache.clear();
+}
+
+/**
+ * True when the `DocEmbedding` table - and therefore the `vector` extension it
+ * depends on - is live in this database. Short-cached, so an install that has
+ * not applied the migration does not pay a probe query per request; once the
+ * migration is applied the app flips to the pgvector path within one probe TTL.
+ */
+export async function pgvectorEnabled(): Promise<boolean> {
+  if (pgProbe && Date.now() - pgProbe.at < PG_PROBE_TTL_MS) return pgProbe.ok;
+  try {
+    await prisma.$queryRaw`SELECT "docId" FROM "DocEmbedding" LIMIT 1`;
+    pgProbe = { at: Date.now(), ok: true };
+  } catch {
+    pgProbe = { at: Date.now(), ok: false };
+  }
+  return pgProbe.ok;
+}
+
+/**
+ * A vector in the bracket form Postgres parses (`[0.1,0.2,…]`), bound as text
+ * and cast to `vector` in the query. The JS side already normalises every vector
+ * it stores, so these are unit-length and pgvector's cosine distance `<=>` is
+ * exactly `1 - cosine(query, doc)`.
+ */
+export function vectorLiteral(v: readonly number[]): string {
+  return `[${Array.from(v).join(",")}]`;
+}
+
+/** The rows a KNN query reads back from the mirror table. */
+interface MirrorRow {
+  source: string;
+  id: string;
+  title: string;
+  href: string;
+  snippet: string;
+  tags: string;
+  score: number;
+}
+
+/**
+ * Mirror the current `AiCache` index into `DocEmbedding`, then prune mirror rows
+ * whose document no longer exists in the cache. Returns the number of rows
+ * written. The caller is responsible for having checked `pgvectorEnabled()`.
+ */
+async function syncPgvectorOnce(): Promise<number> {
+  const docsBySource = new Map<Source, SemanticDoc[]>();
+  let written = 0;
+
+  for (const source of SOURCES) {
+    const docs = await loadIndex(source);
+    docsBySource.set(source, docs);
+    for (let i = 0; i < docs.length; i += UPSERT_CHUNK) {
+      const chunk = docs.slice(i, i + UPSERT_CHUNK);
+      await prisma.$executeRaw(Prisma.sql`
+        INSERT INTO "DocEmbedding" (
+          "source", "docId", "title", "href", "snippet", "tags",
+          "model", "dims", "embedding", "createdAt", "updatedAt"
+        ) VALUES ${Prisma.join(
+          chunk.map(
+            (doc) => Prisma.sql`(
+              ${source}, ${doc.id}, ${doc.title}, ${doc.href}, ${doc.snippet}, ${doc.tags},
+              ${EMBED_MODEL}, ${EMBED_DIMS}::int, ${vectorLiteral(doc.vector)}::vector, now(), now()
+            )`
+          )
+        )}
+        ON CONFLICT ("source", "docId") DO UPDATE SET
+          "title" = EXCLUDED."title",
+          "href" = EXCLUDED."href",
+          "snippet" = EXCLUDED."snippet",
+          "tags" = EXCLUDED."tags",
+          "model" = EXCLUDED."model",
+          "dims" = EXCLUDED."dims",
+          "embedding" = EXCLUDED."embedding",
+          "updatedAt" = now()
+      `);
+      written += chunk.length;
+    }
+  }
+
+  const live = new Set<string>();
+  for (const [source, docs] of docsBySource) {
+    for (const doc of docs) live.add(`${source}\u0000${doc.id}`);
+  }
+  const existing = await prisma.$queryRaw<Array<{ source: string; docId: string }>>`
+    SELECT "source", "docId" FROM "DocEmbedding"
+  `;
+  const dead = existing.filter((row) => !live.has(`${row.source}\u0000${row.docId}`));
+  if (dead.length > 0) {
+    // Composite IN over unnest: a JS-built tuple list cannot be parameterised
+    // safely, and NUL cannot appear in a Postgres text column, so this phrasing
+    // stays unambiguous even for exotic ids.
+    await prisma.$executeRaw`
+      DELETE FROM "DocEmbedding"
+      WHERE ("source", "docId") IN (
+        SELECT * FROM unnest(${dead.map((r) => r.source)}::text[], ${dead.map((r) => r.docId)}::text[])
+      )
+    `;
+  }
+
+  lastMirrorSyncAt = Date.now();
+  mirrorDirty = false;
+  return written;
+}
+
+/** Sync unless one ran recently and the cache has not changed since. */
+async function ensureMirrorSynced(): Promise<void> {
+  if (!mirrorDirty && Date.now() - lastMirrorSyncAt < MIRROR_SYNC_TTL_MS) return;
+  await syncPgvectorOnce();
+}
+
+/**
+ * Force a mirror rebuild regardless of staleness. Used by
+ * `npm run embed:content` after it has written the AiCache rows, so the pgvector
+ * mirror is ready for the next search even if nothing queries it in between.
+ * No-op when the migration has not been applied.
+ */
+export async function syncPgvectorNow(): Promise<number> {
+  if (!(await pgvectorEnabled())) return 0;
+  return syncPgvectorOnce();
+}
+
+/**
+ * Answer a query from the pgvector mirror with an HNSW cosine-similarity scan.
+ * Throws on anything the caller should recover from (embed provider down, the
+ * table dropped mid-request, …); `searchSemantic` catches and uses the scan
+ * path, which owns every fallback story.
+ */
+async function searchSemanticPgIndex(
+  query: string,
+  opts: { sources: Source[]; limit: number; minScore: number }
+): Promise<SemanticResult> {
+  await ensureMirrorSynced();
+
+  const qv = await embedQuery(query);
+  if (!qv) throw new Error("pgvector search: query embedding unavailable");
+
+  const rows = await prisma.$queryRaw<MirrorRow[]>`
+    WITH q AS (SELECT ${vectorLiteral(qv)}::vector AS v)
+    SELECT "source", "docId" AS "id", "title", "href", "snippet", "tags",
+           (1 - ("embedding" <=> q.v)) AS "score"
+    FROM "DocEmbedding" CROSS JOIN q
+    WHERE "source" = ANY(${opts.sources}::text[])
+      AND "embedding" IS NOT NULL
+      AND (1 - ("embedding" <=> q.v)) >= ${opts.minScore}
+    ORDER BY ("embedding" <=> q.v) ASC, "docId" ASC, "source" ASC
+    LIMIT ${opts.limit}::int;
+  `;
+
+  const counts = await prisma.$queryRaw<Array<{ n: number | bigint }>>`
+    SELECT count(*)::int AS n FROM "DocEmbedding" WHERE "source" = ANY(${opts.sources}::text[])
+  `;
+
+  return {
+    hits: rows.map((r) => ({
+      id: r.id,
+      source: r.source as Source,
+      title: r.title,
+      href: r.href,
+      snippet: r.snippet,
+      tags: r.tags,
+      score: Math.max(0, Math.min(1, Number(r.score) || 0)),
+    })),
+    // Same meaning as the scan path: how many index rows the requested sources
+    // hold. HNSW may have examined a subset of these; the count is the honest
+    // scale of the search universe.
+    scanned: Number(counts[0]?.n ?? 0),
+    degraded: false,
+    engine: "pgvector",
+  };
 }

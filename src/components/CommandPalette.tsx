@@ -42,7 +42,7 @@ export default function CommandPalette() {
   const [entities, setEntities] = useState<UnifiedResponse>({});
   const [searching, setSearching] = useState(false);
   const [aiPending, setAiPending] = useState(false);
-  const [aiAnswer, setAiAnswer] = useState<{ text: string; href?: string } | null>(null);
+  const [aiAnswer, setAiAnswer] = useState<{ text: string; href?: string; remembered?: boolean } | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -143,6 +143,26 @@ export default function CommandPalette() {
     }, ENTITY_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
   }, [query]);
+
+  // ── concierge memory (v2) ──────────────────────────────────────────────────
+  // Reopen straight into the last thing the concierge told you. The route owns
+  // the memory; this only surfaces the tail of it. Failures stay silent — an
+  // empty answer is the v1 experience.
+  useEffect(() => {
+    if (!open || !isAuth) return;
+    let cancelled = false;
+    void fetch("/api/ai/concierge")
+      .then((r) => r.json() as Promise<{ authenticated?: boolean; messages?: { role: string; text: string }[] }>)
+      .then((d) => {
+        if (cancelled || !d.authenticated || !d.messages?.length) return;
+        const last = [...d.messages].reverse().find((m) => m.role === "model" && m.text);
+        if (last) setAiAnswer({ text: last.text, remembered: true });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [open, isAuth]);
 
   // ── rows ───────────────────────────────────────────────────────────────────
   const rows = useMemo<Row[]>(() => {
@@ -265,20 +285,26 @@ export default function CommandPalette() {
     if (q.length < 3 || aiPending) return;
     setAiPending(true);
     try {
-      const res = await fetch("/api/ai/command", {
+      const res = await fetch("/api/ai/concierge", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ q }),
       });
-      const data = (await res.json()) as { answer?: string; href?: string; error?: string };
+      const data = (await res.json()) as { answer?: string; href?: string; label?: string; error?: string };
       if (data.href) go(data.href);
-      else if (data.answer) setAiAnswer({ text: data.answer });
+      else if (data.answer) setAiAnswer({ text: data.answer, remembered: true });
     } catch {
-      setAiAnswer({ text: "Zyni AI is unreachable right now. Normal search still works." });
+      setAiAnswer({ text: "Zyni AI is unreachable right now. Normal search still works.", remembered: false });
     } finally {
       setAiPending(false);
     }
   }, [query, aiPending, go]);
+
+  const forgetAi = useCallback(() => {
+    setAiAnswer(null);
+    // Best-effort: clearing chat memory is not worth blocking the UI on.
+    void fetch("/api/ai/concierge", { method: "DELETE" }).catch(() => {});
+  }, []);
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -411,9 +437,24 @@ export default function CommandPalette() {
 
         {aiAnswer ? (
           <div className="border-b border-[var(--color-line)] px-4 py-3 text-sm">
-            <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-magenta)]">
-              Zyni AI
-            </p>
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-magenta)]">
+                Zyni AI
+              </p>
+              {aiAnswer.remembered ? (
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-[var(--color-mute)]" title="This assistant remembers your taste and recent questions">
+                    🧠 remembers
+                  </span>
+                  <button
+                    onClick={forgetAi}
+                    className="font-mono text-[10px] text-[var(--color-mute)] underline decoration-dotted hover:text-[var(--color-magenta)]"
+                  >
+                    forget
+                  </button>
+                </div>
+              ) : null}
+            </div>
             <p className="whitespace-pre-wrap text-[var(--color-ink)]/90">{aiAnswer.text}</p>
           </div>
         ) : null}

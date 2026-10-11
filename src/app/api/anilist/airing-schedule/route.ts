@@ -3,7 +3,7 @@ import { anilistLimiter } from "@/lib/rate-limiter";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const rateCheck = anilistLimiter.middleware(req);
+  const rateCheck = await anilistLimiter.middleware(req);
   if (rateCheck) return rateCheck;
   const url = new URL(req.url);
   const from = Number(url.searchParams.get("from")) || 0;

@@ -9,7 +9,7 @@ function normalizeName(s: string) {
 }
 
 export async function GET(req: NextRequest) {
-  const rateCheck = anilistLimiter.middleware(req);
+  const rateCheck = await anilistLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const url = new URL(req.url);

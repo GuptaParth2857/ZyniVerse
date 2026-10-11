@@ -1,6 +1,7 @@
 /**
- * Builds the semantic index by embedding every wiki page, blog post and forum
- * thread.
+ * Builds the semantic index by embedding every source the index knows about.
+ *
+ * Driven entirely by `SOURCES`, so a new source needs no change here.
  *
  * Safe to re-run: a document whose content hash already has a row is skipped
  * without an API call, and `pruneStale()` afterwards removes rows for documents
@@ -13,6 +14,7 @@
  * Embeddings cost money, so this prints its plan before doing anything unless
  * --yes is passed.
  */
+import "./load-env";
 import {
   isEmbeddingConfigured,
   EMBED_DIMS,
@@ -24,6 +26,7 @@ import {
   SOURCES,
   sourceDocuments,
   storeEmbedding,
+  syncPgvectorNow,
   type Source,
 } from "../src/lib/semantic-index";
 import { prisma } from "../src/lib/prisma";
@@ -93,6 +96,14 @@ async function main() {
       console.log(`  pruned ${removed} stale row${removed === 1 ? "" : "s"}`);
     }
     console.log("");
+  }
+
+  // The pgvector mirror is a pure projection of AiCache, so a backfill that
+  // changes the cache must refresh it. No-op until the DocEmbedding migration is
+  // applied.
+  if (!dry) {
+    const mirrored = await syncPgvectorNow();
+    if (mirrored > 0) console.log(`pgvector mirror: ${mirrored} rows re-synced`);
   }
 
   console.log(

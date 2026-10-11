@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const rateLimited = apiLimiter.middleware(req);
+  const rateLimited = await apiLimiter.middleware(req);
   if (rateLimited) return rateLimited;
 
   const { searchParams } = new URL(req.url);
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const rateLimited = apiLimiter.middleware(req);
+  const rateLimited = await apiLimiter.middleware(req);
   if (rateLimited) return rateLimited;
 
   const session = await auth();

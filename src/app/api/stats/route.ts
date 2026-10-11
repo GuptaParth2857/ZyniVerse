@@ -4,7 +4,7 @@ import { apiLimiter } from "@/lib/rate-limiter";
 import { resolveUserId } from "@/lib/resolve-user";
 
 export async function GET(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const userId = await resolveUserId();

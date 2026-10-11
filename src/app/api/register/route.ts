@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authLimiter } from "@/lib/rate-limiter";
 
 export async function POST(req: NextRequest) {
-  const rateCheck = authLimiter.middleware(req);
+  const rateCheck = await authLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   try {

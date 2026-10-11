@@ -34,12 +34,14 @@ async function fetchFillerData(): Promise<FillerShow[]> {
     return fillerCache.data;
   }
   const res = await fetch(FILLER_JSON_URL, {
-    // Next's data cache caps entries at 2MB and this file is 3.2MB, so the
-    // build logged "items over 2MB can not be cached" twice and re-downloaded
-    // the whole thing on every prerender. Caching it ourselves (in-memory plus
-    // the stale window below) keeps the sitemap and /filler pages static without
-    // asking Next to hold an oversized entry.
-    cache: "no-store",
+    // Was `cache: "no-store"`, which forced every route that reads filler
+    // data to render dynamically — including /sitemap.xml, so crawlers hit a
+    // slow DB+AniList render on every request. Next caps data-cache entries at
+    // 2MB and this file is 3.2MB, so the response itself isn't stored, but the
+    // in-memory `fillerCache` above already avoids repeat downloads within a
+    // warm instance. Using `revalidate` lets the sitemap and /filler pages
+    // prerender/cache again instead of being permanently dynamic.
+    next: { revalidate: 86400 },
     signal: AbortSignal.timeout(30000),
   });
   if (!res.ok) throw new Error(`Failed to fetch filler data (${res.status})`);

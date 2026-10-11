@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { checkAndAwardAchievement } from "@/lib/achievements-server";
+import { awardForReason } from "@/lib/economy";
 import { Prisma } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
@@ -82,6 +83,8 @@ export async function POST(req: NextRequest) {
       content: content.trim(),
     },
   });
+
+  awardForReason(session.user.id, "FORUM_POST", thread.id).catch(() => {});
 
   const threadCount = await prisma.forumThread.count({ where: { userId: session.user.id } });
   if (threadCount >= 10) checkAndAwardAchievement(session.user.id, "FORUM_POSTER").catch(() => {});

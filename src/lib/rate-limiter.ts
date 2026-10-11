@@ -110,9 +110,13 @@ export function createRateLimiter(name: string, config: Partial<RateLimitConfig>
       return url.hostname;
     },
 
-    middleware(request: Request): NextResponse | null {
+    async middleware(request: Request): Promise<NextResponse | null> {
       const ip = this.getClientIp(request);
-      const result = this.checkSync(ip);
+      // Redis-aware. When REDIS_URL is configured this enforces a single global
+      // counter across every serverless instance; without it `check()` falls
+      // back to the per-instance `checkSync`. Previously this always used the
+      // in-memory path, so adding Redis had no effect on the routes that matter.
+      const result = await this.check(ip);
       if (!result.allowed) {
         return NextResponse.json(
           { error: "Too many requests. Please try again later." },

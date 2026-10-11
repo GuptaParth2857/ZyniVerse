@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { ONBOARDING_GENRES, ONBOARDING_MOODS, MAX_ONBOARDING_GENRES } from "@/lib/onboarding";
 
 export default function OnboardingWizard() {
   const router = useRouter();
+  const { update } = useSession();
   const [step, setStep] = useState<0 | 1>(0);
   const [genres, setGenres] = useState<string[]>([]);
   const [moods, setMoods] = useState<string[]>([]);
@@ -37,6 +39,10 @@ export default function OnboardingWizard() {
         setLoading(false);
         return;
       }
+      // Refresh the JWT so `session.user.onboarded` flips to true immediately.
+      // It is cached on the token (max 5 min) to avoid a DB query per request,
+      // so without this OnboardingGate could bounce the user back here.
+      await update();
       router.push("/");
       router.refresh();
     } catch {

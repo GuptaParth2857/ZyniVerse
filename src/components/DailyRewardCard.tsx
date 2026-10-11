@@ -12,6 +12,7 @@ interface Status {
   totalXpAwarded?: number;
   claimedToday?: boolean;
   freezes?: number;
+  coinReward?: number;
 }
 
 export default function DailyRewardCard() {
@@ -19,7 +20,7 @@ export default function DailyRewardCard() {
   const [data, setData] = useState<Status | null>(null);
   const [claimed, setClaimed] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState<{ xp: number; streak: number } | null>(null);
+  const [toast, setToast] = useState<{ xp: number; coins: number; streak: number } | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function DailyRewardCard() {
       }
       if (!res.ok) throw new Error(d.error || "Couldn't claim.");
       setClaimed(true);
-      setToast({ xp: d.xp, streak: d.streak });
+      setToast({ xp: d.xp, coins: d.coins ?? 0, streak: d.streak });
       setData((prev) => ({ ...(prev ?? { authenticated: true }), streak: d.streak, freezes: d.remainingFreezes, claimedToday: true }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't claim your bonus.");
@@ -71,14 +72,14 @@ export default function DailyRewardCard() {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-[#ffb800]">Claimed for today!</p>
               <p className="text-xs text-[var(--color-mute)]">
-                {toast ? <>+{toast.xp} XP earned on a {toast.streak}-day streak 🎉</> : <>See you again tomorrow to keep your streak alive.</>}
+                {toast ? <>+{toast.xp} XP · +{toast.coins} coins on a {toast.streak}-day streak 🎉</> : <>See you again tomorrow to keep your streak alive.</>}
               </p>
             </div>
           </div>
         ) : (
           <>
             <p className="mt-0.5 text-sm text-[var(--color-mute)]">
-              Log in daily to earn XP and build your streak. Longer streak = bigger bonus.
+              Log in daily to earn XP and coins, and build your streak. Longer streak = bigger bonus.
               {data.streak && data.freezes ? (
                 <span className="text-[var(--color-cyan)]"> You have {data.freezes} streak freeze{data.freezes > 1 ? "s" : ""}.</span>
               ) : null}
@@ -90,7 +91,7 @@ export default function DailyRewardCard() {
               disabled={busy}
               className="mt-3 rounded-xl bg-gradient-to-r from-[#ffb800] to-[#ff7b00] px-5 py-2.5 text-sm font-bold text-black disabled:opacity-60 transition-opacity"
             >
-              {busy ? "Claiming…" : data.streak ? `Continue ${data.streak + 1}-day streak  •  +${Math.min(10 + (data.streak + 1) * 2, 40)} XP` : "Claim Day 1  •  +12 XP"}
+              {busy ? "Claiming…" : data.streak ? `Continue ${data.streak + 1}-day streak  •  +${Math.min(10 + (data.streak + 1) * 2, 40)} XP · +${data.coinReward ?? 15} 🪙` : `Claim Day 1  •  +12 XP · +${data.coinReward ?? 15} 🪙`}
             </motion.button>
           </>
         )}
@@ -103,7 +104,7 @@ export default function DailyRewardCard() {
               transition={{ duration: 0.5 }}
               className="mt-3 rounded-xl border border-[#ffb800]/40 bg-black/30 px-3 py-2 text-sm font-semibold text-[#ffb800]"
             >
-              +{toast.xp} XP • {toast.streak}-day streak 🔥
+              +{toast.xp} XP • +{toast.coins} coins • {toast.streak}-day streak 🔥
             </motion.div>
           </AnimatePresence>
         )}

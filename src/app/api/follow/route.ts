@@ -3,9 +3,10 @@ import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { checkAndAwardAchievement } from "@/lib/achievements-server";
+import { awardForReason } from "@/lib/economy";
 
 export async function POST(req: NextRequest) {
-  const rateCheck = apiLimiter.middleware(req);
+  const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
   const session = await auth();
@@ -18,11 +19,22 @@ export async function POST(req: NextRequest) {
   const user = await prisma.user.findUnique({ where: { id: followingId } });
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
+  const alreadyFollowing = await prisma.follow.findUnique({
+    where: { followerId_followingId: { followerId: session.user.id, followingId } },
+    select: { id: true },
+  });
+
   await prisma.follow.upsert({
     where: { followerId_followingId: { followerId: session.user.id, followingId } },
     update: {},
     create: { followerId: session.user.id, followingId },
   });
+
+  // Pay only the first time this person is followed; re-following after an
+  // unfollow is free (the ledger's dedupe key is the followed user's id).
+  if (!alreadyFollowing) {
+    awardForReason(session.user.id, "FOLLOW_PEER", followingId).catch(() => {});
+  }
 
   const followingCount = await prisma.follow.count({ where: { followerId: session.user.id } });
   if (followingCount >= 10) checkAndAwardAchievement(session.user.id, "SOCIAL_BUTTERFLY").catch(() => {});

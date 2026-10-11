@@ -73,7 +73,7 @@ async function fetchMedia(url: string, allowedPrefix: string): Promise<{ buffer:
 
 export async function POST(req: NextRequest) {
   try {
-    const rateCheck = apiLimiter.middleware(req);
+    const rateCheck = await apiLimiter.middleware(req);
     if (rateCheck) return rateCheck;
 
     if (!isAuthorized(req)) {

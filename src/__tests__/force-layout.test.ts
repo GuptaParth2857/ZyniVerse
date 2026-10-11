@@ -5,6 +5,8 @@ import {
   DEFAULT_TUNING,
   isSettled,
   maxDisplacement,
+  MAX_RADIUS,
+  MIN_RADIUS,
   seedLayout,
   settle,
   stepLayout,
@@ -13,8 +15,16 @@ import {
 
 const CENTRE = { x: 400, y: 300 };
 
+/**
+ * Node ids carry their type in the real graph (`anime:20`), and sizing is
+ * normalised per type upstream, so these stand in for post-normalisation input:
+ * prominence already in 0..1.
+ */
 function nodeList(n: number) {
-  return Array.from({ length: n }, (_, i) => ({ id: `n${i}`, weight: (i % 5) + 1 }));
+  return Array.from({ length: n }, (_, i) => ({
+    id: `n${i}`,
+    prominence: (i % 5) / 4,
+  }));
 }
 
 /** A star: one hub joined to everything, the shape most anime graphs take. */
@@ -59,32 +69,57 @@ describe("seedLayout", () => {
     expect(pair!.distance).toBeGreaterThan(0);
   });
 
-  it("scales radius with the square root of weight", () => {
+  it("scales radius with prominence", () => {
     const parts = seedLayout(
       [
-        { id: "heavy", weight: 4000 },
-        { id: "light", weight: 1 },
+        { id: "big", prominence: 1 },
+        { id: "small", prominence: 0 },
       ],
-      "heavy"
+      "big"
     );
-    // Linear scaling gave the heavy node a radius that covered a third of the
-    // canvas; sqrt keeps the ratio usable.
-    const heavy = parts.get("heavy")!.r;
-    const light = parts.get("light")!.r;
-    expect(heavy).toBeGreaterThan(light);
-    expect(heavy).toBeLessThan(15);
-    expect(light).toBeGreaterThanOrEqual(5);
+    // The full 0..1 range is used, and prominence 0 still gets a visible disc -
+    // a node with zero size is indistinguishable from a missing one.
+    expect(parts.get("big")!.r).toBe(MAX_RADIUS);
+    expect(parts.get("small")!.r).toBe(MIN_RADIUS);
+    expect(parts.get("big")!.r).toBeGreaterThan(parts.get("small")!.r * 2);
+  });
+
+  it("keeps a zero-prominence node drawable", () => {
+    // The seed arriving with weight 0 is exactly how Naruto rendered as the
+    // smallest thing in the graph. The floor stops that being invisible.
+    const parts = seedLayout([{ id: "seed", prominence: 0 }], "seed");
+    expect(parts.get("seed")!.r).toBe(MIN_RADIUS);
+    expect(parts.get("seed")!.r).toBeGreaterThan(0);
+  });
+
+  it("clamps out-of-range and NaN prominence instead of propagating it", () => {
+    const parts = seedLayout(
+      [
+        { id: "over", prominence: 4 },
+        { id: "under", prominence: -3 },
+        { id: "nan", prominence: Number.NaN },
+      ],
+      "over"
+    );
+    // A NaN radius spreads into every coordinate for the rest of the run.
+    expect(parts.get("over")!.r).toBe(MAX_RADIUS);
+    expect(parts.get("under")!.r).toBe(MIN_RADIUS);
+    expect(Number.isFinite(parts.get("nan")!.r)).toBe(true);
+    for (const p of parts.values()) {
+      expect(Number.isFinite(p.x)).toBe(true);
+      expect(Number.isFinite(p.y)).toBe(true);
+    }
   });
 
   it("survives a single node and an empty graph", () => {
-    expect(seedLayout([{ id: "only" }], "only").size).toBe(1);
+    expect(seedLayout([{ id: "only", prominence: 1 }], "only").size).toBe(1);
     expect(seedLayout([], "nothing").size).toBe(0);
   });
 
   it("gives every node a usable radius", () => {
     for (const p of seedLayout(nodeList(40), "n0").values()) {
-      expect(p.r).toBeGreaterThanOrEqual(5);
-      expect(p.r).toBeLessThan(15);
+      expect(p.r).toBeGreaterThanOrEqual(MIN_RADIUS);
+      expect(p.r).toBeLessThanOrEqual(MAX_RADIUS);
     }
   });
 });
@@ -187,6 +222,67 @@ describe("stepLayout", () => {
     expect(Math.abs(spread(20))).toBeGreaterThan(Math.abs(spread(200)));
   });
 
+  describe("size-aware repulsion", () => {
+    // 320px apart, which keeps the force well under `maxStep`. Closer and both
+    // sizes saturate the per-frame clamp and every comparison reads 14.
+    const pair = (aR: number, bR: number, tuning: Partial<typeof DEFAULT_TUNING> = {}) => {
+      const parts = new Map<string, Particle>([
+        ["a", { x: 300, y: 300, vx: 0, vy: 0, r: aR, pinned: false }],
+        ["b", { x: 620, y: 300, vx: 0, vy: 0, r: bR, pinned: false }],
+      ]);
+      stepLayout(parts, [], 1, CENTRE, { ...DEFAULT_TUNING, gravity: 0, ...tuning });
+      return Math.abs(parts.get("b")!.vx);
+    };
+
+    it("pushes two large nodes harder than two small ones at the same distance", () => {
+      // The reason size enters the force at all: a purely positional force makes
+      // a 52px cover image and a 14px dot interchangeable, so the biggest nodes
+      // in the picture were also the ones that ended up touching.
+      expect(pair(MAX_RADIUS, MAX_RADIUS)).toBeGreaterThan(pair(MIN_RADIUS, MIN_RADIUS));
+    });
+
+    it("orders pairs by the sum of their radii", () => {
+      // The governing property. A big node paired with a tiny one must feel the
+      // combined weight of the two, which is why the sums here are deliberately
+      // far apart: (26,7) sums to 33 and (16,16) to 32, so the mixed pair is
+      // correctly pushed marginally harder, and picking those two as the test
+      // case would assert an ordering that is simply not true.
+      const bigBig = pair(MAX_RADIUS, MAX_RADIUS);
+      const midMid = pair(16, 16);
+      const smallSmall = pair(MIN_RADIUS, MIN_RADIUS);
+      expect(bigBig).toBeGreaterThan(midMid);
+      expect(midMid).toBeGreaterThan(smallSmall);
+    });
+
+    it("leaves an average pair at exactly the size-blind force", () => {
+      // The normalisation exists so enabling this cannot silently retune the
+      // whole layout: only the relative spacing of big against small moves.
+      const avgPair = (MAX_RADIUS + MIN_RADIUS) / 2;
+      const blind = pair(avgPair, avgPair, { sizeTerm: 0 });
+      expect(pair(avgPair, avgPair)).toBeCloseTo(blind, 6);
+    });
+
+    it("can be switched off, restoring purely positional repulsion", () => {
+      const blind = pair(MAX_RADIUS, MAX_RADIUS, { sizeTerm: 0 });
+      expect(pair(MAX_RADIUS, MAX_RADIUS)).toBeGreaterThan(blind);
+    });
+
+    it("still acts at every distance, so an isolated node feels the field", () => {
+      // The property that makes size-awareness safe to add: unlike a close-range
+      // cutoff, it does not switch the force off far away.
+      const far = (r: number) => {
+        const parts = new Map<string, Particle>([
+          ["a", { x: 100, y: 300, vx: 0, vy: 0, r, pinned: false }],
+          ["b", { x: 700, y: 300, vx: 0, vy: 0, r, pinned: false }],
+        ]);
+        stepLayout(parts, [], 1, CENTRE, { ...DEFAULT_TUNING, gravity: 0 });
+        return Math.abs(parts.get("b")!.vx);
+      };
+      expect(far(MAX_RADIUS)).toBeGreaterThan(0);
+      expect(far(MAX_RADIUS)).toBeGreaterThan(far(MIN_RADIUS));
+    });
+  });
+
   it("draws an over-stretched edge back together", () => {
     const parts = new Map<string, Particle>([
       ["a", { x: 50, y: 300, vx: 0, vy: 0, r: 6, pinned: false }],
@@ -260,15 +356,29 @@ describe("settle", () => {
   // The canvas is 800x600 at rest. Measured settled sizes for the current tuning,
   // for scale:
   //
-  //   shape         n   width  height   w/800  h/600
-  //   hub star     12     289     288    0.36   0.48
-  //   hub star     30     430     424    0.54   0.71
-  //   hub star     60     565     558    0.71   0.93
-  //   path         60     727     711    0.91   1.19
-  //   no edges     30     529     523    0.66   0.87
+  //   shape         n   width  height   w/800  h/600   minClearance
+  //   hub star     12     289     304    0.36   0.51        48.3
+  //   no edges     12     318     346    0.40   0.58        55.8
+  //   path         12     329     315    0.41   0.53        44.9
+  //   hub star     30     455     452    0.57   0.75        40.2
+  //   no edges     30     580     561    0.73   0.94        54.3
+  //   path         30     550     579    0.69   0.96        36.0
+  //   hub star     60     608     607    0.76   1.01        24.2
+  //   no edges     60     774     778    0.97   1.30        40.6
+  //   path         60     716     747    0.90   1.25        34.5
   //
-  // The smallest real case is the 12-node hub star at 0.36/0.48, so 0.25 leaves
+  // Note the 60-node shapes exceeding 1.0. That is deliberate and is why the
+  // canvas fits the settled layout to the viewport rather than assuming it fits:
+  // there is no repulsion value that keeps every shape inside 800x600 while also
+  // keeping the crowded cases readable. Clipping nodes silently was the previous
+  // behaviour.
+  //
+  // The smallest real case is the 12-node hub star at 0.36/0.51, so 0.25 leaves
   // headroom for retuning without turning this into a change-detector.
+  //
+  // These synthetic shapes are NOT enough on their own: their worst clearance is
+  // 27px, while the real 27-node Naruto graph settles to 15px. `force-layout-real`
+  // pins that one down - see the note at the top of that file.
   //
   // Verified by mutation: reinstating the close-range repulsion cutoff fails the
   // three "spreads 12 nodes" cases and the clearance test below. The 30- and
@@ -326,7 +436,7 @@ describe("settle", () => {
   });
 
   it("handles a single isolated node", () => {
-    const parts = seedLayout([{ id: "only" }], "only");
+    const parts = seedLayout([{ id: "only", prominence: 1 }], "only");
     expect(() => settle(parts, [], CENTRE)).not.toThrow();
     expect(finiteEverywhere(parts)).toBe(true);
   });

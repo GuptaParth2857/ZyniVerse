@@ -57,6 +57,14 @@ function logAnilistFailure(cacheKey: string, error: Error | null): void {
 const responseCache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000;
 
+// Request coalescing. Many visitors — and the build's parallel prerender
+// workers — ask for the exact same query at the same moment. Without this every
+// caller fires its own AniList request from the same egress IP and walks into
+// the 30 req/min limit. Sharing one in-flight promise per key collapses them
+// into a single upstream call.
+type GqlResult = ReturnType<typeof fetchAniList>;
+const inFlight = new Map<string, GqlResult>();
+
 // How long a previous response may still be served once AniList becomes
 // unreachable. AniList rate-limits at 30 req/min per IP and serverless egress
 // IPs are shared, so a 429 during a build (hundreds of prerendered pages share
@@ -156,7 +164,28 @@ export function getAnilistCacheStats(): { size: number } {
 const FETCH_TIMEOUT = 5_000;
 const MAX_RETRIES = 2;
 
-async function gql(query: string, variables: Record<string, unknown> = {}) {
+// AniList data-cache lifetimes.
+//
+// Every `force-cache` fetch Next.js runs writes an ISR cache entry keyed by
+// (url, method, headers, body). Here the url/method/headers are constant, so the
+// GraphQL `variables` are the key — which means every distinct anime/character/
+// staff/studio id visited owns its own entry, and that entry is rewritten each
+// time the revalidate window elapses. Those high-cardinality detail queries were
+// the dominant ISR-write driver on Vercel (Hobby limit: 200K/month).
+//
+// List/schedule queries are low-cardinality (a few variable sets), so a short
+// window stays cheap while keeping data fresh. Per-id detail queries get 24h —
+// the same freshness the detail pages already declare for themselves — which is
+// still a ~4x cut in rewrites versus the previous 6h window. Going longer would
+// start serving stale "next episode" data, so 24h is the floor.
+const LIST_REVALIDATE = 6 * 60 * 60; // 6h
+const DETAIL_REVALIDATE = 24 * 60 * 60; // 24h
+
+async function fetchAniList(
+  query: string,
+  variables: Record<string, unknown> = {},
+  revalidate: number = LIST_REVALIDATE,
+) {
   const cacheKey = getCacheKey(query, variables);
   const cached = getFromCache(cacheKey);
   if (cached) return cached;
@@ -175,11 +204,13 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
           body: JSON.stringify({ query, variables }),
           signal: controller.signal,
           cache: "force-cache",
-          // Was 86400 (24h). That made a single rate-limited response stick
-          // for a whole day, so an ISR revalidation would re-bake the empty
-          // page from the 24h cache instead of retrying. Trending/discovery
-          // data does not need day-long freshness.
-          next: { revalidate: 1800 },
+          // Callers pick the window (list = 6h, per-id detail = 24h). A route's
+          // revalidate is dragged down to its lowest fetch value, and every
+          // distinct id becomes its own cache entry, so short windows on the
+          // high-cardinality detail queries were rewriting ~1M+ entries/month.
+          // Only successful responses reach this point — 429s and errors throw
+          // before caching — so a long window can't pin a rate-limited payload.
+          next: { revalidate },
         });
 
         clearTimeout(timer);
@@ -277,6 +308,28 @@ async function gql(query: string, variables: Record<string, unknown> = {}) {
   }
 
   throw lastError || new Error("AniList request failed");
+}
+
+// Public entry point: de-duplicates concurrent identical queries, then falls
+// through to the cached/live implementation above. `revalidate` controls the
+// Next data-cache window for this query (defaults to the list window).
+async function gql(
+  query: string,
+  variables: Record<string, unknown> = {},
+  revalidate: number = LIST_REVALIDATE,
+): GqlResult {
+  const cacheKey = getCacheKey(query, variables);
+  const cached = getFromCache(cacheKey);
+  if (cached) return cached;
+
+  const existing = inFlight.get(cacheKey);
+  if (existing) return existing;
+
+  const promise = fetchAniList(query, variables, revalidate).finally(() => {
+    inFlight.delete(cacheKey);
+  });
+  inFlight.set(cacheKey, promise);
+  return promise;
 }
 
 const MEDIA_FIELDS = `
@@ -530,12 +583,12 @@ const MANGA_DETAIL_QUERY = `
 `;
 
 export async function getAnimeDetailFull(id: number | string) {
-  const data = await gql(ANIME_DETAIL_QUERY, { id: Number(id) });
+  const data = await gql(ANIME_DETAIL_QUERY, { id: Number(id) }, DETAIL_REVALIDATE);
   return data.Media as MediaAnimeFull;
 }
 
 export async function getMangaDetailFull(id: number | string) {
-  const data = await gql(MANGA_DETAIL_QUERY, { id: Number(id) });
+  const data = await gql(MANGA_DETAIL_QUERY, { id: Number(id) }, DETAIL_REVALIDATE);
   return data.Media as MediaMangaFull;
 }
 
@@ -547,6 +600,7 @@ export async function getAnimeCharacters(id: number | string, page = 1, perPage 
       Media(id: $id) {
         id title { romaji english native userPreferred }
         coverImage { large medium color }
+        popularity
         characters(page: $p, perPage: $pp, sort: ROLE) {
           pageInfo { hasNextPage total }
           edges {
@@ -562,18 +616,22 @@ export async function getAnimeCharacters(id: number | string, page = 1, perPage 
         }
       }
     }`;
-  const data = await gql(q, { id: base, p: page, pp: pageSize });
+  const data = await gql(q, { id: base, p: page, pp: pageSize }, DETAIL_REVALIDATE);
   const media = data.Media;
   return {
     id: media.id,
     title: media.title,
     coverImage: media.coverImage,
+    // Selected because /api/graph sizes its seed node off this. Without it the
+    // seed is forced to 0 and renders as the smallest disc in the picture.
+    popularity: media.popularity ?? 0,
     pageInfo: media.characters?.pageInfo ?? { hasNextPage: false, total: 0 },
     edges: (media.characters?.edges as CharacterEdge[] | undefined) ?? [],
   } as {
     id: number;
     title: Media["title"];
     coverImage: Media["coverImage"];
+    popularity: number;
     pageInfo: { hasNextPage: boolean; total: number };
     edges: CharacterEdge[];
   };
@@ -660,7 +718,7 @@ export async function getStaffBasic(id: number | string) {
         dateOfBirth { year month day } age homeTown yearsActive
       }
     }`;
-  const data = await gql(q, { id: Number(id) });
+  const data = await gql(q, { id: Number(id) }, DETAIL_REVALIDATE);
   if (!data.Staff) throw new Error("Staff not found");
   return data.Staff as StaffFull;
 }
@@ -683,7 +741,7 @@ export async function getStaffMedia(id: number | string, perPage = 50) {
         }
       }
     }`;
-  const data = await gql(q, { id: Number(id), pp: perPage });
+  const data = await gql(q, { id: Number(id), pp: perPage }, DETAIL_REVALIDATE);
   type StaffMediaEdges = NonNullable<StaffFull["staffMedia"]>["edges"];
   const staffEdges: StaffMediaEdges = (data.Staff?.staffMedia?.edges || []) as StaffMediaEdges;
   const charEdges: StaffMediaEdges = (data.Staff?.characterMedia?.edges || []) as StaffMediaEdges;
@@ -779,7 +837,7 @@ export async function getCharacter(id: number | string) {
         }
       }
     }`;
-  const data = await gql(q, { id: Number(id) });
+  const data = await gql(q, { id: Number(id) }, DETAIL_REVALIDATE);
   return data.Character as CharacterFull;
 }
 
@@ -810,6 +868,15 @@ export async function getSchedulePaginated(page = 1, perPage = 20) {
 }
 
 export async function getAiringSchedule(fromSec: number, toSec: number) {
+  // Snap the window to hour boundaries before it becomes a cache key. Callers
+  // derive these from `Date.now()`, so second-precision values gave every single
+  // request a brand-new (query, variables) pair — one new ISR entry per render,
+  // forever, across the homepage, calendar, embeds and the public API. Hour
+  // buckets collapse that to a handful of keys per day while staying within an
+  // hour of the requested window.
+  const HOUR = 3600;
+  const from = Math.floor(fromSec / HOUR) * HOUR;
+  const to = Math.ceil(toSec / HOUR) * HOUR;
   const q = `
     query ($from: Int, $to: Int, $page: Int) {
       Page(page: $page, perPage: 50) {
@@ -826,7 +893,7 @@ export async function getAiringSchedule(fromSec: number, toSec: number) {
   let page = 1, hasNext = true;
   const all: AiringScheduleEntry[] = [];
   while (hasNext && page <= 6) {
-    const data = await gql(q, { from: fromSec, to: toSec, page });
+    const data = await gql(q, { from, to, page });
     if (!data?.Page?.airingSchedules) break;
     all.push(...data.Page.airingSchedules);
     hasNext = data.Page.pageInfo?.hasNextPage ?? false;
@@ -877,7 +944,7 @@ export async function getStudio(id: number) {
         }
       }
     }`;
-  const data = await gql(q, { id });
+  const data = await gql(q, { id }, DETAIL_REVALIDATE);
   return data.Studio as StudioFull;
 }
 
@@ -1455,6 +1522,9 @@ export async function getMediaBatch(ids: number[]): Promise<MediaBasic[]> {
   if (ids.length === 0) return [];
   const uniqueIds = [...new Set(ids)];
   const q = `query ($ids: [Int]) { Page(page: 1, perPage: 50) { media(id_in: $ids, type: ANIME) { ${MEDIA_BASIC_FIELDS} } } }`;
-  const d = await gql(q, { ids: uniqueIds });
+  // The key is the whole id array, and callers pass per-user/per-list sets
+  // (backlog, compare, stats timeline, shared lists), so this is just as
+  // high-cardinality as the per-id detail queries — 24h here too.
+  const d = await gql(q, { ids: uniqueIds }, DETAIL_REVALIDATE);
   return (d.Page.media as MediaBasic[]) || [];
 }
