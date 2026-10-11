@@ -185,7 +185,7 @@ export const rootResolver = {
     };
   },
 
-  dubSchedule: () => getAllDubs(),
+  dubSchedule: async () => getAllDubs(),
   genres: () => getGenres(),
 
   trendingNow: async () => {

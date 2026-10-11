@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+// This Next version can serve streamed not-found responses with HTTP 200
+// (see the not-found.js docs: 404 is only guaranteed for non-streamed
+// responses). Next auto-injects noindex ONLY for real 404 statuses, so set
+// it explicitly to make sure a streamed 200 404-page can never be indexed.
+export const metadata: Metadata = {
+  title: "Page Not Found",
+  robots: { index: false, follow: true },
+};
 
 export default function NotFound() {
   return (

@@ -52,7 +52,8 @@ function getGradient(name: string) {
   return GRADIENTS[Math.abs(hash) % GRADIENTS.length];
 }
 
-function getCountdown(dateStr: string): { days: number; hours: number; minutes: number; expired: boolean } {
+function getCountdown(dateStr?: string): { days: number; hours: number; minutes: number; expired: boolean } {
+  if (!dateStr) return { days: 0, hours: 0, minutes: 0, expired: false };
   const target = new Date(dateStr).getTime();
   const now = Date.now();
   const diff = target - now;
@@ -148,7 +149,7 @@ function FlipUnit({ value, label, accent }: { value: number; label: string; acce
 }
 
 function UpcomingAwardCard({ award, index = 0 }: { award: UpcomingAward; index?: number }) {
-  const [countdown, setCountdown] = useState(getCountdown(award.date));
+  const [countdown, setCountdown] = useState(() => getCountdown(award.date));
   const ref = useRef<HTMLDivElement>(null);
   const meta = getAwardMeta(award.name);
 
@@ -202,7 +203,9 @@ function UpcomingAwardCard({ award, index = 0 }: { award: UpcomingAward; index?:
   };
 
   const status = award.status === "live" ? statusConfig.live : countdown.expired ? statusConfig.completed : statusConfig.upcoming;
-  const formattedDate = new Date(award.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const formattedDate = award.date
+    ? new Date(award.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : (award.dateNote ?? "Date to be announced");
 
   return (
     <motion.div
@@ -242,7 +245,7 @@ function UpcomingAwardCard({ award, index = 0 }: { award: UpcomingAward; index?:
           <p className="text-[var(--color-mute)] text-xs mb-4">{formattedDate} · {award.location}</p>
 
           {/* Countdown */}
-          {!countdown.expired && award.status !== "live" && (
+          {award.date && !countdown.expired && award.status !== "live" && (
             <div className="flex gap-3 mb-4 p-3 rounded-[14px] bg-[var(--color-panel)]/60 border border-[var(--color-line)]">
               <FlipUnit value={countdown.days} label="days" accent={meta.accent} />
               <div className="w-px self-stretch bg-[var(--color-line)]" />
@@ -728,13 +731,13 @@ export default function AwardsPage() {
             // Date-aware: an entry whose ceremony date has passed counts as
             // completed regardless of its static status field.
             const todayIso = new Date().toISOString().slice(0, 10);
-            const isPast = (a: UpcomingAward) => a.date < todayIso;
+            const isPast = (a: UpcomingAward) => !!a.date && a.date < todayIso;
             const upcoming = UPCOMING_AWARDS.filter((a) => !isPast(a) && (a.status === "upcoming" || a.status === "live"));
             const recentCompleted = [
               ...UPCOMING_AWARDS.filter((a) => a.status === "completed"),
               ...UPCOMING_AWARDS.filter((a) => isPast(a) && a.status !== "completed"),
             ]
-              .sort((a, b) => b.date.localeCompare(a.date))
+              .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
               .slice(0, 2);
             const display = [...upcoming, ...recentCompleted];
             if (display.length === 0) return null;

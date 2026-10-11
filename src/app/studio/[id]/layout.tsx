@@ -16,7 +16,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: `Browse anime studio details, productions, and staff members on ZyniVerse.`,
     },
     alternates: { canonical: `${baseUrl}/studio/${id}` },
-    robots: { index: true, follow: true },
+    // Thin AniList mirror (studio + productions). No unique content — keep it
+    // out of the index but let crawlers follow links through it.
+    robots: { index: false, follow: true },
   };
 }
 

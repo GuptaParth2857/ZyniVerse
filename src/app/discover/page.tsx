@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import DiscoverFeed from "@/components/DiscoverFeed";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
 export const metadata: Metadata = {
   title: "Discover | ZyniVerse — Unified Anime Feed",
   description: "A single feed of anime news, memes, reels, moments, fan art, cosplay and blogs all in one place.",
+  alternates: { canonical: `${BASE_URL}/discover` },
 };
 
 const HERO_TAGS = [

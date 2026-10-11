@@ -1,5 +1,3 @@
-import { getAnimaxSchedule } from "./animax-schedule";
-
 export interface TvChannel {
   id: string;
   name: string;
@@ -269,250 +267,54 @@ const RAW_TV_CHANNELS: Record<string, TvChannel> = {
 
 export const TV_CHANNELS: Record<string, TvChannel> = RAW_TV_CHANNELS;
 
-const MUSE_ASIA_WEEKLY: Record<string, TimeSlot[]> = {
-  Monday: [],
-  Tuesday: [],
-  Wednesday: [],
-  Thursday: [
-    { show: "KAIJU GIRL CARAMELISE", start: "19:00", end: "19:30", duration: 30, description: "New episode - Thursdays" },
-    { show: "The Exiled Heavy Knight", start: "19:30", end: "20:00", duration: 30, description: "New episode - Thursdays" },
-    { show: "BanG Dream! YUME INFINITA", start: "20:00", end: "20:30", duration: 30, description: "New episode - Thursdays" },
-  ],
-  Friday: [
-    { show: "Draw This, Then Die!", start: "19:00", end: "19:30", duration: 30, description: "New episode - Fridays" },
-    { show: "The Elusive Samurai S2", start: "19:30", end: "20:00", duration: 30, description: "Premiere - Friday Jul 17" },
-  ],
-  Saturday: [
-    { show: "BLACK TORCH", start: "19:00", end: "19:30", duration: 30, description: "New episode - Saturdays" },
-    { show: "Skeleton Knight in Another World S2", start: "19:30", end: "20:00", duration: 30, description: "New episode - Saturdays" },
-    { show: "GROW UP SHOW -Sunflower Circus-", start: "20:00", end: "20:30", duration: 30, description: "New episode - Saturdays" },
-  ],
-  Sunday: [
-    { show: "Mushoku Tensei: Jobless Reincarnation S3", start: "10:00", end: "10:30", duration: 30, description: "New episode - Sundays" },
-    { show: "The 100 Girlfriends S3", start: "10:30", end: "11:00", duration: 30, description: "New episode - Sundays" },
-    { show: "The World's Strongest Rearguard", start: "11:00", end: "11:30", duration: 30, description: "New episode - Sundays" },
-    { show: "The World Is Dancing", start: "21:30", end: "22:00", duration: 30, description: "New episode - Sundays 9:30PM GMT+8" },
-  ],
-};
-
-const MUSE_INDIA_WEEKLY: Record<string, TimeSlot[]> = {
-  Monday: [],
-  Tuesday: [],
-  Wednesday: [],
-  Thursday: [
-    { show: "KAIJU GIRL CARAMELISE (Hindi Sub)", start: "20:30", end: "21:00", duration: 30, description: "New episode - Thursdays" },
-    { show: "The Exiled Heavy Knight (Hindi Sub)", start: "21:00", end: "21:30", duration: 30, description: "New episode - Thursdays" },
-    { show: "BanG Dream! YUME INFINITA (Hindi Sub)", start: "21:30", end: "22:00", duration: 30, description: "New episode - Thursdays" },
-  ],
-  Friday: [
-    { show: "Draw This, Then Die! (Hindi Sub)", start: "20:30", end: "21:00", duration: 30, description: "New episode - Fridays" },
-    { show: "The Elusive Samurai S2 (Hindi Sub)", start: "21:00", end: "21:30", duration: 30, description: "Premiere - Friday Jul 17" },
-  ],
-  Saturday: [
-    { show: "BLACK TORCH (Hindi Sub)", start: "20:30", end: "21:00", duration: 30, description: "New episode - Saturdays" },
-    { show: "Skeleton Knight in Another World S2 (Hindi Sub)", start: "21:00", end: "21:30", duration: 30, description: "New episode - Saturdays" },
-    { show: "GROW UP SHOW (Hindi Sub)", start: "21:30", end: "22:00", duration: 30, description: "New episode - Saturdays" },
-  ],
-  Sunday: [
-    { show: "Mushoku Tensei S3 (Hindi Sub)", start: "20:00", end: "20:30", duration: 30, description: "New episode - Sundays" },
-    { show: "The 100 Girlfriends S3 (Hindi Sub)", start: "20:30", end: "21:00", duration: 30, description: "New episode - Sundays" },
-    { show: "The World's Strongest Rearguard (Hindi Sub)", start: "21:00", end: "21:30", duration: 30, description: "New episode - Sundays" },
-  ],
-};
-
-const CRUNCHYROLL_WEEKLY: Record<string, TimeSlot[]> = {
-  Monday: [
-    { show: "Love Unseen Beneath the Clear Night Sky", start: "16:00", end: "16:30", duration: 30, description: "New episode - Mondays" },
-    { show: "The Insipid Prince's Furtive Grab for The Throne", start: "16:30", end: "17:00", duration: 30, description: "New episode - Mondays" },
-    { show: "Grand Blue Dreaming S3", start: "17:00", end: "17:30", duration: 30, description: "New episode - Mondays" },
-    { show: "A Livid Lady's Guide to Getting Even", start: "18:00", end: "18:30", duration: 30, description: "New episode - Mondays" },
-    { show: "LIAR GAME", start: "21:30", end: "22:00", duration: 30, description: "New episode - Mondays (9 AM PT)" },
-  ],
-  Tuesday: [
-    { show: "The Oblivious Saint Can't Contain Her Power", start: "17:00", end: "17:30", duration: 30, description: "New episode - Tuesdays" },
-    { show: "Yoroi-Shinden Samurai Troopers Part 2", start: "17:30", end: "18:00", duration: 30, description: "New episode - Tuesdays" },
-    { show: "Victoria of Many Faces", start: "18:00", end: "18:30", duration: 30, description: "New episode - Tuesdays" },
-    { show: "I Want to Love You Till Your Dying Day", start: "18:30", end: "19:00", duration: 30, description: "New episode - Tuesdays" },
-    { show: "Young Ladies Don't Play Fighting Games", start: "19:00", end: "19:30", duration: 30, description: "New episode - Tuesdays" },
-    { show: "Red River", start: "19:30", end: "20:00", duration: 30, description: "New episode - Tuesdays" },
-  ],
-  Wednesday: [
-    { show: "Hana-Kimi Season 2", start: "16:30", end: "17:00", duration: 30, description: "New episode - Wednesdays" },
-    { show: "The Villager of Level 999", start: "17:00", end: "17:30", duration: 30, description: "New episode - Wednesdays" },
-    { show: "Clevatess S2", start: "17:30", end: "18:00", duration: 30, description: "New episode - Wednesdays" },
-    { show: "Tomb Raider King", start: "18:00", end: "18:30", duration: 30, description: "New episode - Wednesdays" },
-    { show: "Heroine? Saint? No, I'm an All-Works Maid!", start: "18:30", end: "19:00", duration: 30, description: "New episode - Wednesdays (10 PM JST)" },
-    { show: "Re:ZERO S4", start: "19:00", end: "19:30", duration: 30, description: "New episode - Wednesdays (10 PM JST)" },
-    { show: "Saga of Tanya the Evil II", start: "19:30", end: "20:00", duration: 30, description: "New episode - Wednesdays" },
-    { show: "Trapped in a Dating Sim S2", start: "20:00", end: "20:30", duration: 30, description: "New episode - Wednesdays" },
-  ],
-  Thursday: [
-    { show: "Bungo Stray Dogs WAN! 2", start: "14:30", end: "15:00", duration: 30, description: "New episode - Thursdays (6 PM JST)" },
-    { show: "KAIJU GIRL CARAMELISE", start: "15:00", end: "15:30", duration: 30, description: "New episode - Thursdays (6:30 PM JST)" },
-    { show: "The Exiled Heavy Knight", start: "15:30", end: "16:00", duration: 30, description: "New episode - Thursdays (7 PM JST)" },
-    { show: "Dara-san of Reiwa", start: "16:00", end: "16:30", duration: 30, description: "New episode - Thursdays (7:30 PM JST)" },
-    { show: "Crowned in a Hundred Days", start: "16:30", end: "17:00", duration: 30, description: "New episode - Thursdays (8 PM JST)" },
-    { show: "From Overshadowed to Overpowered", start: "17:00", end: "17:30", duration: 30, description: "New episode - Thursdays" },
-    { show: "BanG Dream! YUME INFINITA", start: "17:30", end: "18:00", duration: 30, description: "New episode - Thursdays" },
-    { show: "Smoking Behind the Supermarket with You", start: "18:00", end: "18:30", duration: 30, description: "New episode - Thursdays" },
-    { show: "MEBIUS DUST", start: "18:30", end: "19:00", duration: 30, description: "New episode - Thursdays" },
-  ],
-  Friday: [
-    { show: "Sorry About My Little Brothers", start: "16:00", end: "16:30", duration: 30, description: "New episode - Fridays" },
-    { show: "I Became a Legend After My 10 Year-Long Last Stand", start: "16:30", end: "17:00", duration: 30, description: "New episode - Fridays" },
-    { show: "Draw This, Then Die!", start: "17:00", end: "17:30", duration: 30, description: "New episode - Fridays" },
-    { show: "The Frontier Lord Begins with Zero Subjects", start: "17:30", end: "18:00", duration: 30, description: "New episode - Fridays" },
-    { show: "The Elusive Samurai S2", start: "18:00", end: "18:30", duration: 30, description: "New episode - Fridays" },
-    { show: "That Time I Got Reincarnated as a Slime S4", start: "20:30", end: "21:00", duration: 30, description: "New episode - Fridays (8 AM PT)" },
-    { show: "RILAKKUMA", start: "21:00", end: "21:30", duration: 30, description: "New episode - Fridays (6 PM PT)" },
-    { show: "The Drops of God", start: "21:30", end: "22:00", duration: 30, description: "New episode - Fridays (8:30 AM PT)" },
-  ],
-  Saturday: [
-    { show: "Ascendance of a Bookworm", start: "15:00", end: "15:30", duration: 30, description: "New episode - Saturdays (2:30 AM PT)" },
-    { show: "Welcome to Demon School! Iruma-kun S4", start: "15:55", end: "16:25", duration: 30, description: "New episode - Saturdays (3:25 AM PT)" },
-    { show: "Detective Conan", start: "17:00", end: "17:30", duration: 30, description: "New episode - Saturdays (4:30 AM PT)" },
-    { show: "BLACK TORCH", start: "18:30", end: "19:00", duration: 30, description: "New episode - Saturdays (10 PM JST)" },
-    { show: "Skeleton Knight in Another World S2", start: "19:00", end: "19:30", duration: 30, description: "New episode - Saturdays" },
-    { show: "Jaadugar: A Witch in Mongolia", start: "20:00", end: "20:30", duration: 30, description: "New episode - Saturdays (11:30 PM JST)" },
-    { show: "The Cat and the Dragon", start: "20:30", end: "21:00", duration: 30, description: "New episode - Saturdays" },
-    { show: "Magical Girl Lyrical Nanoha EXCEEDS", start: "21:00", end: "21:30", duration: 30, description: "New episode - Saturdays" },
-    { show: "Daemons of the Shadow Realm", start: "21:30", end: "22:00", duration: 30, description: "New episode - Saturdays (9 AM PT)" },
-    { show: "The Ogre's Bride", start: "22:00", end: "22:30", duration: 30, description: "New episode - Saturdays" },
-    { show: "GROW UP SHOW -Sunflower Circus-", start: "22:30", end: "23:00", duration: 30, description: "New episode - Saturdays" },
-    { show: "The Duke's Son Claims He Won't Love Me Yet", start: "23:00", end: "23:30", duration: 30, description: "New episode - Saturdays" },
-    { show: "Rich Girl Caretaker", start: "23:30", end: "00:00", duration: 30, description: "New episode - Saturdays" },
-    { show: "Recommendations from Iwamoto-Senpai", start: "00:00", end: "00:30", duration: 30, description: "New episode - Sundays" },
-    { show: "Hanaori-san Still Wants to Fight", start: "00:30", end: "01:00", duration: 30, description: "New episode - Sundays" },
-  ],
-  Sunday: [
-    { show: "Star Detective Precure!", start: "06:00", end: "06:30", duration: 30, description: "New episode - Sundays (5:30 PM PT Sat)" },
-    { show: "DIGIMON BEATBREAK", start: "06:30", end: "07:00", duration: 30, description: "New episode - Sundays (7 PM PT Sat)" },
-    { show: "Mushoku Tensei: Jobless Reincarnation S3", start: "14:30", end: "15:00", duration: 30, description: "New episode - Sundays (6 PM JST)" },
-    { show: "You and I Are Polar Opposites S2", start: "15:00", end: "15:30", duration: 30, description: "New episode - Sundays" },
-    { show: "Goodbye, Lara", start: "15:30", end: "16:00", duration: 30, description: "New episode - Sundays" },
-    { show: "Anime AzurLane: Slow Ahead! Season 2", start: "16:00", end: "16:30", duration: 30, description: "New episode - Sundays" },
-    { show: "The World's Strongest Rearguard", start: "16:30", end: "17:00", duration: 30, description: "New episode - Sundays" },
-    { show: "One Piece HEROINES", start: "17:00", end: "17:30", duration: 30, description: "New episode - Sundays" },
-    { show: "Let's Go KAIKIGUMI", start: "17:30", end: "18:00", duration: 30, description: "New episode - Sundays" },
-    { show: "Iron Wok Jan!", start: "18:00", end: "18:30", duration: 30, description: "New episode - Sundays" },
-    { show: "The 100 Girlfriends S3", start: "18:30", end: "19:00", duration: 30, description: "New episode - Sundays" },
-    { show: "Though I Am an Inept Villainess", start: "19:00", end: "19:30", duration: 30, description: "New episode - Sundays" },
-    { show: "The Classroom of a Black Cat and a Witch", start: "20:30", end: "21:00", duration: 30, description: "New episode - Sundays (8 AM PT)" },
-    { show: "ONE PIECE", start: "21:30", end: "22:00", duration: 30, description: "New episode - Sundays (9 AM PT)" },
-    { show: "Case Closed", start: "22:00", end: "22:30", duration: 30, description: "New episode - Sundays" },
-  ],
-};
-
-const NETFLIX_ANIME_WEEKLY: Record<string, TimeSlot[]> = {
-  Monday: [],
-  Tuesday: [],
-  Wednesday: [],
-  Thursday: [],
-  Friday: [
-    { show: "Chainsmoker Cat", start: "18:00", end: "18:30", duration: 30, description: "New episode - Fridays (Netflix, from Jul 3)" },
-  ],
-  Saturday: [
-    { show: "Daemons of the Shadow Realm", start: "18:00", end: "18:30", duration: 30, description: "New episode - Saturdays (Netflix, from Jul 4)" },
-  ],
-  Sunday: [
-    { show: "Sparks of Tomorrow (KyoAni)", start: "18:00", end: "18:30", duration: 30, description: "New episode - Sundays (Netflix Original, from Jul 5)" },
-    { show: "Akane-Banashi", start: "18:30", end: "19:00", duration: 30, description: "New episode - Sundays (Netflix simulcast)" },
-  ],
-};
-
-const PRIME_VIDEO_ANIME_WEEKLY: Record<string, TimeSlot[]> = {
-  Monday: [
-    { show: "The Ghost in the Shell (Science SARU)", start: "20:30", end: "21:00", duration: 30, description: "New episode - Mondays 8:30PM IST (Prime Video exclusive)" },
-  ],
-  Tuesday: [],
-  Wednesday: [
-    { show: "From Old Country Bumpkin to Master Swordsman S2", start: "18:00", end: "18:30", duration: 30, description: "New episode - Wednesdays (Prime Video)" },
-  ],
-  Thursday: [],
-  Friday: [],
-  Saturday: [
-    { show: "Magilumiere Magical Girls Inc. S2", start: "19:00", end: "19:30", duration: 30, description: "New episode - Saturdays (Prime Video)" },
-  ],
-  Sunday: [],
-};
-
-const JIO_HOTSTAR_WEEKLY: Record<string, TimeSlot[]> = {
-  Monday: [],
-  Tuesday: [],
-  Wednesday: [],
-  Thursday: [],
-  Friday: [],
-  Saturday: [],
-  Sunday: [],
-};
-
-// SonyLIV has no static lineup â€” slots come live from AniList airing
-// detection (streaming-live.ts) and merge into this channel entry.
-const SONY_LIV_WEEKLY: Record<string, TimeSlot[]> = {
-  Monday: [],
-  Tuesday: [],
-  Wednesday: [],
-  Thursday: [],
-  Friday: [],
-  Saturday: [],
-  Sunday: [],
-};
-
-// Indian TV channel schedules are fetched live from INTV Schedule CDN (see epg-scraper.ts)
-// Streaming platform schedules remain hardcoded here
+// ────────────────────────────────────────────────────────────────────────
+// No hardcoded lineups are kept here.
+//
+// • Streaming platforms (Muse Asia/India, Crunchyroll, Netflix, Prime Video,
+//   JioHotstar, SonyLIV) are populated live from AniList airing data merged at
+//   request time — see src/lib/streaming-live.ts and
+//   src/app/api/tv-schedule/live/route.ts. The empty entries below only exist
+//   so the live merge has a target channel.
+// • Linear-TV channels (Cartoon Network, Pogo, Nickelodeon, Animax, …) are
+//   populated live from epg.pw — see src/lib/epg-scraper.ts.
+//
+// Removed: previously hardcoded/guessed weekly grids for Animax, Muse Asia,
+// Muse India, Crunchyroll, Netflix, Prime Video and Sonic.
+// ────────────────────────────────────────────────────────────────────────
 
 const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-
-// Sonic India — live EPG comes from INTV CDN (epg-scraper.ts).
-// Static grid removed: previous hardcoded lineup was inaccurate.
-const SONIC_WEEKLY: Record<string, TimeSlot[]> = {
-  Monday: [],
-  Tuesday: [],
-  Wednesday: [],
-  Thursday: [],
-  Friday: [],
-  Saturday: [],
-  Sunday: [],
-};
 
 export const CHANNEL_SCHEDULES: ChannelSchedule[] = [
   {
     channelId: "muse_asia",
-    schedules: ALL_DAYS.map((d) => ({ day: d, slots: MUSE_ASIA_WEEKLY[d] || [] })),
+    schedules: ALL_DAYS.map((d) => ({ day: d, slots: [] as TimeSlot[] })),
   },
   {
     channelId: "muse_india",
-    schedules: ALL_DAYS.map((d) => ({ day: d, slots: MUSE_INDIA_WEEKLY[d] || [] })),
+    schedules: ALL_DAYS.map((d) => ({ day: d, slots: [] as TimeSlot[] })),
   },
   {
     channelId: "crunchyroll",
-    schedules: ALL_DAYS.map((d) => ({ day: d, slots: CRUNCHYROLL_WEEKLY[d] || [] })),
+    schedules: ALL_DAYS.map((d) => ({ day: d, slots: [] as TimeSlot[] })),
   },
   {
     channelId: "netflix_anime",
-    schedules: ALL_DAYS.map((d) => ({ day: d, slots: NETFLIX_ANIME_WEEKLY[d] || [] })),
+    schedules: ALL_DAYS.map((d) => ({ day: d, slots: [] as TimeSlot[] })),
   },
   {
     channelId: "prime_video",
-    schedules: ALL_DAYS.map((d) => ({ day: d, slots: PRIME_VIDEO_ANIME_WEEKLY[d] || [] })),
+    schedules: ALL_DAYS.map((d) => ({ day: d, slots: [] as TimeSlot[] })),
   },
   {
     channelId: "jio_hotstar",
-    schedules: ALL_DAYS.map((d) => ({ day: d, slots: JIO_HOTSTAR_WEEKLY[d] || [] })),
+    schedules: ALL_DAYS.map((d) => ({ day: d, slots: [] as TimeSlot[] })),
   },
   {
     channelId: "sony_liv",
-    schedules: ALL_DAYS.map((d) => ({ day: d, slots: SONY_LIV_WEEKLY[d] || [] })),
-  },
-  {
-    channelId: "animax",
-    schedules: getAnimaxSchedule().schedules,
-  },
-  {
-    channelId: "sonic",
-    schedules: ALL_DAYS.map((d) => ({ day: d, slots: SONIC_WEEKLY[d] || [] })),
+    schedules: ALL_DAYS.map((d) => ({ day: d, slots: [] as TimeSlot[] })),
   },
 ];
+
 
 export function getScheduleForChannel(channelId: string, day?: string): DaySchedule | undefined {
   const channelSchedule = CHANNEL_SCHEDULES.find((cs) => cs.channelId === channelId);

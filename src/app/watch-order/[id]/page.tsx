@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import WatchOrderDetail from "./WatchOrderDetail";
+import { getDubGuideForWatchOrder, getFillerForWatchOrder } from "@/lib/cross-links";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
@@ -77,6 +78,9 @@ export default async function WatchOrderDetailPage({ params }: Props) {
   const animeName = slugToAnimeName[id] || order.title;
   const firstMethod = methods[0];
   const methodEntries = entries[firstMethod] || [];
+
+  const fillerSlug = getFillerForWatchOrder(id);
+  const dubSlug = getDubGuideForWatchOrder(id);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -157,6 +161,37 @@ export default async function WatchOrderDetailPage({ params }: Props) {
         tip={order.tip}
       />
 
+      {/* Related guides — internal links across the filler + Indian dub surfaces */}
+      {(fillerSlug || dubSlug) && (
+        <section className="mt-10 rounded-2xl neon-rgb-border bg-[var(--color-panel)] p-6">
+          <h2 className="font-display text-lg font-bold mb-4">Keep going with {animeName}</h2>
+          <div className="flex flex-wrap gap-3">
+            {fillerSlug && (
+              <Link
+                href={`/filler/${fillerSlug}`}
+                className="rounded-full bg-[var(--color-magenta)] px-5 py-2.5 text-xs font-bold text-black hover:opacity-90 transition-opacity"
+              >
+                ⏭️ Skip {animeName} filler →
+              </Link>
+            )}
+            {dubSlug && (
+              <Link
+                href={`/indian-dubs/${dubSlug}`}
+                className="rounded-full border border-[#ff9933]/40 bg-[#ff9933]/10 px-5 py-2.5 text-xs font-semibold text-[#ff9933] hover:border-[#ff9933]/70 transition-colors"
+              >
+                🇮🇳 {animeName} in Hindi →
+              </Link>
+            )}
+            <Link
+              href="/filler"
+              className="rounded-full neon-rgb-border px-5 py-2.5 text-xs font-semibold transition-colors"
+            >
+              All filler guides →
+            </Link>
+          </div>
+        </section>
+      )}
+
       {/* Back link */}
       <div className="mt-10 text-center">
         <Link
@@ -214,6 +249,17 @@ function getWatchEntries(slug: string): Record<string, { title: string; info: st
   if (slug === "precure") return { "Release Order": PRECURE_ENTRIES };
   if (slug === "katangatari") return { "Release Order": KATANAGATARI_ENTRIES };
   if (slug === "tiger-and-bunny") return { "Release Order": TIGER_BUNNY_ENTRIES };
+  if (slug === "jujutsu-kaisen") return { "Release Order": JUJUTSU_KAISEN_ENTRIES, "Chronological": JUJUTSU_KAISEN_CHRONO };
+  if (slug === "chainsaw-man") return { "Release Order": CHAINSAW_MAN_ENTRIES };
+  if (slug === "spy-x-family") return { "Release Order": SPY_X_FAMILY_ENTRIES };
+  if (slug === "mob-psycho-100") return { "Release Order": MOB_PSYCHO_ENTRIES };
+  if (slug === "tokyo-ghoul") return { "Release Order": TOKYO_GHOUL_ENTRIES };
+  if (slug === "seven-deadly-sins") return { "Release Order": SEVEN_DEADLY_SINS_ENTRIES };
+  if (slug === "overlord") return { "Release Order": OVERLORD_ENTRIES };
+  if (slug === "konosuba") return { "Release Order": KONOSUBA_ENTRIES };
+  if (slug === "dr-stone") return { "Release Order": DR_STONE_ENTRIES };
+  if (slug === "one-punch-man") return { "Release Order": ONE_PUNCH_MAN_ENTRIES };
+  if (slug === "kaguya-sama") return { "Release Order": KAGUYA_SAMA_ENTRIES };
   return {};
 }
 
@@ -618,6 +664,88 @@ const TIGER_BUNNY_ENTRIES = [
   { title: "Tiger & Bunny: The Rising", info: "Movie — Sequel (2014)", anilistId: 21079 },
 ];
 
+const JUJUTSU_KAISEN_ENTRIES = [
+  { title: "Jujutsu Kaisen", info: "24 episodes (2020)", anilistId: 113415 },
+  { title: "Jujutsu Kaisen 0", info: "Movie — Prequel (2021)", anilistId: 131573 },
+  { title: "Jujutsu Kaisen Season 2", info: "23 episodes (2023)", anilistId: 145064 },
+];
+
+const JUJUTSU_KAISEN_CHRONO = [
+  { title: "Jujutsu Kaisen 0", info: "Movie — Prequel (2021)", anilistId: 131573 },
+  { title: "Jujutsu Kaisen", info: "24 episodes (2020)", anilistId: 113415 },
+  { title: "Jujutsu Kaisen Season 2", info: "23 episodes (2023)", anilistId: 145064 },
+];
+
+const CHAINSAW_MAN_ENTRIES = [
+  { title: "Chainsaw Man", info: "12 episodes (2022)", anilistId: 127230 },
+  { title: "Chainsaw Man: The Movie — Reze Arc", info: "Movie (2025)", anilistId: 171627 },
+];
+
+const SPY_X_FAMILY_ENTRIES = [
+  { title: "SPY×FAMILY Season 1", info: "25 episodes — Parts 1 & 2 (2022)", anilistId: 140960 },
+  { title: "SPY×FAMILY Season 2", info: "12 episodes (2023)", anilistId: 158927 },
+  { title: "SPY×FAMILY CODE: White", info: "Movie (2023)", anilistId: 158928 },
+];
+
+const MOB_PSYCHO_ENTRIES = [
+  { title: "Mob Psycho 100", info: "12 episodes (2016)", anilistId: 21507 },
+  { title: "Mob Psycho 100: Reigen", info: "OVA — Side story (2018)", anilistId: 100353 },
+  { title: "Mob Psycho 100 II", info: "13 episodes (2019)", anilistId: 101338 },
+  { title: "Mob Psycho 100 III", info: "12 episodes (2022)", anilistId: 140439 },
+];
+
+const TOKYO_GHOUL_ENTRIES = [
+  { title: "Tokyo Ghoul", info: "12 episodes (2014)", anilistId: 20605 },
+  { title: "Tokyo Ghoul √A (Root A)", info: "12 episodes — Anime-original (2015)", anilistId: 20850 },
+  { title: "Tokyo Ghoul:re", info: "12 episodes (2018)", anilistId: 100240 },
+  { title: "Tokyo Ghoul:re 2nd Season", info: "12 episodes (2018)", anilistId: 102351 },
+];
+
+const SEVEN_DEADLY_SINS_ENTRIES = [
+  { title: "The Seven Deadly Sins", info: "24 episodes (2014)", anilistId: 20789 },
+  { title: "Signs of Holy War", info: "4 special episodes (2016)", anilistId: 21385 },
+  { title: "Prisoners of the Sky", info: "Movie (2018)", anilistId: 99540 },
+  { title: "Revival of the Commandments", info: "24 episodes — Season 2 (2018)", anilistId: 99539 },
+  { title: "Wrath of the Gods", info: "24 episodes — Season 3 (2019)", anilistId: 108928 },
+  { title: "Grudge of Edinburgh", info: "ONA movie (2022)", anilistId: 141352 },
+];
+
+const OVERLORD_ENTRIES = [
+  { title: "Overlord", info: "13 episodes (2015)", anilistId: 20832 },
+  { title: "Overlord II", info: "13 episodes (2018)", anilistId: 98437 },
+  { title: "Overlord III", info: "13 episodes (2018)", anilistId: 101474 },
+  { title: "Overlord IV", info: "13 episodes (2022)", anilistId: 133844 },
+  { title: "Overlord: The Sacred Kingdom", info: "Movie (2024)", anilistId: 133845 },
+];
+
+const KONOSUBA_ENTRIES = [
+  { title: "KonoSuba", info: "10 episodes (2016)", anilistId: 21202 },
+  { title: "KonoSuba 2", info: "10 episodes (2017)", anilistId: 21699 },
+  { title: "KonoSuba: Legend of Crimson", info: "Movie (2019)", anilistId: 102976 },
+  { title: "KonoSuba 3", info: "11 episodes (2024)", anilistId: 136804 },
+];
+
+const DR_STONE_ENTRIES = [
+  { title: "Dr. Stone", info: "24 episodes (2019)", anilistId: 105333 },
+  { title: "Dr. Stone: Stone Wars", info: "11 episodes (2021)", anilistId: 113936 },
+  { title: "Dr. Stone: New World", info: "11 episodes (2023)", anilistId: 131518 },
+  { title: "Dr. Stone: New World Part 2", info: "11 episodes (2023)", anilistId: 162670 },
+  { title: "Dr. Stone: Science Future", info: "12 episodes (2025)", anilistId: 172019 },
+];
+
+const ONE_PUNCH_MAN_ENTRIES = [
+  { title: "One Punch Man", info: "12 episodes (2015)", anilistId: 21087 },
+  { title: "One Punch Man 2", info: "12 episodes (2019)", anilistId: 97668 },
+  { title: "One Punch Man 3", info: "12 episodes (2025)", anilistId: 153800 },
+];
+
+const KAGUYA_SAMA_ENTRIES = [
+  { title: "Kaguya-sama: Love Is War", info: "12 episodes (2019)", anilistId: 101921 },
+  { title: "Kaguya-sama: Love Is War Season 2", info: "12 episodes (2020)", anilistId: 112641 },
+  { title: "Kaguya-sama: Ultra Romantic", info: "13 episodes — Season 3 (2022)", anilistId: 125367 },
+  { title: "Kaguya-sama: The First Kiss That Never Ends", info: "Movie (2023)", anilistId: 151384 },
+];
+
 interface WatchOrder {
   emoji: string;
   title: string;
@@ -978,5 +1106,104 @@ const WATCH_ORDERS_DATA: Record<string, WatchOrder & { anilistId?: number }> = {
     methods: ["Release Order"],
     description: "Season 1 → Movie 1 → Movie 2 → Season 2. Superhero action comedy.",
     tip: "Great for superhero fans who want something different from Western comics.",
+  },
+  "jujutsu-kaisen": {
+    emoji: "🔮",
+    title: "Jujutsu Kaisen",
+    anilistId: 113415,
+    entries: 3,
+    methods: ["Release Order", "Chronological"],
+    description: "Season 1 → Jujutsu Kaisen 0 (prequel movie) → Season 2. The Shibuya Incident caps Season 2.",
+    tip: "Watch Jujutsu Kaisen 0 after Season 1 for the intended reveal — or first if you prefer chronological order.",
+  },
+  "chainsaw-man": {
+    emoji: "🪚",
+    title: "Chainsaw Man",
+    anilistId: 127230,
+    entries: 2,
+    methods: ["Release Order"],
+    description: "Season 1 → Chainsaw Man: The Movie — Reze Arc. A short, brutal watch.",
+    tip: "Season 1 ends mid-story; the Reze Arc movie continues directly from it.",
+  },
+  "spy-x-family": {
+    emoji: "🕵️",
+    title: "Spy x Family",
+    anilistId: 140960,
+    entries: 3,
+    methods: ["Release Order"],
+    description: "Season 1 (Parts 1 & 2) → Season 2 → CODE: White (movie). Mostly episodic, so order is flexible.",
+    tip: "CODE: White is an anime-original movie set after Season 2 — fun, but skippable for story-only viewers.",
+  },
+  "mob-psycho-100": {
+    emoji: "🌀",
+    title: "Mob Psycho 100",
+    anilistId: 21507,
+    entries: 4,
+    methods: ["Release Order"],
+    description: "Seasons 1–3 plus the Reigen OVA. One of the best-animated shows ever made.",
+    tip: "Watch the Reigen OVA after Season 1 — it's a comedic side story, not required for the main plot.",
+  },
+  "tokyo-ghoul": {
+    emoji: "👁️",
+    title: "Tokyo Ghoul",
+    anilistId: 20605,
+    entries: 4,
+    methods: ["Release Order"],
+    description: "Season 1 → √A (Root A) → :re → :re 2nd Season. Note that √A is anime-original.",
+    tip: "√A diverges sharply from the manga — many fans recommend switching to the manga after Season 1.",
+  },
+  "seven-deadly-sins": {
+    emoji: "🐗",
+    title: "The Seven Deadly Sins",
+    anilistId: 20789,
+    entries: 6,
+    methods: ["Release Order"],
+    description: "Season 1 → Signs of Holy War → Prisoners of the Sky → Season 2 → Season 3 → Grudge of Edinburgh.",
+    tip: "Animation quality drops after Season 2 (studio change), but the story continues into the manga's final arc.",
+  },
+  overlord: {
+    emoji: "💀",
+    title: "Overlord",
+    anilistId: 20832,
+    entries: 5,
+    methods: ["Release Order"],
+    description: "Seasons I–IV, followed by The Sacred Kingdom movie. The isekai where the hero is the villain.",
+    tip: "The two recap movies (The Undead King / The Dark Hero) just condense Season 1 — skip them.",
+  },
+  konosuba: {
+    emoji: "💥",
+    title: "KonoSuba",
+    anilistId: 21202,
+    entries: 4,
+    methods: ["Release Order"],
+    description: "Seasons 1–3 with the Legend of Crimson movie placed between Seasons 2 and 3.",
+    tip: "The movie is canon — watch it after Season 2 and before Season 3.",
+  },
+  "dr-stone": {
+    emoji: "🧪",
+    title: "Dr. Stone",
+    anilistId: 105333,
+    entries: 5,
+    methods: ["Release Order"],
+    description: "Five seasons rebuilding civilization, from Stone Wars to Science Future.",
+    tip: "A recap special (Ryuusui) sits between seasons — optional, but it introduces a key ally.",
+  },
+  "one-punch-man": {
+    emoji: "👊",
+    title: "One Punch Man",
+    anilistId: 21087,
+    entries: 3,
+    methods: ["Release Order"],
+    description: "Season 1 → Season 2 → Season 3. The superhero parody that became a phenomenon.",
+    tip: "Season 1 (Madhouse) is the visual peak — Season 2 switched studios, so expect a different look.",
+  },
+  "kaguya-sama": {
+    emoji: "💘",
+    title: "Kaguya-sama: Love Is War",
+    anilistId: 101921,
+    entries: 4,
+    methods: ["Release Order"],
+    description: "Seasons 1–3, then The First Kiss That Never Ends movie, which continues straight from Season 3.",
+    tip: "The movie is a direct sequel to Season 3 — watch it last.",
   },
 };

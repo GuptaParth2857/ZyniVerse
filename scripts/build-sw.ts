@@ -175,7 +175,7 @@ function store(cacheName, request, response) {
   }).catch(function () {});
 }
 
-function offlineFallback(request) {
+function offlineFallback(_request) {
   // A failed navigation must still land on real HTML. The previous worker
   // returned a bare text/plain "Offline", which rendered as a blank page with no
   // way out and no styling.

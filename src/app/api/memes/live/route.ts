@@ -74,9 +74,11 @@ export async function GET(req: NextRequest) {
           imageUrl: url,
           mediaTitle: null,
           tags: "meme,funny",
-          upvotes: 12 + Math.floor(Math.random() * 220),
-          downvotes: Math.floor(Math.random() * 14),
-          commentCount: Math.floor(Math.random() * 9),
+          // Real Reddit upvote count from meme-api; downvotes/comments are not
+          // exposed by the source, so report 0 rather than inventing numbers.
+          upvotes: typeof j.ups === "number" ? j.ups : 0,
+          downvotes: 0,
+          commentCount: 0,
           userVote: 0,
           createdAt: new Date(Date.now() - items.length * 4 * 60_000).toISOString(),
           user: { id: "reddit-live", username: "sakuga.feed", avatar: null },

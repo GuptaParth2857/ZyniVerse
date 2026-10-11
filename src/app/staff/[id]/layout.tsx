@@ -7,7 +7,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     title: `Staff Profile | ZyniVerse`,
     description: `View anime/manga staff profile, works, and career details on ZyniVerse.`,
     alternates: { canonical: `${baseUrl}/staff/${id}` },
-    robots: { index: true, follow: true },
+    // Thin AniList mirror (name + filmography). No unique content — keep it
+    // out of the index but let crawlers follow links through it.
+    robots: { index: false, follow: true },
   };
 }
 

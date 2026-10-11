@@ -47,6 +47,8 @@ async function hydrateFromWallhaven(term: string) {
         resolution: string;
         dimension_x: number;
         dimension_y: number;
+        views?: number;
+        favorites?: number;
       }>;
     };
     const candidates = (json.data || []).slice(0, 6);
@@ -68,8 +70,9 @@ async function hydrateFromWallhaven(term: string) {
             resolution: wv.resolution || null,
             category: wv.dimension_y > wv.dimension_x ? "portrait" : "landscape",
             tags: [...tagTokens, "anime", "character", "wallpaper", "4k"].join(","),
-            downloads: Math.floor(Math.random() * 3000) + 100,
-            likes: Math.floor(Math.random() * 800) + 30,
+            // Use live Wallhaven engagement metrics instead of fabricated numbers.
+            downloads: typeof wv.views === "number" ? wv.views : 0,
+            likes: typeof wv.favorites === "number" ? wv.favorites : 0,
           },
         })
       )

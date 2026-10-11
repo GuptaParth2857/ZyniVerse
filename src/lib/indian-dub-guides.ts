@@ -34,7 +34,7 @@ export const INDIAN_DUB_GUIDES: IndianDubGuide[] = [
     languages: ["Hindi", "Tamil", "Telugu"],
     status: "Airing",
     episodeCount: "1155+ episodes (Hindi / Tamil / Telugu)",
-    schedule: "Egghead arc dubs (eps 1089–1155) released in batches on Mondays, Mar–Jun 2026 — next arc window not yet announced",
+    schedule: "Egghead arc dubs release in batches — see the live Hindi dub schedule for this week's uploads",
     dubSince: "2023",
     studio: "Crunchyroll India",
     tagline: "The biggest shounen saga on Crunchyroll India — Hindi, Tamil and Telugu, arc by arc.",
@@ -108,7 +108,7 @@ export const INDIAN_DUB_GUIDES: IndianDubGuide[] = [
     languages: ["Hindi", "Tamil", "Telugu"],
     status: "Airing",
     episodeCount: "500 episodes (dub roll-out in progress)",
-    schedule: "Crunchyroll dubs: first batch ep 1–32 landed Jul 6, 2026 (7:00 AM IST); further batches through Sep 2026 — no fixed weekly slot",
+    schedule: "Crunchyroll releases Hindi dubs in batches — no fixed weekly slot",
     dubSince: "2026",
     studio: "Crunchyroll India",
     tagline: "The full shounen classic finally gets Hindi, Tamil and Telugu dubs — rolling out on Crunchyroll.",
@@ -562,7 +562,7 @@ export const INDIAN_DUB_GUIDES: IndianDubGuide[] = [
     languages: ["Hindi", "Tamil", "Telugu"],
     status: "Airing",
     episodeCount: "64 episodes (dub roll-out in progress)",
-    schedule: "Batched rollout every ~3 weeks on Crunchyroll (July–Oct 2026)",
+    schedule: "Batched rollout on Crunchyroll — no fixed weekly slot",
     dubSince: "2026",
     studio: "Crunchyroll India",
     tagline: "The highest-rated anime of all time finally gets its Indian dub — rolling out on Crunchyroll.",
@@ -584,6 +584,830 @@ export const INDIAN_DUB_GUIDES: IndianDubGuide[] = [
       {
         q: "Where can I watch Brotherhood in India?",
         a: "The complete series streams on Crunchyroll India in all three languages.",
+      },
+    ],
+  },
+
+  // ── Crunchyroll Hindi (classics & modern hits) ──
+  {
+    slug: "demon-slayer-hindi-dub",
+    name: "Demon Slayer",
+    anilistId: 101922,
+    genres: ["Action", "Fantasy", "Shounen"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "55+ episodes (all released seasons & arcs)",
+    schedule: "All released seasons carry Hindi audio on Crunchyroll",
+    dubSince: "2022",
+    studio: "Crunchyroll India",
+    tagline: "Tanjiro's demon-hunting journey in Hindi — every released season on Crunchyroll India.",
+    intro:
+      "Demon Slayer: Kimetsu no Yaiba is one of the biggest anime in the world, and it became one of the first modern hits to get a Hindi dub on Crunchyroll India in 2022. From Tanjiro's first clash with the demons that killed his family to the swordsmith village and Hashira training arcs, the Hindi audio follows the show's seasonal releases. For most Indian fans it is the easiest big shounen to watch start to finish in Hindi.",
+    history:
+      "Crunchyroll added a Hindi audio track for Demon Slayer in 2022 as part of its India localisation push, covering the first season and continuing through the later arcs. The dub uses an Indian voice cast and sits alongside Japanese and English inside the player, so you switch languages without changing where you watch.",
+    watch:
+      "Open Demon Slayer on Crunchyroll India and pick Hindi from the audio options. Every released season and arc — including the Mugen Train arc — carries the Hindi track.",
+    faq: [
+      {
+        q: "Is Demon Slayer dubbed in Hindi?",
+        a: "Yes. The released seasons and arcs of Demon Slayer carry an official Hindi dub on Crunchyroll India.",
+      },
+      {
+        q: "Where can I watch Demon Slayer in Hindi?",
+        a: "On Crunchyroll India — switch the audio track to Hindi inside the player.",
+      },
+      {
+        q: "Does Demon Slayer have a Tamil or Telugu dub?",
+        a: "Crunchyroll India's Demon Slayer catalogue is primarily Hindi. Tamil and Telugu availability varies by arc, so check the audio options for the season you're watching.",
+      },
+    ],
+  },
+  {
+    slug: "my-hero-academia-hindi-dub",
+    name: "My Hero Academia",
+    anilistId: 21459,
+    genres: ["Action", "Comedy", "School", "Shounen"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "138+ episodes (all seven seasons)",
+    schedule: "All released seasons available in Hindi on Crunchyroll",
+    dubSince: "2022",
+    studio: "Crunchyroll India",
+    tagline: "Deku's climb to become the world's greatest hero — in Hindi, season by season.",
+    intro:
+      "My Hero Academia turns superheroes into a school subject, and the Hindi dub lets Indian viewers follow Izuku Midoriya's rise through U.A. High in their own language. Crunchyroll added Hindi audio for the series in 2022, covering the story from the entrance exam all the way through the later, darker seasons. It's a natural starting point for younger shounen fans discovering anime.",
+    history:
+      "The Hindi dub arrived on Crunchyroll India from 2022, tracking the anime's seasons as they released. With seven seasons already out and the story reaching its final arc, the show now offers a long, complete Hindi run rather than a short taster.",
+    watch:
+      "Stream My Hero Academia on Crunchyroll India and select Hindi from the audio tracks. Seasons release in order, so simply start from Season 1.",
+    faq: [
+      {
+        q: "Is My Hero Academia dubbed in Hindi?",
+        a: "Yes. Crunchyroll India carries a Hindi dub for My Hero Academia, covering the released seasons.",
+      },
+      {
+        q: "Where can I watch MHA in Hindi?",
+        a: "On Crunchyroll India — switch the audio track to Hindi inside the player.",
+      },
+      {
+        q: "How many seasons of My Hero Academia are in Hindi?",
+        a: "The Hindi dub covers the seasons released on Crunchyroll India, spanning roughly 138 episodes across seven seasons.",
+      },
+    ],
+  },
+  {
+    slug: "chainsaw-man-hindi-dub",
+    name: "Chainsaw Man",
+    anilistId: 127230,
+    genres: ["Action", "Fantasy", "Horror"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi", "Tamil", "Telugu"],
+    status: "Completed",
+    episodeCount: "12 episodes (Season 1)",
+    schedule: "Complete on Crunchyroll in all three Indian languages",
+    dubSince: "Hindi 2023 · Tamil/Telugu 2024",
+    studio: "Crunchyroll India",
+    tagline: "The blood-soaked breakout hit — Hindi, Tamil and Telugu, all on Crunchyroll India.",
+    intro:
+      "Chainsaw Man arrived as one of the most talked-about anime of its year, and Indian viewers got it in three languages. Denji's story — a broke teenager fused with his chainsaw devil — landed in Hindi on Crunchyroll in 2023, with Tamil and Telugu following in 2024. It's a fast, twelve-episode watch, which makes it a perfect show to sample a regional dub.",
+    history:
+      "Crunchyroll released the Hindi dub of Chainsaw Man in 2023, then extended the same season to Tamil and Telugu audiences in 2024. The original 12-episode season is complete, and the story continues in the manga and later anime entries.",
+    watch:
+      "Watch Chainsaw Man on Crunchyroll India and choose Hindi, Tamil or Telugu from the audio options. All 12 episodes are available.",
+    faq: [
+      {
+        q: "Is Chainsaw Man dubbed in Hindi?",
+        a: "Yes. Season 1 of Chainsaw Man has an official Hindi dub on Crunchyroll India.",
+      },
+      {
+        q: "Does Chainsaw Man have Tamil or Telugu audio?",
+        a: "Yes — Crunchyroll added Tamil and Telugu dubs for Chainsaw Man's first season in 2024, alongside the Hindi track.",
+      },
+      {
+        q: "How many Chainsaw Man episodes are dubbed?",
+        a: "The full first season of 12 episodes is dubbed in Hindi, Tamil and Telugu.",
+      },
+    ],
+  },
+  {
+    slug: "sword-art-online-hindi-dub",
+    name: "Sword Art Online",
+    anilistId: 11757,
+    genres: ["Action", "Adventure", "Fantasy", "Romance"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "96 episodes (all seasons)",
+    schedule: "Complete on Crunchyroll India",
+    dubSince: "2022",
+    studio: "Crunchyroll India",
+    tagline: "Kirito's death-game saga, dubbed in Hindi — all the way through Alicization.",
+    intro:
+      "Sword Art Online is one of the defining isekai of the 2010s, and its Hindi dub on Crunchyroll covers the whole ride — from the original Aincrad death game through Gun Gale Online and the Alicization arc. Indian viewers got Hindi audio from 2022, making it a rare long-running series with a full regional track across its seasons.",
+    history:
+      "Crunchyroll began adding Hindi audio for Sword Art Online in 2022, tracking the anime's multi-season run. Because the series was already complete, the Hindi catalogue covers a large episode count rather than a single season.",
+    watch:
+      "Stream Sword Art Online on Crunchyroll India and set the audio to Hindi. Start at Season 1 for the intended experience — later arcs assume you know the earlier ones.",
+    faq: [
+      {
+        q: "Is Sword Art Online dubbed in Hindi?",
+        a: "Yes. Crunchyroll India carries a Hindi dub for Sword Art Online across its seasons.",
+      },
+      {
+        q: "Where can I watch SAO in Hindi?",
+        a: "On Crunchyroll India — switching the audio track to Hindi inside the player.",
+      },
+      {
+        q: "How many SAO episodes are dubbed in Hindi?",
+        a: "The Hindi run spans roughly 96 episodes across the main Sword Art Online seasons.",
+      },
+    ],
+  },
+  {
+    slug: "spy-x-family-hindi-dub",
+    name: "Spy x Family",
+    anilistId: 140960,
+    genres: ["Action", "Comedy", "Slice of Life"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "37+ episodes (Seasons 1–2)",
+    schedule: "Released seasons available in Hindi on Crunchyroll",
+    dubSince: "2023",
+    studio: "Crunchyroll India",
+    tagline: "A spy, an assassin and a telepath — the world's most chaotic fake family, in Hindi.",
+    intro:
+      "Spy x Family's premise — a spy, an assassin and a mind-reading child pretending to be a family — made it a global phenomenon, and Crunchyroll brought it to India in Hindi from 2023. The Hindi dub captures the show's blend of slapstick and warmth, following the Forgers across the first two seasons. It's an easy recommendation for viewers who want comedy over heavy action.",
+    history:
+      "The Hindi dub arrived on Crunchyroll India in 2023 and covers the released seasons of the anime. As new seasons air, the Indian audio track is expected to follow the same seasonal pattern.",
+    watch:
+      "Watch Spy x Family on Crunchyroll India and select Hindi from the audio options. Start from Season 1 — the comedy builds on the family's ongoing cover story.",
+    faq: [
+      {
+        q: "Is Spy x Family dubbed in Hindi?",
+        a: "Yes. Crunchyroll India carries a Hindi dub for Spy x Family's released seasons.",
+      },
+      {
+        q: "Where can I watch Spy x Family in Hindi?",
+        a: "On Crunchyroll India — switch the audio track to Hindi inside the player.",
+      },
+      {
+        q: "How many episodes of Spy x Family are in Hindi?",
+        a: "The Hindi dub covers roughly 37 episodes across the first two seasons.",
+      },
+    ],
+  },
+  {
+    slug: "bleach-thousand-year-blood-war-hindi-dub",
+    name: "Bleach: Thousand-Year Blood War",
+    anilistId: 116674,
+    genres: ["Action", "Fantasy", "Shounen"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "The final arc's cours (26+ episodes)",
+    schedule: "Completed cours available in Hindi on Crunchyroll",
+    dubSince: "2024",
+    studio: "Crunchyroll India",
+    tagline: "Bleach's epic final arc — the Thousand-Year Blood War — arrives in Hindi.",
+    intro:
+      "Bleach's long-awaited final arc returned as 'Thousand-Year Blood War', and Crunchyroll India gave it a Hindi dub in 2024. This is the modern, high-budget continuation that finally adapts the manga's ending, picking up with Ichigo back in Karakura Town as the Quincy wage war. For fans who grew up with Bleach, hearing it in Hindi is a full-circle moment.",
+    history:
+      "The Thousand-Year Blood War arc released as seasonal cours rather than one long run. Crunchyroll India added Hindi audio from 2024, covering the released parts of the arc, with the manga's original ending now fully in view.",
+    watch:
+      "Stream Bleach: Thousand-Year Blood War on Crunchyroll India and set the audio to Hindi. It follows the original Bleach series, so newcomers may want to start with the earlier arcs first.",
+    faq: [
+      {
+        q: "Is Bleach: Thousand-Year Blood War dubbed in Hindi?",
+        a: "Yes. Crunchyroll India carries a Hindi dub for the Thousand-Year Blood War arc.",
+      },
+      {
+        q: "Do I need to watch the original Bleach first?",
+        a: "Yes — the Thousand-Year Blood War is the final arc, so it assumes you know the earlier Bleach story.",
+      },
+      {
+        q: "Where can I watch TYBW in Hindi?",
+        a: "On Crunchyroll India — choose the Hindi audio track in the player.",
+      },
+    ],
+  },
+  {
+    slug: "hunter-x-hunter-hindi-dub",
+    name: "Hunter x Hunter",
+    anilistId: 136,
+    genres: ["Action", "Adventure", "Fantasy"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "148 episodes (2011 series)",
+    schedule: "Complete on Crunchyroll India",
+    dubSince: "2023",
+    studio: "Crunchyroll India",
+    tagline: "Gon's search for his father — all 148 episodes of HxH (2011) in Hindi.",
+    intro:
+      "Hunter x Hunter's 2011 adaptation is a fan-favourite adventure, and Crunchyroll brought the full 148-episode run to India in Hindi in 2023. Following Gon Freecss as he becomes a Hunter to find his father, the series shifts from bright adventure to some of shounen's darkest arcs. The complete Hindi dub makes it a low-commitment entry point to a beloved classic.",
+    history:
+      "Crunchyroll India added Hindi audio for the 2011 Hunter x Hunter in 2023, covering the series in full. Because the anime ended in 2014, the Hindi catalogue is complete rather than ongoing.",
+    watch:
+      "Watch Hunter x Hunter on Crunchyroll India and pick Hindi from the audio options. It runs in order through several arcs, ending at the anime's original stopping point.",
+    faq: [
+      {
+        q: "Is Hunter x Hunter dubbed in Hindi?",
+        a: "Yes. The 2011 Hunter x Hunter has a Hindi dub on Crunchyroll India covering all 148 episodes.",
+      },
+      {
+        q: "Where can I watch HxH in Hindi?",
+        a: "On Crunchyroll India — switch the audio track to Hindi inside the player.",
+      },
+      {
+        q: "Is the whole series dubbed?",
+        a: "Yes — the complete 148-episode 2011 series is available in Hindi on Crunchyroll India.",
+      },
+    ],
+  },
+  {
+    slug: "haikyuu-hindi-dub",
+    name: "Haikyuu!!",
+    anilistId: 20464,
+    genres: ["Comedy", "Drama", "Sports"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "85 episodes (all four seasons)",
+    schedule: "Complete on Crunchyroll India",
+    dubSince: "2023",
+    studio: "Crunchyroll India",
+    tagline: "Volleyball, heart and underdogs — Haikyuu!! spikes into Hindi.",
+    intro:
+      "Haikyuu!! is the sports anime that converts people who don't watch sports anime, and Crunchyroll India gave it a Hindi dub in 2023. Across four seasons and 85 episodes, it follows Hinata Shoyo's dream of reaching the top of volleyball despite his height. The Hindi track makes the team's underdog run easy to binge in your own language.",
+    history:
+      "Crunchyroll added Hindi audio for Haikyuu!! in 2023, covering the television seasons. The story later continues in film format, but the four main seasons form a complete Hindi-viewable arc.",
+    watch:
+      "Stream Haikyuu!! on Crunchyroll India and select Hindi from the audio options. Watch in season order for the team's full progression.",
+    faq: [
+      {
+        q: "Is Haikyuu!! dubbed in Hindi?",
+        a: "Yes. Crunchyroll India carries a Hindi dub for Haikyuu!! across its four seasons.",
+      },
+      {
+        q: "Where can I watch Haikyuu!! in Hindi?",
+        a: "On Crunchyroll India — switch the audio track to Hindi in the player.",
+      },
+      {
+        q: "How many Haikyuu!! episodes are in Hindi?",
+        a: "Roughly 85 episodes across the four television seasons are available in Hindi.",
+      },
+    ],
+  },
+  {
+    slug: "tokyo-revengers-hindi-dub",
+    name: "Tokyo Revengers",
+    anilistId: 120120,
+    genres: ["Action", "Drama", "Shounen"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "37 episodes (Seasons 1–2)",
+    schedule: "Released seasons available in Hindi on Crunchyroll",
+    dubSince: "2022",
+    studio: "Crunchyroll India",
+    tagline: "Time-travel, gangs and second chances — Tokyo Revengers in Hindi.",
+    intro:
+      "Tokyo Revengers mixes time travel with Tokyo's gang underworld, and its Hindi dub arrived on Crunchyroll India in 2022. Takemichi's jumps back in time to save his friends give the show a thriller pace that plays well in any language. The Hindi track covers the first two seasons.",
+    history:
+      "Crunchyroll added Hindi audio for Tokyo Revengers from 2022, following the anime's early seasons. Later seasons continue the story, with the Indian dub tracking the releases.",
+    watch:
+      "Watch Tokyo Revengers on Crunchyroll India and choose Hindi from the audio options. Start at Season 1 — the time-travel rules build up episode by episode.",
+    faq: [
+      {
+        q: "Is Tokyo Revengers dubbed in Hindi?",
+        a: "Yes. Crunchyroll India carries a Hindi dub for Tokyo Revengers' released seasons.",
+      },
+      {
+        q: "Where can I watch Tokyo Revengers in Hindi?",
+        a: "On Crunchyroll India — switch the audio track to Hindi in the player.",
+      },
+      {
+        q: "How many episodes are dubbed in Hindi?",
+        a: "The Hindi dub covers roughly 37 episodes across the first two seasons.",
+      },
+    ],
+  },
+  {
+    slug: "blue-lock-hindi-dub",
+    name: "Blue Lock",
+    anilistId: 137822,
+    genres: ["Sports", "Drama"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "24+ episodes (Seasons 1–2)",
+    schedule: "Released seasons available in Hindi on Crunchyroll",
+    dubSince: "2024",
+    studio: "Crunchyroll India",
+    tagline: "300 strikers, one spot — Blue Lock's egoist football project in Hindi.",
+    intro:
+      "Blue Lock takes a ruthless approach to sports anime: isolate Japan's best young strikers and make them compete until only one stands. Crunchyroll India added a Hindi dub in 2024, and the show's high-energy matches have made it a hit with Indian football fans. The Hindi track covers the released seasons of the project.",
+    history:
+      "Crunchyroll began the Hindi dub for Blue Lock in 2024, matching the anime's seasonal rollout. The tournament structure makes it easy to follow arc by arc.",
+    watch:
+      "Stream Blue Lock on Crunchyroll India and pick Hindi from the audio options. Start from Season 1 to follow the selection rounds in order.",
+    faq: [
+      {
+        q: "Is Blue Lock dubbed in Hindi?",
+        a: "Yes. Crunchyroll India carries a Hindi dub for Blue Lock's released seasons.",
+      },
+      {
+        q: "Where can I watch Blue Lock in Hindi?",
+        a: "On Crunchyroll India — switch the audio track to Hindi in the player.",
+      },
+      {
+        q: "How many Blue Lock episodes are in Hindi?",
+        a: "The Hindi dub covers 24+ episodes across the first two seasons.",
+      },
+    ],
+  },
+  {
+    slug: "code-geass-hindi-dub",
+    name: "Code Geass",
+    anilistId: 1575,
+    genres: ["Action", "Drama", "Mecha", "Sci-Fi"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "50 episodes (both seasons)",
+    schedule: "Complete on Crunchyroll India",
+    dubSince: "2022",
+    studio: "Crunchyroll India",
+    tagline: "Lelouch's rebellion, chess-like and operatic — Code Geass in Hindi.",
+    intro:
+      "Code Geass is a political mecha thriller built on mind games, and its Hindi dub came to Crunchyroll India in 2022. Lelouch's power of absolute command turns a rebellion into a chess match of betrayals and reveals across 50 episodes. It's often recommended to viewers who want a smarter, darker shounen, and the Hindi track covers both seasons.",
+    history:
+      "Crunchyroll India added Hindi audio for Code Geass from 2022, covering the anime's two seasons. The complete run gives Hindi viewers the full, famously divisive ending rather than a partial taste.",
+    watch:
+      "Watch Code Geass on Crunchyroll India and set the audio to Hindi. Watch Seasons 1 and 2 in order — the second season's payoff depends on the first.",
+    faq: [
+      {
+        q: "Is Code Geass dubbed in Hindi?",
+        a: "Yes. Crunchyroll India carries a Hindi dub for Code Geass across both seasons.",
+      },
+      {
+        q: "Where can I watch Code Geass in Hindi?",
+        a: "On Crunchyroll India — switch the audio track to Hindi in the player.",
+      },
+      {
+        q: "How many episodes are dubbed in Hindi?",
+        a: "All 50 episodes across the two Code Geass seasons are available in Hindi.",
+      },
+    ],
+  },
+  {
+    slug: "oshi-no-ko-hindi-dub",
+    name: "Oshi no Ko",
+    anilistId: 150672,
+    genres: ["Drama", "Supernatural", "Showbiz"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "11+ episodes (Season 1)",
+    schedule: "Released season available in Hindi on Crunchyroll",
+    dubSince: "2024",
+    studio: "Crunchyroll India",
+    tagline: "The idol-industry drama that shocked everyone — Oshi no Ko in Hindi.",
+    intro:
+      "Oshi no Ko opens with a premise that became one of anime's most talked-about in years, then settles into a sharp look at the entertainment industry's darker side. Crunchyroll India added a Hindi dub in 2024, letting Indian viewers follow Aqua and Ruby's story in their own language. It's a strong pick for fans who want drama over battles.",
+    history:
+      "The Hindi dub arrived on Crunchyroll India in 2024, covering the first season. The series continued in later seasons and films, with the Indian audio track following the releases.",
+    watch:
+      "Stream Oshi no Ko on Crunchyroll India and select Hindi from the audio options. Watch from episode 1 — the story's hook depends on the opening.",
+    faq: [
+      {
+        q: "Is Oshi no Ko dubbed in Hindi?",
+        a: "Yes. Crunchyroll India carries a Hindi dub for Oshi no Ko's first season.",
+      },
+      {
+        q: "Where can I watch Oshi no Ko in Hindi?",
+        a: "On Crunchyroll India — switch the audio track to Hindi in the player.",
+      },
+      {
+        q: "How many episodes are in Hindi?",
+        a: "The Hindi dub covers 11+ episodes of the first season.",
+      },
+    ],
+  },
+  {
+    slug: "naruto-hindi-dub",
+    name: "Naruto",
+    anilistId: 20,
+    genres: ["Action", "Adventure", "Comedy"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi", "Tamil"],
+    status: "Completed",
+    episodeCount: "220 episodes (original series)",
+    schedule: "Complete on Crunchyroll India",
+    dubSince: "2021",
+    studio: "Crunchyroll India",
+    tagline: "Where it all begins — the original Naruto, all 220 episodes, in Hindi and Tamil.",
+    intro:
+      "Before Shippuden, there was the original Naruto — the story of an outcast boy with a sealed nine-tailed fox and a dream of becoming Hokage. Crunchyroll brought the full 220-episode series to India in Hindi from 2021, with Tamil following on the same rollout. It's the essential starting point for the entire Naruto universe in Indian languages.",
+    history:
+      "Crunchyroll began releasing the Hindi dub of the original Naruto in 2021, followed by Tamil, and later extended the same treatment to Naruto: Shippuden. Because both series were already complete, the regional dubs rolled out in batches.",
+    watch:
+      "Watch Naruto on Crunchyroll India and switch to Hindi or Tamil in the audio options. Start here before Shippuden, and use ZyniVerse's Naruto filler guide to skip the standalone arcs.",
+    faq: [
+      {
+        q: "Is the original Naruto dubbed in Hindi?",
+        a: "Yes. All 220 episodes of the original Naruto have a Hindi dub on Crunchyroll India, with a Tamil track as well.",
+      },
+      {
+        q: "Should I watch Naruto or Shippuden first?",
+        a: "Watch the original Naruto first — Shippuden continues its story directly.",
+      },
+      {
+        q: "Can I skip Naruto filler?",
+        a: "Yes. A large block of later Naruto episodes is filler; ZyniVerse has a numbered Naruto filler guide.",
+      },
+    ],
+  },
+  {
+    slug: "boruto-hindi-dub",
+    name: "Boruto: Naruto Next Generations",
+    anilistId: 97938,
+    genres: ["Action", "Adventure", "Comedy"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "293 episodes",
+    schedule: "Complete on Crunchyroll India",
+    dubSince: "2022",
+    studio: "Crunchyroll India",
+    tagline: "The next generation takes over — Boruto's 293-episode run in Hindi.",
+    intro:
+      "Boruto follows Naruto's son as he steps out of his father's shadow, and Crunchyroll brought the full 293-episode series to India in Hindi from 2022. It's a heavy watch — much of the show is anime-original — but for fans who want more time in the Naruto world, the complete Hindi dub is available. It pairs best with the Naruto and Shippuden dubs.",
+    history:
+      "The Hindi dub of Boruto arrived on Crunchyroll India from 2022, covering the series' long run. Because Boruto mixes manga adaptations with large anime-canon stretches, the Hindi catalogue is complete across all 293 episodes.",
+    watch:
+      "Stream Boruto on Crunchyroll India and select Hindi from the audio options. Watch Naruto and Shippuden first for the full context — and use the Boruto filler guide to skip the anime-only arcs.",
+    faq: [
+      {
+        q: "Is Boruto dubbed in Hindi?",
+        a: "Yes. All 293 episodes of Boruto have a Hindi dub on Crunchyroll India.",
+      },
+      {
+        q: "Do I need to watch Naruto first?",
+        a: "Yes — Boruto assumes you know the original Naruto and Shippuden stories.",
+      },
+      {
+        q: "Is Boruto mostly filler?",
+        a: "A large portion is anime-original. ZyniVerse's Boruto filler guide marks which blocks to skip.",
+      },
+    ],
+  },
+  {
+    slug: "mashle-hindi-dub",
+    name: "Mashle: Magic and Muscles",
+    anilistId: 151801,
+    genres: ["Action", "Comedy", "Fantasy"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "24 episodes (Seasons 1–2)",
+    schedule: "Released seasons available in Hindi on Crunchyroll",
+    dubSince: "2023",
+    studio: "Crunchyroll India",
+    tagline: "No magic? No problem — Mash's all-muscle heroics in Hindi.",
+    intro:
+      "Mashle is a comedy-fantasy about a boy with zero magic in a world obsessed with it, who punches his way through a wizard school instead. Crunchyroll India added a Hindi dub in 2023, and the show's deadpan jokes land well in the localised audio. It's a light, funny companion to the heavier shounen titles.",
+    history:
+      "The Hindi dub arrived on Crunchyroll India in 2023, covering the released seasons. Mashle's short, gag-driven arcs make it easy to watch in chunks.",
+    watch:
+      "Watch Mashle on Crunchyroll India and pick Hindi from the audio options. Start at Season 1 — the running gags build across episodes.",
+    faq: [
+      {
+        q: "Is Mashle dubbed in Hindi?",
+        a: "Yes. Crunchyroll India carries a Hindi dub for Mashle across its released seasons.",
+      },
+      {
+        q: "Where can I watch Mashle in Hindi?",
+        a: "On Crunchyroll India — switch the audio track to Hindi in the player.",
+      },
+      {
+        q: "How many Mashle episodes are in Hindi?",
+        a: "The Hindi dub covers 24 episodes across the first two seasons.",
+      },
+    ],
+  },
+  {
+    slug: "dragon-ball-z-hindi-dub",
+    name: "Dragon Ball Z",
+    anilistId: 813,
+    genres: ["Action", "Adventure", "Comedy", "Fantasy"],
+    platforms: ["Crunchyroll"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "291 episodes",
+    schedule: "Complete on Crunchyroll India",
+    dubSince: "2021",
+    studio: "Crunchyroll India",
+    tagline: "The anime that raised a generation — Dragon Ball Z in Hindi, all 291 episodes.",
+    intro:
+      "For a whole generation of Indian fans, Dragon Ball Z was the gateway anime, and Crunchyroll brought Goku's battles with Cell, Frieza and Majin Buu to India in Hindi from 2021. The full 291-episode run is available, making it one of the biggest classic Hindi catalogues on the platform. Whether you grew up with it or are starting fresh, the Hindi dub is the nostalgic way in.",
+    history:
+      "Crunchyroll began adding Hindi audio for Dragon Ball Z in 2021, covering the complete original series. The show's legacy in India spans decades of TV reruns, and the streaming dub gives that fandom an on-demand, official home.",
+    watch:
+      "Stream Dragon Ball Z on Crunchyroll India and select Hindi from the audio options. Watch in order through the Saiyan, Frieza, Cell and Buu arcs.",
+    faq: [
+      {
+        q: "Is Dragon Ball Z dubbed in Hindi?",
+        a: "Yes. All 291 episodes of Dragon Ball Z have a Hindi dub on Crunchyroll India.",
+      },
+      {
+        q: "Where can I watch DBZ in Hindi?",
+        a: "On Crunchyroll India — switch the audio track to Hindi in the player.",
+      },
+      {
+        q: "Should I watch Dragon Ball first?",
+        a: "It helps, but DBZ recap its early arcs well enough to start here. Dragon Ball Super continues after Z.",
+      },
+    ],
+  },
+
+  // ── Netflix India ──
+  {
+    slug: "kakegurui-hindi-dub",
+    name: "Kakegurui",
+    anilistId: 98314,
+    genres: ["Drama", "Psychological", "School"],
+    platforms: ["Netflix"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "24 episodes (Seasons 1–2)",
+    schedule: "Complete on Netflix India",
+    dubSince: "2022",
+    studio: "Netflix India",
+    tagline: "High-stakes gambling and mind games — Kakegurui in Hindi on Netflix.",
+    intro:
+      "Kakegurui is a psychological thriller set in a school where status is decided by gambling, and Netflix brought it to India in Hindi from 2022. The show's escalating bets and mind games make it a binge-friendly watch across its two seasons. It's one of Netflix India's staple anime dubs.",
+    history:
+      "Netflix India added a Hindi dub for Kakegurui in 2022, covering the series' seasons. Netflix's in-house localisation has made it one of the platform's recognisable anime titles for Indian viewers.",
+    watch:
+      "Watch Kakegurui on Netflix India and select Hindi from the audio and subtitle options. Both seasons are available.",
+    faq: [
+      {
+        q: "Is Kakegurui dubbed in Hindi?",
+        a: "Yes. Netflix India carries a Hindi dub for Kakegurui across its seasons.",
+      },
+      {
+        q: "Where can I watch Kakegurui in Hindi?",
+        a: "On Netflix India — switch the audio track to Hindi in the player.",
+      },
+      {
+        q: "How many episodes are in Hindi?",
+        a: "Both Kakegurui seasons, 24 episodes, are available in Hindi on Netflix India.",
+      },
+    ],
+  },
+  {
+    slug: "cyberpunk-edgerunners-hindi-dub",
+    name: "Cyberpunk: Edgerunners",
+    anilistId: 120377,
+    genres: ["Action", "Drama", "Sci-Fi"],
+    platforms: ["Netflix"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "10 episodes",
+    schedule: "Complete on Netflix India",
+    dubSince: "2022",
+    studio: "Netflix India",
+    tagline: "Night City burns bright — Cyberpunk: Edgerunners in Hindi.",
+    intro:
+      "Cyberpunk: Edgerunners is a tight, ten-episode story set in the Cyberpunk 2077 universe, following a street kid trying to survive as an edgerunner. Netflix India gave it a Hindi dub in 2022, and its neon-soaked animation plus a lean runtime make it one of the easiest premium anime on the platform to finish in a night.",
+    history:
+      "The Hindi dub landed on Netflix India in 2022 alongside the show's global release. It's a self-contained story, so the ten episodes are the whole tale.",
+    watch:
+      "Stream Cyberpunk: Edgerunners on Netflix India and set the audio to Hindi. All 10 episodes are available.",
+    faq: [
+      {
+        q: "Is Cyberpunk: Edgerunners dubbed in Hindi?",
+        a: "Yes. Netflix India carries a Hindi dub for all 10 episodes of Cyberpunk: Edgerunners.",
+      },
+      {
+        q: "Do I need to know Cyberpunk 2077?",
+        a: "No — Edgerunners is a standalone story set in the same universe.",
+      },
+      {
+        q: "Where can I watch it in Hindi?",
+        a: "On Netflix India — switch the audio track to Hindi in the player.",
+      },
+    ],
+  },
+  {
+    slug: "record-of-ragnarok-hindi-dub",
+    name: "Record of Ragnarok",
+    anilistId: 127399,
+    genres: ["Action", "Fantasy", "Supernatural"],
+    platforms: ["Netflix"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "24 episodes (Seasons 1–2)",
+    schedule: "Released seasons available in Hindi on Netflix",
+    dubSince: "2023",
+    studio: "Netflix India",
+    tagline: "Gods versus humanity, one duel at a time — Record of Ragnarok in Hindi.",
+    intro:
+      "Record of Ragnarok pits history's greatest humans against gods in a tournament for humanity's survival. Netflix India added a Hindi dub in 2023, and the show's tournament structure gives it an easy, fight-by-fight rhythm. It's a solid pick for fans of high-stakes battle anime.",
+    history:
+      "The Hindi dub arrived on Netflix India in 2023, covering the released seasons. The tournament format continues in later seasons as the roster of fighters grows.",
+    watch:
+      "Watch Record of Ragnarok on Netflix India and pick Hindi from the audio options. Start at Season 1 to follow the duels in order.",
+    faq: [
+      {
+        q: "Is Record of Ragnarok dubbed in Hindi?",
+        a: "Yes. Netflix India carries a Hindi dub for Record of Ragnarok's released seasons.",
+      },
+      {
+        q: "Where can I watch it in Hindi?",
+        a: "On Netflix India — switch the audio track to Hindi in the player.",
+      },
+      {
+        q: "How many episodes are in Hindi?",
+        a: "The Hindi dub covers roughly 24 episodes across the first two seasons.",
+      },
+    ],
+  },
+  {
+    slug: "great-pretender-hindi-dub",
+    name: "Great Pretender",
+    anilistId: 110349,
+    genres: ["Action", "Adventure", "Comedy"],
+    platforms: ["Netflix"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "23 episodes",
+    schedule: "Complete on Netflix India",
+    dubSince: "2022",
+    studio: "Netflix India",
+    tagline: "The slickest con-artist caper in anime — Great Pretender in Hindi.",
+    intro:
+      "Great Pretender is a stylish heist series following a group of con artists across the world, and Netflix India gave it a Hindi dub in 2022. Its globe-trotting arcs and colourful art make it stand out from typical anime, and the Hindi track suits its snappy, dialogue-heavy tone.",
+    history:
+      "The Hindi dub landed on Netflix India in 2022, covering the full run of 23 episodes. The show's case-of-the-arc structure makes it easy to watch in parts.",
+    watch:
+      "Stream Great Pretender on Netflix India and set the audio to Hindi. Watch the arcs in order for the con artists' evolving schemes.",
+    faq: [
+      {
+        q: "Is Great Pretender dubbed in Hindi?",
+        a: "Yes. Netflix India carries a Hindi dub for all 23 episodes of Great Pretender.",
+      },
+      {
+        q: "Where can I watch it in Hindi?",
+        a: "On Netflix India — switch the audio track to Hindi in the player.",
+      },
+      {
+        q: "Is it a complete story?",
+        a: "Yes — the 23-episode run forms complete arcs with a satisfying finish.",
+      },
+    ],
+  },
+
+  // ── Prime Video / Anime Times ──
+  {
+    slug: "one-punch-man-hindi-dub",
+    name: "One Punch Man",
+    anilistId: 21087,
+    genres: ["Action", "Comedy", "Parody"],
+    platforms: ["Prime Video"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "24 episodes (Seasons 1–2)",
+    schedule: "Released seasons available in Hindi on Prime Video",
+    dubSince: "2022",
+    studio: "Anime Times",
+    tagline: "The hero who wins in one hit — One Punch Man in Hindi.",
+    intro:
+      "One Punch Man spoofs superhero tropes with Saitama, a hero so strong every fight ends instantly — and he's bored of it. Anime Times brought a Hindi dub to Prime Video in 2022, covering the first two seasons. It's a great comedy entry point and one of the better-known Hindi dubs outside Crunchyroll.",
+    history:
+      "Anime Times produced the Hindi dub of One Punch Man for Prime Video from 2022, covering the released seasons. It sits alongside the channel's other Indian-language dubs like Tokyo Ghoul and Attack on Titan.",
+    watch:
+      "Watch One Punch Man on Prime Video (via the Anime Times channel) and select Hindi from the audio options. Start at Season 1.",
+    faq: [
+      {
+        q: "Is One Punch Man dubbed in Hindi?",
+        a: "Yes. Prime Video's Anime Times channel carries a Hindi dub for One Punch Man's released seasons.",
+      },
+      {
+        q: "Where can I watch One Punch Man in Hindi?",
+        a: "On Prime Video through the Anime Times channel — switch the audio track to Hindi.",
+      },
+      {
+        q: "How many episodes are in Hindi?",
+        a: "The Hindi dub covers roughly 24 episodes across the first two seasons.",
+      },
+    ],
+  },
+  {
+    slug: "tokyo-ghoul-hindi-dub",
+    name: "Tokyo Ghoul",
+    anilistId: 20605,
+    genres: ["Action", "Horror", "Mystery", "Supernatural"],
+    platforms: ["Prime Video"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "48 episodes (all seasons)",
+    schedule: "Complete on Prime Video (Anime Times)",
+    dubSince: "2022",
+    studio: "Anime Times",
+    tagline: "Half-human, half-ghoul — Tokyo Ghoul's dark saga in Hindi.",
+    intro:
+      "Tokyo Ghoul turns a college student into a half-ghoul caught between two worlds, and it became one of the earliest big Hindi dubs on Anime Times via Prime Video in 2022. Across 48 episodes the story runs from Ken Kaneki's transformation to the series' dark later arcs. It's a strong pick for viewers who like horror-tinged action.",
+    history:
+      "Anime Times produced the Hindi dub for Prime Video from 2022, covering the anime's seasons. It was part of the same India push that also brought the Hindi dub of Naruto: Shippuden.",
+    watch:
+      "Stream Tokyo Ghoul on Prime Video through the Anime Times channel and pick Hindi from the audio options. Watch the seasons in order.",
+    faq: [
+      {
+        q: "Is Tokyo Ghoul dubbed in Hindi?",
+        a: "Yes. Prime Video's Anime Times channel carries a Hindi dub for Tokyo Ghoul across its seasons.",
+      },
+      {
+        q: "Where can I watch Tokyo Ghoul in Hindi?",
+        a: "On Prime Video through Anime Times — switch the audio track to Hindi.",
+      },
+      {
+        q: "How many episodes are in Hindi?",
+        a: "The Hindi dub covers roughly 48 episodes across all seasons.",
+      },
+    ],
+  },
+
+  // ── Muse India (YouTube) ──
+  {
+    slug: "steins-gate-hindi-dub",
+    name: "Steins;Gate",
+    anilistId: 9253,
+    genres: ["Drama", "Sci-Fi", "Thriller"],
+    platforms: ["Muse India (YouTube)"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "24 episodes",
+    schedule: "Complete on Muse India's YouTube channel",
+    dubSince: "2023",
+    studio: "Muse India",
+    tagline: "Time travel, conspiracy and heartbreak — Steins;Gate in Hindi, free on YouTube.",
+    intro:
+      "Steins;Gate is one of the highest-rated anime ever, a slow-burn time-travel thriller that turns into something devastating. Muse India gave it a Hindi dub on YouTube in 2023, making a legendary title accessible to Indian viewers for free with a local voice cast. Stick past the slow first act — it pays off enormously.",
+    history:
+      "Muse India, the regional arm that streams anime legally on YouTube across South and Southeast Asia, added the Hindi dub of Steins;Gate in 2023. It's the same channel that later re-dubbed Attack on Titan in Hindi, Tamil and Telugu.",
+    watch:
+      "Watch Steins;Gate in Hindi on Muse India's YouTube channel — free and legal. Follow the numbered broadcast order for the intended reveal.",
+    faq: [
+      {
+        q: "Is Steins;Gate dubbed in Hindi?",
+        a: "Yes. Muse India streams a Hindi dub of Steins;Gate on its YouTube channel.",
+      },
+      {
+        q: "Is it free to watch?",
+        a: "Yes — Muse India's Hindi dub is available free on YouTube.",
+      },
+      {
+        q: "How many episodes are in Hindi?",
+        a: "All 24 episodes of Steins;Gate are available in Hindi.",
+      },
+    ],
+  },
+  {
+    slug: "fate-zero-hindi-dub",
+    name: "Fate/Zero",
+    anilistId: 10087,
+    genres: ["Action", "Fantasy", "Supernatural"],
+    platforms: ["Muse India (YouTube)"],
+    languages: ["Hindi"],
+    status: "Completed",
+    episodeCount: "25 episodes",
+    schedule: "Complete on Muse India's YouTube channel",
+    dubSince: "2023",
+    studio: "Muse India",
+    tagline: "Seven mages, seven heroes, one Grail — Fate/Zero in Hindi.",
+    intro:
+      "Fate/Zero is the dark prequel to the Fate franchise: a battle royale between mages and the legendary heroes they summon for the Holy Grail. Muse India added a Hindi dub on YouTube in 2023, giving Indian viewers a free, legal way into a notoriously complex franchise — and this is the right place to start it.",
+    history:
+      "Muse India released the Hindi dub of Fate/Zero on YouTube in 2023. As a prequel, it's the recommended entry point to the Fate timeline, which otherwise branches confusingly across adaptations.",
+    watch:
+      "Watch Fate/Zero in Hindi on Muse India's YouTube channel for free. Use ZyniVerse's watch-order guide if you want to continue into Fate/stay night and the rest of the franchise.",
+    faq: [
+      {
+        q: "Is Fate/Zero dubbed in Hindi?",
+        a: "Yes. Muse India streams a Hindi dub of Fate/Zero on YouTube.",
+      },
+      {
+        q: "Should I start Fate with Fate/Zero?",
+        a: "Fate/Zero is a common and clean starting point as the prequel — but check a watch-order guide before moving to Fate/stay night.",
+      },
+      {
+        q: "Is it free to watch?",
+        a: "Yes — Muse India's Hindi dub is free on YouTube.",
       },
     ],
   },

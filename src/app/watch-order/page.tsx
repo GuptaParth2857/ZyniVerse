@@ -360,6 +360,38 @@ export default function WatchOrderPage() {
         </div>
       )}
 
+      {/* Cross-surface links — funnel watch-order readers into the filler and
+          Indian-dub clusters (and vice versa) so the three hubs reinforce each
+          other in internal linking. */}
+      {!query.trim() && (
+        <div className="mt-16 grid gap-4 sm:grid-cols-3">
+          <Link
+            href="/filler"
+            className="group rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-5 backdrop-blur-md transition-all duration-300 hover:border-[var(--color-magenta)]/30"
+          >
+            <span className="mb-2 block text-2xl">⏭️</span>
+            <p className="font-display font-bold text-[var(--color-ink)] group-hover:text-[var(--color-magenta)] transition-colors">Skip the filler</p>
+            <p className="mt-1 text-xs text-[var(--color-mute)]">Episode-by-episode filler guides, so you only watch what matters.</p>
+          </Link>
+          <Link
+            href="/indian-dubs"
+            className="group rounded-2xl border border-[#ff9933]/30 bg-[#ff9933]/5 p-5 backdrop-blur-md transition-all duration-300 hover:border-[#ff9933]/60"
+          >
+            <span className="mb-2 block text-2xl">🇮🇳</span>
+            <p className="font-display font-bold text-[var(--color-ink)] group-hover:text-[#ff9933] transition-colors">Watch in Hindi</p>
+            <p className="mt-1 text-xs text-[var(--color-mute)]">Hindi, Tamil &amp; Telugu dub details for every major franchise.</p>
+          </Link>
+          <Link
+            href="/hindi-dub-schedule"
+            className="group rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-5 backdrop-blur-md transition-all duration-300 hover:border-[var(--color-cyan)]/30"
+          >
+            <span className="mb-2 block text-2xl">📅</span>
+            <p className="font-display font-bold text-[var(--color-ink)] group-hover:text-[var(--color-cyan)] transition-colors">This week&apos;s dub schedule</p>
+            <p className="mt-1 text-xs text-[var(--color-mute)]">Every Hindi dub airing on Indian TV &amp; streaming, refreshed weekly.</p>
+          </Link>
+        </div>
+      )}
+
       {/* FAQ Section — only when no search */}
       {!query.trim() && (
         <div className="mt-20 border-t border-[var(--color-line)] pt-12">
@@ -422,6 +454,17 @@ const WATCH_ORDERS = [
   { id: "precure", anilistId: 3816, title: "Pretty Cure (Precure)", emoji: "🎀", entries: 3, methods: ["Release Order", "Standalone"], description: "Each season is standalone but follows the same formula. Where to start guide." },
   { id: "katangatari", anilistId: 6595, title: "Katanagatari", emoji: "🗡️", entries: 1, methods: ["Release Order"], description: "12 episodes, 12 swords. A unique linguistic and martial arts adventure." },
   { id: "tiger-and-bunny", anilistId: 10075, title: "Tiger & Bunny", emoji: "🦸", entries: 3, methods: ["Release Order"], description: "Season 1 → Movie 1 → Movie 2 → Season 2. Superhero action comedy." },
+  { id: "jujutsu-kaisen", anilistId: 113415, title: "Jujutsu Kaisen", emoji: "🔮", entries: 3, methods: ["Release Order", "Chronological"], description: "Season 1 → Jujutsu Kaisen 0 → Season 2. The complete order for the Shibuya Incident." },
+  { id: "chainsaw-man", anilistId: 127230, title: "Chainsaw Man", emoji: "🪚", entries: 2, methods: ["Release Order"], description: "Season 1 → The Movie: Reze Arc. Short, brutal, and easy to get into." },
+  { id: "spy-x-family", anilistId: 140960, title: "Spy x Family", emoji: "🕵️", entries: 3, methods: ["Release Order"], description: "Season 1 → Season 2 → CODE: White movie. Mostly episodic, so order is flexible." },
+  { id: "mob-psycho-100", anilistId: 21507, title: "Mob Psycho 100", emoji: "🌀", entries: 4, methods: ["Release Order"], description: "Seasons 1–3 plus the Reigen OVA. One of the best-animated shows ever." },
+  { id: "tokyo-ghoul", anilistId: 20605, title: "Tokyo Ghoul", emoji: "👁️", entries: 4, methods: ["Release Order"], description: "Season 1 → √A → :re → :re 2nd Season. Where the anime diverges from the manga." },
+  { id: "seven-deadly-sins", anilistId: 20789, title: "The Seven Deadly Sins", emoji: "🐗", entries: 6, methods: ["Release Order"], description: "Season 1 → specials → movies → Season 2 → Season 3. Full order with movie placement." },
+  { id: "overlord", anilistId: 20832, title: "Overlord", emoji: "💀", entries: 5, methods: ["Release Order"], description: "Seasons I–IV + The Sacred Kingdom movie. The isekai where the hero is the villain." },
+  { id: "konosuba", anilistId: 21202, title: "KonoSuba", emoji: "💥", entries: 4, methods: ["Release Order"], description: "Seasons 1–3 with the Legend of Crimson movie in the right spot." },
+  { id: "dr-stone", anilistId: 105333, title: "Dr. Stone", emoji: "🧪", entries: 5, methods: ["Release Order"], description: "Five seasons rebuilding civilization, from Stone Wars to Science Future." },
+  { id: "one-punch-man", anilistId: 21087, title: "One Punch Man", emoji: "👊", entries: 3, methods: ["Release Order"], description: "Season 1 → Season 2 → Season 3. The superhero parody that became a phenomenon." },
+  { id: "kaguya-sama", anilistId: 101921, title: "Kaguya-sama: Love Is War", emoji: "💘", entries: 4, methods: ["Release Order"], description: "Seasons 1–3 + The First Kiss movie, which continues straight from Season 3." },
 ];
 
 const FAQ = [

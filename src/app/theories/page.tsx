@@ -3,6 +3,8 @@ import TheoryLeaderboard from "@/components/TheoryLeaderboard";
 import { getTheoryLeaderboard } from "@/lib/theory-leaderboard";
 import { PageTransition } from "@/components/PageTransition";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
 export const revalidate = 900;
 
 export const metadata: Metadata = {
@@ -10,6 +12,7 @@ export const metadata: Metadata = {
   description:
     "The most-voted anime fan theories on ZyniVerse — powered by our community. See which predictions ranked by AI got the most agree/refute votes this week and all-time.",
   keywords: ["anime fan theories", "theory votes", "ZyniVerse community", "predictions leaderboard"],
+  alternates: { canonical: `${BASE_URL}/theories` },
   openGraph: {
     title: "Top Fan Theories by Community Votes | ZyniVerse",
     description: "Community-ranked anime fan theories from the Zyni AI Lab — vote on predictions, see the leaderboard.",

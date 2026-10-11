@@ -4,12 +4,22 @@ import MangaChaptersClient from "./client";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
-export const metadata: Metadata = {
-  title: "Chapters - ZyniVerse",
-  description: "Browse manga chapters and read your favorite manga series online. Complete chapter list with reading order.",
-  alternates: { canonical: `${BASE_URL}/manga/chapters` },
-  robots: { index: true, follow: true },
-};
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const mangaId = parseInt(id, 10);
+  if (isNaN(mangaId)) {
+    return { title: "Chapters - ZyniVerse", robots: { index: false, follow: true } };
+  }
+  // Canonical must point at THIS manga's chapter list, not the non-existent
+  // /manga/chapters page the old hardcoded value produced — that wrong canonical
+  // told Google every chapter list was a duplicate, de-indexing them all.
+  return {
+    title: "Chapters - ZyniVerse",
+    description: "Browse manga chapters and read your favorite manga series online. Complete chapter list with reading order.",
+    alternates: { canonical: `${BASE_URL}/manga/${mangaId}/chapters` },
+    robots: { index: true, follow: true },
+  };
+}
 
 export default async function MangaChaptersPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

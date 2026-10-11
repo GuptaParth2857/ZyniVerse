@@ -39,6 +39,15 @@ export interface SubScores {
   enjoyment?: number | null;
 }
 
+interface BatchMedia {
+  id: number;
+  title: { romaji?: string; english?: string; native?: string };
+  coverImage: { extraLarge?: string; large?: string; color?: string };
+  genres?: string[];
+  type?: string;
+  nextAiringEpisode?: { airingAt: number; episode: number; timeUntilAiring: number } | null;
+}
+
 interface WatchlistCtx {
   items: WatchlistItem[];
   entries: ListEntryData[];
@@ -72,14 +81,57 @@ export function WatchlistProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!session?.user?.id) return;
-    fetch("/api/watchlist")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.items) {
-          setEntries(data.items);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/watchlist");
+        const data = await res.json();
+        const cloudEntries: ListEntryData[] = Array.isArray(data?.items) ? data.items : [];
+        if (cancelled) return;
+        setEntries(cloudEntries);
+        if (cloudEntries.length === 0) return;
+
+        // Cloud entries only store media ids + progress, so fetch display
+        // metadata. Without this a signed-in user's list is invisible on a
+        // browser that has no local cache.
+        const ids = [...new Set(cloudEntries.map((e) => e.mediaId))];
+        const meta = new Map<number, BatchMedia>();
+        for (let i = 0; i < ids.length; i += 50) {
+          const bres = await fetch("/api/anilist/batch", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids: ids.slice(i, i + 50) }),
+          });
+          if (!bres.ok) continue;
+          const bdata = await bres.json();
+          for (const m of (bdata.media || []) as BatchMedia[]) meta.set(m.id, m);
         }
-      })
-      .catch(() => {});
+        if (cancelled) return;
+
+        setItems((prev) => {
+          const map = new Map(prev.map((i) => [i.id, i]));
+          for (const entry of cloudEntries) {
+            const m = meta.get(entry.mediaId);
+            const existing = map.get(entry.mediaId);
+            if (existing) {
+              map.set(entry.mediaId, { ...existing, status: entry.status });
+            } else {
+              map.set(entry.mediaId, {
+                id: entry.mediaId,
+                title: m?.title ?? { romaji: `Anime #${entry.mediaId}` },
+                coverImage: m?.coverImage ?? {},
+                genres: m?.genres,
+                status: entry.status,
+                type: m?.type ?? entry.type,
+                nextAiringEpisode: m?.nextAiringEpisode ?? null,
+              });
+            }
+          }
+          return [...map.values()];
+        });
+      } catch (e) { logError(e); }
+    })();
+    return () => { cancelled = true; };
   }, [session?.user?.id]);
 
   useEffect(() => {

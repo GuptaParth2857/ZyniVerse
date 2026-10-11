@@ -14,3 +14,4 @@ prisma/dev.db
 *.log
 .vercel
 .env*
+!.env.example

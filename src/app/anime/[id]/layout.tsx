@@ -6,15 +6,12 @@ import { getAnimeEditorial } from "@/lib/anime-editorials";
 
 export const revalidate = 86400;
 
-export async function generateStaticParams() {
-  try {
-    const popular = await getPopular(60);
-    return popular.map((m) => ({ id: String(m.id) }));
-  } catch {
-    return [];
-  }
-}
-
+// No generateStaticParams on purpose: prerendering anime pages at build
+// fires `getAnimeDetailFull` (an AniList Media query) per page — 60+ calls on
+// top of every other route — which trips AniList's 30 req/min per-IP limit,
+// then the 429 retry/backoff sleeps push builds from ~3 min to 8-12 min.
+// Pages render on demand and ISR-cache for 24h (`revalidate` above), so SEO
+// stays server-rendered and builds stay fast.
 const getAnimeDetailCached = cache(getAnimeDetailFull);
 
 type PopularMedia = Awaited<ReturnType<typeof getPopular>>[number];

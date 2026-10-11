@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { resolveUserId } from "@/lib/resolve-user";
+import { getMediaBatch } from "@/lib/anilist";
 
 const STATUS_MAP: Record<string, string> = {
   CURRENT: "watching",
@@ -33,6 +34,22 @@ export async function GET(req: NextRequest) {
     },
     orderBy: { mediaId: "asc" },
   });
+
+  // Resolve real titles from AniList (chunked to respect the 50-id batch limit);
+  // fall back to numeric placeholders only if AniList is unreachable.
+  const titleMap = new Map<number, string>();
+  try {
+    const ids = entries.map((e) => e.mediaId);
+    for (let i = 0; i < ids.length; i += 50) {
+      const media = await getMediaBatch(ids.slice(i, i + 50));
+      for (const m of media) {
+        titleMap.set(m.id, m.title?.english || m.title?.romaji || `Anime #${m.id}`);
+      }
+    }
+  } catch {
+    // ignore, titles fall back to numeric ids below
+  }
+  const titleFor = (id: number) => titleMap.get(id) || `Anime #${id}`;
 
   if (format === "xml") {
     const fmtDate = (d: Date | null | undefined) => {
@@ -71,7 +88,7 @@ ${rows}
   if (format === "json") {
     const data = entries.map((e) => ({
       media_id: e.mediaId,
-      title: `Anime #${e.mediaId}`,
+      title: titleFor(e.mediaId),
       type: e.type,
       status: STATUS_MAP[e.status] || e.status.toLowerCase(),
       episodes_watched: e.progress,
@@ -92,7 +109,7 @@ ${rows}
   // Default: CSV
   const header = "anime_id,title,status,episodes_watched,total_episodes,score,start_date,finish_date";
   const rows = entries.map((e) => {
-    const title = `Anime #${e.mediaId}`;
+    const title = titleFor(e.mediaId);
     const status = STATUS_MAP[e.status] || e.status.toLowerCase();
     const start = e.startedAt?.toISOString().split("T")[0] || "";
     const finish = e.completedAt?.toISOString().split("T")[0] || "";

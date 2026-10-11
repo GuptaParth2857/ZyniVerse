@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
   }
 
   const watchingEntries = await prisma.listEntry.findMany({
-    where: { userId, status: "WATCHING" },
+    where: { userId, status: "CURRENT" },
     select: { mediaId: true },
   });
 

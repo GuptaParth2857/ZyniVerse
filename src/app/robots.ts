@@ -82,12 +82,22 @@ export default function robots(): MetadataRoute.Robots {
           "/activity",
           "/moments",
           "/forum/",
+          // Search results with query params (sort/status/season/genre) form
+          // an unbounded URL space. Already noindexed; this stops Google from
+          // crawling them at all and re-discovering the www/http variants.
+          "/search",
         ],
       },
+      // AI crawlers / training scrapers (the AI_BOTS list above): opted out of
+      // scraping the whole site — including Google's AI-training pipeline via
+      // Google-Extended — while the wildcard rule keeps the site fully
+      // indexable for search engines.
+      { userAgent: AI_BOTS, disallow: "/" },
     ],
-    // Only the real sitemap is advertised. An empty news-sitemap.xml used to be
-    // listed here too; Google fetched it, found zero <url> entries and logged a
-    // "sitemap could not be read" warning for the whole file.
+    // Main sitemap covers all public pages, including /news, /blog and
+    // /news/desk/*. The dedicated news-sitemap was removed: an empty news
+    // sitemap only produced a Search Console error with no indexing benefit
+    // for a non-news publisher.
     sitemap: [`${BASE_URL}/sitemap.xml`],
   };
 }

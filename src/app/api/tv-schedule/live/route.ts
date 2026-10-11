@@ -88,7 +88,7 @@ export async function GET() {
     const epgChannelIds = [
       "cn", "sony_yay", "hungama", "super_hungama", "pogo", "nick",
       "nick_jr", "sonic", "discovery_kids", "disney_channel",
-      "disney_junior", "epic_kids",
+      "disney_junior", "epic_kids", "animax",
     ];
 
     let epgRows: { channelId: string; data: unknown; updatedAt: Date }[] = [];

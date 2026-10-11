@@ -62,7 +62,7 @@ export default async function PublicListHubPage({ params }: PageProps) {
     .filter((e) => e.score != null)
     .map((e) => e.score as number);
   const animeMean = scored.length ? (scored.reduce((a, b) => a + b, 0) / scored.length).toFixed(1) : null;
-  const animeWatching = animeEntries.filter((e) => e.status === "WATCHING").length;
+  const animeWatching = animeEntries.filter((e) => e.status === "CURRENT").length;
 
   const mangaCount = mangaEntries.length;
   const mangaScored = mangaEntries.filter((e) => e.score != null);

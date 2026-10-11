@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { DUBBED_ANIME_STATIC } from "@/lib/data/dubbed-static";
+import { getDubbedEntries } from "@/lib/editorial";
 export const dynamic = "force-dynamic";
 
 interface DubAnime {
@@ -22,7 +22,9 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const language = searchParams.get("language") || "all";
 
-  const allDubs: DubAnime[] = DUBBED_ANIME_STATIC.map((d) => ({
+  const { entries: dubbedEntries, lastUpdated: dubbedUpdatedAt } = await getDubbedEntries();
+
+  const allDubs: DubAnime[] = dubbedEntries.map((d) => ({
     mal_id: d.mal_id,
     title: d.title,
     displayTitle: d.displayTitle,
@@ -53,7 +55,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     success: true,
-    source: "static",
+    source: dubbedUpdatedAt ? "editorial" : "bundled",
     counts: {
       total: filtered.length,
       hindi: allDubs.filter((d) => d.hasHindi).length,

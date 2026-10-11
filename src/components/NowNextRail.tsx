@@ -49,9 +49,9 @@ function formatTime(t: string): string {
 }
 
 function ChannelLogo({ channelId, size = 36 }: { channelId: string; size?: number }) {
+  const [imgError, setImgError] = useState(false);
   const ch = TV_CHANNELS[channelId];
   if (!ch) return null;
-  const [imgError, setImgError] = useState(false);
   if (!ch.logoUrl || imgError) {
     return (
       <span
@@ -81,10 +81,13 @@ function ChannelLogo({ channelId, size = 36 }: { channelId: string; size?: numbe
 }
 
 function RailRow({ channel, today, nowMinutes }: { channel: RailChannel; today: string; nowMinutes: number }) {
+  // `days` — the real array ref or undefined — is the memo dependency, never a
+  // fresh fallback: `days || []` inside the memo keeps the dep stable when the
+  // schedule has no entry for today (react-hooks/exhaustive-deps).
+  const days = channel.days?.[today];
+  const result = useMemo(() => computeNowNext(days ?? [], nowMinutes), [days, nowMinutes]);
   const ch = TV_CHANNELS[channel.channelId];
   if (!ch) return null;
-  const slots = channel.days?.[today] || [];
-  const result = useMemo(() => computeNowNext(slots, nowMinutes), [slots, nowMinutes]);
 
   const now = result.now;
   const next = result.next;
@@ -199,10 +202,7 @@ export default function NowNextRail({ data }: { data: RailData | null }) {
   const rows = useMemo(() => {
     if (!data) return [];
     return [...data.channels]
-      .filter((ch) => {
-        const res = computeNowNext(ch.days?.[today] || [], nowMinutes);
-        return Boolean(ch.days?.[today]?.length);
-      })
+      .filter((ch) => Boolean(ch.days?.[today]?.length))
       .sort((a, b) => {
         const aNow = computeNowNext(a.days?.[today] || [], nowMinutes).now ? 1 : 0;
         const bNow = computeNowNext(b.days?.[today] || [], nowMinutes).now ? 1 : 0;

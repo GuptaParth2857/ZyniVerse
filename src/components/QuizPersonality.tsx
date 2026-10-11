@@ -1,7 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { QUESTIONS, PERSONALITIES, computePersonality, shareLinkOf, ogUrlOf, type Personality } from "@/lib/quiz-personality";
+import { QUESTIONS, computePersonality, shareLinkOf, type Personality } from "@/lib/quiz-personality";
+
+function shareTextOf(p: Personality, name: string) {
+  return `${name.trim() ? `${name.trim()}: ` : ""}Mera anime personality: ${p.name} (${p.anime}) ${p.emoji} — ${p.line} 🤩`;
+}
 
 export default function QuizPersonality({ initialResult }: { initialResult?: Personality }) {
   const [step, setStep] = useState(0);
@@ -33,7 +37,7 @@ export default function QuizPersonality({ initialResult }: { initialResult?: Per
   async function copy() {
     try {
       await navigator.clipboard.writeText(
-        `${result ? shareTextOf(result) : ""}\n\n${shareLinkOf(result!.key, name)}`
+        `${result ? shareTextOf(result, name) : ""}\n\n${shareLinkOf(result!.key, name)}`
       );
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
@@ -42,13 +46,9 @@ export default function QuizPersonality({ initialResult }: { initialResult?: Per
     }
   }
 
-  function shareTextOf(p: Personality) {
-    return `${name.trim() ? `${name.trim()}: ` : ""}Mera anime personality: ${p.name} (${p.anime}) ${p.emoji} — ${p.line} 🤩`;
-  }
-
   const whatsapp = useMemo(() => {
     if (!result) return "";
-    const txt = `${shareTextOf(result)}\n\n${shareLinkOf(result.key, name)}`;
+    const txt = `${shareTextOf(result, name)}\n\n${shareLinkOf(result.key, name)}`;
     return `https://wa.me/?text=${encodeURIComponent(txt)}`;
   }, [result, name]);
 
@@ -100,7 +100,7 @@ export default function QuizPersonality({ initialResult }: { initialResult?: Per
                 WhatsApp pe share
               </a>
               <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTextOf(result))}&url=${encodeURIComponent(shareLinkOf(result.key, name))}`}
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTextOf(result, name))}&url=${encodeURIComponent(shareLinkOf(result.key, name))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 px-4 py-2 text-xs font-bold text-cyan-300 hover:bg-cyan-400/15 transition-colors"

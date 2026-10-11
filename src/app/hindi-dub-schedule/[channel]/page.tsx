@@ -3,14 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   CHANNEL_SLUGS,
-  entriesForChannel,
+  getLiveDubWeekly,
   getThisWeekRange,
   type DubChannel,
+  type LiveDubEntry,
 } from "@/lib/dub-weekly";
 import { ScheduleTable, ChannelNav } from "@/components/dub-weekly/ScheduleTable";
 import NativeBannerAd from "@/components/NativeBannerAd";
 
-export const revalidate = 3600;
+export const revalidate = 1800;
 export const dynamicParams = false;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
@@ -39,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${ch} Hindi Dub Schedule This Week — ${week.label} | ZyniVerse`,
     description:
-      `${ch} new Hindi, Tamil & Telugu dub releases this week (${week.label}) with IST times. Every episode slot, batch and schedule update for ${ch} in India.`,
+      `${ch} new Hindi, Tamil & Telugu dub releases this week (${week.label}) with IST times. Every upload and schedule update for ${ch} in India.`,
     keywords: [
       `${ch.toLowerCase()} hindi dub schedule`,
       `${ch.toLowerCase()} schedule`,
@@ -57,7 +58,12 @@ export default async function HindiDubChannelPage({ params }: Props) {
   const ch = channelFromSlug(channel);
   if (!ch) notFound();
   const week = getThisWeekRange();
-  const entries = entriesForChannel(ch);
+  let entries: LiveDubEntry[] = [];
+  try {
+    entries = await getLiveDubWeekly(ch);
+  } catch {
+    // Feed outage — render the page honestly with an empty state instead of failing.
+  }
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -97,9 +103,9 @@ export default async function HindiDubChannelPage({ params }: Props) {
             </h1>
           </div>
           <p className="mt-3 max-w-2xl text-[var(--color-mute)] leading-relaxed">
-            Every {chName} Hindi, Tamil &amp; Telugu dub release this week{" "}
-            <strong className="text-[var(--color-ink)]">({week.label})</strong> — daily slots,
-            batches and what&apos;s arriving next.
+            Every {chName} Hindi, Tamil &amp; Telugu dub upload this week{" "}
+            <strong className="text-[var(--color-ink)]">({week.label})</strong> — real publish times,
+            straight from the official channel feed.
           </p>
         </div>
 
@@ -107,15 +113,30 @@ export default async function HindiDubChannelPage({ params }: Props) {
 
         <div className="mb-10">
           <h2 className="font-display text-lg font-bold mb-4">This week on {chName}</h2>
-          <ScheduleTable entries={entries} />
+          {ch === "Crunchyroll" ? (
+            <p className="rounded-xl neon-rgb-border bg-[var(--color-panel)] p-6 text-sm text-[var(--color-mute)]">
+              Crunchyroll India does not publish a machine-readable dub schedule, so we don&apos;t show
+              one here. Check{" "}
+              <a
+                href="https://www.crunchyroll.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--color-cyan)] hover:underline"
+              >
+                crunchyroll.com
+              </a>{" "}
+              for the latest regional-dub releases.
+            </p>
+          ) : (
+            <ScheduleTable entries={entries} />
+          )}
         </div>
 
         <section className="mb-10 rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6 text-center">
           <p className="font-display text-lg font-bold">See the full India dub universe</p>
           <p className="mt-2 text-sm text-[var(--color-mute)]">
             Every Hindi, Tamil &amp; Telugu dub with countdowns and episode counts —{" "}
-            <Link href="/indian-dubs" className="text-[var(--color-cyan)] hover:underline">Indian Dub Meter</Link>
-            {" "}· <Link href="/news/desk/iruma-kun-season-3-hindi-dub-muse-india" className="text-[var(--color-cyan)] hover:underline">Latest dub news</Link>
+            <Link href="/indian-dubs" className="text-[var(--color-cyan)] hover:underline">Indian Dub Meter</Link>.
           </p>
         </section>
 

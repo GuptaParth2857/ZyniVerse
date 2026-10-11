@@ -3161,3 +3161,24 @@ model ContentContestVote {
   @@unique([entryId, userId])
   @@index([contestId])
 }
+
+/// Editorial content that used to be hardcoded in `src/lib/*.ts`. Storing it in
+/// the database lets maintainers add, edit or unpublish an entry without a
+/// redeploy. `kind` groups entries (e.g. `"dubbed"`, `"theatrical"`), `slug` is
+/// the stable key and `data` holds the serialised entry (typed on the read
+/// side by `src/lib/editorial.ts`). Reads fall back to the bundled static
+/// arrays whenever the table is empty, so the site never regresses to empty.
+model EditorialEntry {
+  id          String   @id @default(cuid())
+  kind        String
+  slug        String
+  title       String
+  data        Json
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([kind, slug])
+  @@index([kind, isPublished, sortOrder])
+}

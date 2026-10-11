@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
-import { getPopular, getMangaPopular, getPopularCharacters } from "@/lib/anilist";
+import { getPopular } from "@/lib/anilist";
 import { getFillerData } from "@/lib/filler";
 import { SHUT_DOWN_SITES } from "@/lib/data/dead-site-alternatives";
 import { INDIAN_DUB_GUIDES } from "@/lib/indian-dub-guides";
@@ -136,19 +136,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // budget stays on editorial/substantive pages; they're still discoverable
   // via internal links).
 
-  // Dynamic: Anime filler pages (high SEO value)
-  const fillerAnimeIds = [
-    20, 21, 30, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
-    1100, 1200, 1300, 1400, 1500, 1535, 1544, 1575, 1600, 1649, 1700,
-    1735, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2472, 2600, 2700,
-    2900, 3000, 3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900,
-    4000, 4100, 4200, 4300, 4400, 4500, 4600, 4700, 4800, 4900, 5000,
-  ];
-  const fillerPages: MetadataRoute.Sitemap = fillerAnimeIds.map((id) => ({
-    url: `${BASE_URL}/anime/${id}/filler`,
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  }));
+  // NOTE: the old hardcoded `fillerAnimeIds` array (/anime/{id}/filler for 57
+  // arbitrary AniList ids) was removed. Most of those ids have no filler data,
+  // so they returned 404 or a near-empty template — exactly the junk that feeds
+  // Search Console's "Not found (404)" and "Discovered - currently not indexed".
+  // Real filler guides are submitted by slug below from live filler data.
 
   // Dynamic: Per-anime long-tail filler guide pages (static, high SEO value).
   // Only the richest guides (most episodes) are submitted so the crawl budget
@@ -182,17 +174,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  // Dynamic: Popular anime detail pages (high SEO value)
-  let popularAnimePages: MetadataRoute.Sitemap = [];
+  // Anime/manga detail pages are intentionally NOT submitted. They are thin
+  // AniList/MAL mirrors (synopsis, cover, stats duplicated across the web) and
+  // made up the biggest chunk of "Crawled/Discovered - currently not indexed".
+  // They stay fully reachable via internal links, search and navigation — we
+  // just stop spending crawl budget advertising them to Google. The
+  // /watch/{id} guides below ARE unique (Indian streaming + Hindi dub info)
+  // and worth submitting. This keeps the sitemap focused on pages that can
+  // actually rank: filler guides, watch orders, dub guides, wiki and tools.
+
+  // Dynamic: Popular anime "where to watch in India" guides (unique content)
   let watchGuidePages: MetadataRoute.Sitemap = [];
   try {
     const popular = await getPopular(100);
-    popularAnimePages = popular.map((m) => ({
-      url: `${BASE_URL}/anime/${m.id}`,
-      lastModified: stableLastModified(m.startDate),
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    }));
     watchGuidePages = popular.map((m) => ({
       url: `${BASE_URL}/watch/${m.id}`,
       lastModified: stableLastModified(m.startDate),
@@ -201,28 +195,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch (e) { logError(e); }
 
-  // Dynamic: Popular manga detail pages
-  let popularMangaPages: MetadataRoute.Sitemap = [];
-  try {
-    const manga = await getMangaPopular(100);
-    popularMangaPages = manga.map((m) => ({
-      url: `${BASE_URL}/manga/${m.id}`,
-      lastModified: stableLastModified(m.startDate),
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    }));
-  } catch (e) { logError(e); }
-
-  // Dynamic: Popular character pages
-  let popularCharacterPages: MetadataRoute.Sitemap = [];
-  try {
-    const { characters } = await getPopularCharacters(1, 50);
-    popularCharacterPages = characters.map((c) => ({
-      url: `${BASE_URL}/character/${c.id}`,
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
-    }));
-  } catch (e) { logError(e); }
+  // Character pages are intentionally NOT submitted: their content is a thin
+  // AniList mirror and their metadata is now `noindex` (see
+  // src/app/character/[id]/layout.tsx). Submitting noindex URLs to Google
+  // produces "Submitted URL marked noindex" noise in Search Console.
 
   // Dynamic: Shut-down anime site alternatives (high SEO value)
   const alternativePages: MetadataRoute.Sitemap = [
@@ -244,6 +220,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "ghost-in-the-shell", "gintama", "conan", "digimon", "pokemon",
     "initial-d", "symphogear", "macross", "yu-yu-hakusho", "slam-dunk",
     "precure", "katangatari", "tiger-and-bunny",
+    "jujutsu-kaisen", "chainsaw-man", "spy-x-family", "mob-psycho-100",
+    "tokyo-ghoul", "seven-deadly-sins", "overlord", "konosuba",
+    "dr-stone", "one-punch-man", "kaguya-sama",
   ];
   const watchOrderPages: MetadataRoute.Sitemap = watchOrderSlugs.map((slug) => ({
     url: `${BASE_URL}/watch-order/${slug}`,
@@ -294,17 +273,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...wikiPages,
     ...wikiSeedPages,
     ...watchOrderPages,
-    ...fillerPages,
     ...fillerSlugPages,
     ...newsPages,
     ...alternativePages,
     ...indianDubGuidePages,
     ...mangaReleasePages,
     ...newsDeskPages,
-    ...popularAnimePages,
     ...watchGuidePages,
-    ...popularMangaPages,
-    ...popularCharacterPages,
   ];
 
   const seen = new Set<string>();

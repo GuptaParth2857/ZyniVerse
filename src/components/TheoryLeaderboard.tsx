@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 interface Entry {
@@ -86,7 +87,7 @@ export default function TheoryLeaderboard({ initial, initialPeriod }: { initial:
               >
                 <span className="w-8 shrink-0 text-center text-lg">{MEDALS[i] ?? `${i + 1}`}</span>
                 {e.cover ? (
-                  <img src={e.cover} alt={e.title} loading="lazy" className="h-16 w-11 shrink-0 rounded-md object-cover" />
+                  <Image src={e.cover} alt={e.title} width={44} height={64} loading="lazy" className="h-16 w-11 shrink-0 rounded-md object-cover" />
                 ) : (
                   <span className="flex h-16 w-11 shrink-0 items-center justify-center rounded-md bg-white/10 text-xs text-white/40">?</span>
                 )}

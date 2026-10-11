@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import VoiceLineGallery from "@/components/VoiceLineGallery";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
 export const metadata: Metadata = {
   title: "Anime Quotes — Iconic Voice Lines & Dialogues | ZyniVerse",
   description:
     "Browse iconic anime quotes and voice lines. The best dialogues from Naruto, One Piece, Attack on Titan, and more — including Hindi dub lines.",
+  alternates: { canonical: `${BASE_URL}/voice-lines` },
   openGraph: {
     title: "Anime Quotes — Voice Lines & Dialogues | ZyniVerse",
     description:

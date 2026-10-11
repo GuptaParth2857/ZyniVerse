@@ -70,10 +70,10 @@ export default function Hero3D({ items, stats }: { items: Media[]; stats?: HeroS
         {/* Left content */}
         <div className="max-w-2xl">
           <span className="font-mono text-xs uppercase tracking-[0.3em] text-[var(--color-cyan)]">
-            {hero?.type === "MANGA" ? "// Manga Spotlight" : "// Everything an Anime Fan Needs — In One Place"}
+            {hero?.type === "MANGA" ? "// Manga Spotlight" : "// India's Anime Hub — Filler, Dubs & Watch Orders"}
           </span>
           <p className="mt-3 max-w-lg text-sm leading-relaxed text-[var(--color-mute)]">
-            Skip Filler. Find the Right Watch Order. Track Indian TV &amp; Dubs. All in One Place.
+            Track Hindi, Tamil &amp; Telugu dubs, skip filler in 200+ anime, and find the right watch order — all in one place.
           </p>
 
           <div className="min-h-[300px] sm:min-h-[360px] lg:min-h-[420px]">
@@ -112,11 +112,16 @@ export default function Hero3D({ items, stats }: { items: Media[]; stats?: HeroS
               </div>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <Link href="/filler"
+                <Link href="/hindi-dub-schedule"
                   className="group relative inline-flex items-center gap-2 rounded-full bg-[var(--color-magenta)] px-6 py-3 text-sm font-bold text-black transition-transform hover:scale-105 overflow-hidden"
                 >
-                  <span className="relative z-10">Skip Filler — Watch Only Canon</span>
+                  <span className="relative z-10">🇮🇳 This Week&apos;s Hindi Dubs</span>
                   <span className="relative z-10 group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+                <Link href="/filler"
+                  className="rounded-full border border-[var(--color-line)] px-6 py-3 text-sm font-semibold text-[var(--color-ink)] hover:border-[var(--color-magenta)] hover:bg-[var(--color-magenta)]/5 transition-all"
+                >
+                  Skip Filler →
                 </Link>
                 {hero && (
                   <Link href={hero.type === "MANGA" ? `/manga/${hero.id}` : `/anime/${hero.id}`}

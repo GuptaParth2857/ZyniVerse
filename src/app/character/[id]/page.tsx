@@ -1,20 +1,15 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { getCharacter, getPopularCharacters, AniListUnavailableError } from "@/lib/anilist";
+import { getCharacter, AniListUnavailableError } from "@/lib/anilist";
 import CharacterDetailClient from "./character-client";
 import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 export const revalidate = 172800;
 
-export async function generateStaticParams() {
-  try {
-    const { characters } = await getPopularCharacters(1, 40);
-    return characters.map((c) => ({ id: String(c.id) }));
-  } catch {
-    return [];
-  }
-}
-
+// No generateStaticParams on purpose: prerendering character pages at build
+// fires one AniList Character query per page, feeding the build-time rate
+// limit that pushed builds from ~3 min to 8-12 min. Pages render on demand
+// and ISR-cache (`revalidate` above).
 const getCharacterCached = cache(getCharacter);
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {

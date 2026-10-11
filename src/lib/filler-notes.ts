@@ -152,6 +152,242 @@ const NOTES: Record<string, FillerShowNotes> = {
       { range: "Recap episodes", name: "Best-of recaps", verdict: "skip", why: "The handful of best-of compilation episodes. Harmless to skip." },
     ],
   },
+  "boruto-naruto-next-generations": {
+    intro:
+      "Boruto is the most filler-heavy Naruto series of all: only a minority of its 290+ episodes adapt material from the manga, and huge stretches are 'anime canon' written for the show. Unlike Naruto and Shippuden there is no clean canon spine to follow, so use the episode list above and treat most non-manga blocks as optional — excellent if you want more time with the new gen, skippable if you want the main plot.",
+    arcs: [
+      { range: "See list above", name: "Anime-canon / filler blocks", verdict: "optional", why: "Most of Boruto is anime-original. The manga-adapted arcs matter; the rest can be skipped without losing the main story." },
+    ],
+  },
+  "dragon-ball": {
+    intro:
+      "The original Dragon Ball is overwhelmingly faithful to Akira Toriyama's manga — the filler is a scatter of short gaps and training episodes rather than whole arcs. You can watch it start to finish and only lose a handful of episodes.",
+    arcs: [
+      { range: "See list above", name: "Scattered one-offs", verdict: "optional", why: "A handful of standalone episodes pad between story beats. Harmless to skip, harmless to keep." },
+    ],
+  },
+  "dragon-ball-gt": {
+    intro:
+      "Dragon Ball GT is entirely anime-original — it has no manga source at all, so 'filler versus canon' doesn't apply in the usual way. Either you watch the whole thing as its own self-contained sequel or you skip it completely. Toriyama's actual continuation is Super, not GT.",
+    arcs: [],
+  },
+  "dragon-ball-z-kai": {
+    intro:
+      "Dragon Ball Z Kai is the recut of DBZ built specifically to remove filler, so there is virtually nothing to skip — except a small number of episodes that are unique to Kai (mostly bridging or recap material added during production). Watch it through and you already have the tightest possible Z experience.",
+    arcs: [
+      { range: "See list above", name: "Kai-only additions", verdict: "optional", why: "A few episodes are unique to Kai rather than the manga or original anime. Safe to skip." },
+    ],
+  },
+  "inuyasha": {
+    intro:
+      "Inuyasha runs 167 episodes, and a real chunk is anime-original — standalone demon hunts that don't advance the search for the Shikon jewel. The core Inuyasha/Kikyo/Naraku story is intact without them, though many of the filler monster-of-the-week episodes are fun on their own.",
+    arcs: [
+      { range: "See list above", name: "Anime-original hunts", verdict: "optional", why: "Standalone episodes written for the anime. Watch the ones that sound fun; the manga plot does not depend on any of them." },
+    ],
+  },
+  "yu-gi-oh-duel-monsters": {
+    intro:
+      "Yu-Gi-Oh! Duel Monsters mainly adapts the manga, but three lengthy arcs were written for the anime to let the manga get ahead. All three sit fully outside the main Battle City → Pharaoh's Memory storyline, so you can skip straight through and still follow everything that matters.",
+    arcs: [
+      { range: "145-184", name: "Waking the Dragons (Doma)", verdict: "skip", why: "A giant anime-original arc about the Doma organization and the Legendary Dragons. Entirely separate from the manga plot." },
+      { range: "185-199", name: "KC Grand Championship", verdict: "skip", why: "A filler tournament arc inserted before the final story stretch. Low stakes, no lasting consequences." },
+      { range: "106-121", name: "Virtual World", verdict: "optional", why: "A virtual-reality detour between story beats. Some fans enjoy the duels; none of it is required." },
+    ],
+  },
+  "d-gray-man": {
+    intro:
+      "D.Gray-man follows the manga closely for its first run and only drifts at the very end, where the anime catches up and writes its own resolution. Everything before that tail is worth watching in order.",
+    arcs: [
+      { range: "see list above", name: "Anime-original ending", verdict: "optional", why: "The final stretch departs from the manga. Watch it for closure, or continue with the manga instead." },
+    ],
+  },
+  "soul-eater": {
+    intro:
+      "Soul Eater starts faithful to the manga and then splits off into a completely anime-original final act once it catches up to the source. The divergence point is around episode 36 — before that, watch everything.",
+    arcs: [
+      { range: "36-51", name: "Anime-original finale", verdict: "optional", why: "From roughly episode 36 the anime writes its own ending, which differs sharply from the manga. Watch for the anime's take or switch to the manga." },
+    ],
+  },
+  "death-note": {
+    intro:
+      "Death Note has no filler at all — all 37 episodes drive Light and L's cat-and-mouse story forward. Watch every episode; there is nothing to skip.",
+    arcs: [],
+  },
+  "claymore": {
+    intro:
+      "Claymore is a tight adaptation for most of its run, then invents an anime-original ending because the manga was still ongoing. Only the last few episodes leave the source material behind.",
+    arcs: [
+      { range: "24-26", name: "Anime-original ending", verdict: "optional", why: "The finale departs from the manga. Watch it to finish the anime, or read the manga for the canon conclusion." },
+    ],
+  },
+  "trigun": {
+    intro:
+      "Trigun is a complete, self-contained adaptation rather than a panel-for-panel manga retelling, so 'filler' isn't really the right frame — there are no throwaway arcs to skip. The 1998 series tells its own version of Vash's story from start to finish.",
+    arcs: [],
+  },
+  "gurren-lagann": {
+    intro:
+      "Tengen Toppa Gurren Lagann is an original anime with essentially no filler — with one exception. Episode 16 is a clip-show recap, and it is the only episode most guides tell you to skip.",
+    arcs: [
+      { range: "16", name: "Recap episode", verdict: "skip", why: "A mid-series clip show that reuses footage. Skip it and continue straight into the second half." },
+    ],
+  },
+  "akame-ga-kill": {
+    intro:
+      "Akame ga Kill! adapts the manga for most of its run, then races to an anime-original ending once it overtakes the source. There's no filler padding along the way — only that final divergence.",
+    arcs: [
+      { range: "see list above", name: "Anime-original ending", verdict: "optional", why: "The last stretch departs from the manga and kills off characters differently. Watch the anime's version or read the manga." },
+    ],
+  },
+  "vinland-saga": {
+    intro:
+      "Vinland Saga is a faithful, filler-free adaptation — every episode serves Thorfinn's arc. There is nothing to skip in either season.",
+    arcs: [],
+  },
+  "berserk": {
+    intro:
+      "Berserk's 'filler' answer depends which version you mean. The 1997 anime is largely faithful to the Golden Age arc and adds very little, while later adaptations re-tell or skip material. There are no disposable filler arcs in the 1997 run.",
+    arcs: [],
+  },
+  "nanatsu-no-taizai": {
+    intro:
+      "The Seven Deadly Sins adapts the manga across its seasons, but the anime's later stretches are notorious for anime-original padding and a clip-show recap. Follow the episode list above; the recap specials are pure skip.",
+    arcs: [
+      { range: "see list above", name: "Recap specials", verdict: "skip", why: "The series includes summary/recap specials between seasons. They add nothing new." },
+    ],
+  },
+  "blue-exorcist": {
+    intro:
+      "Blue Exorcist follows the manga at first, then branches into a fully anime-original second half before the manga's own story was fully adapted elsewhere. The divergence begins around episode 16.",
+    arcs: [
+      { range: "16-25", name: "Anime-original finale", verdict: "optional", why: "The last chunk invents its own plotline. Watch it for the anime's ending or pick up the manga for the real continuation." },
+    ],
+  },
+  "black-butler": {
+    intro:
+      "Black Butler's first season tracks the manga, then the show does something unusual: its entire second season is anime-original. Treat everything after the original run's close as its own invented story.",
+    arcs: [
+      { range: "25-36", name: "Anime-original second season", verdict: "skip", why: "Not from the manga and later contradicted by the canon continuations. Safely skipped unless you specifically want the invented arc." },
+    ],
+  },
+  "a-certain-scientific-railgun": {
+    intro:
+      "A Certain Scientific Railgun mixes manga arcs with some anime-original episodes, but its most famous arcs are adaptations. There are no long throwaway filler sagas — the recommendations above cover the isolated ones.",
+    arcs: [
+      { range: "see list above", name: "Anime-original episodes", verdict: "optional", why: "A small number of standalone episodes written for the anime. Skippable without breaking the arc flow." },
+    ],
+  },
+  "fate-zero": {
+    intro:
+      "Fate/Zero is a tightly plotted prequel with no filler whatsoever — all 25 episodes advance the Holy Grail War and its tragic end. Watch every episode.",
+    arcs: [],
+  },
+  "clannad": {
+    intro:
+      "Clannad is a faithful visual-novel adaptation and has essentially no filler in its first season — every route feeds into the emotional payoff. Watch it straight through, then After Story.",
+    arcs: [],
+  },
+  "clannad-after-story": {
+    intro:
+      "Clannad: After Story has no filler — it is the emotional core the first season sets up, and every episode matters. Watch it complete.",
+    arcs: [],
+  },
+  "great-teacher-onizuka": {
+    intro:
+      "Great Teacher Onizuka (GTO) is mostly faithful to the manga with a handful of anime-original episodes. The comedy-and-redemption structure holds together without them, but none of them are a chore.",
+    arcs: [
+      { range: "see list above", name: "Anime-original episodes", verdict: "optional", why: "A few stand-alone episodes written for the anime. Watch or skip freely." },
+    ],
+  },
+  "time-i-got-reincarnated-slime": {
+    intro:
+      "That Time I Got Reincarnated as a Slime is largely faithful and filler-free, with the notable exception of recap episodes that summarise the story so far. Those recaps are the main thing to skip.",
+    arcs: [
+      { range: "Recap episodes", name: "Season recaps", verdict: "skip", why: "Summary/clip episodes between cours that repeat earlier footage. Skip and continue the story." },
+    ],
+  },
+  "rising-shield-hero": {
+    intro:
+      "The Rising of the Shield Hero is a straightforward, filler-free adaptation — and the recap episodes are the only padding. Watch the story arcs and skip the summaries.",
+    arcs: [
+      { range: "Recap episodes", name: "Recap specials", verdict: "skip", why: "Clip-show summaries that add nothing. Skip them." },
+    ],
+  },
+  "mob-psycho-100": {
+    intro:
+      "Mob Psycho 100 has no filler to speak of — it's a punchy, tightly structured adaptation. Watch all of it.",
+    arcs: [],
+  },
+  "kaiju-no8": {
+    intro:
+      "Kaiju No. 8 is a modern, tight adaptation with no filler episodes — it moves fast and every episode advances the story. Watch through.",
+    arcs: [],
+  },
+  "made-abyss": {
+    intro:
+      "Made in Abyss has no filler — every episode deepens the descent and the dread. Watch everything.",
+    arcs: [],
+  },
+  "goblin-slayer": {
+    intro:
+      "Goblin Slayer is a lean, filler-free adaptation. There are no episodes to skip.",
+    arcs: [],
+  },
+  "seraph-end": {
+    intro:
+      "Seraph of the End adapts the manga fairly directly, though its second season uses more anime-original material to create a closing point. There are no disposable filler arcs early on.",
+    arcs: [
+      { range: "see list above", name: "Anime-original back half", verdict: "optional", why: "Season 2 leans on original material and an invented conclusion. Watch it for closure or continue with the manga." },
+    ],
+  },
+  "demon-slayer-fifth-season": {
+    intro:
+      "Demon Slayer is famously filler-free — a glossy, direct adaptation of the manga. There is nothing to skip across its seasons.",
+    arcs: [],
+  },
+  "spy-x-family-third-season": {
+    intro:
+      "Spy x Family is episodic by design, so 'filler' barely applies — the standalone family-comedy chapters are the point. There are no throwaway arcs to skip.",
+    arcs: [],
+  },
+  "promised-neverland-second-season": {
+    intro:
+      "The Promised Neverland's second season is the cautionary tale: it skips large chunks of the manga and rushes to an anime-original ending. If you want the true story, read the manga after season 1.",
+    arcs: [
+      { range: "Season 2", name: "Compressed / anime-original", verdict: "optional", why: "Season 2 cuts major arcs and invents an ending. Watch only as a companion; the manga is the real continuation." },
+    ],
+  },
+  "another": {
+    intro:
+      "Another is a self-contained 12-episode horror with no filler — every episode tightens the mystery. Watch all of it.",
+    arcs: [],
+  },
+  "revolutionary-girl-utena": {
+    intro:
+      "Revolutionary Girl Utena is a deliberate, symbol-heavy classic with recap episodes rather than filler — the only thing most viewers skip is the mid-series recap.",
+    arcs: [
+      { range: "Recap episode", name: "Mid-series recap", verdict: "skip", why: "A single recap episode that reuses footage. Skip it and continue." },
+    ],
+  },
+  "cardcaptor-sakura": {
+    intro:
+      "Cardcaptor Sakura is a magical-girl show where episodic card-hunting is the format, so anime-original episodes feel natural rather than like padding. Half the charm is in those stand-alone episodes.",
+    arcs: [
+      { range: "see list above", name: "Anime-original episodes", verdict: "optional", why: "Most are charming, self-contained card hunts. Watch for fun; the main romance arc doesn't depend on them." },
+    ],
+  },
+  "your-lie-april": {
+    intro:
+      "Your Lie in April has no filler — it's a compact, emotionally driven story. Watch the whole thing.",
+    arcs: [],
+  },
+  "fatestay-night": {
+    intro:
+      "Fate/stay night has several adaptation versions, and 'filler' depends which one you're watching — the 2006 Studio Deen series mixes routes and adds its own content, while later versions adapt more directly. Check which entry this list refers to before skipping.",
+    arcs: [
+      { range: "see list above", name: "Mixed-route additions", verdict: "optional", why: "The 2006 adaptation blends story routes and adds original material. It's optional viewing next to Fate/Zero and UBW." },
+    ],
+  },
 };
 
 export function getFillerNotes(slug: string): FillerShowNotes | null {

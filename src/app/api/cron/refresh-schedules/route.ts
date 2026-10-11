@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchAllEpgFromPw } from "@/lib/epg-pw";
-import { getAnimaxSchedule } from "@/lib/animax-schedule";
 import { pruneLogs, pruneAniListCacheToCap } from "@/lib/db-prune";
 
 export const revalidate = 0;
@@ -33,27 +32,8 @@ export async function GET(request: Request) {
     results.push({ task: "epg-cache", status: 500, detail: error instanceof Error ? error.message : "Failed" });
   }
 
-  // 2. Cache Animax schedule (hardcoded weekly rotation)
-  try {
-    const animaxResult = getAnimaxSchedule();
-    const animaxDays: Record<string, typeof animaxResult.schedules[number]["slots"]> = {};
-    for (const ds of animaxResult.schedules) {
-      animaxDays[ds.day] = ds.slots;
-    }
-    if (Object.keys(animaxDays).length > 0) {
-      const jsonData = JSON.parse(JSON.stringify(animaxDays));
-      await prisma.epgCache.upsert({
-        where: { channelId: "animax" },
-        update: { data: jsonData },
-        create: { channelId: "animax", data: jsonData },
-      });
-      results.push({ task: "animax-cache", status: 200, detail: "Animax cached (hardcoded schedule)" });
-    } else {
-      results.push({ task: "animax-cache", status: 200, detail: "Animax: no data (keeping existing cache)" });
-    }
-  } catch (error) {
-    results.push({ task: "animax-cache", status: 500, detail: error instanceof Error ? error.message : "Failed" });
-  }
+  // 2. Animax is now cached by the epg.pw step above (EPG_PW_MAP → animax),
+  //    so no hardcoded Animax grid is written here anymore.
 
   // 3. Warm caches
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";

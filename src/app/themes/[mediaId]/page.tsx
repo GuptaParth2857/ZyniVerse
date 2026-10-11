@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ThemeDetailClient from "./content";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
 const ANIME_TITLES: Record<number, string> = {
   21: "One Piece", 16498: "Attack on Titan", 1735: "Naruto Shippuden",
   5114: "Fullmetal Alchemist: Brotherhood", 1535: "Frieren: Beyond Journey's End",
@@ -24,6 +26,8 @@ export async function generateMetadata({ params }: { params: Promise<{ mediaId: 
   return {
     title: `${title} Theme Songs — ZyniVerse`,
     description: `Browse opening and ending theme songs for ${title}`,
+    alternates: { canonical: `${BASE_URL}/themes/${id}` },
+    robots: { index: true, follow: true },
   };
 }
 

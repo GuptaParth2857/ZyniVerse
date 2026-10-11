@@ -1,21 +1,16 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getMangaDetailFull, getMangaPopular, AniListUnavailableError } from "@/lib/anilist";
+import { getMangaDetailFull, AniListUnavailableError } from "@/lib/anilist";
 import MangaDetailClient from "./manga-client";
 import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 export const revalidate = 86400;
 
-export async function generateStaticParams() {
-  try {
-    const popular = await getMangaPopular(30);
-    return popular.map((m) => ({ id: String(m.id) }));
-  } catch {
-    return [];
-  }
-}
-
+// No generateStaticParams on purpose: prerendering manga pages at build
+// fires one AniList Media query per page, contributing to the build-time
+// rate-limit that ballooned builds from ~3 min to 8-12 min. Pages render on
+// demand and ISR-cache for 24h (`revalidate` above).
 const getMangaCached = cache(getMangaDetailFull);
 
 export async function generateMetadata({

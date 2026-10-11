@@ -266,7 +266,10 @@ export function getAwardsByFilters(year?: number, platform?: string, type?: stri
 export interface UpcomingAward {
   name: string;
   year: number;
-  date: string;
+  /** ISO date (YYYY-MM-DD) — only set when the ceremony date is officially confirmed. */
+  date?: string;
+  /** Shown instead of a date when no official date has been announced yet. */
+  dateNote?: string;
   location: string;
   url: string;
   status: "upcoming" | "live" | "completed";
@@ -274,22 +277,24 @@ export interface UpcomingAward {
   description: string;
 }
 
-// Dates for future editions are schedule projections for annual ceremonies.
+// Only ceremonies with an officially confirmed date carry a `date`. Entries
+// without a confirmed date show "Date to be announced" instead — no invented
+// countdown dates.
 export const UPCOMING_AWARDS: UpcomingAward[] = [
   {
     name: "Crunchyroll Anime Awards",
     year: 2027,
-    date: "2027-05-22",
+    dateNote: "Date to be announced",
     location: "Tokyo, Japan",
     url: "https://www.crunchyroll.com/animeawards/",
     status: "upcoming",
     category: "annual",
-    description: "11th annual Crunchyroll Anime Awards — fan and jury-voted categories covering the best anime of 2026.",
+    description: "11th annual Crunchyroll Anime Awards — fan and jury-voted categories covering the best anime of 2026. The 2027 date has not been announced yet.",
   },
   {
     name: "Anime Trending Awards",
     year: 2027,
-    date: "2027-03-21",
+    dateNote: "Date to be announced",
     location: "Online",
     url: "https://www.anitrendz.com/ata",
     status: "upcoming",
@@ -299,7 +304,7 @@ export const UPCOMING_AWARDS: UpcomingAward[] = [
   {
     name: "Newtype Anime Awards",
     year: 2026,
-    date: "2026-10-15",
+    dateNote: "Date to be announced",
     location: "Machi Asobi, Tokushima",
     url: "https://webnewtype.com/",
     status: "upcoming",
@@ -309,7 +314,7 @@ export const UPCOMING_AWARDS: UpcomingAward[] = [
   {
     name: "Tsugi ni Kuru Manga (Next Manga) Award",
     year: 2026,
-    date: "2026-08-28",
+    dateNote: "Date to be announced",
     location: "Online",
     url: "https://tsugimanga.jp/",
     status: "upcoming",
@@ -319,7 +324,7 @@ export const UPCOMING_AWARDS: UpcomingAward[] = [
   {
     name: "Anime News Network Readers' Choice Awards",
     year: 2026,
-    date: "2027-01-10",
+    dateNote: "Date to be announced",
     location: "Online",
     url: "https://www.animenewsnetwork.com/",
     status: "upcoming",
@@ -329,7 +334,7 @@ export const UPCOMING_AWARDS: UpcomingAward[] = [
   {
     name: "Tokyo Anime Award Festival (TAAF)",
     year: 2027,
-    date: "2027-03-01",
+    dateNote: "Date to be announced",
     location: "Tokyo, Japan",
     url: "https://taaf.jp/",
     status: "upcoming",
@@ -339,7 +344,7 @@ export const UPCOMING_AWARDS: UpcomingAward[] = [
   {
     name: "r/anime Awards",
     year: 2026,
-    date: "2027-02-20",
+    dateNote: "Date to be announced",
     location: "Online (Reddit)",
     url: "https://www.reddit.com/r/anime/",
     status: "upcoming",

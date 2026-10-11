@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 interface Role {
@@ -49,9 +50,11 @@ export default function IndianDubCast({ mediaId }: { mediaId: number }) {
           <ul className="grid gap-2 sm:grid-cols-2">
             {langRoles.map((role, i) => (
               <li key={i} className="flex items-center gap-3 rounded-lg border border-white/10 bg-black/30 px-3 py-2">
-                <img
+                <Image
                   src={role.actor.image}
                   alt={role.actor.name}
+                  width={40}
+                  height={40}
                   loading="lazy"
                   className="h-10 w-10 shrink-0 rounded-full object-cover"
                 />

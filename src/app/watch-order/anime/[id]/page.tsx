@@ -7,6 +7,8 @@ import { buildWatchOrder } from "@/lib/watch-order";
 import AnimeWatchOrder from "./AnimeWatchOrder";
 import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
+
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -22,6 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title: `${title} Watch Order — Auto-Generated | ZyniVerse`,
       description: `Watch order guide for ${title} including all sequels, prequels, and side stories. Never watch out of order again.`,
+      alternates: { canonical: `${BASE_URL}/watch-order/anime/${animeId}` },
       robots: { index: true, follow: true },
     };
   } catch {

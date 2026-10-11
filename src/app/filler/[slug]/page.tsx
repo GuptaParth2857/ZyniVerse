@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getFillerData, getFillerDataFromCache, type FillerEpisode, type FillerShow } from "@/lib/filler";
 import { getFillerNotes } from "@/lib/filler-notes";
+import { getDubGuideForFiller, getWatchOrderForFiller } from "@/lib/cross-links";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
@@ -114,6 +115,8 @@ export default async function FillerSlugPage({ params }: Props) {
   if (!show) notFound();
 
   const notes = getFillerNotes(slug);
+  const watchOrderSlug = getWatchOrderForFiller(slug);
+  const dubGuideSlug = getDubGuideForFiller(slug);
 
   const { total, filler, mangaCanon, animeCanon, mixed, fillerPercent, canonPercent } = summarize(show);
   const fillerEpisodes = show.episodes.filter((e) => e.type === "filler");
@@ -331,6 +334,16 @@ export default async function FillerSlugPage({ params }: Props) {
         <section className="mb-10 rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] p-6 text-center">
           <p className="font-display text-lg font-bold">{canonPercent}% of {show.title} is canon — the rest is skippable.</p>
           <div className="mt-4 flex flex-wrap justify-center gap-3">
+            {watchOrderSlug && (
+              <Link href={`/watch-order/${watchOrderSlug}`} className="rounded-full bg-[var(--color-cyan)] px-5 py-2.5 text-xs font-bold text-black hover:opacity-90 transition-opacity">
+                📺 {show.title} Watch Order →
+              </Link>
+            )}
+            {dubGuideSlug && (
+              <Link href={`/indian-dubs/${dubGuideSlug}`} className="rounded-full border border-[#ff9933]/40 bg-[#ff9933]/10 px-5 py-2.5 text-xs font-semibold text-[#ff9933] hover:border-[#ff9933]/70 transition-colors">
+                🇮🇳 Hindi Dub Details →
+              </Link>
+            )}
             <Link href="/filler" className="rounded-full bg-[var(--color-magenta)] px-5 py-2.5 text-xs font-bold text-black hover:opacity-90 transition-opacity">
               Browse All Filler Guides →
             </Link>

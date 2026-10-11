@@ -44,14 +44,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       alternates: {
         canonical: `${BASE_URL}/character/${id}`,
       },
-      robots: { index: true, follow: true },
+      // Thin AniList mirror: the same character text exists on AniList/MAL/
+      // Fandom, so indexing these pages only adds near-duplicate thin content
+      // that keeps landing in Google's "crawled - currently not indexed".
+      // follow:true so link equity still flows to the anime/filler pages.
+      robots: { index: false, follow: true },
     };
   } catch {
     return {
       title: "Character Details — ZyniVerse",
       description: "Explore detailed anime character information including voice actors, appearances, and trivia. India's #1 free anime platform.",
       alternates: { canonical: `${BASE_URL}/character/${id}` },
-      robots: { index: true, follow: true },
+      robots: { index: false, follow: true },
     };
   }
 }

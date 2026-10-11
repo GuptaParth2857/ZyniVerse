@@ -27,7 +27,7 @@ function SavedPage() {
   useEffect(() => {
     fetch("/api/saved")
       .then((r) => r.json())
-      .then((d) => setPosts(d.posts || []))
+      .then((d) => setPosts(d.saved || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

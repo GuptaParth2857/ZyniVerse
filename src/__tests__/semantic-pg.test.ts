@@ -14,7 +14,6 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { getMediaBatch } from "@/lib/anilist";
 import {
   vectorLiteral,
   pgvectorEnabled,

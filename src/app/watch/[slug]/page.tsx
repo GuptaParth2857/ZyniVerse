@@ -3,7 +3,6 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getAnimeDetailFull, bestTitle } from "@/lib/anilist";
 import { getStreamingSources } from "@/lib/streaming";
-import { getDubInfo } from "@/lib/dub-data";
 import { getFillerForAnime } from "@/lib/filler";
 import { getWatchOrderSlugForAnilistId } from "@/lib/watch-order-index";
 import { PageTransition } from "@/components/PageTransition";
@@ -57,9 +56,12 @@ export default async function WatchGuidePage({ params }: Props) {
     notFound();
   }
 
+  // Guard against a null (not-thrown) upstream response, which used to crash
+  // this page into a 500 instead of a clean 404.
+  if (!media) notFound();
+
   const title = bestTitle(media.title);
   const streamingSources = getStreamingSources(title);
-  const dubInfo = getDubInfo(mediaId);
 
   // Resolve optional deep links by AniList id so we never emit a link that
   // 404s: `/filler/[slug]` expects a text slug and `/watch-order/[id]` expects
@@ -111,31 +113,6 @@ export default async function WatchGuidePage({ params }: Props) {
             </div>
           </div>
         </div>
-
-        {/* Hindi Dub Info */}
-        {dubInfo && (
-          <div className="mb-8 rounded-xl border border-green-500/30 bg-green-500/5 p-6">
-            <h2 className="mb-3 text-lg font-bold text-green-400">Hindi Dub Available</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <p className="text-xs text-[var(--color-mute)]">Platform</p>
-                <p className="text-sm font-medium">{dubInfo.platform}</p>
-              </div>
-              <div>
-                <p className="text-xs text-[var(--color-mute)]">Studio</p>
-                <p className="text-sm font-medium">{dubInfo.studio}</p>
-              </div>
-              <div>
-                <p className="text-xs text-[var(--color-mute)]">Languages</p>
-                <p className="text-sm font-medium">{dubInfo.languages.join(", ")}</p>
-              </div>
-              <div>
-                <p className="text-xs text-[var(--color-mute)]">Status</p>
-                <p className="text-sm font-medium capitalize">{dubInfo.status}</p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Streaming Platforms */}
         <section className="mb-8">

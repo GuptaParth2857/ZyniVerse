@@ -44,6 +44,17 @@ export const WATCH_ORDER_SLUG_BY_ANILIST_ID: Record<number, string> = {
   3816: "precure",
   6595: "katangatari",
   10075: "tiger-and-bunny",
+  113415: "jujutsu-kaisen",
+  127230: "chainsaw-man",
+  140960: "spy-x-family",
+  21507: "mob-psycho-100",
+  20605: "tokyo-ghoul",
+  20789: "seven-deadly-sins",
+  20832: "overlord",
+  21202: "konosuba",
+  105333: "dr-stone",
+  21087: "one-punch-man",
+  101921: "kaguya-sama",
 };
 
 export function getWatchOrderSlugForAnilistId(anilistId: number): string | null {

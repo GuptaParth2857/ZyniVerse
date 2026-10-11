@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { THEATRICAL_RELEASES, THEATRICAL_STATS } from "@/lib/theatrical-releases";
+import { computeTheatricalStats, THEATRICAL_STATS } from "@/lib/theatrical-releases";
+import { getTheatricalEntries } from "@/lib/editorial";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
@@ -8,7 +9,9 @@ export async function GET(request: Request) {
   const year = searchParams.get("year");
   const search = searchParams.get("search");
 
-  let filtered = [...THEATRICAL_RELEASES];
+  const { entries, lastUpdated } = await getTheatricalEntries();
+
+  let filtered = [...entries];
 
   if (status === "released") {
     filtered = filtered.filter((r) => r.status === "released");
@@ -31,7 +34,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     releases: filtered,
-    stats: THEATRICAL_STATS,
+    stats: { ...computeTheatricalStats(entries), lastUpdated: lastUpdated ?? THEATRICAL_STATS.lastUpdated },
     total: filtered.length,
   });
 }

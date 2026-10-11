@@ -2,8 +2,8 @@ import { type TimeSlot } from "./tv-channels";
 
 const EPG_PW_BASE = "https://epg.pw/api/epg.json";
 
-// Our channel IDs -> epg.pw channel IDs (Indian feeds)
-const EPG_PW_MAP: Record<string, number> = {
+// Our channel IDs -> epg.pw channel IDs (Indian feeds + Animax Asia English)
+export const EPG_PW_MAP: Record<string, number> = {
   cn: 543449,
   sony_yay: 543317,
   hungama: 543181,
@@ -15,6 +15,7 @@ const EPG_PW_MAP: Record<string, number> = {
   discovery_kids: 543485,
   disney_channel: 543433,
   disney_junior: 543448,
+  animax: 524073,
 };
 
 interface EpgPwEntry {

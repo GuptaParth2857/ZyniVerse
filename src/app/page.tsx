@@ -5,10 +5,18 @@ import {
   getHomepageData, getAiringSchedule,
 } from "@/lib/anilist";
 
+// Dynamic on purpose: the homepage fetches AniList data. A static prerender
+// at build time gets rate-limited (AniList allows ~30 req/min per IP while a
+// build prerenders hundreds of pages) and with an empty shared cache the
+// old guard threw and killed every deployment. Rendering per request keeps
+// the build green and serves fresh data every visit; SEO HTML is unaffected
+// (still fully server-rendered).
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
-  title: "ZyniVerse | India's #1 Anime Platform - Filler Guides, Indian Dubs & Community",
+  title: "ZyniVerse — Hindi Dub Schedule, Filler Guides & Watch Orders for India",
   description:
-    "ZyniVerse: Free anime platform with filler guides for 200+ anime, Indian dub tracking (Hindi, Tamil, Telugu), AI recommendations, manga reader, cosplay gallery, and community. Join millions of Indian anime fans.",
+    "Free anime hub for India: this week's Hindi dub schedule, Hindi/Tamil/Telugu dub tracking, filler guides for 200+ anime, and watch orders. No signup needed.",
   keywords: [
     "anime",
     "filler guides",
@@ -58,12 +66,14 @@ import QuoteOfTheDay from "@/components/QuoteOfTheDay";
 import HomeMomentButton from "@/components/HomeMomentButton";
 import AnimeOfTheDay from "@/components/AnimeOfTheDay";
 import FeaturedFeedbackCarousel from "@/components/FeaturedFeedbackCarousel";
+import IndiaHub from "@/components/IndiaHub";
 import WhyZyniVerse from "@/components/WhyZyniVerse";
 import NeonBanner from "@/components/NeonBanner";
 import BrandPartners from "@/components/BrandPartners";
 import PoweredBy from "@/components/PoweredBy";
 import { prisma } from "@/lib/prisma";
 import { posterCategoryOf } from "@/lib/post-types";
+import { DUBBED_ANIME_STATIC } from "@/lib/data/dubbed-static";
 
 function AnimatedSection({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
@@ -195,11 +205,17 @@ export default async function Home() {
       : "🔥 Live Bracket"
     : "🚀 Starting Soon";
 
+  // Real, data-backed counts — the hero row previously advertised "1000+ dubs"
+  // while the tracker only carried ~70 titles, which reads as inflated.
+  const indianDubCount = DUBBED_ANIME_STATIC.filter(
+    (d) => d.hasHindi || d.hasTamil || d.hasTelugu,
+  ).length;
+
   const heroStats = {
     users: userCount,
     fillerGuides: 200,
     watchOrders: 40,
-    indianDubs: 1000,
+    indianDubs: indianDubCount,
   };
 
   return (
@@ -286,6 +302,10 @@ export default async function Home() {
       <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6">
         <AnimeOfTheDay />
       </div>
+      {/* India moat leads high on the page — it's the one thing no competitor has. */}
+      <FadeIn delay={0.015}>
+        <IndiaHub />
+      </FadeIn>
       {latestPosters.length > 0 && (
         <FadeIn delay={0.01}>
           <AnimatedSection className="!py-10">
@@ -402,44 +422,7 @@ export default async function Home() {
         </AnimatedSection>
       </FadeIn>
 
-      {/* Pillar 4: Indian Content Hub */}
-      <FadeIn delay={0.35}>
-        <AnimatedSection className="!py-8">
-          <div className="mb-6 flex items-end justify-between">
-            <div className="rounded-xl px-4 py-2">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-cyan)]">🇮🇳 Indian Hub</p>
-              <h2 className="font-display text-2xl font-bold">Hindi, Tamil &amp; Telugu Dubs</h2>
-            </div>
-            <Link href="/indian-dubs" className="shrink-0 text-sm text-[var(--color-mute)] hover:text-[var(--color-cyan)]">
-              View all →
-            </Link>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { href: "/indian-dubs", emoji: "🇮🇳", title: "Hindi Dubs", desc: "25+ anime dubbed in Hindi", color: "#ff9933" },
-              { href: "/indian-dubs", emoji: "🏛️", title: "Tamil Dubs", desc: "15+ anime dubbed in Tamil", color: "#e84a5f" },
-              { href: "/indian-dubs", emoji: "🌊", title: "Telugu Dubs", desc: "10+ anime dubbed in Telugu", color: "#6c63ff" },
-              { href: "/voice-actors/indian", emoji: "🎙️", title: "Indian VAs", desc: "Meet the voice artists", color: "#29f2e0" },
-            ].map((card) => (
-              <Link key={card.title} href={card.href} className="overflow-hidden rounded-xl neon-feature-card group">
-                <div className="neon-border rounded-xl" style={{ background: `conic-gradient(from var(--border-angle), ${card.color}, transparent 40%, ${card.color}80, transparent 70%, ${card.color})` }} />
-                <div className="neon-glow rounded-xl" style={{ background: card.color }} />
-                <div className="neon-inner rounded-xl p-0 overflow-hidden" style={{ background: "var(--color-panel)" }}>
-                  <div className="h-[2px] w-full" style={{ background: card.color }} />
-                  <div className="p-5 relative">
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 0%, ${card.color}08, transparent 70%)` }} />
-                    <span className="text-3xl relative z-10 block mb-3">{card.emoji}</span>
-                    <p className="font-display text-lg font-bold relative z-10">{card.title}</p>
-                    <p className="text-xs text-[var(--color-mute)] mt-1 relative z-10">{card.desc}</p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </AnimatedSection>
-      </FadeIn>
-
-      {/* Pillar 5: Community Engagement */}
+      {/* Community Engagement */}
       <FadeIn delay={0.4}>
         <AnimatedSection className="!py-8">
           <div className="mb-6 flex items-end justify-between">

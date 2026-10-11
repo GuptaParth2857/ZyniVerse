@@ -141,12 +141,29 @@ export default function AdBanner({
   className = "",
 }: AdBannerProps) {
   const { data: session } = useSession();
-  const [impressionTracked, setImpressionTracked] = useState(false);
   const [liveAds, setLiveAds] = useState<AdPlacement[] | undefined>(undefined);
+  // Per-slot impression dedupe lives in a ref, not state: nothing in the render
+  // branch depends on it, and a ref avoids a synchronous setState inside the
+  // impression effect below (react-hooks/set-state-in-effect).
+  const impressionSentRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const uniqueId = useId();
   // Make a DOM-safe container id (no colons)
   const containerId = `container-188115be46209eff2403f0d29b32d940-${uniqueId.replace(/:/g, "")}`;
+
+  const user = session?.user
+    ? { premium: (session.user as { premium?: boolean }).premium === true }
+    : undefined;
+
+  const showAds = adsEnabled() && shouldShowAds(user);
+
+  // candidateAd is pure data — pulled above the early returns so every hook in
+  // this component runs unconditionally (rules-of-hooks). When ads are hidden
+  // (dev / premium) probing the ad network is pointless, so "" short-circuits
+  // useAdNetworkAvailable to "reachable" without firing a request.
+  const candidateAd =
+    getAdsForLocation(placement, liveAds)[0] ?? getAdsForLocation(placement)[0];
+  const networkAvailable = useAdNetworkAvailable(showAds ? (candidateAd?.code ?? "") : "");
 
   // Load the live (DB-backed) ad config once. Falls back to static defaults.
   useEffect(() => {
@@ -174,11 +191,40 @@ export default function AdBanner({
     };
   }, []);
 
-  const user = session?.user
-    ? { premium: (session.user as { premium?: boolean }).premium === true }
-    : undefined;
-
-  const showAds = adsEnabled() && shouldShowAds(user);
+  // Track impressions — at most once per page-visit per slot, so ad stats
+  // stay meaningful without firing a POST + DB write on every intersection.
+  useEffect(() => {
+    if (!showAds || impressionSentRef.current) return;
+    const dedupeKey = `zy_ad_imp_${placement}_${window.location.pathname}`;
+    try {
+      if (sessionStorage.getItem(dedupeKey) === "1") {
+        impressionSentRef.current = true;
+        return;
+      }
+    } catch {}
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetch("/api/admin/ads/stats", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "impression",
+              placement,
+              page: window.location.pathname,
+            }),
+          }).catch(() => {});
+          try {
+            sessionStorage.setItem(dedupeKey, "1");
+          } catch {}
+          impressionSentRef.current = true;
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [showAds, placement]);
 
   // ── Dev: never render ad containers (they inject external scripts) ─────
   if (!adsEnabled()) {
@@ -195,48 +241,6 @@ export default function AdBanner({
       </div>
     );
   }
-
-  // Probe the ad network once per slot; if an ad blocker on the visitor's PC
-  // blocks/hangs invoke.js, the whole slot (box + label) is collapsed.
-  const candidateAd = getAdsForLocation(placement, liveAds)[0] ?? getAdsForLocation(placement)[0];
-  const networkAvailable = useAdNetworkAvailable(candidateAd?.code ?? "");
-
-  // Track impressions — at most once per page-visit per slot, so ad stats
-  // stay meaningful without firing a POST + DB write on every intersection.
-  useEffect(() => {
-    if (!showAds || impressionTracked) return;
-    const dedupeKey = `zy_ad_imp_${placement}_${window.location.pathname}`;
-    let alreadySent = false;
-    try {
-      alreadySent = sessionStorage.getItem(dedupeKey) === "1";
-    } catch {}
-    if (alreadySent) {
-      setImpressionTracked(true);
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          fetch("/api/admin/ads/stats", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "impression",
-              placement,
-              page: window.location.pathname,
-            }),
-          }).catch(() => {});
-          try {
-            sessionStorage.setItem(dedupeKey, "1");
-          } catch {}
-          setImpressionTracked(true);
-        }
-      },
-      { threshold: 0.5 }
-    );
-    if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, [showAds, impressionTracked, placement]);
 
   const handleClick = () => {
     fetch("/api/admin/ads/stats", {

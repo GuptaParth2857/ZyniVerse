@@ -164,7 +164,7 @@ function detectArchetype(topGenres: string[]): DnaArchetype {
   };
 }
 
-function detectWatchStyle(stats: UserStats, topGenres: string[]): DnaWatchStyle {
+function detectWatchStyle(stats: UserStats, _topGenres: string[]): DnaWatchStyle {
   if (stats.planningCount >= 10 && stats.planningCount > stats.completedCount) {
     return {
       label: "Backlog Builder",
