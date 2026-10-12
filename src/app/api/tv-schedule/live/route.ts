@@ -45,14 +45,21 @@ function isCacheStale(
   maxAgeMs: number = 6 * 60 * 60 * 1000,
 ): boolean {
   const now = Date.now();
+  let newest = 0;
   for (const id of channelIds) {
     const data = epgMap.get(id);
-    const ts = timestamps.get(id);
     const hasData = data && Object.values(data).some((day) => Array.isArray(day) && day.length > 0);
-    if (!hasData) return true;
-    if (ts && now - ts.getTime() > maxAgeMs) return true;
+    if (!hasData) continue;
+    const ts = timestamps.get(id);
+    if (ts && ts.getTime() > newest) newest = ts.getTime();
   }
-  return false;
+  // No usable cached data at all -> scrape.
+  if (newest === 0) return true;
+  // Otherwise the cache is only stale once the most recent successful scrape
+  // ages out. A single channel that fails to refresh (or a transient read
+  // error) must not force a full re-scrape on every request — that made this
+  // route take ~40s each call.
+  return now - newest > maxAgeMs;
 }
 
 async function scrapeAndCache(): Promise<Map<string, Record<string, LiveScheduleEntry[]>>> {

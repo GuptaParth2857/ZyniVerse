@@ -21,20 +21,27 @@ function rewriteImageFields<T>(value: T): T {
   return value;
 }
 
-// Serverless functions run one request at a time (`fluid: false` on Vercel), so
-// a large per-instance pool just exhausts the Supabase pooler as the fleet
-// scales. Force a single connection on serverless; self-hosted keeps a small
-// default pool.
+// App-router route handlers and server components run Prisma queries
+// concurrently (Promise.all), and Vercel can route several requests to the same
+// serverless instance. Forcing `connection_limit=1` made those queries queue on
+// a single connection; any slow query (e.g. the large epgCache JSON rows) then
+// pushed the rest past `pool_timeout` and surfaced as Prisma P2024 errors.
+// Respect an explicit `connection_limit` from the URL (Supabase pooler URLs set
+// one) and only apply a small default otherwise. The transaction pooler
+// (Supavisor / pgBouncer on 6543) needs `pgbouncer=true` so prepared statements
+// are disabled.
 function pooledDatabaseUrl(raw: string | undefined): string | undefined {
   if (!raw) return raw;
   try {
     const url = new URL(raw);
     const serverless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
     if (serverless) {
-      url.searchParams.set("connection_limit", "1");
-      url.searchParams.set("pool_timeout", "20");
-      // Transaction pooler (Supavisor / pgBouncer on 6543) needs this flag so
-      // Prisma disables prepared statements.
+      if (!url.searchParams.has("connection_limit")) {
+        url.searchParams.set("connection_limit", "5");
+      }
+      if (!url.searchParams.has("pool_timeout")) {
+        url.searchParams.set("pool_timeout", "20");
+      }
       if (url.port === "6543" && !url.searchParams.has("pgbouncer")) {
         url.searchParams.set("pgbouncer", "true");
       }
