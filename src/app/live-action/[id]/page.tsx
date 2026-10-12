@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getAllLiveAction } from "@/lib/live-action-data";
+import { LIVE_ACTION_ANIME } from "@/lib/live-action-anime";
 import LiveActionDetailClient from "./detail-client";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
@@ -21,8 +22,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export async function generateStaticParams() {
-  const list = await getAllLiveAction();
-  return list.map((a) => ({ id: a.id }));
+  // Use the static catalogue only, so `next build` never hits the database
+  // here (each DB read during static generation contends for the Supabase
+  // connection pool and produced P2024 errors). Discovered catalogue entries
+  // are still rendered on demand and cached via the page's `revalidate`.
+  return LIVE_ACTION_ANIME.map((a) => ({ id: a.id }));
 }
 
 export default async function LiveActionDetailPage({

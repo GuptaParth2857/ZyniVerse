@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { getEpgJson, invalidateEpgJson } from "./db-cache";
 import { logError } from "@/lib/logger";
 
 const WIKI_EN = "https://en.wikipedia.org/w/api.php";
@@ -132,9 +133,8 @@ function pickPosterFile(files: string[]): string | undefined {
 
 export async function getPosterCache(): Promise<PosterCache> {
   try {
-    const row = await prisma.epgCache.findFirst({ where: { channelId: CACHE_KEY } });
-    if (!row) return DEFAULT_CACHE;
-    const cache = row.data as unknown as PosterCache;
+    const cache = await getEpgJson<PosterCache>(CACHE_KEY);
+    if (!cache) return DEFAULT_CACHE;
     if (cache.version !== 1) return DEFAULT_CACHE;
     return cache;
   } catch (error) {
@@ -150,6 +150,7 @@ async function savePosterCache(cache: PosterCache): Promise<void> {
       update: { data: JSON.parse(JSON.stringify(cache)) },
       create: { channelId: CACHE_KEY, data: JSON.parse(JSON.stringify(cache)) },
     });
+    invalidateEpgJson(CACHE_KEY);
   } catch (error) {
     console.error("[posters] Error saving poster cache:", error);
   }

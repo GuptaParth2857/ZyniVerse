@@ -1,6 +1,7 @@
 import { searchMedia, getAnimeDetailFull, type Media } from "./anilist";
 import { UPCOMING_TITLE_CONFIGS, type UpcomingTitleConfig } from "./live-action-config";
 import { prisma } from "./prisma";
+import { getEpgJson, invalidateEpgJson } from "./db-cache";
 import { logError } from "@/lib/logger";
 
 export interface LiveActionUpdate {
@@ -155,13 +156,9 @@ export async function fetchLiveActionUpdates(): Promise<LiveActionUpdateCache> {
 
 export async function getLiveActionUpdateCache(): Promise<LiveActionUpdateCache> {
   try {
-    const row = await prisma.epgCache.findFirst({
-      where: { channelId: CACHE_KEY },
-    });
+    const cache = await getEpgJson<LiveActionUpdateCache>(CACHE_KEY);
 
-    if (!row) return DEFAULT_CACHE;
-
-    const cache = row.data as unknown as LiveActionUpdateCache;
+    if (!cache) return DEFAULT_CACHE;
 
     if (cache.version !== 1) {
       console.warn("[live-action-updater] Cache version mismatch, resetting");
@@ -182,6 +179,7 @@ async function saveCache(cache: LiveActionUpdateCache): Promise<void> {
       update: { data: JSON.parse(JSON.stringify(cache)) },
       create: { channelId: CACHE_KEY, data: JSON.parse(JSON.stringify(cache)) },
     });
+    invalidateEpgJson(CACHE_KEY);
   } catch (error) {
     console.error("[live-action-updater] Error saving cache:", error);
   }

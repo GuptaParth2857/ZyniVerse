@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { getEpgJson, invalidateEpgJson } from "./db-cache";
 import { searchMedia, type Media } from "./anilist";
 import { LIVE_ACTION_ANIME, type LiveActionAnime } from "./live-action-anime";
 
@@ -204,9 +205,8 @@ async function enrichWithAnilist(title: string): Promise<Partial<DiscoveredLiveA
 
 async function getLiveActionCatalog(): Promise<DiscoveredLiveAction[]> {
   try {
-    const row = await prisma.epgCache.findFirst({ where: { channelId: CACHE_KEY } });
-    if (!row) return [];
-    const cache = row.data as unknown as LiveActionCatalogCache;
+    const cache = await getEpgJson<LiveActionCatalogCache>(CACHE_KEY);
+    if (!cache) return [];
     if (cache.version !== 1) return [];
     return cache.entries || [];
   } catch {
@@ -221,6 +221,7 @@ async function saveCatalog(cache: LiveActionCatalogCache): Promise<void> {
       update: { data: JSON.parse(JSON.stringify(cache)) },
       create: { channelId: CACHE_KEY, data: JSON.parse(JSON.stringify(cache)) },
     });
+    invalidateEpgJson(CACHE_KEY);
   } catch (error) {
     console.error("[live-action-catalog] Error saving cache:", error);
   }
