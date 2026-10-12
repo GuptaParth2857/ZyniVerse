@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { fetchWeeklyAiringSchedule } from "@/lib/anilist-schedule";
 
-export const revalidate = 1800;
+// Dynamic, not ISR: this route hits the AniList GraphQL API. ISR was
+// forcing a build-time prerender that could hang `next build`.
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {

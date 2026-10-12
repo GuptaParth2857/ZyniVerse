@@ -5,7 +5,10 @@ import { TV_CHANNELS, getDayName, CHANNEL_SCHEDULES } from "@/lib/tv-channels";
 import { scrapeAllChannels, EPGSchedule_MAP } from "@/lib/epg-scraper";
 import { Prisma } from "@prisma/client";
 
-export const revalidate = 1800;
+// Dynamic, not ISR: build-time prerendering of this route called epg.pw
+// during `next build` and blew past Vercel's 60s build route limit.
+// Request-time caching is handled by the epgCache DB table (6h staleness).
+export const dynamic = "force-dynamic";
 
 interface LiveScheduleEntry {
   show: string;

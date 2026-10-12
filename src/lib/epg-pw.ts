@@ -54,7 +54,7 @@ async function fetchEpgPwDay(channelId: number, date: Date): Promise<EpgPwEntry[
   const url = `${EPG_PW_BASE}?channel_id=${channelId}&lang=en&date=${dateStr}&timezone=Asia%2FKolkata`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 1800 } });
+    const res = await fetch(url, { next: { revalidate: 1800 }, signal: AbortSignal.timeout(10000) });
     if (!res.ok) return [];
     const data: EpgPwResponse = await res.json();
     if (data.error_message || !data.epg_list) return [];

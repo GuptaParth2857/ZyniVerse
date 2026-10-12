@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { getTrending, bestTitle } from "@/lib/anilist";
 
-export const revalidate = 86400;
+// Dynamic, not ISR: build-time prerender would call AniList during
+// `next build`. CDN caching is handled by the manual Cache-Control header.
+export const dynamic = "force-dynamic";
 
 function dayKey(d: Date): string {
   const year = d.getFullYear();
