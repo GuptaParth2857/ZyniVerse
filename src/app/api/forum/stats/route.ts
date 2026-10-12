@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export const revalidate = 300;
+// Dynamic, not ISR: forum stats are live DB counts; prerendering at build
+// would freeze them and add a DB dependency to `next build`.
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const startOfToday = new Date();
