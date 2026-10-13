@@ -14,7 +14,11 @@ import { validateWebhookUrl } from "@/lib/webhook-ssrf";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+// Hobby plan + `fluid: false` caps serverless functions at 60s (Vercel rejects
+// the whole deployment otherwise: "maxDuration between 1 and 60 for plan
+// hobby"). The route is env-gated off on Vercel anyway (no YTDLP_PATH -> 501),
+// so the long self-hosted download timeout below is not limited by this.
+export const maxDuration = 60;
 
 const MAX_SIZE = 50 * 1024 * 1024; // 50MB — Supabase free plan storage limit
 const MAX_DURATION = 180;
