@@ -4,6 +4,14 @@ import VoiceLineCard from "@/components/VoiceLineCard";
 import QuoteDetailPanel from "@/components/QuoteDetailPanel";
 import Link from "next/link";
 
+export const revalidate = 86400;
+
+// Empty array => no build-time prerender, but on-demand ISR at runtime
+// (Next.js only enables it for a dynamic segment when this function exists).
+export function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -13,10 +21,10 @@ export async function generateMetadata({
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
   const line = getVoiceLine(id);
   if (!line) {
-    return { title: "Quote Not Found | ZyniVerse", description: "Browse iconic anime quotes and voice lines from your favorite characters. Discover memorable moments from popular anime series.", robots: { index: true, follow: true } };
+    return { title: "Quote Not Found", description: "Browse iconic anime quotes and voice lines from your favorite characters. Discover memorable moments from popular anime series.", robots: { index: true, follow: true } };
   }
   return {
-    title: `"${line.line}" — ${line.character} | ZyniVerse Quotes`,
+    title: `"${line.line}" — ${line.character} Quotes`,
     description: `"${line.line}" — ${line.character} from ${line.animeTitle}`,
     openGraph: {
       title: `"${line.line}" — ${line.character}`,

@@ -30,6 +30,12 @@ const GENRE_TAG_MAP: Record<string, string> = {
   Philosophical: "b1e97889-25b4-4258-b28b-cd7f4d28ea9b",
 };
 
+/**
+ * Tag/genre names that the MangaDex query API can filter server-side.
+ * Exposed so the UI only offers tags that produce accurate totals + pagination.
+ */
+export const DOUJINSHI_GENRE_TAGS: string[] = Object.keys(GENRE_TAG_MAP);
+
 export interface DoujinshiEntry {
   id: string;
   title: string;
@@ -109,6 +115,8 @@ export async function getDoujinshi(params?: {
   offset?: number;
   sort?: "popular" | "latest" | "rating" | "title";
   genres?: string[];
+  /** MangaDex translated-language code (e.g. "en", "ja", "es"). */
+  language?: string;
 }): Promise<{ entries: DoujinshiEntry[]; total: number }> {
   const sp = new URLSearchParams();
   sp.set("limit", String(Math.min(params?.limit ?? 50, 50)));
@@ -134,8 +142,10 @@ export async function getDoujinshi(params?: {
   sp.set("includes[]", "cover_art");
   sp.append("includes[]", "author");
   sp.append("includes[]", "artist");
-  sp.append("availableTranslatedLanguage[]", "en");
-  sp.append("availableTranslatedLanguage[]", "ja");
+  // Language scope: a picked language replaces the default English/Japanese scope.
+  for (const lang of params?.language ? [params.language] : ["en", "ja"]) {
+    sp.append("availableTranslatedLanguage[]", lang);
+  }
   sp.append("includedTags[]", DOUJINSHI_TAG);
   if (params?.genres) {
     for (const g of params.genres) {

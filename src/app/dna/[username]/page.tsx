@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { username: raw } = await params;
   const username = safeDecode(raw);
   return {
-    title: `${username} — Anime DNA | ZyniVerse`,
+    title: `${username} — Anime DNA`,
     description: `${username} ka Anime DNA on ZyniVerse — taste, genres aur archetype derived from their watchlist.`,
     robots: { index: false, follow: true },
   };

@@ -18,11 +18,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { username: raw } = await params;
   const username = safeDecode(raw);
   return {
-    title: `${username}'s Anime List — Watchlist & Manga Progress | ZyniVerse`,
+    title: `${username}'s Anime List — Watchlist & Manga Progress`,
     description: `Browse ${username}'s anime watchlist and manga reading list on ZyniVerse. See what they're watching, reading, scoring, and following.`,
     alternates: { canonical: `${BASE_URL}/list/${username}` },
     openGraph: {
-      title: `${username}'s Anime List | ZyniVerse`,
+      title: `${username}'s Anime List`,
       description: `See what ${username} is watching and reading on ZyniVerse.`,
       url: `${BASE_URL}/list/${username}`,
       type: "profile",

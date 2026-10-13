@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { getAiringSchedule, bestTitle, type AiringScheduleEntry } from "@/lib/anilist";
+import { formatISTTime } from "@/lib/ist";
 
 export default function ScheduleEmbedPage() {
   const [schedule, setSchedule] = useState<AiringScheduleEntry[]>([]);
@@ -16,12 +17,6 @@ export default function ScheduleEmbedPage() {
       .catch(() => setSchedule([]))
       .finally(() => setLoading(false));
   }, []);
-
-  const formatTime = (ts: number) =>
-    new Date(ts * 1000).toLocaleTimeString("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
 
   return (
     <html lang="en">
@@ -130,7 +125,7 @@ export default function ScheduleEmbedPage() {
                       fontFamily: "JetBrains Mono, monospace",
                     }}
                   >
-                    Ep {item.episode} · {formatTime(item.airingAt)}
+                    Ep {item.episode} · {formatISTTime(item.airingAt, { suffix: true })}
                   </div>
                 </div>
                 <span
@@ -141,7 +136,7 @@ export default function ScheduleEmbedPage() {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {formatTime(item.airingAt)}
+                  {formatISTTime(item.airingAt, { suffix: true })}
                 </span>
               </a>
             ))

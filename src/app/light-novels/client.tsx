@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import MangaCard from "@/components/MangaCard";
 import AffiliateLink from "@/components/AffiliateLink";
+import RevealTitle from "@/components/RevealTitle";
+import RevealLabel from "@/components/RevealLabel";
+import EmptyState from "@/components/EmptyState";
 import type { Media } from "@/lib/anilist";
 
 interface MangaEntryDB {
@@ -22,15 +25,17 @@ interface MangaEntryDB {
   score: number | null;
 }
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 const FADE_UP = { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5 } };
 
 const TABS = [
-  { key: "trending", label: "🔥 Trending", url: "/api/anilist/light-novels?tab=trending&perPage=24" },
-  { key: "popular", label: "⭐ Popular", url: "/api/anilist/light-novels?tab=popular&perPage=24" },
-  { key: "top", label: "🏆 Top Rated", url: "/api/anilist/light-novels?tab=top&perPage=24" },
+  { key: "trending", label: "🔥 Trending" },
+  { key: "popular", label: "⭐ Popular" },
+  { key: "top", label: "🏆 Top Rated" },
 ];
 
-const STATUS_FILTERS = ["ALL", "READING", "COMPLETED", "PLANNING"];
+const STATUS_FILTERS = ["ALL", "READING", "COMPLETED", "PLANNING", "PAUSED", "DROPPED"];
 const STATUS_LABELS: Record<string, string> = { READING: "Reading", COMPLETED: "Completed", PLANNING: "Plan to Read", DROPPED: "Dropped", PAUSED: "On Hold", REREADING: "Re-reading" };
 
 const GENRE_FILTERS = [
@@ -47,11 +52,14 @@ const GENRE_FILTERS = [
   { label: "Supernatural", value: "Supernatural" },
 ];
 
+const PILL_SPRING = { type: "spring" as const, stiffness: 500, damping: 40 };
+
 export default function LightNovelBrowseClient() {
   const { data: session } = useSession();
   const [tab, setTab] = useState("trending");
   const [list, setList] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myEntries, setMyEntries] = useState<MangaEntryDB[]>([]);
   const [listTab, setListTab] = useState("ALL");
@@ -60,8 +68,11 @@ export default function LightNovelBrowseClient() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [myListTotal, setMyListTotal] = useState(0);
-  const [myListStats, setMyListStats] = useState({ reading: 0, completed: 0, planning: 0 });
+  const [myListStats, setMyListStats] = useState({ reading: 0, completed: 0, planning: 0, paused: 0, dropped: 0 });
+  const [continueReading, setContinueReading] = useState<MangaEntryDB[]>([]);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -69,83 +80,123 @@ export default function LightNovelBrowseClient() {
     return () => clearTimeout(t);
   }, [query]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPage(1);
-  }, [debouncedQuery, selectedGenre, tab, showMyList, listTab]);
-
+  // Reset to the first page and (re)load whenever a filter changes.
   useEffect(() => {
     let cancelled = false;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
+    setPage(1);
 
-    if (showMyList) {
-      const params = new URLSearchParams();
-      if (listTab !== "ALL") params.set("status", listTab);
-      params.set("page", String(page));
-      fetch(`/api/light-novels/list?${params}`)
-        .then((r) => r.json())
-        .then((d) => {
-          if (!cancelled) {
-            setMyEntries(d.entries || []);
-            setMyListTotal(d.total || 0);
-          }
-        })
-        .catch((e: Error) => !cancelled && setError(e.message))
-        .finally(() => !cancelled && setLoading(false));
-    } else if (debouncedQuery.trim()) {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-      fetch(`/api/light-novels/search?q=${encodeURIComponent(debouncedQuery.trim())}`, { signal: controller.signal })
-        .then((r) => r.json())
-        .then((d) => {
-          if (controller.signal.aborted) return;
-          let items = d.media || [];
-          if (selectedGenre) items = items.filter((m: Media) => m.genres?.includes(selectedGenre));
-          setList(items);
-        })
-        .catch((e: Error) => {
-          if (!controller.signal.aborted) setError(e.message);
-        })
-        .finally(() => {
-          if (!controller.signal.aborted) setLoading(false);
-        });
-      return () => controller.abort();
-    } else {
-      const t = TABS.find((t) => t.key === tab);
-      if (t) {
-        fetch(t.url)
-          .then((r) => r.json())
-          .then((d) => {
-            if (!cancelled) {
-              let items = Array.isArray(d) ? d : (d as { media?: Media[] }).media || [];
-              if (selectedGenre) items = items.filter((m: Media) => m.genres?.includes(selectedGenre));
-              setList(items);
-            }
-          })
-          .catch((e: Error) => !cancelled && setError(e.message))
-          .finally(() => !cancelled && setLoading(false));
+    async function run() {
+      try {
+        if (showMyList) {
+          const params = new URLSearchParams();
+          if (listTab !== "ALL") params.set("status", listTab);
+          params.set("page", "1");
+          const r = await fetch(`/api/light-novels/list?${params}`, { signal: controller.signal });
+          const d = await r.json();
+          if (cancelled) return;
+          setMyEntries(d.entries || []);
+          setMyListTotal(d.total || 0);
+          setTotal(d.total || 0);
+          setHasMore(Boolean(d.hasMore));
+          return;
+        }
+
+        const params = debouncedQuery.trim()
+          ? new URLSearchParams({ q: debouncedQuery.trim(), page: "1" })
+          : new URLSearchParams({ tab, perPage: "24", page: "1" });
+        if (selectedGenre) params.set("genre", selectedGenre);
+        const url = debouncedQuery.trim()
+          ? `/api/light-novels/search?${params}`
+          : `/api/anilist/light-novels?${params}`;
+        const r = await fetch(url, { signal: controller.signal });
+        const d = await r.json();
+        if (cancelled) return;
+        setList(d.media || []);
+        setTotal(d.pageInfo?.total ?? (d.media?.length ?? 0));
+        setHasMore(Boolean(d.pageInfo?.hasNextPage));
+      } catch (e) {
+        if (!cancelled && (e as Error).name !== "AbortError") setError((e as Error).message);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
-    return () => { cancelled = true; };
-  }, [tab, showMyList, listTab, debouncedQuery, selectedGenre, page]);
+    run();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [tab, showMyList, listTab, debouncedQuery, selectedGenre]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    const next = page + 1;
+    setLoadingMore(true);
+    try {
+      if (showMyList) {
+        const params = new URLSearchParams();
+        if (listTab !== "ALL") params.set("status", listTab);
+        params.set("page", String(next));
+        const r = await fetch(`/api/light-novels/list?${params}`);
+        const d = await r.json();
+        setMyEntries((prev) => [...prev, ...(d.entries || [])]);
+        setHasMore(Boolean(d.hasMore));
+      } else {
+        const params = debouncedQuery.trim()
+          ? new URLSearchParams({ q: debouncedQuery.trim(), page: String(next) })
+          : new URLSearchParams({ tab, perPage: "24", page: String(next) });
+        if (selectedGenre) params.set("genre", selectedGenre);
+        const url = debouncedQuery.trim()
+          ? `/api/light-novels/search?${params}`
+          : `/api/anilist/light-novels?${params}`;
+        const r = await fetch(url);
+        const d = await r.json();
+        setList((prev) => [...prev, ...(d.media || [])]);
+        setHasMore(Boolean(d.pageInfo?.hasNextPage));
+      }
+      setPage(next);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, page, showMyList, listTab, debouncedQuery, selectedGenre, tab]);
 
   useEffect(() => {
     if (!session?.user?.id) return;
-    fetch("/api/light-novels/list?perPage=200")
+    fetch("/api/light-novels/stats")
       .then((r) => r.json())
       .then((d) => {
-        const entries = d.entries || [];
+        const c = d.counts || {};
         setMyListStats({
-          reading: entries.filter((e: MangaEntryDB) => e.status === "READING").length,
-          completed: entries.filter((e: MangaEntryDB) => e.status === "COMPLETED").length,
-          planning: entries.filter((e: MangaEntryDB) => e.status === "PLANNING").length,
+          reading: c.READING || 0,
+          completed: c.COMPLETED || 0,
+          planning: c.PLANNING || 0,
+          paused: c.PAUSED || 0,
+          dropped: c.DROPPED || 0,
         });
+        setContinueReading(d.reading || []);
       })
       .catch(() => {});
   }, [session]);
+
+  const loadedCount = showMyList ? myEntries.length : list.length;
+  const isEmpty = !loading && loadedCount === 0;
+
+  const HERO_STATS = [
+    { label: "Reading", value: myListStats.reading, color: "#00ffff" },
+    { label: "Completed", value: myListStats.completed, color: "#8a2be2" },
+    { label: "Planned", value: myListStats.planning, color: "#ff00ff" },
+    { label: "On Hold", value: myListStats.paused, color: "#ffaa00" },
+    { label: "Dropped", value: myListStats.dropped, color: "#ff4d6d" },
+  ];
 
   return (
     <div className="min-h-screen animate-page-in">
@@ -164,36 +215,61 @@ export default function LightNovelBrowseClient() {
 
         <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
           <div className="flex flex-col items-center text-center">
-            <div className="neon-rgb-border rounded-xl h-12 w-12 mb-4 flex items-center justify-center bg-[var(--color-panel)]/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.6, rotate: -14 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ duration: 0.55, ease: EASE }}
+              className="neon-rgb-border rounded-xl h-12 w-12 mb-4 flex items-center justify-center bg-[var(--color-panel)]/60 backdrop-blur-sm"
+            >
               <span className="text-xl">📖</span>
-            </div>
+            </motion.div>
 
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#00ffff] mb-3" style={{ textShadow: "0 0 10px rgba(0,255,255,0.5)" }}>Light Novels</span>
+            <RevealLabel
+              as="span"
+              spacing="0.2em"
+              fromSpacing="0.4em"
+              className="font-mono text-xs uppercase tracking-[0.2em] text-[#00ffff] mb-3"
+              style={{ textShadow: "0 0 10px rgba(0,255,255,0.5)" }}
+            >
+              Light Novels
+            </RevealLabel>
 
-            <div className="neon-rgb-border rounded-xl px-4 py-2">
-              <h1 className="font-display text-4xl sm:text-5xl font-bold text-[var(--color-ink)]" style={{ textShadow: "0 0 30px rgba(0,255,255,0.3), 0 0 60px rgba(138,43,226,0.2)" }}>
+            <motion.div
+              className="neon-rgb-border rounded-xl px-4 py-2"
+              initial={{ opacity: 0, scale: 0.94, y: 12, filter: "drop-shadow(0 0 0px rgba(0,255,255,0))" }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: 0,
+                filter: [
+                  "drop-shadow(0 0 0px rgba(0,255,255,0))",
+                  "drop-shadow(0 0 20px rgba(0,255,255,0.5))",
+                  "drop-shadow(0 0 6px rgba(0,255,255,0.15))",
+                ],
+              }}
+              transition={{ duration: 0.7, ease: EASE, delay: 0.1 }}
+            >
+              <RevealTitle
+                as="h1"
+                className="font-display text-4xl sm:text-5xl font-bold text-[var(--color-ink)]"
+                style={{ textShadow: "0 0 30px rgba(0,255,255,0.3), 0 0 60px rgba(138,43,226,0.2)" }}
+              >
                 Track Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffff] via-[#8a2be2] to-[#ff00ff]">Reading Journey</span>
-              </h1>
-            </div>
+              </RevealTitle>
+            </motion.div>
             <p className="mt-3 text-base text-[var(--color-mute)] max-w-lg">
               Discover trending light novels, track your progress, and find your next favorite series.
             </p>
 
             {/* Quick Stats */}
             {session?.user?.id && (
-              <div className="flex gap-6 mt-6">
-                <div className="text-center">
-                  <div className="text-lg font-bold font-mono text-[#00ffff]">{myListStats.reading}</div>
-                  <div className="text-[9px] text-[var(--color-mute)] uppercase tracking-widest">Reading</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold font-mono text-[#8a2be2]">{myListStats.completed}</div>
-                  <div className="text-[9px] text-[var(--color-mute)] uppercase tracking-widest">Completed</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold font-mono text-[#ff00ff]">{myListStats.planning}</div>
-                  <div className="text-[9px] text-[var(--color-mute)] uppercase tracking-widest">Planned</div>
-                </div>
+              <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mt-6">
+                {HERO_STATS.map((s) => (
+                  <div key={s.label} className="text-center">
+                    <div className="text-lg font-bold font-mono" style={{ color: s.color }}>{s.value}</div>
+                    <div className="text-[9px] text-[var(--color-mute)] uppercase tracking-widest">{s.label}</div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -228,13 +304,25 @@ export default function LightNovelBrowseClient() {
         {/* Toggle: Browse / My List */}
         <motion.div {...FADE_UP}>
           <div className="flex items-center gap-3 border-b border-[var(--color-line)] pb-3">
-            <button onClick={() => { setShowMyList(false); setTab("trending"); setQuery(""); setDebouncedQuery(""); }}
-              className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all ${!showMyList ? "text-[#00ffff] border-b-2 border-[#00ffff] bg-[#00ffff]/5" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}
-            >Browse</button>
+            <button
+              onClick={() => { setShowMyList(false); setTab("trending"); setQuery(""); setDebouncedQuery(""); }}
+              className={`relative px-6 py-2.5 text-sm font-semibold rounded-xl transition-colors ${!showMyList ? "text-[#00ffff] bg-[#00ffff]/5" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}
+            >
+              Browse
+              {!showMyList && (
+                <motion.span layoutId="ln-toggle-underline" className="absolute -bottom-3 left-0 right-0 h-0.5 rounded-full bg-[#00ffff] shadow-[0_0_10px_rgba(0,255,255,0.7)]" />
+              )}
+            </button>
             {session?.user?.id && (
-              <button onClick={() => setShowMyList(true)}
-                className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all ${showMyList ? "text-[#00ffff] border-b-2 border-[#00ffff] bg-[#00ffff]/5" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}
-              >My List {myListTotal > 0 && <span className="ml-1 text-[10px] font-mono opacity-60">({myListTotal})</span>}</button>
+              <button
+                onClick={() => setShowMyList(true)}
+                className={`relative px-6 py-2.5 text-sm font-semibold rounded-xl transition-colors ${showMyList ? "text-[#00ffff] bg-[#00ffff]/5" : "text-[var(--color-mute)] hover:text-[var(--color-ink)]"}`}
+              >
+                My List {myListTotal > 0 && <span className="ml-1 text-[10px] font-mono opacity-60">({myListTotal})</span>}
+                {showMyList && (
+                  <motion.span layoutId="ln-toggle-underline" className="absolute -bottom-3 left-0 right-0 h-0.5 rounded-full bg-[#00ffff] shadow-[0_0_10px_rgba(0,255,255,0.7)]" />
+                )}
+              </button>
             )}
             <Link href="/search?type=MANGA&format=NOVEL"
               className="ml-auto text-xs text-[var(--color-mute)] hover:text-[#00ffff] transition-colors"
@@ -242,31 +330,56 @@ export default function LightNovelBrowseClient() {
           </div>
         </motion.div>
 
+        {/* Continue Reading */}
+        {!showMyList && !debouncedQuery.trim() && continueReading.length > 0 && (
+          <motion.div {...FADE_UP}>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-display text-lg font-bold">
+                <span className="h-4 w-1 rounded-full bg-[#00ffff]" />
+                Continue Reading
+              </h2>
+              <button onClick={() => setShowMyList(true)} className="text-xs text-[var(--color-mute)] transition-colors hover:text-[#00ffff]">
+                View list →
+              </button>
+            </div>
+            <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2">
+              {continueReading.map((entry, i) => (
+                <div key={entry.id} className="w-32 shrink-0 snap-start">
+                  <MangaCard manga={entry} entry={entry} showProgress index={i} />
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* Browse Tabs + Genre Filters */}
         {!showMyList && !debouncedQuery.trim() && (
           <motion.div {...FADE_UP} className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              {TABS.map((t) => (
-                <button key={t.key} onClick={() => setTab(t.key)}
-                  className="neon-rgb-border rounded-xl px-6 py-3 text-sm font-bold transition-all"
-                  style={{
-                    color: tab === t.key ? "#00ffff" : "var(--color-mute)",
-                    background: tab === t.key ? "rgba(0,255,255,0.08)" : undefined,
-                  }}
-                >{t.label}</button>
-              ))}
+              {TABS.map((t) => {
+                const active = tab === t.key;
+                return (
+                  <button key={t.key} onClick={() => setTab(t.key)}
+                    className="neon-rgb-border relative rounded-xl px-6 py-3 text-sm font-bold transition-colors"
+                    style={{ color: active ? "#00ffff" : "var(--color-mute)" }}
+                  >
+                    {active && <motion.span layoutId="ln-tab-bg" className="absolute inset-0 rounded-xl bg-[#00ffff]/10" transition={PILL_SPRING} />}
+                    <span className="relative z-10">{t.label}</span>
+                  </button>
+                );
+              })}
             </div>
             <div className="flex flex-wrap gap-2">
               {GENRE_FILTERS.map((g) => {
                 const isActive = selectedGenre === g.value;
                 return (
-                  <button key={g.value} onClick={() => setSelectedGenre(g.value)}
-                    className="neon-rgb-border rounded-xl px-4 py-2 text-xs font-bold transition-all"
-                    style={{
-                      color: isActive ? "#00ffff" : "var(--color-mute)",
-                      background: isActive ? "rgba(0,255,255,0.08)" : undefined,
-                    }}
-                  >{g.label}</button>
+                  <button key={g.value || "all"} onClick={() => setSelectedGenre(g.value)}
+                    className="neon-rgb-border relative rounded-xl px-4 py-2 text-xs font-bold transition-colors"
+                    style={{ color: isActive ? "#00ffff" : "var(--color-mute)" }}
+                  >
+                    {isActive && <motion.span layoutId="ln-genre-bg" className="absolute inset-0 rounded-xl bg-[#00ffff]/10" transition={PILL_SPRING} />}
+                    <span className="relative z-10">{g.label}</span>
+                  </button>
                 );
               })}
             </div>
@@ -279,12 +392,12 @@ export default function LightNovelBrowseClient() {
             <div className="flex flex-wrap gap-2">
               {STATUS_FILTERS.map((s) => (
                 <button key={s} onClick={() => setListTab(s)}
-                  className="neon-rgb-border rounded-xl px-5 py-2.5 text-sm font-bold transition-all"
-                  style={{
-                    color: listTab === s ? "#00ffff" : "var(--color-mute)",
-                    background: listTab === s ? "rgba(0,255,255,0.08)" : undefined,
-                  }}
-                >{s === "ALL" ? "All" : STATUS_LABELS[s] || s}</button>
+                  className="neon-rgb-border relative rounded-xl px-5 py-2.5 text-sm font-bold transition-colors"
+                  style={{ color: listTab === s ? "#00ffff" : "var(--color-mute)" }}
+                >
+                  {listTab === s && <motion.span layoutId="ln-status-bg" className="absolute inset-0 rounded-xl bg-[#00ffff]/10" transition={PILL_SPRING} />}
+                  <span className="relative z-10">{s === "ALL" ? "All" : STATUS_LABELS[s] || s}</span>
+                </button>
               ))}
             </div>
           </motion.div>
@@ -309,6 +422,12 @@ export default function LightNovelBrowseClient() {
 
         {/* Grid */}
         <motion.div {...FADE_UP}>
+          {!loading && total > 0 && (
+            <p className="mb-3 text-xs font-mono uppercase tracking-widest text-[var(--color-mute)]">
+              {total.toLocaleString()} light novel{total === 1 ? "" : "s"}
+            </p>
+          )}
+
           {loading ? (
             <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
               {Array.from({ length: 12 }).map((_, i) => (
@@ -329,31 +448,45 @@ export default function LightNovelBrowseClient() {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              {list.map((m, i) => <MangaCard key={m.id} manga={m} index={i} />)}
+              {list.map((m, i) => <MangaCard key={m.id} manga={m} index={i} href={`/light-novels/${m.id}`} />)}
             </div>
           )}
 
-          {!loading && (showMyList ? myEntries.length === 0 : list.length === 0) && (
-            <div className="text-center py-16">
-              <span className="text-4xl block mb-3">{showMyList ? "📚" : "🔍"}</span>
-              <p className="text-sm text-[var(--color-mute)]">
-                {showMyList
-                  ? "Your list is empty. Search and add light novels to start tracking!"
-                  : debouncedQuery
-                    ? `No light novels found for "${debouncedQuery}"`
-                    : "No light novels found."
-                }
-              </p>
-              {showMyList && (
-                <button onClick={() => setShowMyList(false)} className="mt-3 text-xs text-[#00ffff] hover:underline">
-                  Browse Light Novels →
-                </button>
-              )}
-              {debouncedQuery && !showMyList && (
-                <button onClick={() => { setQuery(""); setDebouncedQuery(""); }} className="mt-3 text-xs text-[#00ffff] hover:underline">
-                  Clear search
-                </button>
-              )}
+          {isEmpty && (
+            showMyList ? (
+              <EmptyState
+                icon="bookmark"
+                title="Your list is empty"
+                description="Search and add light novels to start tracking your reading."
+                actionLabel="Browse Light Novels"
+                onAction={() => setShowMyList(false)}
+              />
+            ) : debouncedQuery ? (
+              <EmptyState
+                icon="search"
+                title="No light novels found"
+                description={`Nothing matched "${debouncedQuery}".`}
+                actionLabel="Clear search"
+                onAction={() => { setQuery(""); setDebouncedQuery(""); }}
+              />
+            ) : (
+              <EmptyState
+                icon="search"
+                title="No light novels found"
+                description="Try a different genre or tab."
+              />
+            )
+          )}
+
+          {!loading && hasMore && (
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="neon-rgb-border rounded-full px-8 py-3 text-sm font-bold text-[#00ffff] transition-all hover:bg-[#00ffff]/10 disabled:opacity-50"
+              >
+                {loadingMore ? "Loading…" : "Load More"}
+              </button>
             </div>
           )}
         </motion.div>

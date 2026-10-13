@@ -6,6 +6,12 @@ import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 export const revalidate = 172800;
 
+// Empty array => no build-time prerender, but on-demand ISR at runtime
+// (Next.js only enables it for a dynamic segment when this function exists).
+export function generateStaticParams() {
+  return [];
+}
+
 const getStudioCached = cache(getStudio);
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -13,11 +19,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   try {
     const studio = await getStudioCached(Number(id));
     return {
-      title: `${studio.name} — Studio | ZyniVerse`,
+      title: `${studio.name} — Studio`,
       description: `Anime produced by ${studio.name} — ${studio.media?.pageInfo?.total || 0} titles on ZyniVerse.`,
     };
   } catch {
-    return { title: "Studio | ZyniVerse" };
+    return { title: "Studio" };
   }
 }
 

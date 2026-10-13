@@ -4,6 +4,7 @@ import { resolveUserId } from "@/lib/resolve-user";
 import { runSimklSync } from "@/lib/sync-simkl";
 import { simklConfigured } from "@/lib/simkl-client";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { decryptSecret } from "@/lib/token-encryption";
 
 export const runtime = "nodejs";
 
@@ -46,7 +47,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const summary = await runSimklSync(userId, account.accessToken);
+    const accessToken = decryptSecret(account.accessToken);
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "Could not decrypt Simkl token. Please reconnect your Simkl account." },
+        { status: 502 }
+      );
+    }
+    const summary = await runSimklSync(userId, accessToken);
     const syncAt = new Date();
     await prisma.externalAccount.update({
       where: { userId_provider: { userId, provider: "simkl" } },

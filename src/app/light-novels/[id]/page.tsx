@@ -1,21 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { getMangaDetailFull, bestTitle } from "@/lib/anilist";
 import Loader, { ErrorState } from "@/components/Loader";
+import RevealTitle from "@/components/RevealTitle";
 import { DynamicCarousel3D as Carousel3D } from "@/components/lazy";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import MangaProgress from "@/components/MangaProgress";
+import AffiliateLink from "@/components/AffiliateLink";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/manga";
 import type { MediaMangaFull } from "@/lib/anilist";
 import { logError } from "@/lib/logger";
 
 function stripHtml(str: string | null | undefined = "") { return str ? str.replace(/<[^>]*>/g, "") : ""; }
 function formatScore(score?: number) { return score ? (score / 10).toFixed(1) : "—"; }
+
+// Route a related/recommended title to its correct detail page. Light novels
+// (format === "NOVEL") live under /light-novels, not /manga.
+function mediaHref(item: { id: number; type?: string; format?: string; mediaFormat?: string | null }) {
+  if (item.type === "ANIME") return `/anime/${item.id}`;
+  return (item.mediaFormat ?? item.format) === "NOVEL" ? `/light-novels/${item.id}` : `/manga/${item.id}`;
+}
 
 interface LightNovelEntryDB {
   id: string;
@@ -42,6 +53,8 @@ const STATUS_OPTIONS = ["READING", "COMPLETED", "PLANNING", "DROPPED", "PAUSED",
 
 export default function LightNovelDetailsPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const { data: session } = useSession();
   const [ln, setLn] = useState<MediaMangaFull | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -114,6 +127,8 @@ export default function LightNovelDetailsPage() {
         const data = await res.json();
         setEntry(data.entry);
         fetchChapters();
+      } else if (res.status === 401) {
+        router.push("/login");
       }
     } catch (e) {
       console.error("Failed to add light novel", e);
@@ -193,16 +208,21 @@ export default function LightNovelDetailsPage() {
       {/* Hero */}
       <div className="relative border-b border-[var(--color-line)]">
         {ln.bannerImage && (
-          <div className="absolute inset-0">
+          <motion.div className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, ease: "easeOut" }}>
             <div className="relative h-full w-full">
               <Image src={ln.bannerImage} alt="" fill loading="eager" fetchPriority="high" className="object-cover opacity-20" sizes="100vw" />
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-[var(--color-void)]/80 to-[var(--color-void)]/30" />
-          </div>
+          </motion.div>
         )}
 
         <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:px-6 sm:py-14">
-          <div className="relative shrink-0 h-64 w-44 sm:h-80 sm:w-56 rounded-xl border border-[var(--color-line)] shadow-2xl overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            className="relative shrink-0 h-64 w-44 sm:h-80 sm:w-56 rounded-xl border border-[var(--color-line)] shadow-2xl overflow-hidden"
+          >
             <Image
               src={ln.coverImage?.large || ln.coverImage?.extraLarge || ""}
               alt={title}
@@ -210,18 +230,18 @@ export default function LightNovelDetailsPage() {
               className="object-cover"
               sizes="(max-width: 768px) 50vw, 25vw"
             />
-          </div>
+          </motion.div>
 
           <div className="min-w-0 flex-1">
             <span className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--color-cyan)]/20 px-2.5 py-1 text-xs font-bold text-[var(--color-cyan)] uppercase tracking-wider">
               Light Novel
             </span>
-            <h1 className="font-display text-3xl font-bold leading-tight sm:text-5xl mt-2">{title}</h1>
+            <RevealTitle as="h1" text={title} className="font-display text-3xl font-bold leading-tight sm:text-5xl mt-2" />
             {ln.title.native && <p className="mt-1 text-[var(--color-mute)]">{ln.title.native}</p>}
 
             <div className="mt-4 flex flex-wrap gap-2">
               {ln.genres?.map((g) => (
-                <Link key={g} href={`/search?genre=${g}&type=MANGA`}
+                <Link key={g} href={`/search?genre=${g}&type=MANGA&format=NOVEL`}
                   className="rounded-full border border-[var(--color-line)] px-3 py-1 text-xs text-[var(--color-mute)] hover:border-[var(--color-cyan)] hover:text-[var(--color-cyan)] transition-colors"
                 >{g}</Link>
               ))}
@@ -265,7 +285,7 @@ export default function LightNovelDetailsPage() {
                     </span>
                   )}
                 </>
-              ) : (
+              ) : session?.user?.id ? (
                 <>
                   <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}
                     className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-3 py-1.5 text-xs outline-none focus:border-[var(--color-cyan)]"
@@ -276,6 +296,10 @@ export default function LightNovelDetailsPage() {
                     className="rounded-full bg-[var(--color-cyan)] px-5 py-2 text-sm font-semibold text-black hover:opacity-90 transition-opacity"
                   >Add to My List</button>
                 </>
+              ) : (
+                <Link href="/login"
+                  className="rounded-full bg-[var(--color-cyan)] px-5 py-2 text-sm font-semibold text-black hover:opacity-90 transition-opacity"
+                >Sign in to track</Link>
               )}
             </div>
           </div>
@@ -399,10 +423,11 @@ export default function LightNovelDetailsPage() {
                   id: r.node.id, coverImage: r.node.coverImage, title: r.node.title,
                   averageScore: r.node.averageScore,
                   format: r.node.type === "ANIME" ? `${r.node.episodes || ""} ep` : `${r.node.chapters || ""} ch`,
+                  mediaFormat: r.node.format,
                   type: r.node.type,
                 }))}
                 accent="magenta"
-                hrefFn={(item: {id: number; type?: string}) => item.type === "ANIME" ? `/anime/${item.id}` : `/manga/${item.id}`}
+                hrefFn={mediaHref}
               />
             </section>
           )}
@@ -414,7 +439,7 @@ export default function LightNovelDetailsPage() {
               <Carousel3D
                 items={recs.map((e) => e.node.mediaRecommendation)}
                 accent="magenta"
-                hrefFn={(m: {id: number; type?: string}) => m.type === "ANIME" ? `/anime/${m.id}` : `/manga/${m.id}`}
+                hrefFn={mediaHref}
               />
             </section>
           )}
@@ -426,6 +451,7 @@ export default function LightNovelDetailsPage() {
           {entry && (
             <MangaProgress
               mediaId={Number(id)}
+              apiBase="/api/light-novels/list"
               chapters={entry.chapters}
               volumes={entry.volumes}
               totalChapters={entry.totalChapters}
@@ -433,6 +459,23 @@ export default function LightNovelDetailsPage() {
               onUpdate={handleProgressUpdate}
             />
           )}
+
+          {/* Buy / Affiliate */}
+          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] p-5">
+            <h3 className="font-display text-sm font-bold mb-3">Buy this Light Novel</h3>
+            <div className="flex flex-col gap-2">
+              <AffiliateLink
+                partner="amazon"
+                path={`https://www.amazon.in/s?k=${encodeURIComponent(`${title} light novel`)}`}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#ff9900] to-[#ff5c00] px-4 py-2 text-xs font-bold text-black hover:opacity-90 transition-opacity"
+              >📦 Buy on Amazon</AffiliateLink>
+              <AffiliateLink
+                partner="bookwalker"
+                path={`https://global.bookwalker.jp/search/?word=${encodeURIComponent(title)}`}
+                className="inline-flex items-center justify-center gap-2 rounded-full neon-rgb-border px-4 py-2 text-xs font-semibold text-[var(--color-mute)] hover:text-[#00ffff] transition-colors"
+              >📖 Buy on BookWalker</AffiliateLink>
+            </div>
+          </div>
 
           {/* External Links */}
           {links.length > 0 && (
@@ -492,6 +535,6 @@ export default function LightNovelDetailsPage() {
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
     <span className="h-4 w-1 rounded-full bg-[var(--color-cyan)]" />
-    {children}
+    <RevealTitle as="span">{children}</RevealTitle>
   </h2>;
 }

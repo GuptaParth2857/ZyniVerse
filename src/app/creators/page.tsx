@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import CreatorsPageClient from "./CreatorsPageClient";
 
 export const metadata = {
-  title: "Creators — ZyniVerse",
+  title: "Creators",
   description: "Discover and support your favorite content creators",
 };
 

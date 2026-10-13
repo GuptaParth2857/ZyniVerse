@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { prisma } from "./prisma";
+import { validateWebhookUrl } from "./webhook-ssrf";
 
 interface WebhookRecord {
   id: string;
@@ -25,6 +26,23 @@ export async function dispatchWebhook(
 
   const body = JSON.stringify({ event, payload, timestamp: new Date().toISOString() });
   const signature = crypto.createHmac("sha256", webhook.secret).update(body).digest("hex");
+
+  // Re-validate at dispatch time in case the URL was stored before the SSRF
+  // guard existed, or a previously-safe host started resolving to a private IP.
+  const urlCheck = await validateWebhookUrl(webhook.url);
+  if (!urlCheck.ok) {
+    await prisma.webhookDelivery.create({
+      data: {
+        webhookId: webhook.id,
+        event,
+        payload: body,
+        status: "failed",
+        attempts: 0,
+        response: `Blocked: ${urlCheck.reason}`,
+      },
+    });
+    return null;
+  }
 
   const delivery = await prisma.webhookDelivery.create({
     data: {
@@ -52,6 +70,9 @@ export async function dispatchWebhook(
         },
         body,
         signal: AbortSignal.timeout(10000),
+        // Never follow redirects: a public endpoint could redirect to an
+        // internal/private host, bypassing the SSRF check above.
+        redirect: "manual",
       });
 
       const responseText = await response.text().catch(() => "");

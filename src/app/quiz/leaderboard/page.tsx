@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "Anime Quiz Leaderboard — Top Scores & Rankings | ZyniVerse",
+  title: "Anime Quiz Leaderboard — Top Scores & Rankings",
   description:
     "See the top anime quiz scores on ZyniVerse. Ranked by total points across anime quizzes, daily challenges, and community trivia.",
   alternates: { canonical: `${BASE_URL}/quiz/leaderboard` },

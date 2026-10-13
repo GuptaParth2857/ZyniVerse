@@ -4,7 +4,7 @@ import UpcomingClient from "./content";
 import { logError } from "@/lib/logger";
 
 export const metadata: Metadata = {
-  title: "Upcoming Anime - ZyniVerse",
+  title: "Upcoming Anime",
   description: "Preview upcoming anime releases with details and trailers",
 };
 

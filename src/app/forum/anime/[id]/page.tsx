@@ -5,7 +5,7 @@ import ForumAnimeClient from "./ForumAnimeClient";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   return {
-    title: `Discussions for Anime #${id} — Forum | ZyniVerse`,
+    title: `Discussions for Anime #${id} — Forum`,
     description: `Browse and join discussions about this anime on ZyniVerse forum.`,
   };
 }

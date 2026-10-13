@@ -6,6 +6,12 @@ import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 export const revalidate = 172800;
 
+// Empty array => no build-time prerender, but on-demand ISR at runtime
+// (Next.js only enables it for a dynamic segment when this function exists).
+export function generateStaticParams() {
+  return [];
+}
+
 const getStaffBasicCached = cache(getStaffBasic);
 const getStaffMediaCached = cache(getStaffMedia);
 
@@ -16,16 +22,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const name = staff.name?.full || "Staff";
     const description = (staff.description || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
     return {
-      title: `${name} — Staff | ZyniVerse`,
+      title: `${name} — Staff`,
       description: description || `Anime works, roles and details for ${name}.`,
       openGraph: {
-        title: `${name} — Staff | ZyniVerse`,
+        title: `${name} — Staff`,
         description,
         images: staff.image?.large ? [{ url: staff.image.large, alt: name }] : undefined,
       },
     };
   } catch {
-    return { title: "Staff | ZyniVerse" };
+    return { title: "Staff" };
   }
 }
 

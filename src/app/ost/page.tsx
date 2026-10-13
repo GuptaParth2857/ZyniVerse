@@ -4,10 +4,10 @@ import AffiliateLink from "@/components/AffiliateLink";
 import NativeBannerAd from "@/components/NativeBannerAd";
 
 export const metadata: Metadata = {
-  title: "Anime OST Database — Soundtracks & Music | ZyniVerse",
+  title: "Anime OST Database — Soundtracks & Music",
   description: "Browse a curated database of anime opening themes, ending themes, and soundtracks. Find your favorite anime songs and artists.",
   openGraph: {
-    title: "Anime OST Database — Soundtracks & Music | ZyniVerse",
+    title: "Anime OST Database — Soundtracks & Music",
     description: "Browse a curated database of anime opening themes, ending themes, and soundtracks.",
   },
 };

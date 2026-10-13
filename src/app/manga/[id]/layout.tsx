@@ -20,17 +20,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : `Read ${title} — manga details, chapters, recommendations, and more on ZyniVerse.`;
 
     return {
-      title: `${title} — Read Manga, Chapters & Recommendations | ZyniVerse`,
+      title: `${title} — Read Manga, Chapters & Recommendations`,
       description: desc,
       openGraph: {
-        title: `${title} — Manga | ZyniVerse`,
+        title: `${title} — Manga`,
         description: desc,
         url: `${BASE_URL}/manga/${id}`,
         images: manga.coverImage?.extraLarge ? [{ url: manga.coverImage.extraLarge }] : [],
       },
       twitter: {
         card: "summary_large_image",
-        title: `${title} — ZyniVerse`,
+        title: `${title}`,
         description: desc,
       },
       alternates: {
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   } catch {
     return {
-      title: "Manga Details — ZyniVerse",
+      title: "Manga Details",
       description: "Browse detailed manga information including chapters, genres, characters, and recommendations. Read manga online with India's #1 free anime platform.",
       alternates: { canonical: `${BASE_URL}/manga/${id}` },
       robots: { index: true, follow: true },

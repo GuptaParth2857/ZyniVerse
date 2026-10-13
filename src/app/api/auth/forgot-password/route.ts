@@ -2,11 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import { logError } from "@/lib/logger";
+import { authLimiter } from "@/lib/rate-limiter";
+import crypto from "crypto";
 
 const resendKey = process.env.RESEND_API_KEY;
 const resend = resendKey ? new Resend(resendKey) : null;
 
 export async function POST(req: Request) {
+  const rateCheck = await authLimiter.middleware(req);
+  if (rateCheck) return rateCheck;
+
   try {
     const { email } = await req.json();
 
@@ -23,8 +28,9 @@ export async function POST(req: Request) {
     // Clear old tokens
     await prisma.passwordResetToken.deleteMany({ where: { email } });
 
-    // Generate 6 digit OTP
-    const token = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate 6 digit OTP (crypto-secure — Math.random() was predictable
+    // enough to brute-force within the 15-minute validity window)
+    const token = crypto.randomInt(100000, 1000000).toString();
     const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins expiry
 
     await prisma.passwordResetToken.create({

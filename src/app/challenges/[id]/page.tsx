@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PageProps) {
   if (!challenge) return { title: "Challenge Not Found" };
 
   return {
-    title: `${challenge.title} — Anime Challenges | ZyniVerse`,
+    title: `${challenge.title} — Anime Challenges`,
     description: challenge.description || `Join the ${challenge.title} challenge on ZyniVerse.`,
   };
 }

@@ -12,6 +12,12 @@ import FillerChecklist from "@/components/FillerChecklist";
 
 export const revalidate = 86400;
 
+// Empty array => no build-time prerender, but on-demand ISR at runtime
+// (Next.js only enables it for a dynamic segment when this function exists).
+export function generateStaticParams() {
+  return [];
+}
+
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -29,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const fillerPct = filler?.fillerPercent ?? 0;
 
     return {
-      title: `Is ${title} Worth Watching? Filler Episode Guide | ZyniVerse`,
+      title: `Is ${title} Worth Watching? Filler Episode Guide`,
       description: filler
         ? `${title} has ${total} episodes with ${fillerCount} filler episodes (${fillerPct}%). Skip filler and watch only canon. Complete episode-by-episode breakdown.`
         : `Is ${title} worth watching? Complete filler and canon episode guide for ${title}. Every episode classified.`,
@@ -44,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   } catch {
     return {
-      title: "Filler Episode Guide | ZyniVerse",
+      title: "Filler Episode Guide",
       description: "Complete anime filler guide showing which episodes are canon, filler, or mixed. Skip filler and watch only the essential episodes. Updated weekly.",
       robots: { index: true, follow: true },
     };

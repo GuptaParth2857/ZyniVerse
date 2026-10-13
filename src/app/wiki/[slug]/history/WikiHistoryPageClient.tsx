@@ -66,7 +66,7 @@ export default function WikiHistoryPageClient() {
                   <span className="text-sm font-medium">{entry.title}</span>
                 </div>
                 <div className="flex items-center gap-3 text-[10px] text-[var(--color-mute)] mt-1">
-                  <span>by {entry.editor.username}</span>
+                  <span>by {entry.editor?.username ?? "Unknown"}</span>
                   <span>{new Date(entry.createdAt).toLocaleString()}</span>
                   {entry.summary && <span>— {entry.summary}</span>}
                 </div>

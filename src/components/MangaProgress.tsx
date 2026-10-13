@@ -8,10 +8,11 @@ interface Props {
   volumes: number;
   totalChapters?: number | null;
   totalVolumes?: number | null;
+  apiBase?: string;
   onUpdate: (chapters: number, volumes: number) => void;
 }
 
-export default function MangaProgress({ mediaId, chapters, volumes, totalChapters, totalVolumes, onUpdate }: Props) {
+export default function MangaProgress({ mediaId, chapters, volumes, totalChapters, totalVolumes, apiBase = "/api/manga/list", onUpdate }: Props) {
   const [ch, setCh] = useState(chapters);
   const [vol, setVol] = useState(volumes);
   const [saving, setSaving] = useState(false);
@@ -19,7 +20,7 @@ export default function MangaProgress({ mediaId, chapters, volumes, totalChapter
   async function handleSave() {
     setSaving(true);
     try {
-      const res = await fetch(`/api/manga/list/${mediaId}`, {
+      const res = await fetch(`${apiBase}/${mediaId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chapters: ch, volumes: vol }),

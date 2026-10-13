@@ -9,6 +9,12 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const revalidate = 172800;
 
+// Empty array => no build-time prerender, but on-demand ISR at runtime
+// (Next.js only enables it for a dynamic segment when this function exists).
+export function generateStaticParams() {
+  return [];
+}
+
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -16,7 +22,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const order = WATCH_ORDERS_DATA[id as keyof typeof WATCH_ORDERS_DATA];
-  if (!order) return { title: "Watch Order — ZyniVerse", description: "Find the correct watch order for popular anime series including Naruto, One Piece, Attack on Titan, Demon Slayer, and more. Watch in the right order with ZyniVerse.", robots: { index: true, follow: true } };
+  if (!order) return { title: "Watch Order", description: "Find the correct watch order for popular anime series including Naruto, One Piece, Attack on Titan, Demon Slayer, and more. Watch in the right order with ZyniVerse.", robots: { index: true, follow: true } };
 
   const slugToAnimeName: Record<string, string> = {
     rezero: "Re:Zero", sao: "Sword Art Online", fate: "Fate",
@@ -30,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const animeName = slugToAnimeName[id] || order.title;
 
   return {
-    title: `${animeName} Watch Order — Correct Order to Watch (2026) | ZyniVerse`,
+    title: `${animeName} Watch Order — Correct Order to Watch (2026)`,
     description: `${order.description} Complete ${animeName} watch order with release order, chronological order, and spoiler-free tips. Updated for 2026.`,
     keywords: [
       `${animeName.toLowerCase()} watch order`,
@@ -41,14 +47,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       "anime kis order me dekhe", "anime ka sahi order", "anime serial order hindi", "one piece watch order hindi", "naruto watch order hindi",
     ],
     openGraph: {
-      title: `${animeName} Watch Order — ZyniVerse`,
+      title: `${animeName} Watch Order`,
       description: order.description,
       url: `${BASE_URL}/watch-order/${id}`,
       type: "article",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${animeName} Watch Order — ZyniVerse`,
+      title: `${animeName} Watch Order`,
       description: order.description,
     },
     alternates: {

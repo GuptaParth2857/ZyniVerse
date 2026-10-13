@@ -1,4 +1,4 @@
-# Vercel WAF rules — bot blocking (moved out of `src/proxy.ts`)
+# Vercel WAF rules — bot traffic (moved out of `src/proxy.ts`)
 
 ## Why this moved
 
@@ -10,62 +10,84 @@ rules at the CDN edge, before your function is ever invoked, so it costs
 nothing against Function Duration.
 
 The proxy blocklist was removed in the same change. **If you skip this step,
-bot traffic is no longer blocked at all.**
+bot traffic is no longer blocked at all.** The rules below are the ones that
+are **live on the `zyni-verse` project** (verified 2026-10-13).
 
-## Where to add them
+> Discoverability rule of thumb: **never block AI-search / answer crawlers or
+> search engines.** We want ChatGPT Search, Perplexity, Claude, Google and Bing
+> to index and cite ZyniVerse. Only pure SEO/backlink tools and generic
+> non-browser clients are denied.
 
-Vercel Dashboard → your project → **Settings → Firewall → Create Rule**
-(rule type: *Block request*). Condition: *Path does not match* `/api/og/*`
-plus a *User-Agent contains* condition, one rule per group below.
+## Where these live
 
-## Rules
+Applied via the Vercel Firewall REST API (no dashboard click needed), and they
+take effect immediately — **no redeploy required**:
 
-Add each group as a separate rule. Tokens are matched as substrings, exactly
-as the old `lower.includes(token)` check did.
+- `PATCH /v1/security/firewall/config/draft?projectId=…&teamId=…`
+  with `{ "action": "rules.insert" | "rules.update", "id": null | "<ruleId>", "value": { … } }`
+- `POST  /v1/security/firewall/config/draft/activate?projectId=…&teamId=…` to publish
 
-**Group 1 — AI training / AI search scrapers**
+Hobby allows **up to 3 custom rules** — exactly the 3 below.
+
+## Live rules
+
+### Rule 1 — Throttle aggressive crawlers (action: `rate_limit`)
+Per-IP rate limit **100 requests / 60s**, exceeded → challenge/429. Search
+engines and AI crawlers are exempt, and static asset paths do not count.
+
+- Condition A (NOT): `path` matches
+  `^/(_next/|favicon\.ico|.*\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|txt|xml|json))$`
+- Condition B (NOT): `user_agent` matches
+  `(googlebot|mediapartners-google|adsbot-google|bingbot|msnbot|applebot|duckduckbot|duckassistbot|yandex|baiduspider|sogou|seznambot|oai-searchbot|chatgpt-user|gptbot|perplexity|claudebot|claude-user|claude-web|anthropic|meta-external|facebookexternalhit|amazonbot|cohere|petalbot)`
+- `rateLimit`: `{ algo: "fixed_window", window: 60, limit: 100, keys: ["ip"], action: "challenge" }`
+
+> Note: a *distributed* crawler (many IPs) is not stopped by an per-IP limit.
+
+### Rule 2 — Block SEO / backlink scrapers (action: `deny`)
+pure commercial SEO tools only:
 ```
-gptbot, chatgpt-user, chatgpt, oai-searchbot, gpt-3.5-turbo, perplexity, pplx,
-claudebot, claude-web, claude-external, anthropic-ai, amazonbot,
-google-extended, googleother, bytespider, ai2bot, ai2bot-dolma,
-bytedance-webcrawler, tiktok-webcrawler, cohere-ai, dataforseekbot, youbot,
-omgilibot, omgili, webzio-extractor, velenpublicwebcrawler, zumbot,
-mia-research, imagesiftbot, brightbot, checkthewebsite, magpie-crawler,
-komodia, dupax-ai-crawler, kangaroobot, awarios, zentcrawl
+ahrefsbot, semrushbot, mj12bot, dotbot, dataforseobot, barkrowler, linkdexbot,
+meanpathbot, exabot, serpstat, rogerbot, screamingfrog, seokicks, sistrix
 ```
 
-**Group 2 — SEO / analytics scrapers**
-```
-ccbot, dataforseobot, ahrefsbot, semrushbot, mj12bot, dotbot, seznambot,
-barkrowler, petalbot, applebot-extended, meta-externalagent,
-meta-externalfetcher, diffbot, yandexbot, baiduspider, sogou, exabot,
-linkdexbot, meanpathbot
-```
-
-**Group 3 — generic non-browser clients (curl/wget/LIBS, never real users)**
+### Rule 3 — Block generic non-browser clients (action: `deny`)
 ```
 python-requests, python-urllib, python-httpx, pantra, scrapy, node-fetch,
 go-http-client, curl/, wget/, java/, http-client, axios/, okhttp-utils
 ```
 
-## Do NOT block
+## Do NOT block (intentionally allowed)
 
-`googlebot` and `bingbot` are deliberately allowed — they drive real organic
-search traffic, including AI Overviews / AI Search answers. Note that
-`google-extended` (Group 1) *is* blocked: that is the AI-training opt-out
-token and is separate from `googlebot`.
+`googlebot`, `bingbot`, and every AI answer/search crawler:
+`oai-searchbot` (ChatGPT Search), `chatgpt-user`, `gptbot`, `perplexity`,
+`claudebot`, `claude-user`, `anthropic`, `applebot`, `duckduckbot`, `yandex`,
+`baiduspider`, `sogou`, `cohere`, `meta-external`, `amazonbot`, …
+
+`google-extended` and `ccbot` are **not** blocked either, so Google's / Common
+Crawl's AI pipelines can still learn about the site.
 
 ## Verify
 
-After saving, confirm with a blocked request:
-
 ```bash
-curl -sI -A "Mozilla/5.0 (compatible; GPTBot/1.0; +https://openai.com/gptbot)" https://zyverse.in/ | head -1
-# expect: HTTP/2 403
+# allowed (expect 200)
+curl -s -o /dev/null -w '%{http_code}\n' -A "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" https://zyverse.in/
+curl -s -o /dev/null -w '%{http_code}\n' -A "Mozilla/5.0 (compatible; OAI-SearchBot/1.0; +https://openai.com/searchbot)" https://zyverse.in/
+curl -s -o /dev/null -w '%{http_code}\n' -A "Mozilla/5.0 (compatible; PerplexityBot/1.0; +https://perplexity.ai/perplexitybot)" https://zyverse.in/
+curl -s -o /dev/null -w '%{http_code}\n' -A "Mozilla/5.0 (compatible; ClaudeBot/1.0; +claudebot@anthropic.com)" https://zyverse.in/
 
-curl -sI -A "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" https://zyverse.in/ | head -1
-# expect: HTTP/2 200
+# blocked (expect 403)
+curl -s -o /dev/null -w '%{http_code}\n' -A "Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com/robot/)" https://zyverse.in/
+curl -s -o /dev/null -w '%{http_code}\n' -A "python-requests/2.31.0" https://zyverse.in/
 ```
 
-Also re-check in Vercel → Observability → Firewall that hits are being counted
-and that Function Duration has stopped growing on bot-shaped traffic.
+Then re-check Vercel → Observability → Firewall (Traffic → User Agents) to see
+what is still driving Function Duration.
+
+## Still open
+
+Function Duration is still burned by high-volume **dynamic page renders**
+(catalog enumeration of `/character/*`, `/manga/*`, `/staff/*`, `/anime/*`).
+The durable, discoverability-safe fix is edge caching / `revalidate` on those
+routes so repeat crawls are served as CDN HITs instead of Node renders — see
+`src/proxy.ts` (public cache-control block) and add `export const revalidate`
+to the catalog route files.

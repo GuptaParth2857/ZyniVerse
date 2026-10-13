@@ -4,7 +4,7 @@ import { PageTransition } from "@/components/PageTransition";
 import WatchHistoryTimeline from "@/components/WatchHistoryTimeline";
 
 export const metadata: Metadata = {
-  title: "Watch History Timeline | ZyniVerse",
+  title: "Watch History Timeline",
   description: "Visualize your anime journey with an interactive timeline of every episode you've watched.",
 };
 

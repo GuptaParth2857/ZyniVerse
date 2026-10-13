@@ -71,7 +71,7 @@ async function enrichSinglePostWithPoster(post: ExternalPost): Promise<ExternalP
   const animeName = extractAnimeFromTitle(post.title);
   if (animeName) {
     try {
-      const data = await searchAll(animeName, 1, 3);
+      const data = await searchAll({ search: animeName, page: 1, perPage: 3 });
       const all = [...(data.anime || []), ...(data.manga || [])];
       const best = all.find((m) => m.coverImage?.large) || all[0];
       const url = best?.coverImage?.large || null;

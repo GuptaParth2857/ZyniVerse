@@ -22,9 +22,9 @@ export async function generateMetadata({ params }: Props) {
     where: { key },
     include: { user: { select: { username: true } } },
   });
-  if (!share) return { title: "Card Not Found | ZyniVerse" };
+  if (!share) return { title: "Card Not Found" };
   return {
-    title: `@${share.user.username}'s Anime Card | ZyniVerse`,
+    title: `@${share.user.username}'s Anime Card`,
     description: `See ${share.user.username}'s anime stats, top genres, and rankings.`,
     openGraph: {
       title: `@${share.user.username}'s Anime Card`,

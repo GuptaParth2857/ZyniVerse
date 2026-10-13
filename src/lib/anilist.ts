@@ -17,7 +17,11 @@ let cacheAdapter: AniListCacheAdapter | null = null;
 
 function getActiveAdapter(): AniListCacheAdapter | null {
   const g = globalThis as Record<string, unknown>;
-  return cacheAdapter ?? ((g[GLOBAL_ADAPTER_KEY] as AniListCacheAdapter | undefined) ?? null);
+  return (
+    cacheAdapter ??
+    (g[GLOBAL_ADAPTER_KEY] as AniListCacheAdapter | undefined) ??
+    null
+  );
 }
 
 export function registerAniListCache(adapter: AniListCacheAdapter): void {
@@ -47,10 +51,23 @@ async function ensureAdapter(): Promise<AniListCacheAdapter | null> {
 // Failure is currently swallowed by callers that map it to `[]`, which is how an
 // empty homepage got baked and served from the CDN without a single log line.
 // Surface it so Vercel's logs actually show the rate limiting.
-function logAnilistFailure(cacheKey: string, error: Error | null): void {
-  const preview = cacheKey.length > 120 ? `${cacheKey.slice(0, 120)}…` : cacheKey;
+function logAnilistFailure(
+  cacheKey: string,
+  error: Error | null,
+  recovery: "stale" | "none",
+): void {
+  const preview =
+    cacheKey.length > 120 ? `${cacheKey.slice(0, 120)}...` : cacheKey;
+  if (recovery === "stale") {
+    // Expected transient throttling - availability is preserved, so stay in
+    // the background instead of flooding the logs with per-429 console.error.
+    console.warn(
+      `[anilist] rate limited/unavailable, serving stale (${error?.message ?? "unknown error"}). query: ${preview}`,
+    );
+    return;
+  }
   console.error(
-    `[anilist] live fetch failed (${error?.message ?? "unknown error"}) — serving stale if available. query: ${preview}`,
+    `[anilist] live fetch failed (${error?.message ?? "unknown error"}) - NO stale available, serving nothing. query: ${preview}`,
   );
 }
 
@@ -93,7 +110,11 @@ export class AniListUnavailableError extends Error {
     // Keep the upstream reason (rate limited / timeout / 5xx) in the message so
     // logs and the client's error banner say what actually happened, instead of
     // a flat "temporarily unavailable".
-    super(cause ? `AniList is temporarily unavailable (${cause})` : "AniList is temporarily unavailable");
+    super(
+      cause
+        ? `AniList is temporarily unavailable (${cause})`
+        : "AniList is temporarily unavailable",
+    );
     this.name = "AniListUnavailableError";
   }
 }
@@ -115,7 +136,10 @@ function enterDegradedMode(key: string): void {
   degradedUntilByKey.set(key, Date.now() + DEGRADED_COOLDOWN_MS);
 }
 
-function getCacheKey(query: string, variables: Record<string, unknown>): string {
+function getCacheKey(
+  query: string,
+  variables: Record<string, unknown>,
+): string {
   return `${query}|${JSON.stringify(variables)}`;
 }
 
@@ -200,7 +224,13 @@ async function fetchAniList(
 
         const res = await fetch(ENDPOINT, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": USER_AGENT, Origin: "https://anilist.co", Referer: "https://anilist.co/" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "User-Agent": USER_AGENT,
+            Origin: "https://anilist.co",
+            Referer: "https://anilist.co/",
+          },
           body: JSON.stringify({ query, variables }),
           signal: controller.signal,
           cache: "force-cache",
@@ -235,7 +265,9 @@ async function fetchAniList(
             continue;
           }
           enterDegradedMode(cacheKey);
-          throw new Error(`AniList request failed (${res.status}): ${body.slice(0, 200)}`);
+          throw new Error(
+            `AniList request failed (${res.status}): ${body.slice(0, 200)}`,
+          );
         }
 
         const json = await res.json();
@@ -252,7 +284,13 @@ async function fetchAniList(
         setCache(cacheKey, json.data);
         const activeAdapter = getActiveAdapter();
         if (activeAdapter) {
-          await activeAdapter.persist(cacheKey, json.data).catch(() => {});
+          // Fire-and-forget: awaiting this put a cross-region DB write (Prisma →
+          // Supabase pooler) on the hot path of every *cold* fetch, adding
+          // ~0.3-0.8s per page. The in-memory cache, request coalescing and
+          // Next's data cache already serve the current window; the adapter row
+          // is resilience for *future* instances/deploys, so it must never block
+          // the caller that just got fresh data. Errors stay silent either way.
+          void activeAdapter.persist(cacheKey, json.data).catch(() => {});
         }
         return json.data;
       } catch (e) {
@@ -265,7 +303,9 @@ async function fetchAniList(
         }
         // Timeouts usually mean the network path is slow/dead — retry a hung
         // request at most once, then fail over to stale cache / degraded UI.
-        const timeoutRetryable = lastError.name !== "AniList request timed out — try again." || attempt === 0;
+        const timeoutRetryable =
+          lastError.name !== "AniList request timed out — try again." ||
+          attempt === 0;
         if (attempt < MAX_RETRIES && timeoutRetryable) {
           await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
           continue;
@@ -279,10 +319,10 @@ async function fetchAniList(
   // persistent adapter (shared across processes and deploys), and only then give
   // up. Previously an in-memory expired entry was deleted outright, so this
   // path had nothing in memory to fall back on.
-  logAnilistFailure(cacheKey, lastError);
 
   const inMemoryStale = getStaleFromCache(cacheKey);
   if (inMemoryStale !== null && inMemoryStale !== undefined) {
+    logAnilistFailure(cacheKey, lastError, "stale");
     return inMemoryStale;
   }
 
@@ -292,6 +332,7 @@ async function fetchAniList(
       const stale = await adapter.load(cacheKey);
       if (stale !== null && stale !== undefined) {
         setCache(cacheKey, stale);
+        logAnilistFailure(cacheKey, lastError, "stale");
         return stale;
       }
     } catch {
@@ -299,6 +340,8 @@ async function fetchAniList(
     }
   }
 
+  // Genuinely nothing left - availability is broken, this deserves attention.
+  logAnilistFailure(cacheKey, lastError, "none");
   if (isDegraded(cacheKey)) {
     // Thrown only after the persistent stale cache was tried above, so a
     // 5xx here means we genuinely have nothing. Routes wrap this into a
@@ -388,13 +431,19 @@ export async function getUpcoming(perPage = 12) {
 export async function getUpcomingPage(page = 1, perPage = 50) {
   const q = `query ($page: Int, $p: Int) { Page(page: $page, perPage: $p) { pageInfo { hasNextPage total } media(sort: POPULARITY_DESC, type: ANIME, status: NOT_YET_RELEASED, isAdult: false) { ${MEDIA_FIELDS} } } }`;
   const d = await gql(q, { page, p: perPage });
-  return d.Page as { pageInfo: { hasNextPage: boolean; total: number }; media: Media[] };
+  return d.Page as {
+    pageInfo: { hasNextPage: boolean; total: number };
+    media: Media[];
+  };
 }
 
 export async function searchUpcoming(query: string, perPage = 50) {
   const q = `query ($s: String, $p: Int) { Page(page: 1, perPage: $p) { pageInfo { hasNextPage total } media(search: $s, type: ANIME, status: NOT_YET_RELEASED, isAdult: false, sort: POPULARITY_DESC) { ${MEDIA_FIELDS} } } }`;
   const d = await gql(q, { s: query, p: perPage });
-  return d.Page as { pageInfo: { hasNextPage: boolean; total: number }; media: Media[] };
+  return d.Page as {
+    pageInfo: { hasNextPage: boolean; total: number };
+    media: Media[];
+  };
 }
 
 export async function getTopRated(perPage = 12) {
@@ -403,67 +452,188 @@ export async function getTopRated(perPage = 12) {
   return d.Page.media as Media[];
 }
 
-export async function getMangaTrending(perPage = 18) {
-  const q = `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: TRENDING_DESC, type: MANGA, isAdult: false) { ${MEDIA_FIELDS} } } }`;
-  const d = await gql(q, { p: perPage });
+const MANGA_TYPE_FILTER: Record<
+  string,
+  { format: string | null; country: string | null }
+> = {
+  manga: { format: null, country: "JP" },
+  manhwa: { format: null, country: "KR" },
+  manhua: { format: null, country: "CN" },
+  light_novel: { format: "NOVEL", country: null },
+};
+
+/**
+ * Build the optional AniList filter arguments for a catalog type. Unused
+ * filters must be omitted entirely — AniList treats an explicit
+ * `countryOfOrigin: null` as "no country" and returns zero results.
+ */
+function mangaTypeFilter(type?: string | null) {
+  const t = (type && MANGA_TYPE_FILTER[type]) || { format: null, country: null };
+  const decls: string[] = [];
+  const args: string[] = [];
+  const values: Record<string, unknown> = {};
+  if (t.format) {
+    decls.push("$f: MediaFormat");
+    args.push("format: $f");
+    values.f = t.format;
+  }
+  if (t.country) {
+    decls.push("$c: CountryCode");
+    args.push("countryOfOrigin: $c");
+    values.c = t.country;
+  }
+  return {
+    decls: decls.length ? ", " + decls.join(", ") : "",
+    args: args.length ? ", " + args.join(", ") : "",
+    values,
+  };
+}
+
+export async function getMangaTrending(perPage = 18, page = 1, type?: string | null) {
+  const { decls, args, values } = mangaTypeFilter(type);
+  const q = `query ($p: Int, $pg: Int${decls}) { Page(page: $pg, perPage: $p) { media(sort: TRENDING_DESC, type: MANGA, isAdult: false${args}) { ${MEDIA_FIELDS} } } }`;
+  const d = await gql(q, { p: perPage, pg: page, ...values });
   return d.Page.media as Media[];
 }
 
-export async function getMangaPopular(perPage = 18) {
-  const q = `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: POPULARITY_DESC, type: MANGA, isAdult: false) { ${MEDIA_FIELDS} } } }`;
-  const d = await gql(q, { p: perPage });
+export async function getMangaPopular(perPage = 18, page = 1, type?: string | null) {
+  const { decls, args, values } = mangaTypeFilter(type);
+  const q = `query ($p: Int, $pg: Int${decls}) { Page(page: $pg, perPage: $p) { media(sort: POPULARITY_DESC, type: MANGA, isAdult: false${args}) { ${MEDIA_FIELDS} } } }`;
+  const d = await gql(q, { p: perPage, pg: page, ...values });
   return d.Page.media as Media[];
 }
 
-export async function getMangaTopRated(perPage = 12) {
-  const q = `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: SCORE_DESC, type: MANGA, isAdult: false) { ${MEDIA_FIELDS} } } }`;
-  const d = await gql(q, { p: perPage });
+export async function getMangaTopRated(perPage = 12, page = 1, type?: string | null) {
+  const { decls, args, values } = mangaTypeFilter(type);
+  const q = `query ($p: Int, $pg: Int${decls}) { Page(page: $pg, perPage: $p) { media(sort: SCORE_DESC, type: MANGA, isAdult: false${args}) { ${MEDIA_FIELDS} } } }`;
+  const d = await gql(q, { p: perPage, pg: page, ...values });
   return d.Page.media as Media[];
 }
 
-export async function getLightNovelTrending(perPage = 24) {
-  const q = `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: TRENDING_DESC, type: MANGA, format: NOVEL, isAdult: false) { ${MEDIA_FIELDS} } } }`;
-  const d = await gql(q, { p: perPage });
-  return d.Page.media as Media[];
+export type LightNovelPage = {
+  media: Media[];
+  pageInfo: { hasNextPage: boolean; total: number };
+};
+
+async function getLightNovelPage(
+  sort: string,
+  perPage = 24,
+  page = 1,
+  genre: string | null = null,
+): Promise<LightNovelPage> {
+  const q = `query ($p: Int, $pg: Int, $sort: [MediaSort], $g: String) { Page(page: $pg, perPage: $p) { pageInfo { hasNextPage total } media(sort: $sort, type: MANGA, format: NOVEL, isAdult: false, genre: $g) { ${MEDIA_FIELDS} } } }`;
+  const variables: Record<string, unknown> = { p: perPage, pg: page, sort: [sort] };
+  if (genre) variables.g = genre;
+  const d = await gql(q, variables);
+  return d.Page as LightNovelPage;
 }
 
-export async function getLightNovelPopular(perPage = 24) {
-  const q = `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: POPULARITY_DESC, type: MANGA, format: NOVEL, isAdult: false) { ${MEDIA_FIELDS} } } }`;
-  const d = await gql(q, { p: perPage });
-  return d.Page.media as Media[];
+export async function getLightNovelTrending(perPage = 24, page = 1, genre: string | null = null) {
+  return getLightNovelPage("TRENDING_DESC", perPage, page, genre);
 }
 
-export async function getLightNovelTopRated(perPage = 24) {
-  const q = `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: SCORE_DESC, type: MANGA, format: NOVEL, isAdult: false) { ${MEDIA_FIELDS} } } }`;
-  const d = await gql(q, { p: perPage });
-  return d.Page.media as Media[];
+export async function getLightNovelPopular(perPage = 24, page = 1, genre: string | null = null) {
+  return getLightNovelPage("POPULARITY_DESC", perPage, page, genre);
 }
 
-export async function searchMedia({ search = "", genre = null, tag = null, sort = "POPULARITY_DESC", type = "ANIME", page = 1, perPage = 24, format = null, season = null, seasonYear = null, status = null }: {
-  search?: string; genre?: string | null; tag?: string | null; sort?: string; type?: string; page?: number; perPage?: number;
-  format?: string | null; season?: string | null; seasonYear?: number | null; status?: string | null;
+export async function getLightNovelTopRated(perPage = 24, page = 1, genre: string | null = null) {
+  return getLightNovelPage("SCORE_DESC", perPage, page, genre);
+}
+
+export async function searchMedia({
+  search = "",
+  genre = null,
+  genre2 = null,
+  genreOp = "AND",
+  tag = null,
+  sort = "POPULARITY_DESC",
+  type = "ANIME",
+  page = 1,
+  perPage = 24,
+  format = null,
+  season = null,
+  seasonYear = null,
+  status = null,
+  yearFrom = null,
+  yearTo = null,
+}: {
+  search?: string;
+  genre?: string | null;
+  genre2?: string | null;
+  genreOp?: "AND" | "OR";
+  tag?: string | null;
+  sort?: string;
+  type?: string;
+  page?: number;
+  perPage?: number;
+  format?: string | null;
+  season?: string | null;
+  seasonYear?: number | null;
+  status?: string | null;
+  yearFrom?: number | null;
+  yearTo?: number | null;
 }) {
   const q = `
-    query ($s: String, $g: String, $tag: String, $sort: [MediaSort], $t: MediaType, $p: Int, $pp: Int, $f: MediaFormat, $sn: MediaSeason, $sy: Int, $st: MediaStatus) {
+    query ($s: String, $g: String, $gi: [String], $tag: String, $sort: [MediaSort], $t: MediaType, $p: Int, $pp: Int, $f: MediaFormat, $sn: MediaSeason, $sy: Int, $st: MediaStatus, $dg: FuzzyDateInt, $dl: FuzzyDateInt) {
       Page(page: $p, perPage: $pp) {
         pageInfo { hasNextPage total }
-        media(search: $s, genre: $g, tag: $tag, sort: $sort, type: $t, isAdult: false, format: $f, season: $sn, seasonYear: $sy, status: $st) { ${MEDIA_FIELDS} }
+        media(search: $s, genre: $g, genre_in: $gi, tag: $tag, sort: $sort, type: $t, isAdult: false, format: $f, season: $sn, seasonYear: $sy, status: $st, startDate_greater: $dg, startDate_lesser: $dl) { ${MEDIA_FIELDS} }
       }
     }`;
+  const genreCombo = Boolean(genre && genre2);
   const rawVars: Record<string, unknown> = {
-    s: search || null, g: genre || null, tag: tag || null, sort: [sort], t: type, p: page, pp: perPage,
-    f: format || null, sn: season || null, sy: seasonYear || null, st: status || null,
+    s: search || null,
+    g: genreCombo ? null : genre || null,
+    gi: genreCombo ? [genre, genre2] : null,
+    tag: tag || null,
+    sort: [sort],
+    t: type,
+    p: page,
+    pp: perPage,
+    f: format || null,
+    sn: season || null,
+    sy: seasonYear || null,
+    st: status || null,
+    dg: yearFrom ? yearFrom * 10000 : null,
+    dl: yearTo ? yearTo * 10000 + 1231 : null,
   };
   const variables: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(rawVars)) {
     if (v !== null && v !== undefined && v !== "") variables[k] = v;
   }
   const d = await gql(q, variables);
-  return d.Page as { pageInfo: { hasNextPage: boolean; total: number }; media: Media[] };
+  const itemAll = d.Page.media as Media[];
+  if (genreOp === "AND" && genre && genre2) {
+    // AniList has no server-side AND for genres — genre_in only returns the OR
+    // superset, so post-filter down to titles carrying BOTH genres.
+    const g1 = genre;
+    const g2 = genre2;
+    const both = (m: Media) =>
+      !!m.genres?.includes(g1) && !!m.genres?.includes(g2);
+    const media = itemAll.filter(both);
+    return {
+      pageInfo: {
+        hasNextPage: d.Page.pageInfo.hasNextPage,
+        total: media.length,
+      },
+      media,
+    };
+  }
+  return d.Page as {
+    pageInfo: { hasNextPage: boolean; total: number };
+    media: Media[];
+  };
 }
 
-export async function searchLightNovels(query: string, perPage = 20) {
-  return searchMedia({ search: query, type: "MANGA", format: "NOVEL", perPage });
+export async function searchLightNovels(query: string, perPage = 20, page = 1, genre: string | null = null) {
+  return searchMedia({
+    search: query,
+    type: "MANGA",
+    format: "NOVEL",
+    perPage,
+    page,
+    genre,
+  });
 }
 
 export async function getLightNovelDetail(id: number | string) {
@@ -583,16 +753,28 @@ const MANGA_DETAIL_QUERY = `
 `;
 
 export async function getAnimeDetailFull(id: number | string) {
-  const data = await gql(ANIME_DETAIL_QUERY, { id: Number(id) }, DETAIL_REVALIDATE);
+  const data = await gql(
+    ANIME_DETAIL_QUERY,
+    { id: Number(id) },
+    DETAIL_REVALIDATE,
+  );
   return data.Media as MediaAnimeFull;
 }
 
 export async function getMangaDetailFull(id: number | string) {
-  const data = await gql(MANGA_DETAIL_QUERY, { id: Number(id) }, DETAIL_REVALIDATE);
+  const data = await gql(
+    MANGA_DETAIL_QUERY,
+    { id: Number(id) },
+    DETAIL_REVALIDATE,
+  );
   return data.Media as MediaMangaFull;
 }
 
-export async function getAnimeCharacters(id: number | string, page = 1, perPage = 25) {
+export async function getAnimeCharacters(
+  id: number | string,
+  page = 1,
+  perPage = 25,
+) {
   const base = Number(id);
   const pageSize = Math.min(Math.max(perPage, 1), 25);
   const q = `
@@ -616,7 +798,11 @@ export async function getAnimeCharacters(id: number | string, page = 1, perPage 
         }
       }
     }`;
-  const data = await gql(q, { id: base, p: page, pp: pageSize }, DETAIL_REVALIDATE);
+  const data = await gql(
+    q,
+    { id: base, p: page, pp: pageSize },
+    DETAIL_REVALIDATE,
+  );
   const media = data.Media;
   return {
     id: media.id,
@@ -659,7 +845,10 @@ export async function getPopularCharacters(page = 1, perPage = 50) {
       }
     }`;
   const data = await gql(q, { p: page, pp: perPage });
-  return data.Page as { pageInfo: { hasNextPage: boolean; total: number }; characters: CharacterBasic[] };
+  return data.Page as {
+    pageInfo: { hasNextPage: boolean; total: number };
+    characters: CharacterBasic[];
+  };
 }
 
 export interface CharacterTraitRaw {
@@ -684,7 +873,10 @@ export async function getCharacterTraitsBatch(page = 1, perPage = 50) {
       }
     }`;
   const data = await gql(q, { p: page, pp: perPage });
-  return data.Page as { pageInfo: { hasNextPage: boolean; total: number }; characters: CharacterTraitRaw[] };
+  return data.Page as {
+    pageInfo: { hasNextPage: boolean; total: number };
+    characters: CharacterTraitRaw[];
+  };
 }
 
 export async function getAnimeGallery(perPage = 24) {
@@ -743,8 +935,10 @@ export async function getStaffMedia(id: number | string, perPage = 50) {
     }`;
   const data = await gql(q, { id: Number(id), pp: perPage }, DETAIL_REVALIDATE);
   type StaffMediaEdges = NonNullable<StaffFull["staffMedia"]>["edges"];
-  const staffEdges: StaffMediaEdges = (data.Staff?.staffMedia?.edges || []) as StaffMediaEdges;
-  const charEdges: StaffMediaEdges = (data.Staff?.characterMedia?.edges || []) as StaffMediaEdges;
+  const staffEdges: StaffMediaEdges = (data.Staff?.staffMedia?.edges ||
+    []) as StaffMediaEdges;
+  const charEdges: StaffMediaEdges = (data.Staff?.characterMedia?.edges ||
+    []) as StaffMediaEdges;
   const seen = new Set<number>();
   const merged = [];
   for (const e of [...staffEdges, ...charEdges]) {
@@ -771,7 +965,8 @@ export async function searchCharacters(query: string, page = 1, perPage = 20) {
     }`;
   const data = await gql(q, { s: query, p: page, pp: perPage });
   return {
-    page, perPage,
+    page,
+    perPage,
     total: data.Page.pageInfo.total,
     hasNextPage: data.Page.pageInfo.hasNextPage,
     results: data.Page.characters as CharacterBasic[],
@@ -790,7 +985,8 @@ export async function searchStaff(query: string, page = 1, perPage = 20) {
     }`;
   const data = await gql(q, { s: query, p: page, pp: perPage });
   return {
-    page, perPage,
+    page,
+    perPage,
     total: data.Page.pageInfo.total,
     hasNextPage: data.Page.pageInfo.hasNextPage,
     results: data.Page.staff as StaffBasic[],
@@ -853,14 +1049,17 @@ export async function getSchedulePaginated(page = 1, perPage = 20) {
       }
     }`;
   const data = await gql(q, { p: page, pp: perPage });
-  const results = data.Page.airingSchedules.map((item: AiringScheduleEntry) => ({
-    ...item.media,
-    nextEpisode: item.episode,
-    airingAt: item.airingAt,
-    timeUntilAiring: item.timeUntilAiring,
-  }));
+  const results = data.Page.airingSchedules.map(
+    (item: AiringScheduleEntry) => ({
+      ...item.media,
+      nextEpisode: item.episode,
+      airingAt: item.airingAt,
+      timeUntilAiring: item.timeUntilAiring,
+    }),
+  );
   return {
-    page, perPage,
+    page,
+    perPage,
     total: data.Page.pageInfo.total,
     hasNextPage: data.Page.pageInfo.hasNextPage,
     results: results as Media[],
@@ -890,23 +1089,56 @@ export async function getAiringSchedule(fromSec: number, toSec: number) {
         }
       }
     }`;
-  let page = 1, hasNext = true;
-  const all: AiringScheduleEntry[] = [];
-  while (hasNext && page <= 6) {
+  // Sequential pagination cost N round-trips to AniList (~0.3-0.4s each) before
+  // a single schedule page could render. Week windows almost always span 2-3
+  // pages, so fetch them together: page 1, then pages 2-3 in one round-trip,
+  // then 4-6 only if the data is still truncated. `pageInfo.total` for
+  // airingSchedules is capped/unreliable (observes 5000), so the batch
+  // boundaries are driven by `hasNextPage` instead of `total`. Pages are
+  // TIME-sorted by AniList, so concatenating in order stays sorted; the explicit
+  // sort below is just insurance and keeps callers' order guarantees exact.
+  async function fetchPage(page: number) {
     const data = await gql(q, { from, to, page });
-    if (!data?.Page?.airingSchedules) break;
-    all.push(...data.Page.airingSchedules);
-    hasNext = data.Page.pageInfo?.hasNextPage ?? false;
-    page++;
+    return {
+      rows: (data?.Page?.airingSchedules ?? []) as AiringScheduleEntry[],
+      hasNext: data?.Page?.pageInfo?.hasNextPage ?? false,
+    };
   }
-  return all;
+
+  const first = await fetchPage(1);
+  const all: AiringScheduleEntry[] = [...first.rows];
+  if (first.hasNext) {
+    const batchA = await Promise.all([fetchPage(2), fetchPage(3)]);
+    for (const p of batchA) all.push(...p.rows);
+    if (batchA[1].hasNext) {
+      const batchB = await Promise.all([
+        fetchPage(4),
+        fetchPage(5),
+        fetchPage(6),
+      ]);
+      for (const p of batchB) all.push(...p.rows);
+    }
+  }
+  all.sort((a, b) => a.airingAt - b.airingAt);
+  // Site policy matches the rest of the catalog (every media query already
+  // passes `isAdult: false`): drop adult entries here, at the data layer, so
+  // the schedule page, calendar, embeds, iCal export and the public API all
+  // stay clean. `airingSchedules` doesn't accept media-level filter args, so
+  // this is a post-fetch filter.
+  return all.filter((e) => !e.media?.isAdult);
 }
 
-export async function getSeasonal(year?: number, season?: string, perPage = 30) {
+export async function getSeasonal(
+  year?: number,
+  season?: string,
+  perPage = 30,
+) {
   const now = new Date();
   const y = year || now.getFullYear();
   const m = now.getMonth() + 1;
-  const s = season || (m <= 3 ? "WINTER" : m <= 6 ? "SPRING" : m <= 9 ? "SUMMER" : "FALL");
+  const s =
+    season ||
+    (m <= 3 ? "WINTER" : m <= 6 ? "SPRING" : m <= 9 ? "SUMMER" : "FALL");
   const q = `
     query ($y: Int, $s: MediaSeason, $pp: Int) {
       Page(page: 1, perPage: $pp) {
@@ -915,10 +1147,17 @@ export async function getSeasonal(year?: number, season?: string, perPage = 30) 
       }
     }`;
   const data = await gql(q, { y, s, pp: perPage });
-  return data.Page as { pageInfo: { hasNextPage: boolean; total: number }; media: Media[] };
+  return data.Page as {
+    pageInfo: { hasNextPage: boolean; total: number };
+    media: Media[];
+  };
 }
 
-export async function getSeasonalManga(year?: number, _season?: string, perPage = 30) {
+export async function getSeasonalManga(
+  year?: number,
+  _season?: string,
+  perPage = 30,
+) {
   const now = new Date();
   const y = year || now.getFullYear();
   // manga doesn't have seasons on AniList, use startDate range instead
@@ -930,7 +1169,10 @@ export async function getSeasonalManga(year?: number, _season?: string, perPage 
       }
     }`;
   const data = await gql(q, { y, y1: y + 1, pp: perPage });
-  return data.Page as { pageInfo: { hasNextPage: boolean; total: number }; media: Media[] };
+  return data.Page as {
+    pageInfo: { hasNextPage: boolean; total: number };
+    media: Media[];
+  };
 }
 
 export async function getStudio(id: number) {
@@ -948,7 +1190,11 @@ export async function getStudio(id: number) {
   return data.Studio as StudioFull;
 }
 
-export async function getAnimeByStudioName(name: string, page = 1, perPage = 20) {
+export async function getAnimeByStudioName(
+  name: string,
+  page = 1,
+  perPage = 20,
+) {
   const q = `
     query ($name: String, $p: Int, $pp: Int) {
       Studio(search: $name) {
@@ -963,8 +1209,14 @@ export async function getAnimeByStudioName(name: string, page = 1, perPage = 20)
   const studio = data.Studio;
   if (!studio) throw new Error("Studio not found");
   return {
-    studio: { id: studio.id, name: studio.name, isAnimationStudio: studio.isAnimationStudio, siteUrl: studio.siteUrl },
-    page, perPage,
+    studio: {
+      id: studio.id,
+      name: studio.name,
+      isAnimationStudio: studio.isAnimationStudio,
+      siteUrl: studio.siteUrl,
+    },
+    page,
+    perPage,
     total: studio.media.pageInfo.total,
     hasNextPage: studio.media.pageInfo.hasNextPage,
     results: studio.media.nodes as Media[],
@@ -977,18 +1229,87 @@ export async function getGenres() {
 }
 
 export async function getAllTags() {
-  const data = await gql(`query { MediaTagCollection { name description category rank isGeneralSpoiler isMediaSpoiler isAdult } }`);
+  const data = await gql(
+    `query { MediaTagCollection { name description category rank isGeneralSpoiler isMediaSpoiler isAdult } }`,
+  );
   return data.MediaTagCollection as Tag[];
 }
 
-export async function searchAll(query: string, page = 1, perPage = 12) {
+export async function searchAll({
+  search = "",
+  genre = null,
+  genre2 = null,
+  genreOp = "AND",
+  tag = null,
+  sort = "POPULARITY_DESC",
+  page = 1,
+  perPage = 12,
+  format = null,
+  season = null,
+  seasonYear = null,
+  status = null,
+  yearFrom = null,
+  yearTo = null,
+}: {
+  search?: string;
+  genre?: string | null;
+  genre2?: string | null;
+  genreOp?: "AND" | "OR";
+  tag?: string | null;
+  sort?: string;
+  page?: number;
+  perPage?: number;
+  format?: string | null;
+  season?: string | null;
+  seasonYear?: number | null;
+  status?: string | null;
+  yearFrom?: number | null;
+  yearTo?: number | null;
+}) {
   const q = `
-    query ($s: String, $p: Int, $pp: Int) {
-      anime: Page(page: $p, perPage: $pp) { media(search: $s, type: ANIME, isAdult: false) { ${MEDIA_FIELDS} } }
-      manga: Page(page: $p, perPage: $pp) { media(search: $s, type: MANGA, isAdult: false) { ${MEDIA_FIELDS} } }
+    query ($s: String, $g: String, $gi: [String], $tag: String, $sort: [MediaSort], $p: Int, $pp: Int, $f: MediaFormat, $sn: MediaSeason, $sy: Int, $st: MediaStatus, $dg: FuzzyDateInt, $dl: FuzzyDateInt) {
+      anime: Page(page: $p, perPage: $pp) { pageInfo { hasNextPage total } media(search: $s, genre: $g, genre_in: $gi, tag: $tag, sort: $sort, type: ANIME, isAdult: false, format: $f, season: $sn, seasonYear: $sy, status: $st, startDate_greater: $dg, startDate_lesser: $dl) { ${MEDIA_FIELDS} } }
+      manga: Page(page: $p, perPage: $pp) { pageInfo { hasNextPage total } media(search: $s, genre: $g, genre_in: $gi, tag: $tag, sort: $sort, type: MANGA, isAdult: false, format: $f, season: $sn, seasonYear: $sy, status: $st, startDate_greater: $dg, startDate_lesser: $dl) { ${MEDIA_FIELDS} } }
     }`;
-  const data = await gql(q, { s: query, p: page, pp: perPage });
-  return { anime: data.anime.media as Media[], manga: data.manga.media as Media[] };
+  const genreCombo = Boolean(genre && genre2);
+  const rawVars: Record<string, unknown> = {
+    s: search || null,
+    g: genreCombo ? null : genre || null,
+    gi: genreCombo ? [genre, genre2] : null,
+    tag: tag || null,
+    sort: [sort],
+    p: page,
+    pp: perPage,
+    f: format || null,
+    sn: season || null,
+    sy: seasonYear || null,
+    st: status || null,
+    dg: yearFrom ? yearFrom * 10000 : null,
+    dl: yearTo ? yearTo * 10000 + 1231 : null,
+  };
+  const variables: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(rawVars)) {
+    if (v !== null && v !== undefined && v !== "") variables[k] = v;
+  }
+  const data = await gql(q, variables);
+  let anime = data.anime.media as Media[];
+  let manga = data.manga.media as Media[];
+  if (genreOp === "AND" && genre && genre2) {
+    // AniList has no server-side AND for genres — genre_in only returns the OR
+    // superset, so post-filter down to titles carrying BOTH genres.
+    const g1 = genre;
+    const g2 = genre2;
+    const both = (m: Media) =>
+      !!m.genres?.includes(g1) && !!m.genres?.includes(g2);
+    anime = anime.filter(both);
+    manga = manga.filter(both);
+  }
+  return {
+    anime,
+    manga,
+    hasNextPage: data.anime.pageInfo.hasNextPage || data.manga.pageInfo.hasNextPage,
+    total: anime.length + manga.length,
+  };
 }
 
 export async function getSuggestions(query: string) {
@@ -1029,7 +1350,9 @@ export interface UnifiedSuggestion {
   type: "ANIME" | "MANGA";
 }
 
-export async function getUnifiedSuggestions(query: string): Promise<{ anime: UnifiedSuggestion[]; manga: UnifiedSuggestion[] }> {
+export async function getUnifiedSuggestions(
+  query: string,
+): Promise<{ anime: UnifiedSuggestion[]; manga: UnifiedSuggestion[] }> {
   const q = `
     query ($s: String) {
       anime: Page(page: 1, perPage: 6) {
@@ -1112,7 +1435,12 @@ export interface HomepageData {
  * requested route on the site.
  */
 export async function getHomepageData(
-  counts: { trending?: number; popular?: number; upcoming?: number; topRated?: number } = {},
+  counts: {
+    trending?: number;
+    popular?: number;
+    upcoming?: number;
+    topRated?: number;
+  } = {},
 ): Promise<HomepageData> {
   const trending = counts.trending ?? 24;
   // 27, not 18. The homepage renders this rail through MediaCarousel with
@@ -1177,7 +1505,8 @@ export async function getAnimeListFromAniList(username: string) {
       }
     }`;
   const data = await gql(q, { userName: username });
-  const lists: { entries: AniListEntry[] }[] = data.MediaListCollection?.lists || [];
+  const lists: { entries: AniListEntry[] }[] =
+    data.MediaListCollection?.lists || [];
   const entries: AniListEntry[] = [];
   for (const list of lists) {
     if (list.entries) entries.push(...list.entries);
@@ -1185,21 +1514,45 @@ export async function getAnimeListFromAniList(username: string) {
   return entries;
 }
 
-export function bestTitle(titleObj: { english?: string | null; romaji?: string | null; native?: string | null; userPreferred?: string | null } | null | undefined): string {
-  return titleObj?.userPreferred || titleObj?.english || titleObj?.romaji || titleObj?.native || "Untitled";
+export function bestTitle(
+  titleObj:
+    | {
+        english?: string | null;
+        romaji?: string | null;
+        native?: string | null;
+        userPreferred?: string | null;
+      }
+    | null
+    | undefined,
+): string {
+  return (
+    titleObj?.userPreferred ||
+    titleObj?.english ||
+    titleObj?.romaji ||
+    titleObj?.native ||
+    "Untitled"
+  );
 }
 
 // --- Types ---
 
 export interface MediaTitle {
-  romaji?: string; english?: string; native?: string; userPreferred?: string;
+  romaji?: string;
+  english?: string;
+  native?: string;
+  userPreferred?: string;
 }
 
 export interface Media {
   id: number;
   idMal?: number;
   title: MediaTitle;
-  coverImage: { extraLarge?: string; large?: string; medium?: string; color?: string };
+  coverImage: {
+    extraLarge?: string;
+    large?: string;
+    medium?: string;
+    color?: string;
+  };
   bannerImage?: string;
   description?: string;
   type?: string;
@@ -1219,21 +1572,42 @@ export interface Media {
   popularity?: number;
   trending?: number;
   favourites?: number;
-  tags?: { id: number; name: string; description?: string; category?: string; rank: number; isGeneralSpoiler: boolean; isMediaSpoiler: boolean; isAdult: boolean }[];
+  tags?: {
+    id: number;
+    name: string;
+    description?: string;
+    category?: string;
+    rank: number;
+    isGeneralSpoiler: boolean;
+    isMediaSpoiler: boolean;
+    isAdult: boolean;
+  }[];
   startDate?: { year?: number; month?: number; day?: number };
   endDate?: { year?: number; month?: number; day?: number };
   season?: string;
   seasonYear?: number;
   seasonInt?: number;
-  studios?: { nodes: { id: number; name: string; isAnimationStudio?: boolean }[] };
+  studios?: {
+    nodes: { id: number; name: string; isAnimationStudio?: boolean }[];
+  };
   trailer?: { id: string; site: string; thumbnail?: string };
   siteUrl?: string;
-  nextAiringEpisode?: { airingAt: number; episode: number; timeUntilAiring: number } | null;
+  nextAiringEpisode?: {
+    airingAt: number;
+    episode: number;
+    timeUntilAiring: number;
+  } | null;
 }
 
 export interface VoiceActor {
   id: number;
-  name: { first?: string; middle?: string; last?: string; full?: string; native?: string };
+  name: {
+    first?: string;
+    middle?: string;
+    last?: string;
+    full?: string;
+    native?: string;
+  };
   languageV2?: string;
   image: { large?: string; medium?: string };
 }
@@ -1249,7 +1623,14 @@ export interface CharacterEdge {
   }[];
   node: {
     id: number;
-    name: { first?: string; middle?: string; last?: string; full?: string; native?: string; alternative?: string[] };
+    name: {
+      first?: string;
+      middle?: string;
+      last?: string;
+      full?: string;
+      native?: string;
+      alternative?: string[];
+    };
     image: { large?: string; medium?: string };
     description?: string;
     gender?: string;
@@ -1265,7 +1646,13 @@ export interface StaffEdge {
   role: string;
   node: {
     id: number;
-    name: { first?: string; middle?: string; last?: string; full?: string; native?: string };
+    name: {
+      first?: string;
+      middle?: string;
+      last?: string;
+      full?: string;
+      native?: string;
+    };
     languageV2?: string;
     image: { large?: string; medium?: string };
     primaryOccupations?: string[];
@@ -1275,45 +1662,99 @@ export interface StaffEdge {
 }
 
 export interface ExternalLink {
-  id: number; url: string; site: string; siteId?: number;
-  type?: string; language?: string; color?: string; icon?: string; notes?: string; isDisabled?: boolean;
+  id: number;
+  url: string;
+  site: string;
+  siteId?: number;
+  type?: string;
+  language?: string;
+  color?: string;
+  icon?: string;
+  notes?: string;
+  isDisabled?: boolean;
 }
 
 export interface MediaAnimeFull extends Media {
   characters?: { edges: CharacterEdge[] };
   staff?: { edges: StaffEdge[] };
   externalLinks?: ExternalLink[];
-  streamingEpisodes?: { title: string; thumbnail: string; url: string; site: string }[];
+  streamingEpisodes?: {
+    title: string;
+    thumbnail: string;
+    url: string;
+    site: string;
+  }[];
   relations?: {
     edges: {
-      id: number; relationType: string;
+      id: number;
+      relationType: string;
       node: {
-        id: number; idMal?: number; title: MediaTitle; coverImage: { extraLarge?: string; large?: string; medium?: string; color?: string };
-        bannerImage?: string; format?: string; status?: string; episodes?: number; chapters?: number; volumes?: number;
-        averageScore?: number; meanScore?: number; popularity?: number; type?: string;
-        startDate?: { year?: number; month?: number; day?: number }; endDate?: { year?: number; month?: number; day?: number };
+        id: number;
+        idMal?: number;
+        title: MediaTitle;
+        coverImage: {
+          extraLarge?: string;
+          large?: string;
+          medium?: string;
+          color?: string;
+        };
+        bannerImage?: string;
+        format?: string;
+        status?: string;
+        episodes?: number;
+        chapters?: number;
+        volumes?: number;
+        averageScore?: number;
+        meanScore?: number;
+        popularity?: number;
+        type?: string;
+        startDate?: { year?: number; month?: number; day?: number };
+        endDate?: { year?: number; month?: number; day?: number };
         siteUrl?: string;
       };
     }[];
   };
-  rankings?: { id: number; rank: number; type: string; format?: string; year?: number; season?: string; allTime?: boolean; context: string }[];
+  rankings?: {
+    id: number;
+    rank: number;
+    type: string;
+    format?: string;
+    year?: number;
+    season?: string;
+    allTime?: boolean;
+    context: string;
+  }[];
   recommendations?: {
     edges: {
       node: {
-        id: number; rating: number;
+        id: number;
+        rating: number;
         mediaRecommendation: {
-          id: number; title: MediaTitle; coverImage: { extraLarge?: string; large?: string; medium?: string };
-          format?: string; episodes?: number; chapters?: number; volumes?: number; averageScore?: number; popularity?: number;
-          type?: string; siteUrl?: string;
+          id: number;
+          title: MediaTitle;
+          coverImage: { extraLarge?: string; large?: string; medium?: string };
+          format?: string;
+          episodes?: number;
+          chapters?: number;
+          volumes?: number;
+          averageScore?: number;
+          popularity?: number;
+          type?: string;
+          siteUrl?: string;
         };
       };
     }[];
   };
-  stats?: { scoreDistribution: { score: number; amount: number }[]; statusDistribution: { status: string; amount: number }[] };
+  stats?: {
+    scoreDistribution: { score: number; amount: number }[];
+    statusDistribution: { status: string; amount: number }[];
+  };
 }
 
 export interface MediaMangaFull extends Media {
-  characters?: { edges: { role: string; name?: string; node: CharacterEdge["node"] }[] };
+  characters?: {
+    edges: { role: string; name?: string; node: CharacterEdge["node"] }[];
+  };
   staff?: { edges: StaffEdge[] };
   externalLinks?: ExternalLink[];
   relations?: MediaAnimeFull["relations"];
@@ -1324,7 +1765,16 @@ export interface MediaMangaFull extends Media {
 
 export interface CharacterFull {
   id: number;
-  name: { first?: string; middle?: string; last?: string; full?: string; native?: string; alternative?: string[]; alternativeSpoiler?: string[]; userPreferred?: string };
+  name: {
+    first?: string;
+    middle?: string;
+    last?: string;
+    full?: string;
+    native?: string;
+    alternative?: string[];
+    alternativeSpoiler?: string[];
+    userPreferred?: string;
+  };
   image: { large?: string; medium?: string };
   description?: string;
   gender?: string;
@@ -1338,12 +1788,31 @@ export interface CharacterFull {
       id: number;
       characterRole: string;
       voiceActors?: VoiceActor[];
-      voiceActorRoles?: { roleNotes?: string; dubGroup?: string; voiceActor: VoiceActor }[];
+      voiceActorRoles?: {
+        roleNotes?: string;
+        dubGroup?: string;
+        voiceActor: VoiceActor;
+      }[];
       node: {
-        id: number; title: MediaTitle; coverImage: { extraLarge?: string; large?: string; medium?: string; color?: string };
-        format?: string; type?: string; status?: string; episodes?: number; chapters?: number; volumes?: number;
-        averageScore?: number; meanScore?: number; popularity?: number;
-        startDate?: { year?: number; month?: number; day?: number }; siteUrl?: string;
+        id: number;
+        title: MediaTitle;
+        coverImage: {
+          extraLarge?: string;
+          large?: string;
+          medium?: string;
+          color?: string;
+        };
+        format?: string;
+        type?: string;
+        status?: string;
+        episodes?: number;
+        chapters?: number;
+        volumes?: number;
+        averageScore?: number;
+        meanScore?: number;
+        popularity?: number;
+        startDate?: { year?: number; month?: number; day?: number };
+        siteUrl?: string;
       };
     }[];
   };
@@ -1351,15 +1820,30 @@ export interface CharacterFull {
 
 export interface CharacterBasic {
   id: number;
-  name: { first?: string; middle?: string; last?: string; full?: string; native?: string; alternative?: string[]; userPreferred?: string };
+  name: {
+    first?: string;
+    middle?: string;
+    last?: string;
+    full?: string;
+    native?: string;
+    alternative?: string[];
+    userPreferred?: string;
+  };
   image: { large?: string; medium?: string };
   favourites?: number;
   media?: {
     edges: {
       characterRole: string;
       node: {
-        id: number; title: MediaTitle; type?: string;
-        coverImage: { extraLarge?: string; large?: string; medium?: string; color?: string };
+        id: number;
+        title: MediaTitle;
+        type?: string;
+        coverImage: {
+          extraLarge?: string;
+          large?: string;
+          medium?: string;
+          color?: string;
+        };
         bannerImage?: string;
       };
     }[];
@@ -1369,18 +1853,28 @@ export interface CharacterBasic {
 export interface AnimeWithCharacters extends Media {
   characters?: {
     edges: {
-      role: string; name?: string;
+      role: string;
+      name?: string;
       node: { id: number; name: { full?: string }; image: { medium?: string } };
     }[];
   };
 }
 
 export interface AiringScheduleEntry {
-  id: number; episode: number; airingAt: number; timeUntilAiring?: number;
+  id: number;
+  episode: number;
+  airingAt: number;
+  timeUntilAiring?: number;
   media: {
-    id: number; title: { romaji?: string; english?: string };
-    coverImage: { large?: string; color?: string }; format?: string; genres?: string[]; episodes?: number;
-    popularity?: number; isAdult?: boolean; countryOfOrigin?: string;
+    id: number;
+    title: { romaji?: string; english?: string };
+    coverImage: { large?: string; color?: string };
+    format?: string;
+    genres?: string[];
+    episodes?: number;
+    popularity?: number;
+    isAdult?: boolean;
+    countryOfOrigin?: string;
     externalLinks?: { url: string; site?: string }[];
   };
 }
@@ -1438,7 +1932,14 @@ export interface AniListEntry {
 
 export interface StaffBasic {
   id: number;
-  name: { first?: string; middle?: string; last?: string; full?: string; native?: string; userPreferred?: string };
+  name: {
+    first?: string;
+    middle?: string;
+    last?: string;
+    full?: string;
+    native?: string;
+    userPreferred?: string;
+  };
   image: { large?: string; medium?: string };
   gender?: string;
   favourites?: number;
@@ -1447,7 +1948,14 @@ export interface StaffBasic {
 
 export interface StaffFull {
   id: number;
-  name: { first?: string; middle?: string; last?: string; full?: string; native?: string; userPreferred?: string };
+  name: {
+    first?: string;
+    middle?: string;
+    last?: string;
+    full?: string;
+    native?: string;
+    userPreferred?: string;
+  };
   image: { large?: string; medium?: string };
   description?: string;
   gender?: string;
@@ -1462,17 +1970,17 @@ export interface StaffFull {
     edges: {
       staffRole?: string;
       characterRole?: string;
-        node: {
-          id: number;
-          title: MediaTitle;
-          coverImage: { large?: string; color?: string };
-          type?: string;
-          format?: string;
-          episodes?: number;
-          status?: string;
-          meanScore?: number;
-          startDate?: { year?: number };
-        };
+      node: {
+        id: number;
+        title: MediaTitle;
+        coverImage: { large?: string; color?: string };
+        type?: string;
+        format?: string;
+        episodes?: number;
+        status?: string;
+        meanScore?: number;
+        startDate?: { year?: number };
+      };
     }[];
   };
 }
@@ -1480,7 +1988,12 @@ export interface StaffFull {
 export interface MediaBasic {
   id: number;
   title: MediaTitle;
-  coverImage: { extraLarge?: string; large?: string; medium?: string; color?: string };
+  coverImage: {
+    extraLarge?: string;
+    large?: string;
+    medium?: string;
+    color?: string;
+  };
   type?: string;
   format?: string;
   status?: string;
@@ -1488,7 +2001,11 @@ export interface MediaBasic {
   averageScore?: number;
   genres?: string[];
   season?: string;
-  nextAiringEpisode?: { airingAt: number; episode: number; timeUntilAiring: number } | null;
+  nextAiringEpisode?: {
+    airingAt: number;
+    episode: number;
+    timeUntilAiring: number;
+  } | null;
 }
 
 const MEDIA_BASIC_FIELDS = `
@@ -1505,7 +2022,10 @@ const MEDIA_BASIC_FIELDS = `
   nextAiringEpisode { airingAt episode timeUntilAiring }
 ` as const;
 
-export async function getRecommendationsByGenres(genres: string[], perPage = 18): Promise<Media[]> {
+export async function getRecommendationsByGenres(
+  genres: string[],
+  perPage = 18,
+): Promise<Media[]> {
   if (genres.length === 0) return [];
   const mainGenre = genres[0];
   const q = `

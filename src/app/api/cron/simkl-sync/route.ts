@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { runSimklSync } from "@/lib/sync-simkl";
+import { decryptSecret } from "@/lib/token-encryption";
 
 export const revalidate = 0;
 export const maxDuration = 60;
@@ -19,7 +20,12 @@ export async function GET(request: Request) {
 
   for (const account of accounts) {
     try {
-      const summary = await runSimklSync(account.userId, account.accessToken);
+      const accessToken = decryptSecret(account.accessToken);
+      if (!accessToken) {
+        results.push({ userId: account.userId, status: 502, detail: "Token could not be decrypted — reconnect account" });
+        continue;
+      }
+      const summary = await runSimklSync(account.userId, accessToken);
       await prisma.externalAccount.update({
         where: { id: account.id },
         data: { syncAt: new Date(), lastSyncData: JSON.parse(JSON.stringify(summary)) },

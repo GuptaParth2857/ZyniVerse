@@ -4,7 +4,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
   return {
-    title: `Staff Profile | ZyniVerse`,
+    title: `Staff Profile`,
     description: `View anime/manga staff profile, works, and career details on ZyniVerse.`,
     alternates: { canonical: `${baseUrl}/staff/${id}` },
     // Thin AniList mirror (name + filmography). No unique content — keep it

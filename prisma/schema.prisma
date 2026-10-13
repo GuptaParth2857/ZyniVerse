@@ -1070,11 +1070,11 @@ model WikiPage {
   coverImage   String?
   isPublished  Boolean  @default(true)
   version      Int      @default(1)
-  lastEditorId String
+  lastEditorId String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  editor  User              @relation("WikiEditor", fields: [lastEditorId], references: [id])
+  editor  User?             @relation("WikiEditor", fields: [lastEditorId], references: [id], onDelete: SetNull)
   history WikiPageHistory[]
 
   @@index([slug])
@@ -1084,7 +1084,7 @@ model WikiPage {
 model WikiPageHistory {
   id        String   @id @default(cuid())
   pageId    String
-  editorId  String
+  editorId  String?
   version   Int
   title     String
   content   String
@@ -1092,7 +1092,7 @@ model WikiPageHistory {
   createdAt DateTime @default(now())
 
   page   WikiPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  editor User     @relation("WikiHistoryEditor", fields: [editorId], references: [id])
+  editor User?    @relation("WikiHistoryEditor", fields: [editorId], references: [id], onDelete: SetNull)
 
   @@index([pageId, version])
 }
@@ -2142,6 +2142,8 @@ model Reel {
   caption      String?
   duration     Int      @default(0)
   views        Int      @default(0)
+  animeId      Int?
+  animeTitle   String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -2153,6 +2155,7 @@ model Reel {
 
   @@index([userId])
   @@index([createdAt])
+  @@index([animeId])
 }
 
 model ReelView {

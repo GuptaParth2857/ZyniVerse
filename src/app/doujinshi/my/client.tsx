@@ -36,23 +36,25 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function DoujinshiMyClient() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [items, setItems] = useState<TrackedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    if (!session?.user?.id) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLoading(false);
-      return;
-    }
-    const url = filter ? `/api/doujinshi/my?status=${filter}` : "/api/doujinshi/my";    fetch(url)
+    if (!session?.user?.id) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true);
+    const url = filter ? `/api/doujinshi/my?status=${filter}` : "/api/doujinshi/my";
+    fetch(url)
       .then((r) => r.json())
       .then((data) => setItems(data.entries || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [session, filter]);
+
+  // Wait for the session to resolve before deciding — avoids a "sign in" flash for logged-in users.
+  if (status === "loading") return <Loader label="Loading your collection..." />;
 
   if (!session) {
     return (

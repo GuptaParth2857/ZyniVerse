@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props) {
   });
   if (!watchlist) return { title: "Not Found" };
   return {
-    title: `${watchlist.title} — Shared Watchlist | ZyniVerse`,
+    title: `${watchlist.title} — Shared Watchlist`,
     description: watchlist.description || `Shared watchlist by @${watchlist.owner.username}`,
   };
 }

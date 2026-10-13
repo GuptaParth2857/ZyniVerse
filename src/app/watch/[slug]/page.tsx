@@ -24,17 +24,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
     return {
-      title: `Where to Watch ${title} in India — Streaming, Hindi Dub & More | ZyniVerse`,
+      title: `Where to Watch ${title} in India — Streaming, Hindi Dub & More`,
       description: `Complete guide to watch ${title} in India. Find streaming platforms, Hindi dub availability, and where to watch legally.`,
       openGraph: {
-        title: `Where to Watch ${title} in India | ZyniVerse`,
+        title: `Where to Watch ${title} in India`,
         description: `Stream ${title} on Crunchyroll, Netflix, JioHotstar and more. Hindi dub info included.`,
         images: [media.coverImage?.extraLarge || media.coverImage?.large || ""],
         url: `${baseUrl}/watch/${slug}`,
       },
       alternates: { canonical: `${baseUrl}/watch/${slug}` },
       twitter: {
-        title: `Where to Watch ${title} in India | ZyniVerse`,
+        title: `Where to Watch ${title} in India`,
         description: `Stream ${title} on Crunchyroll, Netflix, JioHotstar and more. Hindi dub info included.`,
       },
       robots: { index: true, follow: true },

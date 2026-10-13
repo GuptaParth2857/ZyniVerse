@@ -28,12 +28,12 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
             ? "More Posters"
             : "Posts, Posters & Community";
   return {
-    title: `${baseTitle} | ZyniVerse`,
+    title: `${baseTitle}`,
     description:
       "ZyniVerse Posts — collaboration posters, creator spotlights, anime news cards and community threads & critiques in one main feed.",
     alternates: { canonical: `${BASE_URL}/posts` },
     openGraph: {
-      title: `${baseTitle} | ZyniVerse`,
+      title: `${baseTitle}`,
       description: "Posters, creator spotlights, news cards and community posts.",
       url: `${BASE_URL}/posts`,
       type: "website",

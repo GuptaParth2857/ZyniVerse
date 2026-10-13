@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const c = await getConventionById(id);
   if (!c) return { title: "Convention Not Found" };
   return {
-    title: `${c.name} — Anime Conventions | ZyniVerse`,
+    title: `${c.name} — Anime Conventions`,
     description: `${c.name} at ${c.venue}, ${c.city}. ${c.startDate} — ${c.endDate}. ${c.description.slice(0, 160)}`,
     openGraph: {
       title: `${c.name} — ${c.city}`,

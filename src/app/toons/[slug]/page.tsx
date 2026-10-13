@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const toon = toons.find((t) => t.id === slug);
   if (!toon) return { title: "Toon Not Found", robots: { index: false, follow: true } };
   return {
-    title: `${toon.displayTitle} — Hindi Dubbed Cartoon Info | ZyniVerse`,
+    title: `${toon.displayTitle} — Hindi Dubbed Cartoon Info`,
     description: toon.description || toon.synopsis,
     alternates: { canonical: `${BASE_URL}/toons/${slug}` },
     openGraph: {

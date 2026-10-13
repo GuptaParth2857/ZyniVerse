@@ -3,7 +3,12 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import { logError } from "@/lib/logger";
 import Stripe from "stripe";
+
+// Only grant plans that actually exist. Unknown/missing plan metadata must
+// never silently upgrade a user to "pro".
+const KNOWN_PLANS = ["pro"];
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -41,7 +46,18 @@ export async function POST(request: Request) {
         break;
       }
 
-      const plan = session.metadata?.plan || "pro";
+      const plan = session.metadata?.plan;
+      if (typeof plan !== "string" || !KNOWN_PLANS.includes(plan)) {
+        // Billing anomaly: a subscription was created but we don't know what
+        // plan it is. Do NOT grant access; surface it for manual review instead
+        // of silently defaulting to "pro".
+        logError(
+          new Error(
+            `Stripe checkout.session.completed with missing/unknown plan metadata (session ${session.id}, orderType ${orderType ?? "none"})`
+          )
+        );
+        break;
+      }
 
       if (userId) {
         const subscription = await getStripe().subscriptions.retrieve(

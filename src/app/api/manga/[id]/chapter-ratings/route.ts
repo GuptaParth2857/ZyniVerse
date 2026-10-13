@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 const CACHE = new Map<string, { data: unknown; ts: number }>();
 const CACHE_TTL = 30 * 60 * 1000;
 
+// Public stats -> cache at the Vercel CDN too, so repeat crawls of the same
+// manga never re-run the MangaDex fetch + MAL HTML scrape.
+const CDN_CACHE = { "Cache-Control": "public, s-maxage=21600, stale-while-revalidate=86400" };
+const SHORT_CACHE = { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" };
+
 function decodeHtmlEntities(str: string): string {
   return str
     .replace(/&#039;/g, "'")
@@ -68,7 +73,7 @@ export async function GET(
   const cacheKey = `manga-ratings-${mangaId}`;
   const cached = CACHE.get(cacheKey);
   if (cached && Date.now() - cached.ts < CACHE_TTL) {
-    return NextResponse.json(cached.data);
+    return NextResponse.json(cached.data, { headers: CDN_CACHE });
   }
 
   try {
@@ -83,11 +88,11 @@ export async function GET(
     };
 
     CACHE.set(cacheKey, { data: result, ts: Date.now() });
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: CDN_CACHE });
   } catch (_error) {
     return NextResponse.json(
       { error: "Failed to fetch manga data" },
-      { status: 502 }
+      { status: 502, headers: SHORT_CACHE }
     );
   }
 }

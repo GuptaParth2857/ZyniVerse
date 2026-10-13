@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     where: { username },
     select: { username: true, bio: true },
   });
-  if (!user) return { title: "Creator Not Found | ZyniVerse" };
+  if (!user) return { title: "Creator Not Found" };
 
   const title = `@${user.username} — Anime Reel Creator | ZyniVerse`;
   const description = user.bio

@@ -72,14 +72,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ...(anime.genres || []).slice(0, 5),
       ],
       openGraph: {
-        title: `${title} — Anime Details | ZyniVerse`,
+        title: `${title} — Anime Details`,
         description: desc,
         url: `${BASE_URL}/anime/${id}`,
         images: anime.coverImage?.extraLarge ? [{ url: anime.coverImage.extraLarge, alt: title }] : [],
       },
       twitter: {
         card: "summary_large_image",
-        title: `${title} — ZyniVerse`,
+        title: `${title}`,
         description: desc,
       },
       alternates: {
@@ -89,7 +89,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   } catch {
     return {
-      title: "Anime Details — ZyniVerse",
+      title: "Anime Details",
       description: "Browse detailed anime information including episodes, genres, characters, filler guides, watch order, and where to stream. India's #1 free anime platform.",
       robots: { index: true, follow: true },
     };

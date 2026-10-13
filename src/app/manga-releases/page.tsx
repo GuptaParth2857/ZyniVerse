@@ -15,7 +15,7 @@ export const revalidate = 3600;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "Manga Chapter Release Dates & Countdown 2026 — One Piece, JJK & More | ZyniVerse",
+  title: "Manga Chapter Release Dates & Countdown 2026 — One Piece, JJK & More",
   description:
     "When does the next manga chapter drop? Live release countdowns for One Piece, Chainsaw Man, Solo Leveling Ragnarok, Boruto, Spy x Family, Frieren and more — with IST release slots and exact dates.",
   keywords: [
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     "new chapter ist",
   ],
   openGraph: {
-    title: "Manga Release Dates & Countdowns | ZyniVerse",
+    title: "Manga Release Dates & Countdowns",
     description: "Live countdowns for the next One Piece, Chainsaw Man, Solo Leveling and more manga chapters.",
     url: `${BASE_URL}/manga-releases`,
     type: "website",

@@ -5,7 +5,7 @@ import { SHUT_DOWN_SITES } from "@/lib/data/dead-site-alternatives";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "Shut Down Anime Sites & Best Alternatives (2026) — ZyniVerse",
+  title: "Shut Down Anime Sites & Best Alternatives (2026)",
   description:
     "AnimixPlay, HiAnime, AniWatch, 9anime, KissAnime, Zoro.to, GogoAnime, AnimeSuge and other anime sites are down or blocked in India. Here are the best free alternatives — ZyniVerse offers filler guides for 200+ anime, Hindi/Tamil/Telugu dub tracking, AI recommendations and a watch tracker.",
   keywords: [

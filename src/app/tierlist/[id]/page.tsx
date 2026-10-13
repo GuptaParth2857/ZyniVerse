@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props) {
   if (!tierList) return { title: "Not Found" };
 
   return {
-    title: `${tierList.title} — Anime Tier List | ZyniVerse`,
+    title: `${tierList.title} — Anime Tier List`,
     description: tierList.description || `View ${tierList.title} anime tier list`,
   };
 }

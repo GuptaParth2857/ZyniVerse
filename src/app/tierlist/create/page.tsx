@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import TierListBuilder from "@/components/TierListBuilder";
 
 export const metadata = {
-  title: "Create Tier List | ZyniVerse",
+  title: "Create Tier List",
 };
 
 export default async function CreateTierListPage() {

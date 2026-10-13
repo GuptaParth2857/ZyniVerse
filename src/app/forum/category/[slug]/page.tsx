@@ -6,7 +6,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const name = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, " ");
   return {
-    title: `${name} — Forum | ZyniVerse`,
+    title: `${name} — Forum`,
     description: `Browse ${name} threads in the ZyniVerse forum.`,
   };
 }

@@ -1,13 +1,34 @@
 import { cache } from "react";
-import { getAnimeDetailFull, AniListUnavailableError, type MediaAnimeFull } from "@/lib/anilist";
+import {
+  getAnimeDetailFull,
+  AniListUnavailableError,
+  type MediaAnimeFull,
+} from "@/lib/anilist";
 import { notFound, redirect } from "next/navigation";
 import AnimeDetailClient from "./detail-client";
 import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 import { getAnimeEditorial, type AnimeEditorial } from "@/lib/anime-editorials";
+import { prisma } from "@/lib/prisma";
 
 export const revalidate = 86400;
 
+// Empty array => no build-time prerender, but on-demand ISR at runtime
+// (Next.js only enables it for a dynamic segment when this function exists).
+export function generateStaticParams() {
+  return [];
+}
+
 const getAnimeDetailCached = cache(getAnimeDetailFull);
+
+interface AnimeReelLink {
+  id: string;
+  thumbnailUrl: string | null;
+  caption: string | null;
+  views: number;
+  duration: number;
+  likesCount: number;
+  username: string;
+}
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
@@ -15,8 +36,16 @@ function buildAnimeJsonLd(anime: MediaAnimeFull) {
   const id = String(anime.id);
   const title = anime.title?.english || anime.title?.romaji || "Anime";
   const desc = (anime.description || "").replace(/<[^>]*>/g, "").slice(0, 200);
-  const image = anime.coverImage?.extraLarge || anime.coverImage?.large || `${BASE_URL}/logo.png`;
-  const type = anime.format === "MOVIE" ? "Movie" : anime.format === "ONA" || anime.format === "OVA" ? "CreativeWork" : "TVSeries";
+  const image =
+    anime.coverImage?.extraLarge ||
+    anime.coverImage?.large ||
+    `${BASE_URL}/logo.png`;
+  const type =
+    anime.format === "MOVIE"
+      ? "Movie"
+      : anime.format === "ONA" || anime.format === "OVA"
+        ? "CreativeWork"
+        : "TVSeries";
   const schema = {
     "@context": "https://schema.org",
     "@type": type,
@@ -25,21 +54,33 @@ function buildAnimeJsonLd(anime: MediaAnimeFull) {
     url: `${BASE_URL}/anime/${id}`,
     image,
     description: desc,
-    datePublished: anime.startDate?.year ? `${anime.startDate.year}-${String(anime.startDate.month || 1).padStart(2, "0")}-${String(anime.startDate.day || 1).padStart(2, "0")}` : undefined,
+    datePublished: anime.startDate?.year
+      ? `${anime.startDate.year}-${String(anime.startDate.month || 1).padStart(2, "0")}-${String(anime.startDate.day || 1).padStart(2, "0")}`
+      : undefined,
     dateModified: undefined,
     inLanguage: anime.countryOfOrigin === "JP" ? "ja" : undefined,
     genre: (anime.genres || []).slice(0, 5),
     contentRating: anime.isAdult ? "Mature" : "Everyone",
     aggregateRating: anime.averageScore
-      ? { "@type": "AggregateRating", ratingValue: (anime.averageScore / 10).toFixed(1), bestRating: "10", ratingCount: anime.favourites || 1 }
+      ? {
+          "@type": "AggregateRating",
+          ratingValue: (anime.averageScore / 10).toFixed(1),
+          bestRating: "10",
+          ratingCount: anime.favourites || 1,
+        }
       : undefined,
     creator: anime.studios?.nodes?.length
       ? { "@type": "Organization", name: anime.studios.nodes[0].name }
       : undefined,
     numberOfEpisodes: anime.episodes || undefined,
-    isPartOf: anime.season && anime.seasonYear
-      ? { "@type": "CreativeWorkSeason", name: `${anime.season} ${anime.seasonYear}`, startDate: undefined }
-      : undefined,
+    isPartOf:
+      anime.season && anime.seasonYear
+        ? {
+            "@type": "CreativeWorkSeason",
+            name: `${anime.season} ${anime.seasonYear}`,
+            startDate: undefined,
+          }
+        : undefined,
     publisher: { "@type": "Organization", name: "ZyniVerse", url: BASE_URL },
   };
   const breadcrumb = {
@@ -47,14 +88,27 @@ function buildAnimeJsonLd(anime: MediaAnimeFull) {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
-      { "@type": "ListItem", position: 2, name: "Anime", item: `${BASE_URL}/seasonal` },
-      { "@type": "ListItem", position: 3, name: title, item: `${BASE_URL}/anime/${id}` },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Anime",
+        item: `${BASE_URL}/seasonal`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: title,
+        item: `${BASE_URL}/anime/${id}`,
+      },
     ],
   };
   return [JSON.stringify(schema), JSON.stringify(breadcrumb)];
 }
 
-function buildEditorialJsonLd(anime: MediaAnimeFull, editorial: AnimeEditorial) {
+function buildEditorialJsonLd(
+  anime: MediaAnimeFull,
+  editorial: AnimeEditorial,
+) {
   return JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Review",
@@ -63,7 +117,8 @@ function buildEditorialJsonLd(anime: MediaAnimeFull, editorial: AnimeEditorial) 
       "@type": "CreativeWork",
       name: anime.title?.english || anime.title?.romaji || "Anime",
       url: `${BASE_URL}/anime/${anime.id}`,
-      image: anime.coverImage?.extraLarge || anime.coverImage?.large || undefined,
+      image:
+        anime.coverImage?.extraLarge || anime.coverImage?.large || undefined,
     },
     author: { "@type": "Organization", name: "ZyniVerse", url: BASE_URL },
     publisher: { "@type": "Organization", name: "ZyniVerse", url: BASE_URL },
@@ -79,7 +134,11 @@ function buildEditorialJsonLd(anime: MediaAnimeFull, editorial: AnimeEditorial) 
   });
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   try {
     const anime = await getAnimeDetailCached(id);
@@ -87,22 +146,26 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const ogImage = `${BASE_URL}/api/og/anime/${id}`;
     return {
       title,
-      description: (anime.description || "").replace(/<[^>]*>/g, "").slice(0, 160),
+      description: (anime.description || "")
+        .replace(/<[^>]*>/g, "")
+        .slice(0, 160),
       openGraph: {
-        title: `${title} — Anime Guide | ZyniVerse`,
-        description: (anime.description || "").replace(/<[^>]*>/g, "").slice(0, 160),
+        title: `${title} — Anime Guide`,
+        description: (anime.description || "")
+          .replace(/<[^>]*>/g, "")
+          .slice(0, 160),
         type: "website",
         url: `${BASE_URL}/anime/${id}`,
         images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
       },
       twitter: {
         card: "summary_large_image" as const,
-        title: `${title} | ZyniVerse`,
+        title: `${title}`,
         images: [ogImage],
       },
     };
   } catch {
-    return { title: "Anime | ZyniVerse" };
+    return { title: "Anime" };
   }
 }
 
@@ -112,7 +175,7 @@ export default async function AnimeDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-let anime;
+  let anime;
   try {
     anime = await getAnimeDetailCached(id);
   } catch (err) {
@@ -124,6 +187,35 @@ let anime;
   if (!anime) notFound();
   if (anime.type === "MANGA") redirect(`/manga/${anime.id}`);
   const editorial = getAnimeEditorial(anime.title);
+
+  // Reels linked to this anime (uploaded against /reels/upload's anime picker).
+  const idNum = Number(id);
+  let animeReels: AnimeReelLink[] = [];
+  if (Number.isInteger(idNum)) {
+    try {
+      const rows = await prisma.reel.findMany({
+        where: { animeId: idNum },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+        include: {
+          user: { select: { username: true } },
+          _count: { select: { likes: true } },
+        },
+      });
+      animeReels = rows.map((r) => ({
+        id: r.id,
+        thumbnailUrl: r.thumbnailUrl,
+        caption: r.caption,
+        views: r.views,
+        duration: r.duration,
+        likesCount: r._count.likes,
+        username: r.user.username,
+      }));
+    } catch {
+      animeReels = [];
+    }
+  }
+
   const jsonLd = buildAnimeJsonLd(anime);
   const reviewLd = editorial ? buildEditorialJsonLd(anime, editorial) : null;
   return (
@@ -143,7 +235,11 @@ let anime;
           dangerouslySetInnerHTML={{ __html: reviewLd }}
         />
       )}
-      <AnimeDetailClient anime={anime} editorial={editorial} />
+      <AnimeDetailClient
+        anime={anime}
+        editorial={editorial}
+        reels={animeReels}
+      />
     </>
   );
 }

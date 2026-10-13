@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { searchManga } from "@/lib/manga";
+import { searchManga, inferMangaType } from "@/lib/manga";
 import type { Media } from "@/lib/anilist";
 
 interface Props {
@@ -52,6 +52,7 @@ export default function MangaSearch({ onAdd }: Props) {
           title: manga.title.english || manga.title.romaji,
           coverImage: manga.coverImage?.extraLarge || manga.coverImage?.large,
           status,
+          subType: inferMangaType(manga),
           totalChapters: manga.chapters,
           totalVolumes: manga.volumes,
         }),
@@ -82,10 +83,17 @@ export default function MangaSearch({ onAdd }: Props) {
         <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
           {results.map((m) => {
             const title = m.title.english || m.title.romaji || "";
+            const cover = m.coverImage?.large || m.coverImage?.extraLarge || "";
             return (
               <div key={m.id} className="flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors border-b border-[var(--color-line)] last:border-0">
                 <div className="relative h-14 w-10 rounded overflow-hidden border border-[var(--color-line)] shrink-0">
-                  <Image src={m.coverImage?.large || m.coverImage?.extraLarge || ""} alt={title} fill className="object-cover" sizes="40px" />
+                  {cover ? (
+                    <Image src={cover} alt={title} fill className="object-cover" sizes="40px" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] text-base opacity-50">
+                      📖
+                    </div>
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">{title}</p>

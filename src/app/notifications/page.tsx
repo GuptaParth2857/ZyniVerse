@@ -3,7 +3,7 @@ import NotificationList from "@/components/NotificationList";
 import NotificationPreferences from "@/components/NotificationPreferences";
 
 export const metadata: Metadata = {
-  title: "Notifications | ZyniVerse",
+  title: "Notifications",
   description: "View your notifications, airing alerts, and activity updates.",
   robots: { index: false, follow: false },
 };

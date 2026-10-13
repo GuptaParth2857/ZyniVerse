@@ -5,7 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { bestTitle } from "@/lib/anilist";
+import { inferMangaType } from "@/lib/manga";
 import { ErrorState } from "@/components/Loader";
+import RevealTitle from "@/components/RevealTitle";
 import { DynamicCarousel3D as Carousel3D } from "@/components/lazy";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
@@ -142,6 +144,7 @@ export default function MangaDetailsPage({ initialManga }: { initialManga: Media
           title: bestTitle(manga.title),
           coverImage: manga.coverImage?.extraLarge || manga.coverImage?.large,
           status,
+          subType: inferMangaType(manga),
           totalChapters: manga.chapters,
           totalVolumes: manga.volumes,
         }),
@@ -633,6 +636,6 @@ export default function MangaDetailsPage({ initialManga }: { initialManga: Media
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
     <span className="h-4 w-1 rounded-full bg-[var(--color-violet)]" />
-    {children}
+    <RevealTitle as="span">{children}</RevealTitle>
   </h2>;
 }

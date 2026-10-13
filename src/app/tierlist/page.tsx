@@ -3,11 +3,11 @@ import TierListGrid from "./TierListGrid";
 import NativeBannerAd from "@/components/NativeBannerAd";
 
 export const metadata = {
-  title: "Anime Tier Lists — Rank Your Favorites | ZyniVerse",
+  title: "Anime Tier Lists — Rank Your Favorites",
   description:
     "Create and share anime tier lists. Rank your favorite series, compare with friends, and discover what others think.",
   openGraph: {
-    title: "Anime Tier Lists — Rank Your Favorites | ZyniVerse",
+    title: "Anime Tier Lists — Rank Your Favorites",
     description:
       "Create and share anime tier lists. Rank your favorite series, compare with friends, and discover what others think.",
   },

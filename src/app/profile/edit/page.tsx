@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import ProfileEditor from "@/components/ProfileEditor";
 
 export const metadata: Metadata = {
-  title: "Edit Profile - ZyniVerse",
+  title: "Edit Profile",
   description: "Customize your profile",
 };
 

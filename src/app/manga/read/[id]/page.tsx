@@ -12,7 +12,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const sp = await searchParams;
   const title = sp.title || "Manga";
   return {
-    title: `Reading ${title} | ZyniVerse`,
+    title: `Reading ${title}`,
     description: `Read ${title} online for free through legal sources.`,
   };
 }

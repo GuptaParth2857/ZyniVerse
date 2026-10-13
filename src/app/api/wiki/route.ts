@@ -133,6 +133,7 @@ export async function GET(req: NextRequest) {
 
   dbPages = dbResults.map((p) => ({
     ...p,
+    editor: p.editor ?? { id: "", username: "Unknown" },
     updatedAt: p.updatedAt.toISOString(),
     coverImage: proxyImageUrl(p.coverImage),
   }));

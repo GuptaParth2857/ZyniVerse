@@ -6,11 +6,11 @@ import { CartProvider } from "@/components/merch/useCart";
 import { ProductStore } from "@/components/merch/ProductStore";
 
 export const metadata: Metadata = {
-  title: "Anime Merch Store — Figures, Clothing & More | ZyniVerse",
+  title: "Anime Merch Store — Figures, Clothing & More",
   description:
     "Buy anime merchandise in India. Figures, manga, clothing, accessories and more with best prices.",
   openGraph: {
-    title: "Anime Merch Store — Figures, Clothing & More | ZyniVerse",
+    title: "Anime Merch Store — Figures, Clothing & More",
     description: "Buy anime merchandise in India. Figures, manga, clothing, accessories and more.",
   },
 };

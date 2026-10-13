@@ -2,6 +2,9 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import next from "next";
 import { EventEmitter } from "events";
+import crypto from "crypto";
+import { prisma } from "./src/lib/prisma";
+import { getSocketUserId } from "./src/lib/socket-auth";
 
 // Home page fires many parallel API calls; each in-flight compressed HTTP
 // response attaches its own Gzip stream listeners. Raise the per-emitter
@@ -13,40 +16,84 @@ const dev = process.env.NODE_ENV !== "production";
 const hostname = "0.0.0.0";
 const port = parseInt(process.env.PORT || "3000", 10);
 
-const app = next({ dev, hostname, port });
+// Next 16 defaults dev to Turbopack, which intermittently panics and kills the
+// server mid-session. Set NEXT_USE_WEBPACK=1 to run the dev server on Webpack
+// instead (more stable, slightly slower first compile). Production is unaffected.
+const useWebpack = dev && process.env.NEXT_USE_WEBPACK === "1";
+const app = next(
+  useWebpack ? { dev, hostname, port, webpack: true } : { dev, hostname, port },
+);
 const handle = app.getRequestHandler();
 
 const JIOTV_EPG_BASE = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get";
 
 const JIOTV_CHANNEL_MAP: Record<string, number> = {
-  cn: 816, sony_yay: 872, hungama: 1391, super_hungama: 1392,
-  pogo: 559, nick: 545, nick_jr: 548, sonic: 815,
-  discovery_kids: 554, disney_channel: 1373, disney_junior: 1374,
-  epic_kids: 3385, animax: 2258,
+  cn: 816,
+  sony_yay: 872,
+  hungama: 1391,
+  super_hungama: 1392,
+  pogo: 559,
+  nick: 545,
+  nick_jr: 548,
+  sonic: 815,
+  discovery_kids: 554,
+  disney_channel: 1373,
+  disney_junior: 1374,
+  epic_kids: 3385,
+  animax: 2258,
 };
 
-const ALL_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const ALL_DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
 function getDayNameFromDate(d: Date): string {
-  return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d.getDay()];
+  return [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ][d.getDay()];
 }
 
 function epochToIstHHMM(epochMs: number): string {
   const d = new Date(epochMs);
-  const istMs = d.getTime() + (5.5 * 60 * 60 * 1000) + (d.getTimezoneOffset() * 60 * 1000);
+  const istMs =
+    d.getTime() + 5.5 * 60 * 60 * 1000 + d.getTimezoneOffset() * 60 * 1000;
   const ist = new Date(istMs);
   return `${ist.getHours().toString().padStart(2, "0")}:${ist.getMinutes().toString().padStart(2, "0")}`;
 }
 
 async function fetchJiotvEpg(channelId: number, offset: number) {
-  const res = await fetch(`${JIOTV_EPG_BASE}?offset=${offset}&channel_id=${channelId}&langId=6`, {
-    headers: {
-      "User-Agent": "okhttp/3.12.1",
-      "Accept": "application/json",
+  const res = await fetch(
+    `${JIOTV_EPG_BASE}?offset=${offset}&channel_id=${channelId}&langId=6`,
+    {
+      headers: {
+        "User-Agent": "okhttp/3.12.1",
+        Accept: "application/json",
+      },
     },
-  });
+  );
   if (!res.ok) return null;
-  return await res.json() as { epg: { showname: string; description: string; startEpoch: number; endEpoch: number; episode_num: number; episodePoster: string }[] };
+  return (await res.json()) as {
+    epg: {
+      showname: string;
+      description: string;
+      startEpoch: number;
+      endEpoch: number;
+      episode_num: number;
+      episodePoster: string;
+    }[];
+  };
 }
 
 app.prepare().then(() => {
@@ -60,30 +107,57 @@ app.prepare().then(() => {
     if (req.url === "/api/epg") {
       try {
         const entries = Object.entries(JIOTV_CHANNEL_MAP);
-        const allResults: { channelId: string; days: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> }[] = [];
+        const allResults: {
+          channelId: string;
+          days: Record<
+            string,
+            {
+              show: string;
+              start: string;
+              end: string;
+              duration: number;
+              description?: string;
+            }[]
+          >;
+        }[] = [];
 
         const BATCH_SIZE = 4;
         for (let i = 0; i < entries.length; i += BATCH_SIZE) {
           const batch = entries.slice(i, i + BATCH_SIZE);
           const batchResults = await Promise.allSettled(
             batch.map(async ([channelId, jiotvId]) => {
-              const dayGroups: Record<string, { show: string; start: string; end: string; duration: number; description?: string }[]> = {};
+              const dayGroups: Record<
+                string,
+                {
+                  show: string;
+                  start: string;
+                  end: string;
+                  duration: number;
+                  description?: string;
+                }[]
+              > = {};
               for (const d of ALL_DAYS) dayGroups[d] = [];
 
               const offsets = [-6, -5, -4, -3, -2, -1, 0];
-              const responses = await Promise.allSettled(offsets.map((o) => fetchJiotvEpg(jiotvId, o)));
+              const responses = await Promise.allSettled(
+                offsets.map((o) => fetchJiotvEpg(jiotvId, o)),
+              );
 
               for (const r of responses) {
                 const resp = r.status === "fulfilled" ? r.value : null;
                 if (!resp?.epg) continue;
                 for (const entry of resp.epg) {
-                  const dayName = getDayNameFromDate(new Date(entry.startEpoch));
+                  const dayName = getDayNameFromDate(
+                    new Date(entry.startEpoch),
+                  );
                   if (dayGroups[dayName]) {
                     dayGroups[dayName].push({
                       show: entry.showname,
                       start: epochToIstHHMM(entry.startEpoch),
                       end: epochToIstHHMM(entry.endEpoch),
-                      duration: Math.round((entry.endEpoch - entry.startEpoch) / 60000),
+                      duration: Math.round(
+                        (entry.endEpoch - entry.startEpoch) / 60000,
+                      ),
                       description: entry.description || undefined,
                     });
                   }
@@ -95,7 +169,7 @@ app.prepare().then(() => {
               }
 
               return { channelId, days: dayGroups };
-            })
+            }),
           );
 
           for (const r of batchResults) {
@@ -107,28 +181,74 @@ app.prepare().then(() => {
         res.end(JSON.stringify({ channels: allResults }));
       } catch (err) {
         res.writeHead(500, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: err instanceof Error ? err.message : "EPG fetch failed" }));
+        res.end(
+          JSON.stringify({
+            error: err instanceof Error ? err.message : "EPG fetch failed",
+          }),
+        );
       }
       return;
     }
 
     if (req.method === "POST" && req.url === "/internal/dm-broadcast") {
+      // Fail closed: without a configured shared secret this endpoint is
+      // unusable. A misconfigured deployment must never silently leak DMs.
+      const token = process.env.DM_BROADCAST_TOKEN;
+      if (!token) {
+        res.writeHead(503, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "DM broadcast not configured" }));
+        return;
+      }
+      const dmTokenHeader = req.headers["x-dm-token"];
+      const a = Buffer.from(token);
+      const b = Buffer.from(
+        Array.isArray(dmTokenHeader)
+          ? dmTokenHeader[0] || ""
+          : dmTokenHeader || "",
+      );
+      const authorized = a.length === b.length && crypto.timingSafeEqual(a, b);
+      if (!authorized) {
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Forbidden" }));
+        return;
+      }
+
       let body = "";
-      for await (const chunk of req) body += chunk;
+      let tooLarge = false;
+      for await (const chunk of req) {
+        body += chunk;
+        if (body.length > 64 * 1024) {
+          tooLarge = true;
+          break;
+        }
+      }
+      if (tooLarge) {
+        res.writeHead(413, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Payload too large" }));
+        return;
+      }
+
       try {
-        const { recipientId, message, event, payload } = JSON.parse(body || "{}");
-        if (!recipientId || (!message && payload === undefined)) {
+        const { recipientId, message, event, payload } = JSON.parse(
+          body || "{}",
+        );
+        if (
+          typeof recipientId !== "string" ||
+          !recipientId ||
+          (typeof message !== "string" && payload === undefined)
+        ) {
           res.writeHead(400, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ error: "recipientId and message/payload required" }));
+          res.end(
+            JSON.stringify({
+              error: "recipientId and message/payload required",
+            }),
+          );
           return;
         }
-        const token = process.env.DM_BROADCAST_TOKEN;
-        if (token && req.headers["x-dm-token"] !== token) {
-          res.writeHead(403, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ error: "Forbidden" }));
-          return;
-        }
-        io.to(`dm:${recipientId}`).emit(event || "dm-message", payload !== undefined ? payload : message);
+        io.to(`dm:${recipientId}`).emit(
+          event || "dm-message",
+          payload !== undefined ? payload : message,
+        );
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ ok: true }));
       } catch {
@@ -141,40 +261,111 @@ app.prepare().then(() => {
     handle(req, res);
   });
 
+  const allowedOrigins = Array.from(
+    new Set(
+      [
+        process.env.NEXT_PUBLIC_BASE_URL,
+        process.env.AUTH_URL,
+        `http://localhost:${port}`,
+        "http://localhost:3000",
+        "https://zyverse.in",
+      ]
+        .filter((v): v is string => Boolean(v))
+        .map((v) => v.replace(/\/$/, "")),
+    ),
+  );
+
   const io = new Server(httpServer, {
     path: "/api/socketio",
-    cors: { origin: "*", methods: ["GET", "POST"] },
+    cors: { origin: allowedOrigins, methods: ["GET", "POST"] },
     addTrailingSlash: false,
   });
 
-  io.on("connection", (socket) => {
-    console.log("[Socket] User connected:", socket.id);
+  io.on("connection", async (socket) => {
+    // Every socket must prove a valid session cookie. Client-supplied identity
+    // is never trusted: userId comes from the JWT, display identity is loaded
+    // from the DB, and host privileges follow the WatchParty.hostId record.
+    const userId = await getSocketUserId(socket.request);
+    if (!userId) {
+      socket.emit("auth-error", { error: "Unauthorized" });
+      socket.disconnect(true);
+      return;
+    }
+    socket.data.userId = userId;
+    console.log("[Socket] User connected:", socket.id, userId);
 
-    socket.on("dm-join", ({ userId }) => {
-      if (userId) socket.join(`dm:${userId}`);
+    const inParty = (partyId: unknown) =>
+      typeof partyId === "string" && socket.data.partyId === partyId;
+
+    const isHostOf = (partyId: unknown) =>
+      typeof partyId === "string" &&
+      socket.data.partyId === partyId &&
+      socket.data.isHost === true;
+
+    const targetInPartyRoom = (targetId: unknown, partyId: unknown) => {
+      if (typeof targetId !== "string" || typeof partyId !== "string")
+        return false;
+      const target = io.sockets.sockets.get(targetId);
+      return Boolean(target && target.rooms.has(`party:${partyId}`));
+    };
+
+    // A socket may only join its own DM inbox room — never another user's.
+    socket.on("dm-join", ({ userId: claimedUserId }) => {
+      if (claimedUserId === socket.data.userId) {
+        socket.join(`dm:${claimedUserId}`);
+      }
     });
 
-    socket.on("join-party", ({ partyId, user, isHost }) => {
+    socket.on("join-party", async ({ partyId }) => {
+      if (typeof partyId !== "string" || !partyId) return;
+      const myUserId = socket.data.userId as string;
+      const [dbUser, party] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: myUserId },
+          select: { id: true, username: true, avatar: true },
+        }),
+        prisma.watchParty.findUnique({
+          where: { id: partyId },
+          select: { hostId: true },
+        }),
+      ]);
+      if (!dbUser) {
+        socket.disconnect(true);
+        return;
+      }
+      const user = {
+        id: dbUser.id,
+        username: dbUser.username,
+        avatar: dbUser.avatar,
+      };
+      const isHost = party?.hostId === myUserId;
       socket.join(`party:${partyId}`);
-      socket.data = { partyId, user, isHost: !!isHost };
+      socket.data = { ...socket.data, partyId, user, isHost };
       io.to(`party:${partyId}`).emit("member-joined", {
         user,
-        members: Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || []),
+        members: Array.from(
+          io.sockets.adapter.rooms.get(`party:${partyId}`) || [],
+        ),
       });
       console.log(`[Socket] ${user.username} joined party ${partyId}`);
     });
 
     socket.on("leave-party", ({ partyId }) => {
+      if (!inParty(partyId)) return;
       socket.leave(`party:${partyId}`);
       const user = socket.data.user;
       io.to(`party:${partyId}`).emit("member-left", {
         user,
-        members: Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || []),
+        members: Array.from(
+          io.sockets.adapter.rooms.get(`party:${partyId}`) || [],
+        ),
       });
       console.log(`[Socket] ${user?.username} left party ${partyId}`);
     });
 
+    // Host-only controls — isHost is derived from WatchParty.hostId, not the client.
     socket.on("host-sync", ({ partyId, isPlaying, playbackPos, episode }) => {
+      if (!isHostOf(partyId)) return;
       socket.to(`party:${partyId}`).emit("sync-state", {
         isPlaying,
         playbackPos,
@@ -184,82 +375,145 @@ app.prepare().then(() => {
     });
 
     socket.on("host-play", ({ partyId, playbackPos }) => {
-      socket.to(`party:${partyId}`).emit("play", { playbackPos, timestamp: Date.now() });
+      if (!isHostOf(partyId)) return;
+      socket
+        .to(`party:${partyId}`)
+        .emit("play", { playbackPos, timestamp: Date.now() });
     });
 
     socket.on("host-pause", ({ partyId, playbackPos }) => {
-      socket.to(`party:${partyId}`).emit("pause", { playbackPos, timestamp: Date.now() });
+      if (!isHostOf(partyId)) return;
+      socket
+        .to(`party:${partyId}`)
+        .emit("pause", { playbackPos, timestamp: Date.now() });
     });
 
     socket.on("host-seek", ({ partyId, playbackPos }) => {
-      socket.to(`party:${partyId}`).emit("seek", { playbackPos, timestamp: Date.now() });
+      if (!isHostOf(partyId)) return;
+      socket
+        .to(`party:${partyId}`)
+        .emit("seek", { playbackPos, timestamp: Date.now() });
     });
 
     socket.on("host-episode", ({ partyId, episode }) => {
+      if (!isHostOf(partyId)) return;
       socket.to(`party:${partyId}`).emit("episode-change", { episode });
     });
 
-    socket.on("chat-message", ({ partyId, user, message }) => {
+    socket.on("chat-message", ({ partyId, message }) => {
+      if (!inParty(partyId)) return;
+      const user = socket.data.user;
+      const clean = typeof message === "string" ? message.slice(0, 500) : "";
+      if (!clean || !user) return;
       io.to(`party:${partyId}`).emit("new-message", {
-        id: Date.now().toString(),
+        id: `${Date.now()}-${socket.id}`,
         userId: user.id,
         username: user.username,
-        message,
+        message: clean,
         type: "CHAT",
         createdAt: new Date().toISOString(),
       });
     });
 
-    socket.on("reaction", ({ partyId, user, emoji }) => {
+    socket.on("reaction", ({ partyId, emoji }) => {
+      if (!inParty(partyId)) return;
+      const user = socket.data.user;
+      const cleanEmoji = typeof emoji === "string" ? emoji.slice(0, 32) : "";
+      if (!cleanEmoji || !user) return;
       socket.to(`party:${partyId}`).emit("new-reaction", {
         userId: user.id,
         username: user.username,
-        emoji,
+        emoji: cleanEmoji,
       });
     });
 
     socket.on("video-source", ({ partyId, videoUrl, videoType }) => {
-      socket.to(`party:${partyId}`).emit("video-updated", { videoUrl, videoType });
+      if (!isHostOf(partyId)) return;
+      socket
+        .to(`party:${partyId}`)
+        .emit("video-updated", { videoUrl, videoType });
     });
 
     socket.on("screen-share-started", ({ partyId }) => {
-      socket.to(`party:${partyId}`).emit("screen-share-started-viewers", { partyId });
+      if (!isHostOf(partyId)) return;
+      socket
+        .to(`party:${partyId}`)
+        .emit("screen-share-started-viewers", { partyId });
     });
 
     socket.on("screen-share-stopped", ({ partyId }) => {
-      socket.to(`party:${partyId}`).emit("screen-share-stopped-viewers", { partyId });
+      if (!isHostOf(partyId)) return;
+      socket
+        .to(`party:${partyId}`)
+        .emit("screen-share-stopped-viewers", { partyId });
     });
 
-    // Voice chat signaling
-    socket.on("voice-join", ({ partyId, user }) => {
+    // Voice chat signaling — identity from the server, targets must be in the same party.
+    socket.on("voice-join", ({ partyId }) => {
+      if (!inParty(partyId)) return;
+      const user = socket.data.user;
+      if (!user) return;
       socket.data = { ...socket.data, voiceUser: user };
-      io.to(`party:${partyId}`).emit("voice-user-joined", { user, socketId: socket.id });
+      io.to(`party:${partyId}`).emit("voice-user-joined", {
+        user,
+        socketId: socket.id,
+      });
       console.log(`[Voice] ${user.username} joined voice in party ${partyId}`);
     });
 
-    socket.on("voice-leave", ({ partyId, user }) => {
-      io.to(`party:${partyId}`).emit("voice-user-left", { user, socketId: socket.id });
+    socket.on("voice-leave", ({ partyId }) => {
+      if (!inParty(partyId)) return;
+      const user = socket.data.user;
+      if (!user) return;
+      io.to(`party:${partyId}`).emit("voice-user-left", {
+        user,
+        socketId: socket.id,
+      });
       console.log(`[Voice] ${user.username} left voice in party ${partyId}`);
     });
 
     socket.on("voice-offer", ({ partyId, targetId, offer, fromUser }) => {
-      io.to(targetId).emit("voice-offer", { offer, fromUser, fromSocketId: socket.id, partyId });
+      if (!inParty(partyId) || !targetInPartyRoom(targetId, partyId)) return;
+      io.to(targetId).emit("voice-offer", {
+        offer,
+        fromUser,
+        fromSocketId: socket.id,
+        partyId,
+      });
     });
 
     socket.on("voice-answer", ({ partyId, targetId, answer }) => {
-      io.to(targetId).emit("voice-answer", { answer, fromSocketId: socket.id, partyId });
+      if (!inParty(partyId) || !targetInPartyRoom(targetId, partyId)) return;
+      io.to(targetId).emit("voice-answer", {
+        answer,
+        fromSocketId: socket.id,
+        partyId,
+      });
     });
 
     socket.on("voice-ice-candidate", ({ partyId, targetId, candidate }) => {
-      io.to(targetId).emit("voice-ice-candidate", { candidate, fromSocketId: socket.id, partyId });
+      if (!inParty(partyId) || !targetInPartyRoom(targetId, partyId)) return;
+      io.to(targetId).emit("voice-ice-candidate", {
+        candidate,
+        fromSocketId: socket.id,
+        partyId,
+      });
     });
 
-    socket.on("voice-speaking", ({ partyId, user, isSpeaking }) => {
-      socket.to(`party:${partyId}`).emit("voice-speaking", { user, isSpeaking, socketId: socket.id });
+    socket.on("voice-speaking", ({ partyId, isSpeaking }) => {
+      if (!inParty(partyId)) return;
+      const user = socket.data.user;
+      if (!user) return;
+      socket
+        .to(`party:${partyId}`)
+        .emit("voice-speaking", { user, isSpeaking, socketId: socket.id });
     });
 
     socket.on("webrtc-viewer-ready", ({ partyId }) => {
-      const hostSocket = Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || [])
+      if (!inParty(partyId)) return;
+      const hostSocket = Array.from(
+        io.sockets.adapter.rooms.get(`party:${partyId}`) || [],
+      )
         .map((id) => io.sockets.sockets.get(id))
         .find((s) => s && s.data?.isHost);
       if (hostSocket) {
@@ -268,16 +522,33 @@ app.prepare().then(() => {
     });
 
     socket.on("webrtc-offer", ({ partyId, targetId, offer }) => {
-      io.to(targetId).emit("webrtc-offer-viewer", { offer, partyId, hostId: socket.id });
+      if (!inParty(partyId) || !targetInPartyRoom(targetId, partyId)) return;
+      io.to(targetId).emit("webrtc-offer-viewer", {
+        offer,
+        partyId,
+        hostId: socket.id,
+      });
     });
 
     socket.on("webrtc-viewer-answer", ({ partyId, hostId, answer }) => {
-      io.to(hostId).emit("webrtc-viewer-answer", { viewerId: socket.id, answer, partyId });
+      if (!inParty(partyId) || !targetInPartyRoom(hostId, partyId)) return;
+      io.to(hostId).emit("webrtc-viewer-answer", {
+        viewerId: socket.id,
+        answer,
+        partyId,
+      });
     });
 
     socket.on("webrtc-ice-candidate", ({ partyId, targetId, candidate }) => {
-      const eventName = socket.data?.isHost ? "webrtc-ice-candidate-viewer" : "webrtc-ice-candidate-host";
-      io.to(targetId).emit(eventName, { candidate, partyId, senderId: socket.id });
+      if (!inParty(partyId) || !targetInPartyRoom(targetId, partyId)) return;
+      const eventName = socket.data?.isHost
+        ? "webrtc-ice-candidate-viewer"
+        : "webrtc-ice-candidate-host";
+      io.to(targetId).emit(eventName, {
+        candidate,
+        partyId,
+        senderId: socket.id,
+      });
     });
 
     socket.on("disconnect", () => {
@@ -285,9 +556,13 @@ app.prepare().then(() => {
       if (partyId) {
         io.to(`party:${partyId}`).emit("member-left", {
           user,
-          members: Array.from(io.sockets.adapter.rooms.get(`party:${partyId}`) || []),
+          members: Array.from(
+            io.sockets.adapter.rooms.get(`party:${partyId}`) || [],
+          ),
         });
-        console.log(`[Socket] ${user?.username} disconnected from party ${partyId}`);
+        console.log(
+          `[Socket] ${user?.username} disconnected from party ${partyId}`,
+        );
       }
     });
   });

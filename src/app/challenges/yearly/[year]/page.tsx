@@ -11,7 +11,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
   const { year } = await params;
   return {
-    title: `Watch Anime in ${year} — Yearly Challenge | ZyniVerse`,
+    title: `Watch Anime in ${year} — Yearly Challenge`,
     description: `Join the yearly anime watching challenge for ${year}. Set goals, track progress, and compete with the community.`,
   };
 }

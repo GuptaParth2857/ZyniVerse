@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import GraphExplorer from "@/components/graph/GraphExplorer";
 
 export const metadata: Metadata = {
-  title: "Knowledge Graph · ZyniVerse",
+  title: "Knowledge Graph",
   description:
     "Explore how anime and characters connect. See the shortest chain of shared shows between any two of them.",
 };

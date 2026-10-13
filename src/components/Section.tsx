@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AnimeCard from "./AnimeCard";
 import { CardSkeleton } from "./Loader";
+import RevealTitle from "./RevealTitle";
 import type { Media } from "@/lib/anilist";
 
 export default function Section({
@@ -27,7 +28,11 @@ export default function Section({
               {eyebrow}
             </p>
           )}
-          <h2 className="font-display text-2xl font-bold sm:text-3xl">{title}</h2>
+          <RevealTitle
+            as="h2"
+            text={title}
+            className="font-display text-2xl font-bold sm:text-3xl"
+          />
         </div>
         {viewAllTo && (
           <Link

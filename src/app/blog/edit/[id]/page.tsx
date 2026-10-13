@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import EditBlogClient from "./client";
 
 export const metadata: Metadata = {
-  title: "Edit Post | ZyniVerse",
+  title: "Edit Post",
   description: "Edit your anime blog post on ZyniVerse. Update reviews, news, seasonal previews, recommendations, and guides before publishing to India's anime community.",
 };
 

@@ -22,7 +22,7 @@ export async function generateStaticParams() {
 }
 
 const FALLBACK_METADATA: Metadata = {
-  title: "Filler List — Every Anime Filler Episode to Skip | ZyniVerse",
+  title: "Filler List — Every Anime Filler Episode to Skip",
   description:
     "Complete filler episode guides for popular anime. See exactly which episodes are filler, canon, or mixed — and skip straight to the story.",
   robots: { index: true, follow: true },

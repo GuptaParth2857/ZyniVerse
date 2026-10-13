@@ -5,7 +5,7 @@ import ConventionMap from "@/components/ConventionMap";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "Anime Conventions India 2026 — Comic Con, Events & Meetups Calendar | ZyniVerse",
+  title: "Anime Conventions India 2026 — Comic Con, Events & Meetups Calendar",
   description:
     "Complete calendar of anime conventions, comic cons, and otaku events in India for 2026. Comic Con Hyderabad, Comic Con Delhi, Anime Events Bangalore, Mumbai, Chennai, and more. Ticket info, dates, and venues.",
   keywords: [
@@ -15,14 +15,14 @@ export const metadata: Metadata = {
     "comic con mumbai 2026", "anime convention chennai", "anime expo india",
   ],
   openGraph: {
-    title: "Anime Conventions India 2026 — Complete Calendar | ZyniVerse",
+    title: "Anime Conventions India 2026 — Complete Calendar",
     description: "Find every anime convention, comic con, and otaku event in India for 2026. Dates, venues, and ticket info.",
     url: `${BASE_URL}/conventions`,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Anime Conventions India 2026 — ZyniVerse",
+    title: "Anime Conventions India 2026",
     description: "Complete calendar of anime conventions and comic cons across India for 2026.",
   },
   alternates: {

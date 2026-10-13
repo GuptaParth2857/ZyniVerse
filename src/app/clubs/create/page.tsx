@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import CreateClubClient from "./CreateClubClient";
 
 export const metadata: Metadata = {
-  title: "Create a Club — ZyniVerse",
+  title: "Create a Club",
   description: "Create a new anime club or group on ZyniVerse. Bring your community together.",
 };
 

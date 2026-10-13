@@ -13,18 +13,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const res = await fetch(`${BASE_URL}/api/blog/${slug}`, { cache: "no-store" });
 
-    if (!res.ok) return { title: "Blog Post | ZyniVerse", description: "Read the latest anime blog posts on ZyniVerse — news, reviews, recommendations, and guides for Indian anime fans.", robots: { index: true, follow: true } };
+    if (!res.ok) return { title: "Blog Post", description: "Read the latest anime blog posts on ZyniVerse — news, reviews, recommendations, and guides for Indian anime fans.", robots: { index: true, follow: true } };
 
     const data = await res.json();
     const post = data.post;
 
-    if (!post || !post.title) return { title: "Blog Post | ZyniVerse", description: "Read the latest anime blog posts on ZyniVerse — news, reviews, recommendations, and guides for Indian anime fans.", robots: { index: true, follow: true } };
+    if (!post || !post.title) return { title: "Blog Post", description: "Read the latest anime blog posts on ZyniVerse — news, reviews, recommendations, and guides for Indian anime fans.", robots: { index: true, follow: true } };
 
     return {
-      title: `${post.title} | ZyniVerse Blog`,
+      title: `${post.title} Blog`,
       description: post.excerpt || post.content?.replace(/<[^>]*>/g, "").slice(0, 200) || "",
       openGraph: {
-        title: `${post.title} | ZyniVerse Blog`,
+        title: `${post.title} Blog`,
         description: post.excerpt || post.content?.replace(/<[^>]*>/g, "").slice(0, 200) || "",
         type: "article",
         url: `${BASE_URL}/blog/${slug}`,
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch {
-    return { title: "Blog Post | ZyniVerse", description: "Read the latest anime blog posts on ZyniVerse — news, reviews, recommendations, and guides for Indian anime fans.", robots: { index: true, follow: true } };
+    return { title: "Blog Post", description: "Read the latest anime blog posts on ZyniVerse — news, reviews, recommendations, and guides for Indian anime fans.", robots: { index: true, follow: true } };
   }
 }
 

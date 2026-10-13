@@ -47,36 +47,36 @@ export async function POST(req: NextRequest) {
     where: { entryId_chapter: { entryId: entry.id, chapter } },
   });
 
-  if (existing) {
-    const updated = await prisma.mangaChapter.update({
-      where: { id: existing.id },
-      data: { read: read ?? true, readAt: read !== false ? new Date() : null },
-    });
-    return NextResponse.json({ chapter: updated });
-  }
+  const chapterRow = existing
+    ? await prisma.mangaChapter.update({
+        where: { id: existing.id },
+        data: { read: read ?? true, readAt: read !== false ? new Date() : null },
+      })
+    : await prisma.mangaChapter.create({
+        data: {
+          entryId: entry.id,
+          chapter,
+          title: title || null,
+          read: read ?? true,
+          readAt: read !== false ? new Date() : null,
+        },
+      });
 
-  const created = await prisma.mangaChapter.create({
-    data: {
-      entryId: entry.id,
-      chapter,
-      title: title || null,
-      read: read ?? true,
-      readAt: read !== false ? new Date() : null,
-    },
-  });
-
+  // Recount after both mark and unmark so the entry progress stays accurate.
   const readCount = await prisma.mangaChapter.count({
     where: { entryId: entry.id, read: true },
   });
   await prisma.mangaEntry.update({
     where: { id: entry.id },
-    data: { chapters: readCount, status: readCount > 0 ? "READING" : entry.status },
+    data: {
+      chapters: readCount,
+      // Only promote an untouched entry to READING — never override a status
+      // the user picked (COMPLETED / DROPPED / PAUSED / REREADING).
+      ...(readCount > 0 && entry.status === "PLANNING" ? { status: "READING" } : {}),
+    },
   });
 
-  const totalChapters = await prisma.mangaChapter.count({
-    where: { entryId: entry.id, read: true },
-  });
-  if (totalChapters >= 500) checkAndAwardAchievement(session.user.id, "MANGA_LOVER").catch(() => {});
+  if (readCount >= 500) checkAndAwardAchievement(session.user.id, "MANGA_LOVER").catch(() => {});
 
-  return NextResponse.json({ chapter: created });
+  return NextResponse.json({ chapter: chapterRow });
 }

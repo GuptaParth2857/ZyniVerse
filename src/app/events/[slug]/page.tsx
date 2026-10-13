@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!event) return { title: "Event Not Found" };
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
   return {
-    title: `${event.name} — Anime Events | ZyniVerse`,
+    title: `${event.name} — Anime Events`,
     description: `${event.name} at ${event.location}. ${event.startDate} — ${event.endDate}. ${event.description.slice(0, 160)}`,
     openGraph: {
       title: `${event.name} — Anime Events`,

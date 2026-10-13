@@ -3,6 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { getMediaBatch } from "@/lib/anilist";
 import { logError } from "@/lib/logger";
 
+// Public, non-personalised aggregation -> safe to cache at the Vercel CDN.
+// Without an explicit s-maxage every request is a MISS and a billed Node render
+// (plus DB + AniList work).
+const PUBLIC_CACHE = { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" };
+const SHORT_CACHE = { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" };
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ mediaId: string }> }) {
   const { mediaId } = await params;
   const id = parseInt(mediaId, 10);
@@ -15,7 +21,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ medi
       take: 100,
     });
 
-    if (usersWithMedia.length === 0) return NextResponse.json({ recommendations: [] });
+    if (usersWithMedia.length === 0) {
+      return NextResponse.json({ recommendations: [] }, { headers: PUBLIC_CACHE });
+    }
 
     const userIds = usersWithMedia.map((u) => u.userId);
 
@@ -54,8 +62,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ medi
       coverImage: anilistData[r.mediaId]?.coverImage || "",
     }));
 
-    return NextResponse.json({ recommendations: enriched });
+    return NextResponse.json({ recommendations: enriched }, { headers: PUBLIC_CACHE });
   } catch {
-    return NextResponse.json({ recommendations: [] });
+    return NextResponse.json({ recommendations: [] }, { headers: SHORT_CACHE });
   }
 }

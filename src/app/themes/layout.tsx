@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "Anime Themes & Customization — Dark, Light & Dim Modes | ZyniVerse",
+  title: "Anime Themes & Customization — Dark, Light & Dim Modes",
   description:
     "Customize your ZyniVerse experience with dark mode, dim mode, and light mode themes. Choose the perfect look for your anime tracking.",
   openGraph: {
-    title: "Anime Themes — Dark, Light & Dim Modes | ZyniVerse",
+    title: "Anime Themes — Dark, Light & Dim Modes",
     description:
       "Customize your ZyniVerse experience with dark, dim, and light themes.",
   },

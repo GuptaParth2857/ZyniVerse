@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import MangaMillionClient from "./MangaMillionClient";
 
 export const metadata: Metadata = {
-  title: "MANGA MILLION: Shueisha's Free Manga Platform — Hindi & 100+ Languages | ZyniVerse",
+  title: "MANGA MILLION: Shueisha's Free Manga Platform — Hindi & 100+ Languages",
   description:
     "MANGA MILLION is Shueisha's free manga platform with ~400 titles (One Piece, Naruto, Jujutsu Kaisen, Oshi no Ko) in 100+ languages including Hindi. No registration needed. Read for free until December 2027.",
   keywords: [

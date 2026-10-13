@@ -11,6 +11,7 @@ interface CarouselItem {
   title: { english?: string; romaji?: string; native?: string };
   averageScore?: number;
   format?: string;
+  mediaFormat?: string | null;
   episodes?: number;
   chapters?: number;
   type?: string;

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRef, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
 import { STATUS_LABELS, STATUS_COLORS, getMediaTypeLabel, getMediaTypeColor } from "@/lib/manga";
@@ -49,6 +49,8 @@ export default function MangaCard({ manga, entry, showProgress = true, href, ind
 
   const progress = total && total > 0 ? Math.min(100, Math.round((chapters / total) * 100)) : 0;
 
+  const reduce = useReducedMotion() ?? false;
+
   const ref = useRef<HTMLDivElement>(null);
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -71,9 +73,9 @@ export default function MangaCard({ manga, entry, showProgress = true, href, ind
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 24 }}
+      initial={reduce ? false : { opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: reduce ? 0 : 0.45, delay: reduce ? 0 : Math.min(index, 12) * 0.06, ease: [0.22, 1, 0.36, 1] }}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       className="group h-full"
@@ -81,15 +83,25 @@ export default function MangaCard({ manga, entry, showProgress = true, href, ind
     >
       <Link
         href={linkHref}
-        className="neon-rgb-border block h-full rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm overflow-hidden transition-all duration-300"
+        className="neon-rgb-border relative block h-full rounded-xl bg-[var(--color-panel)]/60 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_-8px_var(--color-violet)]"
       >
         <div className="relative aspect-[2/3] overflow-hidden">
-          <Image
-            src={cover}
-            alt={title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 50vw, 25vw"
+          {cover ? (
+            <Image
+              src={cover}
+              alt={title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 50vw, 25vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--color-panel)] to-[var(--color-void)] text-3xl opacity-50">
+              📖
+            </div>
+          )}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-10 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
           />
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
           {score ? (

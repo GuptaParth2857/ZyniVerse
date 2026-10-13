@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import CosplayUpload from "@/components/CosplayUpload";
 
 export const metadata: Metadata = {
-  title: "Upload Cosplay | ZyniVerse",
+  title: "Upload Cosplay",
 };
 
 export default async function CosplayUploadPage() {

@@ -15,17 +15,15 @@ import InstallPrompt from "@/components/InstallPrompt";
 import RouteTransition from "@/components/RouteTransition";
 import MobileNav from "@/components/MobileNav";
 import AdBanner from "@/components/AdBanner";
-import SocialBarAd from "@/components/SocialBarAd";
+import DeferredWidgets from "@/components/DeferredWidgets";
 import NativeBannerAd from "@/components/NativeBannerAd";
-import ChatWidget from "@/components/ChatWidget";
-import ToastFeed from "@/components/ToastFeed";
-import SplashScreen from "@/components/SplashScreen";
-import CommandPalette from "@/components/CommandPalette";
 import OnboardingGate from "@/components/OnboardingGate";
 
 import ActivityTracker from "@/components/ActivityTracker";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import AnimationPauser from "@/components/AnimationPauser";
+import CursorGlow from "@/components/CursorGlow";
+import ScrollProgress from "@/components/ScrollProgress";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -275,6 +273,8 @@ export default function RootLayout({
           </Suspense>
           <Providers>
             <AnimationPauser />
+            <ScrollProgress />
+            <CursorGlow />
             <OnboardingGate />
             <Navbar />
             <main className="flex-1"><RouteTransition>{children}</RouteTransition></main>
@@ -284,7 +284,7 @@ export default function RootLayout({
               <AdBanner placement="global-footer" type="banner" />
             </div>
             {/* Sitewide Social Bar – floating sticky widget */}
-            <SocialBarAd />
+            <DeferredWidgets />
             <MobileNav />
             <BackToTop />
             <Footer />
@@ -292,10 +292,6 @@ export default function RootLayout({
             <ServiceWorkerRegistration />
             <OfflineStatus />
             <InstallPrompt />
-            <ChatWidget />
-            <ToastFeed />
-            <SplashScreen />
-            <CommandPalette />
           </Providers>
         </AuthProvider>
         {/* Vercel Analytics/Speed Insights inject their own scripts — VERCEL_URL is

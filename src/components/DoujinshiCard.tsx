@@ -52,6 +52,7 @@ function CoverPlaceholder({ entry }: { entry: DoujinshiEntry }) {
 export default function DoujinshiCard({ entry, onTrack, trackedStatus, index = 0 }: Props) {
   const { data: session } = useSession();
   const ref = useRef<HTMLDivElement>(null);
+  const spotRef = useRef<HTMLDivElement>(null);
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const el = ref.current;
@@ -62,6 +63,10 @@ export default function DoujinshiCard({ entry, onTrack, trackedStatus, index = 0
     const px = (e.clientX - cx) / (rect.width / 2);
     const py = (e.clientY - cy) / (rect.height / 2);
     el.style.transform = `perspective(800px) rotateY(${px * 6}deg) rotateX(${-py * 6}deg) scale(1.02)`;
+    const spot = spotRef.current;
+    if (spot) {
+      spot.style.background = `radial-gradient(300px circle at ${e.clientX - rect.left}px ${e.clientY - rect.top}px, rgba(255,0,255,0.22), transparent 65%)`;
+    }
   }, []);
 
   const handlePointerLeave = useCallback(() => {
@@ -82,6 +87,12 @@ export default function DoujinshiCard({ entry, onTrack, trackedStatus, index = 0
       style={{ transition: "transform 0.2s ease-out" }}
     >
       <div className="relative flex h-full flex-col rounded-xl neon-rgb-border bg-[var(--color-panel)]/60 backdrop-blur-sm overflow-hidden transition-all duration-300">
+        {/* Cursor spotlight */}
+        <div
+          ref={spotRef}
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[5] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        />
         {/* Cover */}
         <div className="relative aspect-[3/4] w-full overflow-hidden">
           {entry.image ? (
@@ -91,7 +102,7 @@ export default function DoujinshiCard({ entry, onTrack, trackedStatus, index = 0
           )}
         </div>
 
-        <div className="flex flex-1 flex-col gap-2 p-3">
+        <div className="relative z-10 flex flex-1 flex-col gap-2 p-3">
           {/* Title */}
           <Link href={`/doujinshi/${entry.id}`} className="group/title">
             <h3 className="text-sm font-bold leading-tight line-clamp-2 group-hover/title:text-[var(--color-magenta)] transition-colors">
@@ -156,19 +167,28 @@ export default function DoujinshiCard({ entry, onTrack, trackedStatus, index = 0
                 </a>
               )}
 
-              {/* Track button */}
-              {session && onTrack && (
-                <button
-                  onClick={() => onTrack(entry.id, trackedStatus === "favorite" ? "want" : "favorite")}
-                  className={`rounded-md px-4 py-2 text-xs font-semibold transition-colors ${
-                    trackedStatus
-                      ? "bg-[var(--color-magenta)]/20 text-[var(--color-magenta)]"
-                      : "bg-[var(--color-panel)] border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-magenta)]"
-                  }`}
-                >
-                  {trackedStatus ? "Tracked" : "Track"}
-                </button>
-              )}
+              {/* Track button (signed in) / sign-in prompt (anonymous) */}
+              {onTrack &&
+                (session ? (
+                  <button
+                    onClick={() => onTrack(entry.id, trackedStatus ? "" : "favorite")}
+                    aria-pressed={Boolean(trackedStatus)}
+                    className={`rounded-md px-4 py-2 text-xs font-semibold transition-colors ${
+                      trackedStatus
+                        ? "bg-[var(--color-magenta)]/20 text-[var(--color-magenta)]"
+                        : "bg-[var(--color-panel)] border border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-magenta)]"
+                    }`}
+                  >
+                    {trackedStatus ? "Tracked" : "Track"}
+                  </button>
+                ) : (
+                  <Link
+                    href={`/login?next=${encodeURIComponent(`/doujinshi/${entry.id}`)}`}
+                    className="rounded-md border border-[var(--color-line)] px-3 py-2 text-xs font-semibold text-[var(--color-cyan)] transition-colors hover:border-[var(--color-cyan)]"
+                  >
+                    Sign in
+                  </Link>
+                ))}
             </div>
           </div>
         </div>

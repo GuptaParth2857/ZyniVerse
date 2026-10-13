@@ -4,7 +4,7 @@ import ForumHomeClient from "./ForumHomeClient";
 import ForumStats from "@/components/ForumStats";
 
 export const metadata: Metadata = {
-  title: "Anime Forum — Discussions & Community | ZyniVerse",
+  title: "Anime Forum — Discussions & Community",
   description: "Join the ZyniVerse community forum. Discuss anime, share recommendations, and connect with fellow fans.",
   robots: { index: true, follow: true },
 };

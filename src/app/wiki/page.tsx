@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import WikiPageClient from "./WikiPageClient";
 
 export const metadata: Metadata = {
-  title: "Anime Wiki — Community Knowledge Base | ZyniVerse",
+  title: "Anime Wiki — Community Knowledge Base",
   description: "Community-driven wiki for anime, manga, characters, studios, and more. Contribute your knowledge!",
   alternates: { canonical: "https://zyverse.in/wiki" },
   robots: { index: true, follow: true },

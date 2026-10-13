@@ -9,7 +9,7 @@ export const revalidate = 1800;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "Hindi Dub Anime Schedule This Week (2026) — What Airing Now in India | ZyniVerse",
+  title: "Hindi Dub Anime Schedule This Week (2026) — What Airing Now in India",
   description:
     "Live Hindi, Tamil and Telugu dub uploads from Muse India and Ani-One India, pulled straight from the official YouTube channels. See what's new in India right now.",
   keywords: [
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "hindi dub release date", "dubbed anime schedule india", "indian anime schedule", "hindi anime this week",
   ],
   openGraph: {
-    title: "Hindi Dub Anime Schedule This Week | ZyniVerse",
+    title: "Hindi Dub Anime Schedule This Week",
     description: "Live Hindi, Tamil & Telugu dub uploads from the official Indian anime YouTube channels.",
     url: `${BASE_URL}/hindi-dub-schedule`,
     type: "website",

@@ -25,7 +25,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: DeskParams): Promise<Metadata> {
   const { slug } = await params;
   const item = getNewsDeskItem(slug);
-  if (!item) return { title: "Anime News | ZyniVerse" };
+  if (!item) return { title: "Anime News" };
 
   const url = `${BASE_URL}/news/desk/${item.slug}`;
   const title = `${item.title} | ZyniVerse`;

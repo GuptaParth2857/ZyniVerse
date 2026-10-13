@@ -8,7 +8,7 @@ interface Props {
 
 export async function generateMetadata({ params: _params }: Props): Promise<Metadata> {
   return {
-    title: `Blog Article | ZyniVerse`,
+    title: `Blog Article`,
     description: `Read this anime blog article curated by ${CURATOR.username} from dev.to.`,
   };
 }

@@ -86,6 +86,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
     const resp = NextResponse.json({
       page: {
         ...page,
+        editor: page.editor ?? { id: "", username: "Unknown", avatar: null },
         coverImage: proxyImageUrl(page.coverImage),
       },
     });

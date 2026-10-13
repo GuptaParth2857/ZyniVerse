@@ -29,7 +29,39 @@ export async function POST(req: NextRequest) {
   const userId = await resolveUserId();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { mediaId, type, action, status, mediaTitle, mediaImage, score, subScores, dropReason, progress, total } = await req.json();
+  const { mediaId, type, action, status, mediaTitle, mediaImage, score, subScores, dropReason, progress, total, updates } = await req.json();
+
+  if (action === "bulk") {
+    interface BulkUpdate { mediaId: number; status: string; type?: string; dropReason?: string; }
+    const raw: unknown = updates;
+    const clean = (Array.isArray(raw) ? raw : [])
+      .filter((u): u is BulkUpdate => !!u && typeof u.mediaId === "number" && typeof u.status === "string")
+      .slice(0, 500);
+
+    if (clean.length === 0) return NextResponse.json({ error: "No updates" }, { status: 400 });
+
+    // One request for the whole batch keeps large lists under the API rate
+    // limit (30/min) instead of firing one POST per selected item.
+    await prisma.$transaction(
+      clean.map((u) =>
+        prisma.listEntry.upsert({
+          where: { userId_mediaId: { userId, mediaId: u.mediaId } },
+          update: {
+            status: u.status,
+            type: u.type || "ANIME",
+            dropReason: u.status === "DROPPED" ? (u.dropReason || null) : null,
+          },
+          create: {
+            userId, mediaId: u.mediaId, type: u.type || "ANIME", status: u.status,
+            progress: 0, total: 0, dropReason: u.status === "DROPPED" ? (u.dropReason || null) : null,
+          },
+        })
+      )
+    );
+
+    checkCompletedAchievements(userId).catch(() => {});
+    return NextResponse.json({ ok: true, updated: clean.length });
+  }
 
   if (action === "rate") {
     const computed = computeScore(score, subScores);

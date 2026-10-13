@@ -119,7 +119,7 @@ export const rootResolver = {
   },
 
   search: async ({ query, page = 1, perPage = 12 }: { query: string; page?: number; perPage?: number }) => {
-    const data = await searchAll(query, page, perPage);
+    const data = await searchAll({ search: query, page, perPage });
     return {
       pageInfo: { hasNextPage: false, total: (data.anime?.length || 0) + (data.manga?.length || 0) },
       anime: (data.anime || []).map(mapAnime),

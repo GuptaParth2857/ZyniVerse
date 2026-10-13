@@ -18,9 +18,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const c = await fetchCosplay(id);
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
-  if (!c) return { title: "Cosplay | ZyniVerse", description: "Browse anime cosplay photos, upload your own, and connect with the cosplay community on ZyniVerse.", robots: { index: true, follow: true } };
+  if (!c) return { title: "Cosplay", description: "Browse anime cosplay photos, upload your own, and connect with the cosplay community on ZyniVerse.", robots: { index: true, follow: true } };
   return {
-    title: `${c.character} from ${c.animeTitle} — Cosplay by ${c.user.username} | ZyniVerse`,
+    title: `${c.character} from ${c.animeTitle} — Cosplay by ${c.user.username}`,
     description: c.description || `Check out this ${c.character} cosplay from ${c.animeTitle}`,
     alternates: { canonical: `${baseUrl}/cosplay/${id}` },
     robots: { index: true, follow: true },

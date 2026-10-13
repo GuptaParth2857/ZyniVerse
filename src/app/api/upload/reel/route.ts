@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { isR2Configured, r2Put, r2PublicUrl } from "@/lib/r2";
 
 const ALLOWED_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
-const MAX_SIZE = 50 * 1024 * 1024; // 50MB â€” Supabase free plan storage limit
+const MAX_SIZE = 50 * 1024 * 1024; // 50MB — Supabase free plan storage limit
 const BUCKET = "reels";
 
 export async function POST(req: NextRequest) {

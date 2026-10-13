@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     );
 
   try {
-    const data = await searchAll(q.trim());
+    const data = await searchAll({ search: q.trim() });
     const results = [...data.anime, ...data.manga].slice(0, 20);
     return Response.json(
       { results },

@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const site = getShutDownSite(slug);
   if (!site) {
     return {
-      title: "Alternatives — ZyniVerse",
+      title: "Alternatives",
       description: "Best free alternatives to shut down anime sites. Filler guides, Indian dub tracking, watch trackers and more on ZyniVerse.",
       robots: { index: true, follow: true },
     };

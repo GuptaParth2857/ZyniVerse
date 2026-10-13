@@ -7,10 +7,14 @@ import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 
 export const revalidate = 86400;
 
-// No generateStaticParams on purpose: prerendering manga pages at build
-// fires one AniList Media query per page, contributing to the build-time
-// rate-limit that ballooned builds from ~3 min to 8-12 min. Pages render on
-// demand and ISR-cache for 24h (`revalidate` above).
+// Return an EMPTY array: no paths are prerendered at build time (so no
+// build-time AniList queries), but Next.js only enables on-demand ISR for a
+// dynamic segment when `generateStaticParams` exists. Without it the route is
+// rendered dynamically on every request (billed Node render per hit).
+export function generateStaticParams() {
+  return [];
+}
+
 const getMangaCached = cache(getMangaDetailFull);
 
 export async function generateMetadata({
@@ -26,10 +30,10 @@ export async function generateMetadata({
       (manga.description || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160) ||
       `${title} — chapters, ratings, characters and reading progress on ZyniVerse.`;
     return {
-      title: `${title} — Manga | ZyniVerse`,
+      title: `${title} — Manga`,
       description,
       openGraph: {
-        title: `${title} — Manga | ZyniVerse`,
+        title: `${title} — Manga`,
         description,
         images: manga.coverImage?.extraLarge || manga.coverImage?.large
           ? [{ url: manga.coverImage.extraLarge || manga.coverImage.large!, alt: title }]
@@ -37,7 +41,7 @@ export async function generateMetadata({
       },
     };
   } catch {
-    return { title: "Manga | ZyniVerse" };
+    return { title: "Manga" };
   }
 }
 

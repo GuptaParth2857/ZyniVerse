@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import SharedWatchlistsPage from "./SharedWatchlistsClient";
 
 export const metadata = {
-  title: "Shared Watchlists — ZyniVerse",
+  title: "Shared Watchlists",
   description: "Create and collaborate on watchlists with friends",
 };
 

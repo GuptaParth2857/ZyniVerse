@@ -16,19 +16,19 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const animeId = parseInt(id);
-  if (isNaN(animeId)) return { title: "Watch Order — ZyniVerse", description: "Find the correct watch order for any anime series including sequels, prequels, movies, and OVAs. Never watch out of order again.", robots: { index: true, follow: true } };
+  if (isNaN(animeId)) return { title: "Watch Order", description: "Find the correct watch order for any anime series including sequels, prequels, movies, and OVAs. Never watch out of order again.", robots: { index: true, follow: true } };
 
   try {
     const anime = await getAnimeDetailFull(animeId);
     const title = bestTitle(anime.title);
     return {
-      title: `${title} Watch Order — Auto-Generated | ZyniVerse`,
+      title: `${title} Watch Order — Auto-Generated`,
       description: `Watch order guide for ${title} including all sequels, prequels, and side stories. Never watch out of order again.`,
       alternates: { canonical: `${BASE_URL}/watch-order/anime/${animeId}` },
       robots: { index: true, follow: true },
     };
   } catch {
-    return { title: "Watch Order — ZyniVerse", description: "Find the correct watch order for any anime series including sequels, prequels, movies, and OVAs. Never watch out of order again.", robots: { index: true, follow: true } };
+    return { title: "Watch Order", description: "Find the correct watch order for any anime series including sequels, prequels, movies, and OVAs. Never watch out of order again.", robots: { index: true, follow: true } };
   }
 }
 

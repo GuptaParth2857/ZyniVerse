@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { authLimiter } from "@/lib/rate-limiter";
+import { logError } from "@/lib/logger";
+import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   const rateCheck = await authLimiter.middleware(req);
@@ -21,7 +23,7 @@ export async function POST(req: NextRequest) {
       }
       const bcrypt = await import("bcryptjs");
       const hashed = await bcrypt.hash(password, 12);
-      const code = username.toLowerCase() + Math.random().toString(36).slice(2, 6);
+      const code = username.toLowerCase() + crypto.randomBytes(3).toString("hex");
       let referredBy: string | null = null;
       if (ref) {
         const referrer = await prisma.user.findUnique({ where: { referralCode: ref } });
@@ -48,6 +50,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    // Never leak internal error details (Prisma messages, DB paths) to the client.
+    logError(e);
+    return NextResponse.json({ error: "Registration failed. Please try again." }, { status: 500 });
   }
 }

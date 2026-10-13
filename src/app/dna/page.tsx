@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "My Anime DNA | ZyniVerse",
+  title: "My Anime DNA",
   description: "Apna Anime DNA dekho — watchlist, genres aur streaks se bana visual taste profile. Share karo, compare karo.",
   robots: { index: false, follow: true },
 };

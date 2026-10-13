@@ -3,6 +3,23 @@ import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const rateCheck = await apiLimiter.middleware(req);
+  if (rateCheck) return rateCheck;
+
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ entry: null });
+
+  const mediaId = Number((await params).id);
+  if (!mediaId) return NextResponse.json({ entry: null }, { status: 400 });
+
+  const entry = await prisma.mangaEntry.findUnique({
+    where: { userId_mediaId: { userId: session.user.id, mediaId } },
+  });
+
+  return NextResponse.json({ entry });
+}
+
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;

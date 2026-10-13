@@ -12,9 +12,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const list = await getAllLiveAction();
   const anime = list.find((a) => a.id === id);
-  if (!anime) return { title: "Live-Action Anime Adaptation — ZyniVerse", robots: { index: false, follow: true } };
+  if (!anime) return { title: "Live-Action Anime Adaptation", robots: { index: false, follow: true } };
   return {
-    title: `${anime.title} Live-Action — Cast, Rating & Where to Watch | ZyniVerse`,
+    title: `${anime.title} Live-Action — Cast, Rating & Where to Watch`,
     description: `Everything about the live-action adaptation of ${anime.title}: cast, release status, rating, and where to watch it.`,
     alternates: { canonical: `${BASE_URL}/live-action/${id}` },
     robots: { index: true, follow: true },

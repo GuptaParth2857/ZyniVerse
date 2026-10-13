@@ -51,7 +51,9 @@ export default function AnimeCard({ anime, no3D = false }: { anime: Media; no3D?
       className="group"
       style={no3D ? undefined : { transition: "transform 0.2s ease-out" }}
     >
-      <Link href={href} className="glass-card block">
+      <Link href={href} className="glass-card block card-glow">
+        <span aria-hidden className="card-aura" />
+        <span aria-hidden className="card-shine" />
         <div className="glass-content">
           <div className="relative aspect-[2/3] overflow-hidden rounded-t-xl bg-[var(--color-panel)]">
             <Image

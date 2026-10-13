@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import FanArtUpload from "@/components/FanArtUpload";
 
 export const metadata: Metadata = {
-  title: "Upload Fan Art | ZyniVerse",
+  title: "Upload Fan Art",
 };
 
 export default async function FanArtUploadPage() {

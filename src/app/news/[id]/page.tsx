@@ -10,7 +10,7 @@ interface Props {
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 const FALLBACK_METADATA: Metadata = {
-  title: "Anime News Article | ZyniVerse",
+  title: "Anime News Article",
   description: "Read the latest anime news on ZyniVerse — curated from Anime News Network and MyAnimeList for Indian anime fans.",
   robots: { index: true, follow: true },
 };

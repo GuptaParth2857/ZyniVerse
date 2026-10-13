@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import CompareContent from "./content";
 
 export const metadata: Metadata = {
-  title: "Compare Lists — ZyniVerse",
+  title: "Compare Lists",
 };
 
 export default function ComparePage({ params }: { params: Promise<{ username: string }> }) {

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import ClubsPageClient from "./ClubsPageClient";
 
 export const metadata: Metadata = {
-  title: "Anime Clubs & Groups — Find Your Community | ZyniVerse",
+  title: "Anime Clubs & Groups — Find Your Community",
   description: "Join anime clubs and groups. Connect with fans who share your interests in watching, reading, and discussing anime and manga.",
 };
 

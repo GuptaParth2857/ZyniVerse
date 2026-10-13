@@ -76,7 +76,7 @@ export default function WikiPage({ page }: Props) {
         <div className="flex items-center gap-3 mt-3 text-[10px] font-mono text-[var(--color-mute)]">
           <span>v{page.version}</span>
           <span>·</span>
-          <span>Last edited by {page.editor.username}</span>
+          <span>Last edited by {page.editor?.username ?? "Unknown"}</span>
           <span>·</span>
           <span>{new Date(page.updatedAt).toLocaleDateString()}</span>
           <span>·</span>

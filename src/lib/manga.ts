@@ -9,6 +9,36 @@ export const MEDIA_TYPES = {
 
 export type MediaType = (typeof MEDIA_TYPES)[keyof typeof MEDIA_TYPES];
 
+/** Type filter chips shared by the browse grid and the My List view. */
+export const MANGA_TYPE_OPTIONS = [
+  { key: "ALL", label: "All" },
+  { key: MEDIA_TYPES.MANGA, label: "Manga" },
+  { key: MEDIA_TYPES.MANHWA, label: "Manhwa" },
+  { key: MEDIA_TYPES.MANHUA, label: "Manhua" },
+  { key: MEDIA_TYPES.LIGHT_NOVEL, label: "Light Novel" },
+] as const;
+
+export type MangaTypeKey = (typeof MANGA_TYPE_OPTIONS)[number]["key"];
+
+/**
+ * Infer the stored sub-type from an AniList media object. Used when adding a
+ * title so the list can be filtered by Manga / Manhwa / Manhua / Light Novel.
+ */
+export function inferMangaType(media: {
+  format?: string | null;
+  countryOfOrigin?: string | null;
+}): MediaType {
+  if (media.format === "NOVEL") return MEDIA_TYPES.LIGHT_NOVEL;
+  switch (media.countryOfOrigin) {
+    case "KR":
+      return MEDIA_TYPES.MANHWA;
+    case "CN":
+      return MEDIA_TYPES.MANHUA;
+    default:
+      return MEDIA_TYPES.MANGA;
+  }
+}
+
 export async function searchManga(query: string, type?: string) {
   const res = type === "light_novel"
     ? await searchMedia({ search: query, type: "MANGA", format: "NOVEL", perPage: 20 })

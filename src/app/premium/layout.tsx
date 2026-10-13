@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "ZyniVerse Pro — Unlock Premium Anime Features | ZyniVerse",
+  title: "ZyniVerse Pro — Unlock Premium Anime Features",
   description:
     "Upgrade to ZyniVerse Pro. Get ad-free experience, advanced stats, CSV export, priority support, and exclusive features for just Rs 499/month.",
   openGraph: {

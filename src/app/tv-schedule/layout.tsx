@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "Anime TV Schedule India — What's Airing Today on Indian TV Channels | ZyniVerse",
+  title: "Anime TV Schedule India — What's Airing Today on Indian TV Channels",
   description:
     "Check what anime is airing today on Indian TV channels like Cartoon Network, Sony YAY, Hungama, Nick, and more. Complete TV schedule with DTH channel numbers. Updated daily for 2026.",
   keywords: [
@@ -12,14 +12,14 @@ export const metadata: Metadata = {
     "hungama tv anime", "indian tv anime today", "dth anime schedule",
   ],
   openGraph: {
-    title: "Anime TV Schedule India — Indian TV Channels | ZyniVerse",
+    title: "Anime TV Schedule India — Indian TV Channels",
     description: "What anime is airing today on Indian TV? Complete schedule with DTH channel numbers.",
     url: `${BASE_URL}/tv-schedule`,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Anime TV Schedule India — ZyniVerse",
+    title: "Anime TV Schedule India",
     description: "See what anime is airing today on Indian TV channels.",
   },
   alternates: {

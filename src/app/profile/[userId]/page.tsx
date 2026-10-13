@@ -12,9 +12,9 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { userId } = await params;
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) return { title: "User Not Found | ZyniVerse" };
+  if (!user) return { title: "User Not Found" };
   return {
-    title: `${user.username} — Profile | ZyniVerse`,
+    title: `${user.username} — Profile`,
     description: user.bio || `View ${user.username}'s anime profile on ZyniVerse.`,
     robots: { index: false, follow: true },
   };

@@ -10,9 +10,10 @@ export async function GET(req: NextRequest) {
   const perPage = Math.min(50, Math.max(1, Number(searchParams.get("perPage")) || 20));
   const offset = (page - 1) * perPage;
   const genres = searchParams.get("genres")?.split(",").filter(Boolean) || undefined;
+  const language = searchParams.get("lang") || undefined;
 
   try {
-    const { entries, total } = await getDoujinshi({ search, limit: perPage, offset, sort, genres });
+    const { entries, total } = await getDoujinshi({ search, limit: perPage, offset, sort, genres, language });
     return NextResponse.json({
       entries,
       total,

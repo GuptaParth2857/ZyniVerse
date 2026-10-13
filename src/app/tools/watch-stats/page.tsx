@@ -3,10 +3,10 @@ import Link from "next/link";
 import PersonalWatchTime from "@/components/PersonalWatchTime";
 
 export const metadata: Metadata = {
-  title: "Anime Watch Time Stats — How Long to Watch All Anime? | ZyniVerse",
+  title: "Anime Watch Time Stats — How Long to Watch All Anime?",
   description: "Mind-blowing stats about anime watch time. How long would it take to watch every anime ever made? Total filler, genre breakdowns, and more.",
   openGraph: {
-    title: "Anime Watch Time Stats | ZyniVerse",
+    title: "Anime Watch Time Stats",
     description: "Mind-blowing anime stats — total watch time, filler hours, genre breakdowns.",
   },
 };

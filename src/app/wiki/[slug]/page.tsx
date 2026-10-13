@@ -15,14 +15,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (res.ok) {
       const data = await res.json();
       return {
-        title: `${data.page.title} — Anime Wiki | ZyniVerse`,
+        title: `${data.page.title} — Anime Wiki`,
         alternates: { canonical: `${BASE_URL}/wiki/${slug}` },
         robots: { index: true, follow: true },
       };
     }
   } catch (e) { logError(e); }
   return {
-    title: "Wiki — ZyniVerse",
+    title: "Wiki",
     description: "Browse the ZyniVerse anime wiki for detailed information about your favorite anime series, characters, episodes, and more. India's free anime encyclopedia.",
     alternates: { canonical: `${BASE_URL}/wiki/${slug}` },
     robots: { index: true, follow: true },

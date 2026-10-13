@@ -14,10 +14,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     select: { title: true, content: true, mediaTitle: true, user: { select: { username: true } } },
   });
 
-  if (!review) return { title: "Review Not Found — ZyniVerse" };
+  if (!review) return { title: "Review Not Found" };
 
   return {
-    title: `${review.title} — Review by ${review.user.username} | ZyniVerse`,
+    title: `${review.title} — Review by ${review.user.username}`,
     description: review.content.slice(0, 160),
     openGraph: {
       title: `${review.title} — ${review.mediaTitle}`,

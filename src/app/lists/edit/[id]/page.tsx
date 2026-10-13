@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props) {
   const { id } = await params;
   const list = await prisma.userList.findUnique({ where: { id }, select: { title: true } });
   if (!list) return { title: "Not Found" };
-  return { title: `Edit ${list.title} | ZyniVerse` };
+  return { title: `Edit ${list.title}` };
 }
 
 export default async function EditListPage({ params }: Props) {

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import UserListForm from "@/components/UserListForm";
 
 export const metadata = {
-  title: "Create List | ZyniVerse",
+  title: "Create List",
 };
 
 export default async function CreateListPage() {

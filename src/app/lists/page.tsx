@@ -3,11 +3,11 @@ import { Suspense } from "react";
 import ListGrid from "./ListGrid";
 
 export const metadata = {
-  title: "Custom Anime Lists — Top 10 & Rankings | ZyniVerse",
+  title: "Custom Anime Lists — Top 10 & Rankings",
   description:
     "Browse and create custom anime and manga lists. Top 10 rankings, themed collections, hidden gems — curated by the community.",
   openGraph: {
-    title: "Custom Anime Lists — Top 10 & Rankings | ZyniVerse",
+    title: "Custom Anime Lists — Top 10 & Rankings",
     description:
       "Browse and create custom anime and manga lists. Top 10 rankings, themed collections, hidden gems — curated by the community.",
   },

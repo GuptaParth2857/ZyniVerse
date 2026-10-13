@@ -46,6 +46,8 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 import { FadeIn, PageTransition } from "@/components/PageTransition";
+import AuroraParticles from "@/components/AuroraParticles";
+import RevealTitle from "@/components/RevealTitle";
 import {
   DynamicSection as Section,
   DynamicMediaCarousel as MediaCarousel,
@@ -295,9 +297,12 @@ export default async function Home() {
               </Link>
             </div>
           </FadeIn>
-          <div className="relative">
-            <Hero3D items={trendingData} stats={heroStats} />
-            <PersonalizedHero className="absolute inset-0 z-20" fallbackItems={[]} />
+          <div className="relative overflow-hidden">
+            <AuroraParticles className="z-0" />
+            <div className="relative z-10">
+              <Hero3D items={trendingData} stats={heroStats} />
+              <PersonalizedHero className="absolute inset-0 z-20" fallbackItems={[]} />
+            </div>
           </div>
       <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6">
         <AnimeOfTheDay />
@@ -312,7 +317,11 @@ export default async function Home() {
             <div className="mb-5 flex items-end justify-between">
               <div className="rounded-xl px-4 py-2">
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)]">Main Attraction</p>
-                <h2 className="font-display text-3xl font-bold sm:text-4xl">Latest Posters</h2>
+                <RevealTitle
+                  as="h2"
+                  text="Latest Posters"
+                  className="font-display text-3xl font-bold sm:text-4xl"
+                />
               </div>
               <Link href="/posts" className="shrink-0 text-sm text-[var(--color-mute)] hover:text-[var(--color-cyan)]">
                 View all →

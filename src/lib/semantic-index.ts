@@ -121,7 +121,7 @@ function snippet(body: string, max = 180): string {
   const text = plain(body);
   if (text.length <= max) return text;
   // Cut on a space so the excerpt never ends mid-word.
-  return `${text.slice(0, max).replace(/\s+\S*$/, "")}â€¦`;
+  return `${text.slice(0, max).replace(/\s+\S*$/, "")}…`;
 }
 
 /** The text that actually gets embedded, kept in one place so embed and re-embed agree. */
@@ -252,7 +252,7 @@ async function structuredDocuments(source: Source): Promise<SourceDoc[]> {
       id: `review-${r.id}`,
       title: `Review of ${titles.get(r.mediaId)}`,
       href: `/anime/${r.mediaId}`,
-      body: `${titles.get(r.mediaId)} â€” rated ${r.rating} out of 10. ${r.comment}`.trim(),
+      body: `${titles.get(r.mediaId)} — rated ${r.rating} out of 10. ${r.comment}`.trim(),
       tags: "review",
     }));
   }
@@ -266,7 +266,7 @@ async function structuredDocuments(source: Source): Promise<SourceDoc[]> {
     const titles = await mediaTitles(rows.map((r) => r.mediaId));
     return rows.map((r) => ({
       id: `tag-${r.id}`,
-      title: `${titles.get(r.mediaId)} â€” ${r.tag}`,
+      title: `${titles.get(r.mediaId)} — ${r.tag}`,
       href: `/anime/${r.mediaId}`,
       body: `Fans describe ${titles.get(r.mediaId)} as ${r.tag}. ${r.score} people agreed with that description.`,
       tags: r.tag,
@@ -295,7 +295,7 @@ async function structuredDocuments(source: Source): Promise<SourceDoc[]> {
     });
     return rows.map((r) => ({
       id: `moment-${r.id}`,
-      title: `${r.animeTitle ?? "Moment"}${r.character ? ` â€” ${r.character}` : ""}`,
+      title: `${r.animeTitle ?? "Moment"}${r.character ? ` — ${r.character}` : ""}`,
       href: `/moments/${r.id}`,
       body: r.quote,
       tags: r.character ?? "",
@@ -309,7 +309,7 @@ async function structuredDocuments(source: Source): Promise<SourceDoc[]> {
     });
     return rows.map((r) => ({
       id: `award-${r.id}`,
-      title: `${r.category} (${r.year}) â€” ${r.winner}`,
+      title: `${r.category} (${r.year}) — ${r.winner}`,
       href: `/awards/${r.year}`,
       body: `${r.winner} won ${r.category} in ${r.year}${r.platform ? ` (${r.platform})` : ""}.`,
       tags: r.category,

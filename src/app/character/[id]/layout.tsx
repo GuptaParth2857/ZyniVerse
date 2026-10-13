@@ -22,12 +22,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const animeStr = animeNames.length > 0 ? ` from ${animeNames.join(", ")}` : "";
 
     return {
-      title: `${name} — Anime Character Details | ZyniVerse`,
+      title: `${name} — Anime Character Details`,
       description: char.description
         ? char.description.replace(/<[^>]*>/g, "").slice(0, 200)
         : `Learn about ${name}${animeStr}. Voice actors, appearances, favorites, and more on ZyniVerse.`,
       openGraph: {
-        title: `${name} — Anime Character | ZyniVerse`,
+        title: `${name} — Anime Character`,
         description: char.description
           ? char.description.replace(/<[^>]*>/g, "").slice(0, 200)
           : `Learn about ${name}${animeStr} on ZyniVerse.`,
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
       twitter: {
         card: "summary_large_image",
-        title: `${name} — ZyniVerse`,
+        title: `${name}`,
         description: char.description
           ? char.description.replace(/<[^>]*>/g, "").slice(0, 200)
           : `Learn about ${name} on ZyniVerse.`,
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   } catch {
     return {
-      title: "Character Details — ZyniVerse",
+      title: "Character Details",
       description: "Explore detailed anime character information including voice actors, appearances, and trivia. India's #1 free anime platform.",
       alternates: { canonical: `${BASE_URL}/character/${id}` },
       robots: { index: false, follow: true },

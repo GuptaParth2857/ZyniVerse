@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import BlogEditor from "@/components/BlogEditor";
 
 export const metadata: Metadata = {
-  title: "Create Blog Post | ZyniVerse",
+  title: "Create Blog Post",
   description: "Write and publish anime blog posts on ZyniVerse. Share your reviews, news, seasonal previews, and recommendations with India's anime community and get discovered.",
 };
 

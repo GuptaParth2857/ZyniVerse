@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!entry) return { title: "Not Found" };
 
   return {
-    title: `${entry.title} — Doujinshi | ZyniVerse`,
+    title: `${entry.title} — Doujinshi`,
     description: entry.description || `${entry.title} doujinshi from MangaDex`,
   };
 }

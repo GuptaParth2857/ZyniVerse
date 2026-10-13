@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import CosplayGallery from "@/components/CosplayGallery";
 
 export const metadata: Metadata = {
-  title: "Cosplay Gallery — Anime Cosplays & Costumes | ZyniVerse",
+  title: "Cosplay Gallery — Anime Cosplays & Costumes",
   description:
     "Browse and share anime cosplays. Show off your costumes, discover talented cosplayers from India and around the world.",
 };

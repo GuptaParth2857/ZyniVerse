@@ -4,7 +4,7 @@ import WatchPartyRoom from "@/components/WatchPartyRoom";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id: _id } = await params;
   return {
-    title: "Watch Party | ZyniVerse",
+    title: "Watch Party",
     description: "Watch anime together with friends in real time! Start a synchronized ZyniVerse watch party, chat while you watch, and share the experience with your community.",
   };
 }

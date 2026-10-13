@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "Anime Polls — Vote on Your Favorites | ZyniVerse",
+  title: "Anime Polls — Vote on Your Favorites",
   description:
     "Create and vote on anime polls. Best anime, best character, best fight scene — have your say in the ZyniVerse community.",
   openGraph: {
-    title: "Anime Polls — Vote on Your Favorites | ZyniVerse",
+    title: "Anime Polls — Vote on Your Favorites",
     description:
       "Create and vote on anime polls. Have your say in the community.",
   },

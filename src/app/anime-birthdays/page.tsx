@@ -16,7 +16,7 @@ export const revalidate = 1800;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "Anime Birthdays Calendar — Today & This Week (2026) | ZyniVerse",
+  title: "Anime Birthdays Calendar — Today & This Week (2026)",
   description:
     "Which anime character has a birthday today? Browse the 2026 anime birthday calendar — today's anime birthdays, this week's birthdays and every month, with series info.",
   keywords: [
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     "anime characters born today", "this week anime birthdays", "anime birthday calendar",
   ],
   openGraph: {
-    title: "Anime Birthdays — Today & This Week | ZyniVerse",
+    title: "Anime Birthdays — Today & This Week",
     description: "Today's anime birthdays and the full 2026 calendar — Naruto, Luffy, Gojo, Levi and more.",
     url: `${BASE_URL}/anime-birthdays`,
     type: "website",

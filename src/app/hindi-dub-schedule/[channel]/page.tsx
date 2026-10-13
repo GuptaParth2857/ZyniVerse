@@ -36,9 +36,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { channel } = await params;
   const ch = channelFromSlug(channel);
   const week = getThisWeekRange();
-  if (!ch) return { title: "Hindi Dub Schedule | ZyniVerse" };
+  if (!ch) return { title: "Hindi Dub Schedule" };
   return {
-    title: `${ch} Hindi Dub Schedule This Week — ${week.label} | ZyniVerse`,
+    title: `${ch} Hindi Dub Schedule This Week — ${week.label}`,
     description:
       `${ch} new Hindi, Tamil & Telugu dub releases this week (${week.label}) with IST times. Every upload and schedule update for ${ch} in India.`,
     keywords: [

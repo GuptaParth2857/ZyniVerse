@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import MessagesClient from "./MessagesClient";
 
 export const metadata: Metadata = {
-  title: "Messages — Chat with Friends | ZyniVerse",
+  title: "Messages — Chat with Friends",
   description:
     "Send direct messages to other anime fans. Chat about anime, share recommendations, and make friends.",
   robots: { index: false, follow: false },

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveUserId } from "@/lib/resolve-user";
 import { simklConfigured, simklExchangeCode } from "@/lib/simkl-client";
+import { encryptSecret } from "@/lib/token-encryption";
 
 export const runtime = "nodejs";
 
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
     await prisma.externalAccount.upsert({
       where: { userId_provider: { userId, provider: "simkl" } },
       update: {
-        accessToken: token.access_token,
+        accessToken: encryptSecret(token.access_token),
         refreshToken: null,
         expiresAt: token.expires_in ? new Date(Date.now() + token.expires_in * 1000) : null,
         syncAt: null,
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
         userId,
         provider: "simkl",
         providerId: "simkl",
-        accessToken: token.access_token,
+        accessToken: encryptSecret(token.access_token),
         expiresAt: token.expires_in ? new Date(Date.now() + token.expires_in * 1000) : null,
       },
     });

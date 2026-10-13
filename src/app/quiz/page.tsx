@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import NativeBannerAd from "@/components/NativeBannerAd";
 
 export const metadata: Metadata = {
-  title: "Anime Quiz — Test Your Knowledge | ZyniVerse",
+  title: "Anime Quiz — Test Your Knowledge",
   description: "Challenge yourself with anime trivia quizzes. Earn XP, climb ranks, and become the ultimate anime quiz champion!",
   alternates: { canonical: "https://zyverse.in/quiz" },
   robots: { index: true, follow: true },

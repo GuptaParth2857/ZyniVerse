@@ -393,7 +393,7 @@ export default function WikiPageClient() {
                     <span className="text-[var(--color-cyan)]/60">via Wikipedia</span>
                   ) : (
                     <>
-                      <span className="text-[var(--color-cyan)]/70">{page.editor.username}</span>
+                      <span className="text-[var(--color-cyan)]/70">{page.editor?.username ?? "Unknown"}</span>
                       <span>·</span>
                       <span>v{page.version}</span>
                       <span>·</span>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { validateWebhookUrl } from "@/lib/webhook-ssrf";
 import crypto from "crypto";
 
 export async function GET(req: NextRequest) {
@@ -42,10 +43,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing url or events" }, { status: 400 });
   }
 
-  try {
-    new URL(url);
-  } catch {
-    return NextResponse.json({ error: "Invalid URL format" }, { status: 400 });
+  // SSRF guard: http(s) only + no local/private/reserved hosts (IP literal or
+  // DNS-resolved). Fail-closed, so internal services / cloud metadata
+  // (169.254.169.254) can never be targeted.
+  const urlCheck = await validateWebhookUrl(url);
+  if (!urlCheck.ok) {
+    return NextResponse.json({ error: urlCheck.reason }, { status: 400 });
   }
 
   const secret = crypto.randomBytes(32).toString("hex");

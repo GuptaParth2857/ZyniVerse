@@ -165,3 +165,8 @@ export const anilistLimiter = createRateLimiter("anilist", {
   maxRequests: 30,
   windowMs: 60 * 1000,
 });
+
+export const affiliateLimiter = createRateLimiter("affiliate", {
+  maxRequests: 30,
+  windowMs: 60 * 1000,
+});

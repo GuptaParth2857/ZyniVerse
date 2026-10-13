@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import WallpaperUpload from "@/components/WallpaperUpload";
 
 export const metadata: Metadata = {
-  title: "Upload Wallpaper | ZyniVerse",
+  title: "Upload Wallpaper",
 };
 
 export default async function WallpaperUploadPage() {

@@ -13,10 +13,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const res = await fetch(`${baseUrl}/api/wiki/${slug}`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
-      return { title: `Edit ${data.page.title} — Wiki | ZyniVerse` };
+      return { title: `Edit ${data.page.title} — Wiki` };
     }
   } catch (e) { logError(e); }
-  return { title: "Edit Wiki Page — ZyniVerse" };
+  return { title: "Edit Wiki Page" };
 }
 
 export default function WikiEditPage({ params }: Props) {

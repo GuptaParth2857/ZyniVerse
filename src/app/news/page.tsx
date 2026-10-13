@@ -33,16 +33,16 @@ const TICKER_ITEMS = [
 ];
 
 export const metadata: Metadata = {
-  title: "Anime News & Updates — Stay Informed | ZyniVerse",
+  title: "Anime News & Updates — Stay Informed",
   description:
     "Latest anime news, seasonal announcements, trending shows, airing schedules, and community activity — all in one place.",
   openGraph: {
-    title: "Anime News & Updates — Stay Informed | ZyniVerse",
+    title: "Anime News & Updates — Stay Informed",
     description:
       "Latest anime news, seasonal announcements, trending shows, airing schedules, and community activity — all in one place.",
   },
   twitter: {
-    title: "Anime News & Updates — Stay Informed | ZyniVerse",
+    title: "Anime News & Updates — Stay Informed",
     description:
       "Latest anime news, seasonal announcements, trending shows, airing schedules, and community activity — all in one place.",
   },

@@ -19,7 +19,7 @@ import "./indian-dubs.css";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
-  title: "Hindi, Tamil & Telugu Dubbed Anime — Indian Dub Meter (2026) | ZyniVerse",
+  title: "Hindi, Tamil & Telugu Dubbed Anime — Indian Dub Meter (2026)",
   description:
     "India's live dub meter for One Piece, Naruto, Attack on Titan, Doraemon and more. IST drop windows, episode counts and where to watch every Hindi, Tamil & Telugu anime dub — compiled from official sources.",
   keywords: [
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     "doraemon hindi", "shin chan hindi", "pokemon in hindi", "solo leveling hindi dub",
   ],
   openGraph: {
-    title: "Hindi, Tamil & Telugu Dubbed Anime — Indian Dub Meter | ZyniVerse",
+    title: "Hindi, Tamil & Telugu Dubbed Anime — Indian Dub Meter",
     description: "India's live dub meter: IST schedules, weekly countdowns and where to watch every Indian anime dub.",
     url: `${BASE_URL}/indian-dubs`,
     type: "website",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     site: "@GuptaParth2857",
-    title: "Indian Dub Meter — Hindi, Tamil & Telugu | ZyniVerse",
+    title: "Indian Dub Meter — Hindi, Tamil & Telugu",
     description: "Every Hindi, Tamil & Telugu anime dub, one live meter. Countdowns, schedules, guides.",
   },
   alternates: { canonical: `${BASE_URL}/indian-dubs` },

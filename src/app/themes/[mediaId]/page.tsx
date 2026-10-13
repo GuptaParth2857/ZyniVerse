@@ -2,6 +2,14 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ThemeDetailClient from "./content";
 
+export const revalidate = 86400;
+
+// Empty array => no build-time prerender, but on-demand ISR at runtime
+// (Next.js only enables it for a dynamic segment when this function exists).
+export function generateStaticParams() {
+  return [];
+}
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 const ANIME_TITLES: Record<number, string> = {
@@ -24,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ mediaId: 
   const id = parseInt(mediaId, 10);
   const title = ANIME_TITLES[id] || `Anime #${id}`;
   return {
-    title: `${title} Theme Songs — ZyniVerse`,
+    title: `${title} Theme Songs`,
     description: `Browse opening and ending theme songs for ${title}`,
     alternates: { canonical: `${BASE_URL}/themes/${id}` },
     robots: { index: true, follow: true },

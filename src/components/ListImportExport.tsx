@@ -1,6 +1,17 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useWatchlist } from "@/components/WatchlistProvider";
+
+const MAL_STATUS: Record<string, string> = {
+  CURRENT: "watching",
+  COMPLETED: "completed",
+  PLANNING: "plan to watch",
+  DROPPED: "dropped",
+  PAUSED: "on-hold",
+  REWATCHING: "rewatching",
+};
 
 type ImportRecord = {
   id: string;
@@ -14,6 +25,8 @@ type ImportRecord = {
 };
 
 export default function ListImportExport() {
+  const { status: authStatus } = useSession();
+  const { items, getStatus, getProgress, getScore } = useWatchlist();
   const fileRef = useRef<HTMLInputElement>(null);
   const [source, setSource] = useState<"mal" | "anilist">("mal");
   const [anilistUser, setAnilistUser] = useState("");
@@ -24,6 +37,12 @@ export default function ListImportExport() {
   const [showHistory, setShowHistory] = useState(false);
 
   const loadHistory = async () => {
+    if (authStatus !== "authenticated") {
+      setHistory([]);
+      setShowHistory(true);
+      setMsg({ type: "err", text: "Sign in to see your import history." });
+      return;
+    }
     try {
       const res = await fetch("/api/watchlist/imports");
       if (!res.ok) return;
@@ -39,9 +58,26 @@ export default function ListImportExport() {
     setBusy(true);
     setMsg(null);
     try {
-      const res = await fetch("/api/watchlist/export?format=xml");
-      if (!res.ok) throw new Error("Export failed");
-      const blob = await res.blob();
+      let blob: Blob;
+      if (authStatus !== "authenticated") {
+        // No account → build the MAL XML from the local watchlist.
+        const rows = items.map((i) => {
+          const status = MAL_STATUS[getStatus(i.id) || "PLANNING"] || "plan to watch";
+          return `    <anime>
+      <series_animedb_id>${i.id}</series_animedb_id>
+      <my_status>${status}</my_status>
+      <my_watched_episodes>${getProgress(i.id)}</my_watched_episodes>
+      <my_score>${getScore(i.id) ?? 0}</my_score>
+      <my_start_date>0000-00-00</my_start_date>
+      <my_finish_date>0000-00-00</my_finish_date>
+    </anime>`;
+        }).join("\n");
+        blob = new Blob([`<?xml version="1.0" encoding="UTF-8"?>\n<myanimelist>\n${rows}\n</myanimelist>`], { type: "application/xml" });
+      } else {
+        const res = await fetch("/api/watchlist/export?format=xml");
+        if (!res.ok) throw new Error("Export failed");
+        blob = await res.blob();
+      }
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -58,6 +94,10 @@ export default function ListImportExport() {
   };
 
   const doImport = async () => {
+    if (authStatus !== "authenticated") {
+      setMsg({ type: "err", text: "Sign in to import your list." });
+      return;
+    }
     setBusy(true);
     setMsg(null);
     try {

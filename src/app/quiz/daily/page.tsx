@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import DailyQuizClient from "./client";
 
 export const metadata: Metadata = {
-  title: "Daily Anime Quiz | ZyniVerse",
+  title: "Daily Anime Quiz",
   description: "Take the daily anime quiz. Everyone gets the same questions!",
 };
 

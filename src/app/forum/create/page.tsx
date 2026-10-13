@@ -3,7 +3,7 @@ import Link from "next/link";
 import ForumCreateThread from "@/components/ForumCreateThread";
 
 export const metadata: Metadata = {
-  title: "Create Thread | ZyniVerse",
+  title: "Create Thread",
   description: "Start a new discussion thread on the ZyniVerse forum. Ask questions, share anime recommendations, and talk about your favorite series with India's anime community.",
 };
 

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import ReelUpload from "./ReelUpload";
 
 export const metadata: Metadata = {
-  title: "Upload Reel | ZyniVerse",
+  title: "Upload Reel",
 };
 
 export default async function ReelUploadPage() {

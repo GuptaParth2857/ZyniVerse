@@ -4,6 +4,14 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getOSTs, getArtist, getCoverImage } from "@/lib/ost";
 
+export const revalidate = 86400;
+
+// Empty array => no build-time prerender, but on-demand ISR at runtime
+// (Next.js only enables it for a dynamic segment when this function exists).
+export function generateStaticParams() {
+  return [];
+}
+
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -12,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ost = results.find((e) => e.id === id);
   if (!ost) return { title: "OST Not Found" };
   return {
-    title: `${ost.title} — ${ost.artist} | ZyniVerse Music`,
+    title: `${ost.title} — ${ost.artist} Music`,
     description: `${ost.title} by ${ost.artist} from ${ost.animeTitle}. ${ost.type} — ${ost.year}.`,
     openGraph: {
       title: `${ost.title} — ${ost.artist}`,

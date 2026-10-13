@@ -5,12 +5,12 @@ import FeedClient from "@/components/FeedClient";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "My Feed | ZyniVerse",
+  title: "My Feed",
   description:
     "ZyniVerse ka personalized anime feed — news, memes, reels, moments, fan art, cosplay aur blogs, tumhare taste ke hisaab se ranked. Follow aur discover karo.",
   alternates: { canonical: "/feed" },
   openGraph: {
-    title: "My Feed | ZyniVerse",
+    title: "My Feed",
     description: "Tumhare taste ke hisaab se ranked anime community feed — sab kuch ek jagah.",
     url: "/feed",
     type: "website",

@@ -35,7 +35,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: GuideParams): Promise<Metadata> {
   const { slug } = await params;
   const guide = INDIAN_DUB_GUIDES.find((g) => g.slug === slug);
-  if (!guide) return { title: "Hindi, Tamil & Telugu Dubbed Anime | ZyniVerse" };
+  if (!guide) return { title: "Hindi, Tamil & Telugu Dubbed Anime" };
 
   const url = `${BASE_URL}/indian-dubs/${guide.slug}`;
   const langs = guide.languages.join(", ");
@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: GuideParams): Promise<Metadat
       "indian anime dubs",
     ],
     openGraph: {
-      title: `${guide.name} Hindi Dub — Where to Watch in India | ZyniVerse`,
+      title: `${guide.name} Hindi Dub — Where to Watch in India`,
       description,
       type: "website",
       url,

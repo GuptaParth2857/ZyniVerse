@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import FriendsClient from "./FriendsClient";
 
 export const metadata: Metadata = {
-  title: "Friends | ZyniVerse",
+  title: "Friends",
   description:
     "Send and accept friend requests, and chat with your anime friends on ZyniVerse.",
   robots: { index: false, follow: false },

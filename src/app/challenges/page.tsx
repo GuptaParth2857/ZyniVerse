@@ -8,7 +8,7 @@ import ChallengeCard from "@/components/ChallengeCard";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata = {
-  title: "Anime Challenges — Watch & Reading Goals | ZyniVerse",
+  title: "Anime Challenges — Watch & Reading Goals",
   description: "Join community challenges, set yearly anime watching goals, track your progress, and compete with friends.",
   alternates: { canonical: `${BASE_URL}/challenges` },
 };

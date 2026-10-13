@@ -25,10 +25,10 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const s = getSeries(slug);
-  if (!s) return { title: "Manga Release Dates | ZyniVerse" };
+  if (!s) return { title: "Manga Release Dates" };
   const next = formatNextRelease(s);
   return {
-    title: `${s.title} — Next Manga Chapter Release Date (2026) | ZyniVerse`,
+    title: `${s.title} — Next Manga Chapter Release Date (2026)`,
     description: next
       ? `${s.title} next chapter drops ${next} IST. Live countdown, magazine, and platform — ${s.summary}`
       : `${s.summary} Full ${s.title} manga release info and schedule on ZyniVerse.`,

@@ -9,10 +9,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
   return {
-    title: `Studio Details — Anime Productions & Staff | ZyniVerse`,
+    title: `Studio Details — Anime Productions & Staff`,
     description: `Browse anime studio details, productions, and staff members on ZyniVerse.`,
     openGraph: {
-      title: `Anime Studio — Productions & Staff | ZyniVerse`,
+      title: `Anime Studio — Productions & Staff`,
       description: `Browse anime studio details, productions, and staff members on ZyniVerse.`,
     },
     alternates: { canonical: `${baseUrl}/studio/${id}` },

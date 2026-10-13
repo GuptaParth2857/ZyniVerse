@@ -15,14 +15,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (res.ok) {
       const data = await res.json();
       return {
-        title: `${data.club.name} — Anime Club | ZyniVerse`,
+        title: `${data.club.name} — Anime Club`,
         alternates: { canonical: `${BASE_URL}/clubs/${slug}` },
         robots: { index: true, follow: true },
       };
     }
   } catch (e) { logError(e); }
   return {
-    title: "Club — ZyniVerse",
+    title: "Club",
     description: "Join anime clubs on ZyniVerse — discuss your favorite series, share recommendations, and connect with fellow anime fans from India.",
     alternates: { canonical: `${BASE_URL}/clubs/${slug}` },
     robots: { index: true, follow: true },

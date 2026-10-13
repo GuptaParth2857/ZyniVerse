@@ -17,10 +17,10 @@ export async function generateMetadata({ params }: Props) {
   if (!list) return { title: "Not Found" };
 
   return {
-    title: `${list.title} — by @${list.user.username} | ZyniVerse`,
+    title: `${list.title} — by @${list.user.username}`,
     description: list.description || `View ${list.title} by @${list.user.username}`,
     openGraph: {
-      title: `${list.title} — by @${list.user.username} | ZyniVerse`,
+      title: `${list.title} — by @${list.user.username}`,
       description: list.description || `View ${list.title} by @${list.user.username}`,
     },
   };

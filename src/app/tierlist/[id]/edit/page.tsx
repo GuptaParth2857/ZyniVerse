@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import TierListBuilder from "@/components/TierListBuilder";
 
 export const metadata = {
-  title: "Edit Tier List | ZyniVerse",
+  title: "Edit Tier List",
 };
 
 interface Props {

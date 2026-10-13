@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import type { DoujinshiEntry } from "@/lib/mangadex-api";
 import { logError } from "@/lib/logger";
+import RevealTitle from "@/components/RevealTitle";
 
 interface Props {
   entry: DoujinshiEntry;
@@ -335,6 +336,6 @@ export default function DoujinshiDetail({ entry }: Props) {
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
     <span className="h-4 w-1 rounded-full bg-[var(--color-violet)]" />
-    {children}
+    <RevealTitle as="span">{children}</RevealTitle>
   </h2>;
 }
