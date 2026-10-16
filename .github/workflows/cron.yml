@@ -7,6 +7,11 @@ name: ZyniVerse crons
 #
 # The /api/cron/* routes authenticate with `Authorization: Bearer $CRON_SECRET`.
 #
+# Vercel Hobby caps a function at 60s, so the heavier jobs (refresh-schedules,
+# analytics, character-tournaments) are chunked: each invocation reports a
+# `nextQuery` to resume with, and this workflow keeps calling until the job
+# reports `nextQuery: null`. Jobs that fit in one call just return `null`.
+#
 # Required repo settings (Settings -> Secrets and variables -> Actions):
 #   - secret  CRON_SECRET      must match the value in Vercel's env vars
 #   - variable BASE_URL        e.g. https://zyverse.in
@@ -92,15 +97,28 @@ jobs:
 
           failed=0
           for name in $LIST; do
-            code=$(curl -sS -o "/tmp/${name}.out" -w '%{http_code}' --max-time 540 \
-              -H "Authorization: Bearer ${SECRET}" \
-              "${BASE%/}/api/cron/${name}" || echo "000")
-            echo "${name} -> ${code}"
-            if [ "$code" != "200" ]; then
-              failed=1
-              echo "::error::${name} returned ${code}"
-              head -c 2000 "/tmp/${name}.out" || true
-              echo
-            fi
+            # Long jobs are chunked: every response carries a `nextQuery` (raw
+            # query string, no leading "?") that resumes where the previous
+            # invocation stopped, because one unbounded call would blow Vercel's
+            # 60s function cap. `null` means the job is done.
+            query=""
+            for chunk in $(seq 1 30); do
+              code=$(curl -sS -o "/tmp/${name}.out" -w '%{http_code}' --max-time 540 \
+                -H "Authorization: Bearer ${SECRET}" \
+                "${BASE%/}/api/cron/${name}${query}" || echo "000")
+              echo "${name}${query:+ [${query}]} -> ${code}"
+              if [ "$code" != "200" ]; then
+                failed=1
+                echo "::error::${name} returned ${code}"
+                head -c 2000 "/tmp/${name}.out" || true
+                echo
+                break
+              fi
+              next=$(jq -r '.nextQuery // empty' "/tmp/${name}.out" 2>/dev/null || true)
+              if [ -z "$next" ]; then
+                break
+              fi
+              query="?${next}"
+            done
           done
           exit $failed

@@ -97,11 +97,13 @@ function entryToSlot(entry: EpgPwEntry, nextEntry?: EpgPwEntry): TimeSlot {
   };
 }
 
-export async function fetchAllEpgFromPw(): Promise<
+export async function fetchAllEpgFromPw(options: { from?: number; to?: number } = {}): Promise<
   { channelId: string; days: Record<string, TimeSlot[]> }[]
 > {
   const allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const entries = Object.entries(EPG_PW_MAP);
+  // `from`/`to` let the cron route cache the grid a few channels per invocation
+  // instead of doing all 12 at once (which alone could blow the 60s cap).
+  const entries = Object.entries(EPG_PW_MAP).slice(options.from ?? 0, options.to);
   const results: { channelId: string; days: Record<string, TimeSlot[]> }[] = [];
 
   // Calculate dates for today + next 2 days (3 days total to reduce external requests)
