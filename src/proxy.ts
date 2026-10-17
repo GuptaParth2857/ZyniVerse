@@ -20,6 +20,12 @@ import type { NextRequest } from "next/server";
 // them cheaply instead of re-rendering. Never applied when auth cookies are
 // present (logged-in users get whatever the page decides to render).
 const PUBLIC_CDN_PATHS: Array<{ pattern: RegExp; sMaxAge: number }> = [
+  // Homepage. It renders per request (`force-dynamic`) because a build-time
+  // AniList prerender gets rate-limited, and it is the single most-hit route.
+  // Its HTML is identical for anonymous visitors (personalisation lives in
+  // client components that hydrate after load), so a short shared-cache TTL
+  // lets the CDN answer anonymous + crawler hits without a function invocation.
+  { pattern: /^\/$/, sMaxAge: 600 },
   { pattern: /^\/character-tournaments\/[^/]+$/, sMaxAge: 900 },
   { pattern: /^\/(?:anime|character|manga|staff|studio|watch-order|news|indian-dubs|live-action|toons|cosplay|posts|reels)\/[^/]+$/, sMaxAge: 1800 },
   // Static list/knowledge pages — heavy anonymous traffic, no per-user SSR.
@@ -75,6 +81,7 @@ export const config = {
   // Cache-Control in their handlers and must not pay a "proxy + route" double
   // invocation.
   matcher: [
+    "/",
     "/character-tournaments/:path*",
     "/anime/:path*",
     "/character/:path*",

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { invalidateCached } from "@/lib/wiki-cache";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const rateCheck = await apiLimiter.middleware(req);
@@ -61,6 +62,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       select: { id: true, upvotes: true, downvotes: true, title: true },
     });
   });
+
+  // Vote totals feed the "top" and "hot" sorts, so refresh those caches.
+  invalidateCached("memes:");
 
   return NextResponse.json({ meme: updated });
 }

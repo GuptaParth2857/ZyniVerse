@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { invalidateCached } from "@/lib/wiki-cache";
 
 export async function POST(req: NextRequest) {
   const rateCheck = await apiLimiter.middleware(req);
@@ -26,6 +27,8 @@ export async function POST(req: NextRequest) {
     },
     select: { id: true },
   });
+
+  invalidateCached("memes:");
 
   return NextResponse.json({ meme });
 }

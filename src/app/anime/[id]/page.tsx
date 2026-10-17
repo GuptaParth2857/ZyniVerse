@@ -10,7 +10,11 @@ import AnimeUnavailableCard from "@/components/AnimeUnavailableCard";
 import { getAnimeEditorial, type AnimeEditorial } from "@/lib/anime-editorials";
 import { prisma } from "@/lib/prisma";
 
-export const revalidate = 86400;
+// 48h, matching the AniList detail data-cache window (DETAIL_REVALIDATE).
+// `revalidatePath("/anime/<id>")` on reel upload still refreshes on demand, so
+// community clips stay prompt; this only stretches the crawler-driven rewrite
+// of the static AniList metadata, which is what the ISR-write limit measures.
+export const revalidate = 172800;
 
 // Empty array => no build-time prerender, but on-demand ISR at runtime
 // (Next.js only enables it for a dynamic segment when this function exists).

@@ -8,7 +8,7 @@ import CountdownChip from "@/components/CountdownChip";
 import { useWatchlist } from "@/components/WatchlistProvider";
 import { DynamicCarousel3D as Carousel3D } from "@/components/lazy";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { PageTransition } from "@/components/PageTransition";
+import { FadeIn, StaggerGrid, StaggerItem, PageTransition } from "@/components/PageTransition";
 import RevealTitle from "@/components/RevealTitle";
 import FillerGuide from "@/components/FillerGuide";
 import ReviewsSection from "@/components/ReviewsSection";
@@ -533,7 +533,7 @@ export default function AnimeDetailClient({
               {chars.length > 0 && (
                 <section>
                   <SectionTitle>Characters & Voice Actors</SectionTitle>
-                  <div className="space-y-2">
+                  <StaggerGrid className="space-y-2">
                     {chars.slice(0, 25).map((edge) => {
                       const char = edge.node;
                       const jpVA = edge.voiceActors?.[0];
@@ -541,80 +541,81 @@ export default function AnimeDetailClient({
                         r.dubGroup?.toLowerCase().includes("english"),
                       )?.voiceActor;
                       return (
-                        <Link
-                          key={char.id}
-                          href={`/character/${char.id}`}
-                          className="flex flex-wrap items-center gap-4 rounded-xl bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all group"
-                        >
-                          <div className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-[var(--color-line)] group-hover:border-[var(--color-magenta)]/50 transition-colors shrink-0">
-                            <Image
-                              src={char.image?.medium || ""}
-                              alt={char.name?.full || ""}
-                              fill
-                              className="object-cover"
-                              sizes="56px"
-                            />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold truncate">
-                              {char.name?.full}
-                            </p>
-                            <p className="text-[11px] text-[var(--color-mute)]">
-                              {edge.role}
-                            </p>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto sm:justify-end">
-                            <CharacterVoteWidget
-                              characterId={char.id}
-                              mediaId={anime.id}
-                            />
-                            {jpVA && (
-                              <div className="flex items-center gap-2 rounded-lg bg-black/30 px-3 py-1.5">
-                                <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0">
-                                  <Image
-                                    src={jpVA.image?.medium || ""}
-                                    alt={jpVA.name?.full || ""}
-                                    fill
-                                    className="object-cover"
-                                    sizes="28px"
-                                  />
+                        <StaggerItem key={char.id}>
+                          <Link
+                            href={`/character/${char.id}`}
+                            className="flex flex-wrap items-center gap-4 rounded-xl bg-[var(--color-panel)] p-3 hover:border-[var(--color-magenta)]/40 transition-all group"
+                          >
+                            <div className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-[var(--color-line)] group-hover:border-[var(--color-magenta)]/50 transition-colors shrink-0">
+                              <Image
+                                src={char.image?.medium || ""}
+                                alt={char.name?.full || ""}
+                                fill
+                                className="object-cover"
+                                sizes="56px"
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold truncate">
+                                {char.name?.full}
+                              </p>
+                              <p className="text-[11px] text-[var(--color-mute)]">
+                                {edge.role}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto sm:justify-end">
+                              <CharacterVoteWidget
+                                characterId={char.id}
+                                mediaId={anime.id}
+                              />
+                              {jpVA && (
+                                <div className="flex items-center gap-2 rounded-lg bg-black/30 px-3 py-1.5">
+                                  <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0">
+                                    <Image
+                                      src={jpVA.image?.medium || ""}
+                                      alt={jpVA.name?.full || ""}
+                                      fill
+                                      className="object-cover"
+                                      sizes="28px"
+                                    />
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs font-medium truncate max-w-[100px]">
+                                      {jpVA.name?.full}
+                                    </p>
+                                    <p className="text-[9px] text-[var(--color-mute)]">
+                                      Japanese
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className="text-right">
-                                  <p className="text-xs font-medium truncate max-w-[100px]">
-                                    {jpVA.name?.full}
-                                  </p>
-                                  <p className="text-[9px] text-[var(--color-mute)]">
-                                    Japanese
-                                  </p>
+                              )}
+                              {enVA && (
+                                <div className="flex items-center gap-2 rounded-lg bg-black/30 px-3 py-1.5">
+                                  <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0">
+                                    <Image
+                                      src={enVA.image?.medium || ""}
+                                      alt={enVA.name?.full || ""}
+                                      fill
+                                      className="object-cover"
+                                      sizes="28px"
+                                    />
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs font-medium truncate max-w-[100px]">
+                                      {enVA.name?.full}
+                                    </p>
+                                    <p className="text-[9px] text-[var(--color-mute)]">
+                                      English
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
-                            {enVA && (
-                              <div className="flex items-center gap-2 rounded-lg bg-black/30 px-3 py-1.5">
-                                <div className="relative h-7 w-7 rounded-full overflow-hidden shrink-0">
-                                  <Image
-                                    src={enVA.image?.medium || ""}
-                                    alt={enVA.name?.full || ""}
-                                    fill
-                                    className="object-cover"
-                                    sizes="28px"
-                                  />
-                                </div>
-                                <div className="text-right">
-                                  <p className="text-xs font-medium truncate max-w-[100px]">
-                                    {enVA.name?.full}
-                                  </p>
-                                  <p className="text-[9px] text-[var(--color-mute)]">
-                                    English
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </Link>
+                              )}
+                            </div>
+                          </Link>
+                        </StaggerItem>
                       );
                     })}
-                  </div>
+                  </StaggerGrid>
                   {chars.length > 25 && (
                     <p className="mt-3 text-center text-xs text-[var(--color-mute)]">
                       +{chars.length - 25} more characters
@@ -922,49 +923,52 @@ export default function AnimeDetailClient({
           {/* ── Reels from this anime ── */}
           {reels.length > 0 && (
             <section className="mx-auto mt-14 max-w-7xl px-4 sm:px-6">
-              <div className="flex items-center gap-3">
-                <h2 className="font-display text-xl font-bold text-white sm:text-2xl">
-                  Reels from this anime
-                </h2>
-                <span className="flex h-6 items-center rounded-full bg-[var(--color-magenta)]/15 px-2.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-magenta)]">
-                  {reels.length}
-                </span>
-              </div>
-              <p className="mt-1 text-sm text-[var(--color-mute)]">
-                Short anime clips uploaded by the community on ZyniVerse.
-              </p>
-              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              <FadeIn>
+                <div className="flex items-center gap-3">
+                  <h2 className="font-display text-xl font-bold text-white sm:text-2xl">
+                    Reels from this anime
+                  </h2>
+                  <span className="flex h-6 items-center rounded-full bg-[var(--color-magenta)]/15 px-2.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-magenta)]">
+                    {reels.length}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-[var(--color-mute)]">
+                  Short anime clips uploaded by the community on ZyniVerse.
+                </p>
+              </FadeIn>
+              <StaggerGrid className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 {reels.map((r) => (
-                  <Link
-                    key={r.id}
-                    href={`/reels/${r.id}`}
-                    className="group relative aspect-[9/16] overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] transition hover:border-[var(--color-magenta)]"
-                  >
-                    {r.thumbnailUrl ? (
-                      <Image
-                        src={r.thumbnailUrl}
-                        alt={r.caption || `Reel by @${r.username}`}
-                        fill
-                        sizes="(max-width: 768px) 45vw, 15vw"
-                        className="object-cover transition duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-pink-600/40 via-[var(--color-panel)] to-purple-600/40">
-                        <span className="text-3xl text-white/90">▶</span>
+                  <StaggerItem key={r.id}>
+                    <Link
+                      href={`/reels/${r.id}`}
+                      className="group relative block aspect-[9/16] overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] transition hover:border-[var(--color-magenta)]"
+                    >
+                      {r.thumbnailUrl ? (
+                        <Image
+                          src={r.thumbnailUrl}
+                          alt={r.caption || `Reel by @${r.username}`}
+                          fill
+                          sizes="(max-width: 768px) 45vw, 15vw"
+                          className="object-cover transition duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-pink-600/40 via-[var(--color-panel)] to-purple-600/40">
+                          <span className="text-3xl text-white/90">▶</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-2.5">
+                        <p className="line-clamp-1 text-[11px] font-bold text-white">
+                          @{r.username}
+                        </p>
+                        <div className="mt-0.5 flex items-center justify-between gap-1 text-[10px] text-white/70">
+                          <span>▶ {r.views.toLocaleString()}</span>
+                          <span>❤️ {r.likesCount}</span>
+                        </div>
                       </div>
-                    )}
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-2.5">
-                      <p className="line-clamp-1 text-[11px] font-bold text-white">
-                        @{r.username}
-                      </p>
-                      <div className="mt-0.5 flex items-center justify-between gap-1 text-[10px] text-white/70">
-                        <span>▶ {r.views.toLocaleString()}</span>
-                        <span>❤️ {r.likesCount}</span>
-                      </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerGrid>
             </section>
           )}
 

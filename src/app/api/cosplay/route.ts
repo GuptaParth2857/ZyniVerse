@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { dedupedFetch, invalidateCached } from "@/lib/wiki-cache";
 import { Prisma } from "@prisma/client";
 export const dynamic = "force-dynamic";
+
+// The Supabase pooler is remote (ap-northeast-1), so an uncached gallery read
+// costs hundreds of ms to seconds. The gallery is read far more often than it
+// is written, so page reads are cached briefly and POSTs invalidate them.
+const FEED_TTL_MS = 30_000;
 
 export async function GET(req: NextRequest) {
   const rateLimited = await apiLimiter.middleware(req);
@@ -13,27 +19,36 @@ export async function GET(req: NextRequest) {
   const sort = searchParams.get("sort") || "recent";
   const anime = searchParams.get("anime");
   const character = searchParams.get("character");
+  const user = searchParams.get("user");
   const page = parseInt(searchParams.get("page") || "1");
   const perPage = parseInt(searchParams.get("perPage") || "30");
 
   const where: Prisma.CosplayWhereInput = {};
   if (anime) where.animeTitle = { contains: anime };
   if (character) where.character = { contains: character };
+  if (user) where.userId = user;
 
   const orderBy = sort === "popular" ? { likes: "desc" as const } : { createdAt: "desc" as const };
 
-  const [cosplays, total] = await Promise.all([
-    prisma.cosplay.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * perPage,
-      take: perPage,
-      include: {
-        user: { select: { id: true, username: true, avatar: true } },
-      },
-    }),
-    prisma.cosplay.count({ where }),
-  ]);
+  const { cosplays, total } = await dedupedFetch(
+    `cosplay:${sort}:${anime ?? ""}:${character ?? ""}:${user ?? ""}:${page}:${perPage}`,
+    async () => {
+      const [rows, count] = await Promise.all([
+        prisma.cosplay.findMany({
+          where,
+          orderBy,
+          skip: (page - 1) * perPage,
+          take: perPage,
+          include: {
+            user: { select: { id: true, username: true, avatar: true } },
+          },
+        }),
+        prisma.cosplay.count({ where }),
+      ]);
+      return { cosplays: rows, total: count };
+    },
+    FEED_TTL_MS,
+  );
 
   return NextResponse.json(
     { cosplays, total, page, hasNextPage: page * perPage < total },
@@ -70,6 +85,8 @@ export async function POST(req: NextRequest) {
       user: { select: { id: true, username: true, avatar: true } },
     },
   });
+
+  invalidateCached("cosplay:");
 
   return NextResponse.json({ cosplay });
 }

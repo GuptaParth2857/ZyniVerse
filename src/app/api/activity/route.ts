@@ -2,7 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { getActivityFeed, getUserActivity, enrichActivities } from "@/lib/activity";
+import { dedupedFetch } from "@/lib/wiki-cache";
 export const dynamic = "force-dynamic";
+
+// The global feed is identical for every logged-out visitor (and every user
+// with no follows). `enrichActivities` can call AniList with 350ms sleeps, so
+// caching the enriched rows avoids both the DB round-trips and the slow
+// third-party lookups. Writers invalidate via `createActivity`.
+const FEED_TTL_MS = 30_000;
 
 export async function GET(req: NextRequest) {
   try {
@@ -20,18 +27,23 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ activities, total, fallback: false });
     }
 
-    const fetchGlobal = async () => {
-      const rawActivities = await prisma.activity.findMany({
-        orderBy: { createdAt: "desc" },
-        take: limit,
-        skip: offset,
-        include: { user: { select: { id: true, username: true, avatar: true } } },
-      });
-      const filtered = rawActivities.filter((a) => a.user !== null);
-      const total = await prisma.activity.count();
-      const activities = await enrichActivities(filtered);
-      return { activities, total };
-    };
+    const fetchGlobal = () =>
+      dedupedFetch(
+        `activity:global:${limit}:${offset}`,
+        async () => {
+          const rawActivities = await prisma.activity.findMany({
+            orderBy: { createdAt: "desc" },
+            take: limit,
+            skip: offset,
+            include: { user: { select: { id: true, username: true, avatar: true } } },
+          });
+          const filtered = rawActivities.filter((a) => a.user !== null);
+          const total = await prisma.activity.count();
+          const activities = await enrichActivities(filtered);
+          return { activities, total };
+        },
+        FEED_TTL_MS,
+      );
 
     const session = await auth();
     if (!session?.user?.id) {

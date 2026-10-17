@@ -1,4 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logError } from "@/lib/logger";
+
+// Jikan is slow/flaky and this route is hit on every anime detail view. Cache
+// the successful payload hard at the CDN (no ISR write) so repeat views never
+// invoke the function; a failed upstream gets a short TTL so it retries soon.
+const SUCCESS_CACHE = { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" };
+const FAILURE_CACHE = { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" };
+const UPSTREAM_TIMEOUT_MS = 8000;
+const USER_AGENT = "ZyniVerse/1.0 (https://zyverse.in)";
 
 interface JikanNamedItem {
   name: string;
@@ -43,10 +52,22 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ medi
   const id = parseInt(mediaId, 10);
   if (isNaN(id)) return NextResponse.json({ error: "Invalid mediaId" }, { status: 400 });
 
-  const resp = await fetch(`https://api.jikan.moe/v4/anime/${id}/full`);
-  if (!resp.ok) return NextResponse.json({ metadata: null });
+  let data: JikanAnimeFull | null = null;
+  try {
+    const resp = await fetch(`https://api.jikan.moe/v4/anime/${id}/full`, {
+      // Without a timeout a stalled Jikan call burned ~10s of Function Duration
+      // on every anime page view before failing.
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+      headers: { "User-Agent": USER_AGENT },
+    });
+    if (resp.ok) data = (await resp.json()) as JikanAnimeFull;
+  } catch (e) {
+    logError(e, "anime-metadata");
+  }
+  if (!data?.data) {
+    return NextResponse.json({ metadata: null }, { headers: FAILURE_CACHE });
+  }
 
-  const data = (await resp.json()) as JikanAnimeFull;
   const d = data.data;
   const themeData = typeof d.theme === "string" ? null : d.theme;
 
@@ -71,5 +92,5 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ medi
     endings: (themeData?.endings || []).slice(0, 5),
   };
 
-  return NextResponse.json({ metadata });
+  return NextResponse.json({ metadata }, { headers: SUCCESS_CACHE });
 }

@@ -198,12 +198,13 @@ const MAX_RETRIES = 2;
 // the dominant ISR-write driver on Vercel (Hobby limit: 200K/month).
 //
 // List/schedule queries are low-cardinality (a few variable sets), so a short
-// window stays cheap while keeping data fresh. Per-id detail queries get 24h —
-// the same freshness the detail pages already declare for themselves — which is
-// still a ~4x cut in rewrites versus the previous 6h window. Going longer would
-// start serving stale "next episode" data, so 24h is the floor.
+// window stays cheap while keeping data fresh. Per-id detail queries are the
+// dominant ISR-write driver, so they now get 48h — another 2x cut on top of the
+// 24h window, which is what brings the monthly total back under the Hobby cap.
+// The only freshness cost is a *detail* page's `nextAiringEpisode` (the live
+// countdown rails read the 6h list queries, so they are unaffected).
 const LIST_REVALIDATE = 6 * 60 * 60; // 6h
-const DETAIL_REVALIDATE = 24 * 60 * 60; // 24h
+const DETAIL_REVALIDATE = 48 * 60 * 60; // 48h
 
 async function fetchAniList(
   query: string,

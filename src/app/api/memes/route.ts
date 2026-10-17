@@ -3,7 +3,19 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { dedupedFetch, invalidateCached } from "@/lib/wiki-cache";
 export const dynamic = "force-dynamic";
+
+// See the cosplay route: the remote pooler makes an uncached page read
+// expensive, and the feed is read far more often than it is written.
+const FEED_TTL_MS = 30_000;
+
+const memeInclude = {
+  user: { select: { id: true, username: true, avatar: true } },
+  votes: { select: { value: true } },
+} satisfies Prisma.MemeInclude;
+
+type MemeRow = Prisma.MemeGetPayload<{ include: typeof memeInclude }>;
 
 export async function GET(req: NextRequest) {
   const rateCheck = await apiLimiter.middleware(req);
@@ -19,50 +31,54 @@ export async function GET(req: NextRequest) {
     where.tags = { contains: tag, mode: "insensitive" };
   }
 
-  let memes;
-  if (sort === "new") {
-    memes = await prisma.meme.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * perPage,
-      take: perPage,
-      include: {
-        user: { select: { id: true, username: true, avatar: true } },
-        votes: { select: { value: true } },
-      },
-    });
-  } else if (sort === "top") {
-    memes = await prisma.meme.findMany({
-      where,
-      orderBy: [{ upvotes: "desc" }, { downvotes: "asc" }],
-      skip: (page - 1) * perPage,
-      take: perPage,
-      include: {
-        user: { select: { id: true, username: true, avatar: true } },
-        votes: { select: { value: true } },
-      },
-    });
+  // Tag filter is part of every key so different tag tabs cache separately.
+  const tagKey = tag && tag !== "all" ? tag.toLowerCase() : "all";
+
+  let memes: MemeRow[];
+  if (sort === "new" || sort === "top") {
+    const orderBy: Prisma.MemeOrderByWithRelationInput | Prisma.MemeOrderByWithRelationInput[] =
+      sort === "new"
+        ? { createdAt: "desc" }
+        : [{ upvotes: "desc" }, { downvotes: "asc" }];
+    memes = await dedupedFetch(
+      `memes:${sort}:${tagKey}:${page}:${perPage}`,
+      () =>
+        prisma.meme.findMany({
+          where,
+          orderBy,
+          skip: (page - 1) * perPage,
+          take: perPage,
+          include: memeInclude,
+        }),
+      FEED_TTL_MS,
+    );
   } else {
-    const all = await prisma.meme.findMany({
-      where,
-      include: {
-        user: { select: { id: true, username: true, avatar: true } },
-        votes: { select: { value: true } },
+    // "hot" ranks the whole set once, then slices per page. Previously every
+    // request pulled every meme plus all of its votes and sorted in JS.
+    const ranked = await dedupedFetch(
+      `memes:hot:${tagKey}`,
+      async () => {
+        const all = await prisma.meme.findMany({ where, include: memeInclude });
+        const now = Date.now();
+        return all
+          .map((m) => {
+            const hours = (now - m.createdAt.getTime()) / (1000 * 60 * 60);
+            const score = m.upvotes - m.downvotes;
+            const hotScore = score / Math.pow(hours + 2, 1.5);
+            return { ...m, _hotScore: hotScore };
+          })
+          .sort((a, b) => b._hotScore - a._hotScore);
       },
-    });
-    const now = Date.now();
-    memes = all
-      .map((m) => {
-        const hours = (now - m.createdAt.getTime()) / (1000 * 60 * 60);
-        const score = m.upvotes - m.downvotes;
-        const hotScore = score / Math.pow(hours + 2, 1.5);
-        return { ...m, _hotScore: hotScore };
-      })
-      .sort((a, b) => b._hotScore - a._hotScore)
-      .slice((page - 1) * perPage, page * perPage);
+      FEED_TTL_MS,
+    );
+    memes = ranked.slice((page - 1) * perPage, page * perPage);
   }
 
-  const total = await prisma.meme.count({ where });
+  const total = await dedupedFetch(
+    `memes:count:${tagKey}`,
+    () => prisma.meme.count({ where }),
+    FEED_TTL_MS,
+  );
 
   const session = await auth();
   const userId = session?.user?.id;
@@ -110,6 +126,8 @@ export async function POST(req: NextRequest) {
       user: { select: { id: true, username: true, avatar: true } },
     },
   });
+
+  invalidateCached("memes:");
 
   return NextResponse.json({ meme });
 }

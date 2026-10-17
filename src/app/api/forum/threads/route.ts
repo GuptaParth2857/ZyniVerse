@@ -6,6 +6,13 @@ import { awardForReason } from "@/lib/economy";
 import { Prisma } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
+// Public thread list (no per-user fields). Anonymous traffic, crawlers
+// included, reads this on every forum/anime view — a short shared cache avoids
+// a DB round-trip per view while new threads still surface within a minute.
+const LIST_CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+};
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const category = searchParams.get("category");
@@ -40,7 +47,7 @@ export async function GET(req: NextRequest) {
     prisma.forumThread.count({ where }),
   ]);
 
-  return NextResponse.json({ threads, total, page, limit });
+  return NextResponse.json({ threads, total, page, limit }, { headers: LIST_CACHE_HEADERS });
 }
 
 export async function POST(req: NextRequest) {

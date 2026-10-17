@@ -22,6 +22,20 @@ export function setCache<T>(key: string, data: T, ttl = CACHE_TTL): void {
   cache.set(key, { data, expiresAt: Date.now() + ttl });
 }
 
+/**
+ * Drop every cached/in-flight entry whose key starts with `prefix`. Writers
+ * (POST handlers, activity creators) call this so a freshly created row shows
+ * up immediately instead of waiting out the feed TTL.
+ */
+export function invalidateCached(prefix: string): void {
+  for (const key of [...cache.keys()]) {
+    if (key.startsWith(prefix)) cache.delete(key);
+  }
+  for (const key of [...inflight.keys()]) {
+    if (key.startsWith(prefix)) inflight.delete(key);
+  }
+}
+
 export async function dedupedFetch<T>(key: string, fetcher: () => Promise<T>, ttl = CACHE_TTL): Promise<T> {
   const cached = getCached<T>(key);
   if (cached) return cached;

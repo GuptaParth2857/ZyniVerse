@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { invalidateCached } from "./wiki-cache";
 
 export interface WatchPartyData {
   id: string;
@@ -169,6 +170,8 @@ export async function sendPartyMessage(
       message: `[PARTY:${partyId}] ${message}`,
     },
   });
+
+  invalidateCached("activity:");
 }
 
 export async function setVideoSource(

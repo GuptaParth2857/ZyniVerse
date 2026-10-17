@@ -6,12 +6,19 @@ import { createActivity } from "@/lib/activity";
 import { checkAndAwardAchievement } from "@/lib/achievements-server";
 export const dynamic = "force-dynamic";
 
+// Public review list, no per-user fields. A short shared cache keeps popular
+// anime pages from hitting the origin on every view; a 60s window is short
+// enough that a freshly posted review shows up almost immediately.
+const CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+};
+
 export async function GET(req: NextRequest) {
   const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
   const { searchParams } = new URL(req.url);
   const mediaId = Number(searchParams.get("mediaId"));
-  if (!mediaId) return NextResponse.json({ reviews: [] });
+  if (!mediaId) return NextResponse.json({ reviews: [] }, { headers: CACHE_HEADERS });
 
   const reviews = await prisma.review.findMany({
     where: { mediaId },
@@ -19,7 +26,7 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: "desc" },
     take: 20,
   });
-  return NextResponse.json({ reviews });
+  return NextResponse.json({ reviews }, { headers: CACHE_HEADERS });
 }
 
 export async function POST(req: NextRequest) {

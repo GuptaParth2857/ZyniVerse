@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { invalidateCached } from "@/lib/wiki-cache";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -37,6 +38,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   await prisma.memeVote.deleteMany({ where: { memeId: id } });
   await prisma.memeComment.deleteMany({ where: { memeId: id } });
   await prisma.meme.delete({ where: { id } });
+
+  invalidateCached("memes:");
 
   return NextResponse.json({ success: true });
 }

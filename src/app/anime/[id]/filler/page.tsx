@@ -10,7 +10,7 @@ import { getFillerNotes } from "@/lib/filler-notes";
 import AISummaryCard from "@/components/AISummaryCard";
 import FillerChecklist from "@/components/FillerChecklist";
 
-export const revalidate = 86400;
+export const revalidate = 172800;
 
 // Empty array => no build-time prerender, but on-demand ISR at runtime
 // (Next.js only enables it for a dynamic segment when this function exists).
@@ -96,6 +96,18 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
 
   const notes = filler.slug ? getFillerNotes(filler.slug) : null;
 
+  // Episode-level structured data built from the real AniFiller dataset
+  // (episode numbers + titles). Capped at 50: very long runs (One Piece =
+  // 1000+ episodes) would bloat the JSON-LD payload without adding signal.
+  const episodeItems = filler.episodes.slice(0, 50).map((ep) => ({
+    "@type": "TVEpisode",
+    episodeNumber: ep.episode,
+    name: ep.title,
+    ...(ep.type === "filler"
+      ? { description: `Filler episode — safe to skip in ${title}.` }
+      : {}),
+  }));
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -109,6 +121,8 @@ export default async function AnimeFillerSeoPage({ params }: Props) {
       "@type": "TVSeries",
       name: title,
       numberOfEpisodes: total,
+      url: `https://zyverse.in/anime/${anilistId}`,
+      episode: episodeItems,
     },
   };
 

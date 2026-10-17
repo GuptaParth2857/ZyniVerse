@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notifications";
 import { logError } from "@/lib/logger";
+import { invalidateCached } from "@/lib/wiki-cache";
 
 const AL_ENDPOINT = "https://graphql.anilist.co";
 const AL_CACHE = new Map<number, { title: string; image: string }>();
@@ -158,6 +159,10 @@ export interface ActivityCreate {
 
 export async function createActivity(data: ActivityCreate) {
   const activity = await prisma.activity.create({ data });
+
+  // The global feed is cached, so drop it immediately instead of waiting out
+  // the TTL — the author should see their own activity right away.
+  invalidateCached("activity:");
 
   try {
     const followers = await prisma.follow.findMany({

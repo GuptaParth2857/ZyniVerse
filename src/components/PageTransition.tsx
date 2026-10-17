@@ -27,14 +27,20 @@ export function FadeIn({ children, delay = 0, className = "" }: { children: Reac
   );
 }
 
-export function StaggerGrid({ children }: { children: React.ReactNode }) {
+export function StaggerGrid({
+  children,
+  className = "grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <motion.div
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-80px" }}
       variants={{ visible: { transition: { staggerChildren: 0.04 } }, hidden: {} }}
-      className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+      className={className}
     >
       {children}
     </motion.div>

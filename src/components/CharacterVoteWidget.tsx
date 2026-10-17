@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { logError } from "@/lib/logger";
+import { loadCharacterVoteStats, setCharacterVoteStats } from "@/lib/character-votes-client";
 
 export default function CharacterVoteWidget({ characterId, mediaId }: {
   characterId: number; mediaId: number;
@@ -12,10 +13,16 @@ export default function CharacterVoteWidget({ characterId, mediaId }: {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/characters/vote/${characterId}`)
-      .then((r) => r.json())
-      .then((d) => { setTotal(d.totalVotes || 0); setVoters(d.voterCount || 0); setLoading(false); })
-      .catch(() => setLoading(false));
+    let alive = true;
+    loadCharacterVoteStats(characterId)
+      .then((d) => {
+        if (!alive) return;
+        setTotal(d.totalVotes);
+        setVoters(d.voterCount);
+        setLoading(false);
+      })
+      .catch(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
   }, [characterId]);
 
   const vote = async () => {
@@ -26,8 +33,11 @@ export default function CharacterVoteWidget({ characterId, mediaId }: {
         body: JSON.stringify({ characterId, mediaId, vote: 1 }),
       });
       const d = await resp.json();
-      setTotal(d.totalVotes || total + 1);
-      setVoters(d.voterCount || voters + 1);
+      const nextTotal = d.totalVotes || total + 1;
+      const nextVoters = d.voterCount || voters + 1;
+      setTotal(nextTotal);
+      setVoters(nextVoters);
+      setCharacterVoteStats(characterId, { totalVotes: nextTotal, voterCount: nextVoters });
       setVoted(true);
     } catch (e) { logError(e); }
   };

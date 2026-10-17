@@ -4,17 +4,25 @@ import { cache } from "react";
 import { getAnimeDetailFull, getPopular, bestTitle } from "@/lib/anilist";
 import { getAnimeEditorial } from "@/lib/anime-editorials";
 
-export const revalidate = 86400;
+export const revalidate = 172800;
 
 // No generateStaticParams on purpose: prerendering anime pages at build
 // fires `getAnimeDetailFull` (an AniList Media query) per page — 60+ calls on
 // top of every other route — which trips AniList's 30 req/min per-IP limit,
 // then the 429 retry/backoff sleeps push builds from ~3 min to 8-12 min.
-// Pages render on demand and ISR-cache for 24h (`revalidate` above), so SEO
+// Pages render on demand and ISR-cache for 48h (`revalidate` above), so SEO
 // stays server-rendered and builds stay fast.
 const getAnimeDetailCached = cache(getAnimeDetailFull);
 
 type PopularMedia = Awaited<ReturnType<typeof getPopular>>[number];
+
+// AniList date parts -> schema.org ISO date.
+function isoDate(
+  d?: { year?: number | null; month?: number | null; day?: number | null } | null,
+): string | undefined {
+  if (!d?.year) return undefined;
+  return `${d.year}-${String(d.month || 1).padStart(2, "0")}-${String(d.day || 1).padStart(2, "0")}`;
+}
 
 async function PopularAnimeLinks() {
   const popular = await getPopular(60).catch(() => [] as PopularMedia[]);
@@ -90,7 +98,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   } catch {
     return {
       title: "Anime Details",
-      description: "Browse detailed anime information including episodes, genres, characters, filler guides, watch order, and where to stream. India's #1 free anime platform.",
+      description: "Browse detailed anime information including episodes, genres, characters, filler guides, watch order, and where to stream. Free anime platform.",
       robots: { index: true, follow: true },
     };
   }
@@ -100,7 +108,10 @@ export default async function AnimeLayout({ children, params }: { children: Reac
   let anime = null;
   try {
     const { id } = await params;
-    anime = await getAnimeDetailFull(id);
+    // Cached wrapper: generateMetadata above also fetches this media, and
+    // React's request-scoped cache makes both share one AniList call instead
+    // of two (AniList allows 30 req/min per IP).
+    anime = await getAnimeDetailCached(id);
   } catch { /* invalid or missing mediaId */ }
 
   const title = anime ? bestTitle(anime.title) : "";
@@ -116,9 +127,22 @@ export default async function AnimeLayout({ children, params }: { children: Reac
     description: desc || undefined,
     url: `${BASE_URL}/anime/${anime.id}`,
     image: anime.coverImage?.extraLarge || anime.coverImage?.large || undefined,
-    datePublished: anime.startDate?.year ? `${anime.startDate.year}-${String(anime.startDate.month || 1).padStart(2, "0")}-${String(anime.startDate.day || 1).padStart(2, "0")}` : undefined,
+    datePublished: isoDate(anime.startDate),
     numberOfEpisodes: anime.episodes || undefined,
     numberOfSeasons: anime.season ? 1 : undefined,
+    // Season-level detail AniList already gives us (no invented seasonNumber —
+    // this Media entry may be season 4 of a franchise).
+    containsSeason: anime.season
+      ? {
+          "@type": "TVSeason",
+          name: `${anime.season.charAt(0)}${anime.season.slice(1).toLowerCase()}${
+            anime.seasonYear ? ` ${anime.seasonYear}` : ""
+          }`,
+          numberOfEpisodes: anime.episodes || undefined,
+          startDate: isoDate(anime.startDate),
+          endDate: isoDate(anime.endDate),
+        }
+      : undefined,
     genre: anime.genres || undefined,
     inLanguage: ["ja"],
     aggregateRating: anime.averageScore ? {
@@ -134,7 +158,7 @@ export default async function AnimeLayout({ children, params }: { children: Reac
     } : undefined,
     sameAs: [
       anime.idMal ? `https://myanimelist.net/anime/${anime.idMal}` : null,
-      anime.idMal ? `https://anilist.co/anime/${anime.id}` : null,
+      `https://anilist.co/anime/${anime.id}`,
     ].filter(Boolean),
     potentialAction: {
       "@type": "WatchAction",
@@ -160,6 +184,13 @@ export default async function AnimeLayout({ children, params }: { children: Reac
     })(),
   } : null;
 
+  // Real AniList recommendations (sorted by rating) as internal links, so every
+  // anime page links out to 6 related titles instead of being a dead end.
+  // Cross-type entries route to the correct section.
+  const related = (anime?.recommendations?.edges || [])
+    .map((e) => e.node?.mediaRecommendation)
+    .filter((m): m is NonNullable<typeof m> => Boolean(m?.id && m?.title));
+
   return (
     <>
       {jsonLd && (
@@ -169,6 +200,26 @@ export default async function AnimeLayout({ children, params }: { children: Reac
         />
       )}
       {children}
+      {related.length > 0 && (
+        <nav className="mx-auto my-8 max-w-7xl px-4 sm:px-6" aria-label="Related anime and manga">
+          <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)]/50 p-5">
+            <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wider text-[var(--color-mute)]">
+              Related Titles
+            </h2>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {related.slice(0, 6).map((m) => (
+                <Link
+                  key={`${m.type}-${m.id}`}
+                  href={`/${m.type === "MANGA" ? "manga" : "anime"}/${m.id}`}
+                  className="text-sm text-[var(--color-mute)] underline decoration-[var(--color-line)] underline-offset-4 transition-colors hover:text-[var(--color-cyan)]"
+                >
+                  {bestTitle(m.title)}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </nav>
+      )}
       <PopularAnimeLinks />
     </>
   );
