@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
   if (!user) return { title: "Creator Not Found" };
 
-  const title = `@${user.username} — Anime Reel Creator | ZyniVerse`;
+  const title = `@${user.username} — Anime Reel Creator`;
   const description = user.bio
     ? `${user.bio} · Watch @${user.username}'s anime reels and edits on ZyniVerse.`
     : `Watch anime reels and edits by @${user.username} on ZyniVerse.`;
@@ -47,6 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description,
     alternates: { canonical: `${BASE_URL}/creators/${username}` },
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
       title,
       description,
       url: `${BASE_URL}/creators/${username}`,

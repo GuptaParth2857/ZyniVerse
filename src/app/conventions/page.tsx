@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "comic con mumbai 2026", "anime convention chennai", "anime expo india",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Conventions India 2026 — Complete Calendar",
     description: "Find every anime convention, comic con, and otaku event in India for 2026. Dates, venues, and ticket info.",
     url: `${BASE_URL}/conventions`,

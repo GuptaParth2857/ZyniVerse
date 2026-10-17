@@ -8,6 +8,7 @@ export const metadata: Metadata = {
     "Short anime clips, AMVs and fan edits — vertical reels on ZyniVerse. Like, comment and share your favourites.",
   alternates: { canonical: `${BASE_URL}/reels` },
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Reels",
     description:
       "Short anime clips, AMVs and fan edits — vertical reels on ZyniVerse.",

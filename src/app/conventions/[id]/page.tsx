@@ -13,6 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${c.name} — Anime Conventions`,
     description: `${c.name} at ${c.venue}, ${c.city}. ${c.startDate} — ${c.endDate}. ${c.description.slice(0, 160)}`,
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
       title: `${c.name} — ${c.city}`,
       description: c.description.slice(0, 160),
     },

@@ -8,7 +8,7 @@ import { EventEmitter } from "events";
 EventEmitter.defaultMaxListeners = 50;
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@prisma/client"],
+  serverExternalPackages: ["@prisma/client", "sharp"],
   // output: "export",  // REMOVED to fix ISR writes overage
   // This was causing ISR writes exceeding free tier limits (1.2M vs 200K)
   // Normal serverless function mode will reduce Vercel usage

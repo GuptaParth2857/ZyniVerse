@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "hungama tv anime", "indian tv anime today", "dth anime schedule",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime TV Schedule India — Indian TV Channels",
     description: "What anime is airing today on Indian TV? Complete schedule with DTH channel numbers.",
     url: `${BASE_URL}/tv-schedule`,

@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "tom and jerry hindi", "oggy and cockroaches hindi",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Indian & International Cartoons — Complete Database",
     description: "Every cartoon popular in India — Indian originals + international dubbed. Hindi dub info and where to watch.",
     url: "https://zyverse.in/toons",

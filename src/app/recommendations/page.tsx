@@ -6,6 +6,7 @@ export const metadata = {
     "Tell us what you like — we'll find your next anime obsession. AI-powered recommendations based on your taste, mood & genre preferences. 100% free.",
   keywords: ["anime recommendations", "what anime should i watch", "anime like", "similar anime", "best anime 2026", "ai anime recommendations"],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Recommendations — Find Your Next Favorite Show",
     description: "AI-powered anime recommendations based on your taste. 100% free.",
     url: "https://zyverse.in/recommendations",

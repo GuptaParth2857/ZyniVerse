@@ -7,6 +7,7 @@ export const metadata = {
   description:
     "Browse and create custom anime and manga lists. Top 10 rankings, themed collections, hidden gems — curated by the community.",
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Custom Anime Lists — Top 10 & Rankings",
     description:
       "Browse and create custom anime and manga lists. Top 10 rankings, themed collections, hidden gems — curated by the community.",

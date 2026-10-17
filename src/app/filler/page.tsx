@@ -18,6 +18,7 @@ export const metadata: Metadata = {
     "which episodes to skip anime", "naruto shippuden filler list",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Filler List — Skip Filler in 200+ Anime (2026)",
     description: "Stop wasting time on filler. Every episode marked as canon, filler, or mixed. Free tool.",
     url: "https://zyverse.in/filler",

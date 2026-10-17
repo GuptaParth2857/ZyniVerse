@@ -19,6 +19,7 @@ export const metadata: Metadata = {
     "community favorites",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Doujinshi — Fan Works & Original Creations",
     description:
       "Browse fan-made doujinshi, original creations and community favorites from MangaDex. Track what you love.",

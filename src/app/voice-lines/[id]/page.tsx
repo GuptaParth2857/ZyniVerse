@@ -27,6 +27,7 @@ export async function generateMetadata({
     title: `"${line.line}" — ${line.character} Quotes`,
     description: `"${line.line}" — ${line.character} from ${line.animeTitle}`,
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
       title: `"${line.line}" — ${line.character}`,
       description: `Iconic quote from ${line.animeTitle}`,
       url: `${baseUrl}/voice-lines/${id}`,

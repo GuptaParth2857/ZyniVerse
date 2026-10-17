@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   description:
     "Browse live-action anime adaptations. Find movies and TV shows based on your favorite anime — cast, ratings, streaming platforms, and more.",
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Live-Action Anime Adaptations",
     description:
       "Browse live-action anime movies and TV shows. Cast, ratings, and streaming platforms.",

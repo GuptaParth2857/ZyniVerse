@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   description:
     "Customize your ZyniVerse experience with dark mode, dim mode, and light mode themes. Choose the perfect look for your anime tracking.",
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Themes — Dark, Light & Dim Modes",
     description:
       "Customize your ZyniVerse experience with dark, dim, and light themes.",

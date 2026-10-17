@@ -7,11 +7,12 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   title: "My Feed",
   description:
-    "ZyniVerse ka personalized anime feed — news, memes, reels, moments, fan art, cosplay aur blogs, tumhare taste ke hisaab se ranked. Follow aur discover karo.",
+    "Your personalized anime feed — news, memes, reels, moments, fan art, cosplay and blogs, ranked to your taste. Follow, discover and never miss a drop.",
   alternates: { canonical: "/feed" },
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "My Feed",
-    description: "Tumhare taste ke hisaab se ranked anime community feed — sab kuch ek jagah.",
+    description: "An anime community feed ranked to your taste — news, memes, reels, fan art and more, all in one place.",
     url: "/feed",
     type: "website",
   },
@@ -59,10 +60,10 @@ export default async function FeedPage() {
       <section className="mt-14">
         <h2 className="font-display text-lg font-bold text-white">What is ZyniVerse Feed?</h2>
         <p className="mt-2 max-w-3xl space-y-2 text-sm leading-relaxed text-[var(--color-mute)]">
-          ZyniVerse ka unified feed anime community ki latest activity ko ek hi jagah laata hai — trending news, fan art,
-          cosplay, reels, memes, moments aur wallpapers. Ranked algorithm recency, engagement aur aapke entertainment
-          pattern ko combine karta hai, taaki top content pehle dikhe. Creators ko follow karke apna personal feed banao —
-          sirf unhi ka content dikhega.
+          ZyniVerse&#39;s unified feed brings the anime community&#39;s latest activity into one place — trending news, fan
+          art, cosplay, reels, memes, moments and wallpapers. The ranking algorithm combines recency, engagement and your
+          entertainment patterns so the top content surfaces first. Follow creators to build a personal feed that shows
+          only the posts you care about.
         </p>
       </section>
     </main>

@@ -54,11 +54,19 @@ const GENRE_FILTERS = [
 
 const PILL_SPRING = { type: "spring" as const, stiffness: 500, damping: 40 };
 
-export default function LightNovelBrowseClient() {
+export default function LightNovelBrowseClient({
+  initialList = [],
+  initialTotal = 0,
+  initialHasNext = false,
+}: {
+  initialList?: Media[];
+  initialTotal?: number;
+  initialHasNext?: boolean;
+}) {
   const { data: session } = useSession();
   const [tab, setTab] = useState("trending");
-  const [list, setList] = useState<Media[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [list, setList] = useState<Media[]>(initialList);
+  const [loading, setLoading] = useState(initialList.length === 0);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myEntries, setMyEntries] = useState<MangaEntryDB[]>([]);
@@ -68,12 +76,13 @@ export default function LightNovelBrowseClient() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
+  const [total, setTotal] = useState(initialTotal);
+  const [hasMore, setHasMore] = useState(initialHasNext);
   const [myListTotal, setMyListTotal] = useState(0);
   const [myListStats, setMyListStats] = useState({ reading: 0, completed: 0, planning: 0, paused: 0, dropped: 0 });
   const [continueReading, setContinueReading] = useState<MangaEntryDB[]>([]);
   const abortRef = useRef<AbortController | null>(null);
+  const bootstrapped = useRef(false);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query), 400);
@@ -82,12 +91,25 @@ export default function LightNovelBrowseClient() {
 
   // Reset to the first page and (re)load whenever a filter changes.
   useEffect(() => {
+    // The server already rendered Trending page 1 — reuse it and skip the
+    // first client request (avoids a redundant AniList fetch / rate-limit hit).
+    if (
+      !bootstrapped.current &&
+      !showMyList &&
+      !debouncedQuery.trim() &&
+      !selectedGenre &&
+      tab === "trending" &&
+      initialList.length > 0
+    ) {
+      bootstrapped.current = true;
+      return;
+    }
+
     let cancelled = false;
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     setPage(1);
@@ -133,7 +155,7 @@ export default function LightNovelBrowseClient() {
       cancelled = true;
       controller.abort();
     };
-  }, [tab, showMyList, listTab, debouncedQuery, selectedGenre]);
+  }, [tab, showMyList, listTab, debouncedQuery, selectedGenre, initialList]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;

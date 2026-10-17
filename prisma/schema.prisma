@@ -1877,6 +1877,9 @@ model UserSession {
   @@index([userId, startedAt])
   @@index([sessionId])
   @@index([startedAt])
+  // "Is anyone online right now?" — the visitors monitor polls this on every
+  // refresh; (isActive, lastActiveAt) lets it answer from the index.
+  @@index([isActive, lastActiveAt])
 }
 
 model SearchLog {
@@ -1907,6 +1910,15 @@ model RetentionMetric {
   createdAt          DateTime @default(now())
 
   @@index([date])
+}
+
+// Monotonic counters that must survive the analytics log-prune (which trims
+// the raw PageView table after LOG_RETENTION_DAYS). "pageviews" is the
+// cumulative all-time page-view total shown on the admin dashboard.
+model SiteCounter {
+  key       String   @id
+  value     BigInt   @default(0)
+  updatedAt DateTime @updatedAt
 }
 
 // ── Quiz Server-Side Persistence ──
@@ -2159,11 +2171,15 @@ model Reel {
 }
 
 model ReelView {
-  id        String   @id @default(cuid())
-  reelId    String
-  viewerKey String
-  userId    String?
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  reelId       String
+  viewerKey    String
+  userId       String?
+  createdAt    DateTime @default(now())
+  // When the viewer's view last counted. Views stay deduped per
+  // (reel, viewer) so refresh-loops can't inflate a counter, but a repeat
+  // viewer becomes eligible again after VIEW_COOLDOWN_MS (see the view route).
+  lastViewedAt DateTime @default(now())
 
   reel Reel @relation(fields: [reelId], references: [id], onDelete: Cascade)
 

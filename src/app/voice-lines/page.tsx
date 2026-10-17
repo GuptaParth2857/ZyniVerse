@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     "Browse iconic anime quotes and voice lines. The best dialogues from Naruto, One Piece, Attack on Titan, and more — including Hindi dub lines.",
   alternates: { canonical: `${BASE_URL}/voice-lines` },
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Quotes — Voice Lines & Dialogues",
     description:
       "Browse iconic anime quotes and voice lines from Naruto, One Piece, Attack on Titan, and more.",

@@ -5,9 +5,16 @@ import { usePathname } from "next/navigation";
 
 const BATCH_KEY = "analytics_pending_pageviews";
 const BATCH_SIZE = 10;
-const FLUSH_INTERVAL_MS = 900000;
+// Backstop flush for long-lived tabs. Unload/hidden flushes are what actually
+// guarantee delivery for short visits.
+const FLUSH_INTERVAL_MS = 60000;
+// Drop queued entries from sessions we never came back to, so localStorage
+// can't grow unbounded.
+const PENDING_TTL_MS = 6 * 60 * 60 * 1000;
 
-function getPending(): Array<{ path: string; sessionId: string; referrer: string | null; ts: number }> {
+type PendingEntry = { path: string; sessionId: string; referrer: string | null; ts: number };
+
+function getPending(): PendingEntry[] {
   try {
     return JSON.parse(localStorage.getItem(BATCH_KEY) || "[]");
   } catch {
@@ -15,25 +22,46 @@ function getPending(): Array<{ path: string; sessionId: string; referrer: string
   }
 }
 
-function addPending(entry: { path: string; sessionId: string; referrer: string | null; ts: number }) {
+function addPending(entry: PendingEntry) {
   const pending = getPending();
   pending.push(entry);
   localStorage.setItem(BATCH_KEY, JSON.stringify(pending));
 }
 
-function flushPending(sessionId: string) {
-  const pending = getPending();
-  if (pending.length === 0) return;
-  localStorage.removeItem(BATCH_KEY);
-
-  const entries = pending.filter((e) => e.sessionId === sessionId);
-  if (entries.length === 0) return;
-
+function postEntries(payload: { batch: PendingEntry[]; sessionId: string }) {
+  const body = JSON.stringify(payload);
+  // sendBeacon is the only delivery method browsers reliably complete while a
+  // page is being unloaded. A plain fetch() (even with keepalive) is often
+  // cancelled here, which silently dropped most page views.
+  try {
+    if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+      const blob = new Blob([body], { type: "application/json" });
+      if (navigator.sendBeacon("/api/analytics/pageview", blob)) return;
+    }
+  } catch {
+    /* fall through to fetch */
+  }
   fetch("/api/analytics/pageview", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ batch: entries, sessionId }),
+    body,
+    keepalive: true,
   }).catch(() => {});
+}
+
+function flushPending(sessionId: string) {
+  const pending = getPending();
+  if (pending.length === 0) return;
+
+  const entries = pending.filter((e) => e.sessionId === sessionId);
+  const now = Date.now();
+  const kept = pending.filter((e) => e.sessionId !== sessionId && now - e.ts < PENDING_TTL_MS);
+
+  if (kept.length > 0) localStorage.setItem(BATCH_KEY, JSON.stringify(kept));
+  else localStorage.removeItem(BATCH_KEY);
+
+  if (entries.length === 0) return;
+  postEntries({ batch: entries, sessionId });
 }
 
 export default function AnalyticsTracker() {
@@ -100,12 +128,21 @@ export default function AnalyticsTracker() {
   useEffect(() => {
     if (typeof window === "undefined" || !sessionId) return;
 
-    const handleUnload = () => {
-      flushPending(sessionId);
+    // visibilitychange(hidden) and pagehide fire far more reliably than
+    // beforeunload, especially on mobile Safari / bfcache navigations.
+    const flush = () => flushPending(sessionId);
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush();
     };
 
-    window.addEventListener("beforeunload", handleUnload);
-    return () => window.removeEventListener("beforeunload", handleUnload);
+    window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", flush);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      window.removeEventListener("beforeunload", flush);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [sessionId]);
 
   return null;

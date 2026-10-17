@@ -28,12 +28,13 @@ export async function generateMetadata({ params }: DeskParams): Promise<Metadata
   if (!item) return { title: "Anime News" };
 
   const url = `${BASE_URL}/news/desk/${item.slug}`;
-  const title = `${item.title} | ZyniVerse`;
+  const title = item.title;
   return {
     title,
     description: item.summary,
-    keywords: [...item.tags.slice(0, 4), "anime news", "hindi dub"],
+    keywords: [...item.tags.slice(0, 4), "anime news", "hindi dub", "anime industry"],
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
       title: item.title,
       description: item.summary,
       url,

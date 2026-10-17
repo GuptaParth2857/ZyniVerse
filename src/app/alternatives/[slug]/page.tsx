@@ -36,6 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     keywords: [...site.searchTerms, "anime alternative", "anime tracker alternative", "anime filler list alternative", "best anime sites 2026"],
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
       title,
       description,
       url: `${BASE_URL}/alternatives/${site.slug}`,

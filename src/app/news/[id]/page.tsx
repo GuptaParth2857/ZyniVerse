@@ -11,7 +11,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 const FALLBACK_METADATA: Metadata = {
   title: "Anime News Article",
-  description: "Read the latest anime news on ZyniVerse — curated from Anime News Network and MyAnimeList for Indian anime fans.",
+  description: "Read the latest anime news on ZyniVerse - curated from Anime News Network and MyAnimeList for anime fans worldwide.",
   robots: { index: true, follow: true },
 };
 
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const item = await getRSSNewsById(decodeURIComponent(id));
     if (!item) return FALLBACK_METADATA;
 
-    const title = `${item.title} | ZyniVerse`;
+    const title = item.title;
     return {
       title,
       description: item.summary?.slice(0, 200) || title,

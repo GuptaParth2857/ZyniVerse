@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { getLightNovelTrending, bestTitle, type Media } from "@/lib/anilist";
 import LightNovelBrowseClient from "./client";
+
+// ISR: server-render the first Trending tab (covers land in the HTML, like
+// /manga). An AniList hiccup degrades to an empty grid which the client
+// immediately refetches.
+export const revalidate = 600;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
@@ -33,10 +38,43 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LightNovelsPage() {
+export default async function LightNovelsPage() {
+  let trending: Media[] = [];
+  let total = 0;
+  let hasNext = false;
+  try {
+    const data = await getLightNovelTrending(24, 1, null);
+    trending = data.media;
+    total = data.pageInfo.total;
+    hasNext = data.pageInfo.hasNextPage;
+  } catch {
+    trending = [];
+  }
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Trending Light Novels",
+    numberOfItems: trending.length,
+    itemListElement: trending.slice(0, 24).map((m, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Book",
+        name: bestTitle(m.title),
+        url: `${BASE_URL}/light-novels/${m.id}`,
+        image: m.coverImage?.extraLarge || m.coverImage?.large || undefined,
+      },
+    })),
+  };
+
   return (
-    <Suspense fallback={null}>
-      <LightNovelBrowseClient />
-    </Suspense>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
+      <LightNovelBrowseClient initialList={trending} initialTotal={total} initialHasNext={hasNext} />
+    </>
   );
 }

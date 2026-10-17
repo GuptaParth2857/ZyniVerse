@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import RevealLabel from "@/components/RevealLabel";
+import { FadeIn } from "@/components/PageTransition";
 
 interface ActiveSession {
   id: string;
@@ -359,13 +361,24 @@ export default function AdminVisitorsPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  // null = no failure yet · "denied" = not an admin · "failed" = network/5xx
+  const [failed, setFailed] = useState<null | "denied" | "failed">(null);
 
   const fetchData = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true);
-    const res = await fetch("/api/admin/visitors/active");
-    if (res.ok) {
-      setData(await res.json());
-      setLastUpdated(new Date());
+    try {
+      const res = await fetch("/api/admin/visitors/active", { cache: "no-store" });
+      if (res.status === 401 || res.status === 403) {
+        setFailed("denied");
+      } else if (!res.ok) {
+        setFailed("failed");
+      } else {
+        setData(await res.json());
+        setLastUpdated(new Date());
+        setFailed(null);
+      }
+    } catch {
+      setFailed("failed");
     }
     setLoading(false);
     setRefreshing(false);
@@ -381,16 +394,20 @@ export default function AdminVisitorsPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <section className="mb-8">
-        <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-magenta)]/40 bg-[var(--color-magenta)]/10 px-3 py-1 font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)] shadow-[0_0_16px_rgba(255,64,146,0.25)]">
+        <RevealLabel
+          className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-magenta)]/40 bg-[var(--color-magenta)]/10 px-3 py-1 font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)] shadow-[0_0_16px_rgba(255,64,146,0.25)]"
+          spacing="0.2em"
+          fromSpacing="0.4em"
+        >
           ✦ Live Visitors
-        </p>
+        </RevealLabel>
         <div className="neon-rgb-border inline-block rounded-2xl px-5 py-3">
           <h1 className="bg-gradient-to-r from-[var(--color-cyan)] via-white to-[var(--color-magenta)] bg-clip-text font-display text-3xl font-bold text-transparent sm:text-4xl">
             Visitor Monitor
           </h1>
         </div>
         <p className="mt-4 max-w-2xl text-sm text-[var(--color-mute)]">
-          Real-time visitor tracking powered by live session heartbeats — auto-refreshes every 15 seconds.
+          Real-time visitor tracking powered by live session heartbeats — auto-refreshes every 2 minutes.
         </p>
       </section>
 
@@ -422,27 +439,42 @@ export default function AdminVisitorsPage() {
         </div>
       ) : !data ? (
         <div className="py-20 text-center">
-          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-          <p className="text-[var(--color-mute)] text-sm">Admin access required.</p>
+          <div className="mb-3 text-4xl">{failed === "denied" ? "🔒" : "⚠️"}</div>
+          <h1 className="text-2xl font-bold mb-2">
+            {failed === "denied" ? "Access Denied" : "Couldn't reach the visitor feed"}
+          </h1>
+          <p className="text-[var(--color-mute)] text-sm">
+            {failed === "denied"
+              ? "Admin access required."
+              : "The request failed — check your connection and try again."}
+          </p>
+          {failed !== "denied" && (
+            <button
+              onClick={() => fetchData()}
+              className="mt-4 rounded-full neon-rgb-border bg-[var(--color-void)]/60 px-5 py-2 text-sm text-[var(--color-cyan)] transition-colors"
+            >
+              Retry
+            </button>
+          )}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+          <FadeIn className="grid grid-cols-2 gap-4 lg:grid-cols-3">
             <KpiCard icon="⚡" label="Live Now" value={data.liveCount} color="#4ade80" sub="active · last 90s" />
             <KpiCard icon="👁️" label="Visitors Today" value={data.todayVisitors} color="var(--color-cyan)" sub={`${data.anonymousVisitors} anonymous`} />
             <KpiCard icon="👀" label="Page Views Today" value={data.pageViewsToday} color="var(--color-amber)" sub="total pageviews" />
             <KpiCard icon="🔌" label="Sessions Today" value={data.sessionsToday} color="var(--color-violet)" sub="started today" />
             <KpiCard icon="🎭" label="Anonymous Today" value={data.anonymousVisitors} color="var(--color-magenta)" sub="no login" />
             <KpiCard icon="⏱️" label="Avg Session" value={data.avgSessionMinutesToday} color="var(--color-amber)" sub="minutes · today" decimals={1} />
-          </div>
+          </FadeIn>
 
-          <div className="mt-6">
+          <FadeIn className="mt-6">
             <BarChart
               title="Page Views · Last 24 Hours"
               accent="var(--color-cyan)"
               data={data.hourlyPageViews}
             />
-          </div>
+          </FadeIn>
 
           <div className="mt-8 flex items-center gap-3">
             <p className="text-sm text-[var(--color-mute)]">

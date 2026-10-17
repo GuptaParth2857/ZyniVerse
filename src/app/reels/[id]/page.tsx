@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import RichCaption from "@/components/RichCaption";
 import ReelShare from "./ReelShare";
+import ReelViewReporter from "./ReelViewReporter";
 
 export const revalidate = 1800;
 
@@ -260,6 +261,8 @@ export default async function ReelDetailPage({ params }: PageProps) {
           More from @{reel.user.username}
         </Link>
       </nav>
+
+      <ReelViewReporter reelId={id} />
 
       {related.length > 0 && (
         <section className="mt-8">

@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://zyverse.in/wordle" },
   robots: { index: true, follow: true },
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Wordle",
     description: "Guess the daily anime in 6 tries! New anime every day.",
     url: "https://zyverse.in/wordle",

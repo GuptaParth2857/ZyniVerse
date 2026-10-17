@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "winter 2026 anime", "fall 2025 anime", "upcoming anime",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Seasonal Anime Charts — 2026 Seasons",
     description: "Browse current and past seasonal anime lineups. Summer 2026, Spring 2026, and more.",
     url: `${BASE_URL}/seasonal`,

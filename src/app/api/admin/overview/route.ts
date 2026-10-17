@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
+import { getTotalPageViews } from "@/lib/analytics";
+
+// `requireAdmin()` reads `headers()` through `auth()`. Without this, Next tries
+// to statically prerender the GET handler, the request-time error is caught by
+// the handler's try/catch, and the route answers 500 instead of reaching the
+// intended 401 (see the same fix in the forum stats route).
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -27,7 +34,8 @@ export async function GET() {
       pendingFeedback,
       todayPageViews,
       liveVisitors,
-      totalPageViews,
+      totalPageViewsCounter,
+      totalPageViewsRaw,
       todaySessions,
       recentFeedback,
       recentUsers,
@@ -44,6 +52,7 @@ export async function GET() {
           lastActiveAt: { gte: activeThreshold },
         },
       }),
+      getTotalPageViews(),
       prisma.pageView.count(),
       prisma.userSession.count({ where: { startedAt: { gte: todayStart } } }),
       prisma.feedback.findMany({
@@ -83,6 +92,10 @@ export async function GET() {
         select: { createdAt: true },
       }),
     ]);
+
+    // Prefer the monotonic counter (survives pruning); fall back to the raw
+    // row count if the counter row hasn't been seeded yet.
+    const totalPageViews = totalPageViewsCounter ?? totalPageViewsRaw;
 
     const weeklySignups = days.map((d, i) => {
       const next = i === days.length - 1 ? new Date(now.getTime() + 1000) : days[i + 1];

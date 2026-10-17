@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     "new chapter ist",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Manga Release Dates & Countdowns",
     description: "Live countdowns for the next One Piece, Chainsaw Man, Solo Leveling and more manga chapters.",
     url: `${BASE_URL}/manga-releases`,

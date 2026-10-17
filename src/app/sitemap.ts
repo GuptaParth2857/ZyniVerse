@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
-import { getPopular } from "@/lib/anilist";
+import { getPopular, getTrending, type Media } from "@/lib/anilist";
 import { getFillerData } from "@/lib/filler";
 import { SHUT_DOWN_SITES } from "@/lib/data/dead-site-alternatives";
+import { POPULAR_ANIME_FALLBACK_IDS } from "@/lib/data/popular-anime-ids";
 import { INDIAN_DUB_GUIDES } from "@/lib/indian-dub-guides";
+import { TOONS_DATABASE } from "@/lib/toons-data";
 import { NEWS_DESK } from "@/lib/news-desk";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
@@ -37,8 +39,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/manga`,  changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/seasonal`,  changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/watch-order`,  changeFrequency: "weekly", priority: 0.8 },
+    // Content hubs + tools that were indexable and internally linked but missing
+    // from the sitemap. UGC hubs (posts, memes, fanart, clips, lists, community)
+    // are deliberately left out — see the UGC note near the bottom of this file.
+    { url: `${BASE_URL}/guides`,  changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/compare-anime`,  changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE_URL}/popular-characters`,  changeFrequency: "weekly", priority: 0.6 },
+    // NOTE: no /calendar entry — next.config.ts 308-redirects it to /schedule.
+    { url: `${BASE_URL}/streaming-calendar`,  changeFrequency: "daily", priority: 0.7 },
+    { url: `${BASE_URL}/seasonal-tracker`,  changeFrequency: "daily", priority: 0.6 },
+    { url: `${BASE_URL}/tools/filler-time`,  changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE_URL}/tools/binge-calculator`,  changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE_URL}/figures`,  changeFrequency: "weekly", priority: 0.5 },
+    { url: `${BASE_URL}/podcast`,  changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE_URL}/events`,  changeFrequency: "weekly", priority: 0.5 },
     { url: `${BASE_URL}/indian-dubs`,  changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE_URL}/conventions`,  changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/toons`,  changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE_URL}/voice-actors/indian`,  changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE_URL}/light-novels`,  changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE_URL}/dubbed`,  changeFrequency: "weekly", priority: 0.7 },
@@ -64,7 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/creators`,  changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE_URL}/discover`,  changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE_URL}/feed`,  changeFrequency: "daily", priority: 0.7 },
-    { url: `${BASE_URL}/posts`,  changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/posts`,  changeFrequency: "daily", priority: 0.4 },
     { url: `${BASE_URL}/awards`,  changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/developer`,  changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/recommendations`,  changeFrequency: "weekly", priority: 0.6 },
@@ -78,7 +95,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/tierlist`,  changeFrequency: "weekly", priority: 0.5 },
     { url: `${BASE_URL}/theories`,  changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE_URL}/achievements`,  changeFrequency: "weekly", priority: 0.5 },
-    { url: `${BASE_URL}/activity`,  changeFrequency: "daily", priority: 0.4 },
+    // NOTE: /activity is intentionally absent — robots.ts PRIVATE_PATHS
+    // disallows it (personalised feed), and a sitemap entry would surface as
+    // "Submitted URL blocked by robots.txt" in Search Console.
     { url: `${BASE_URL}/watch-party`,  changeFrequency: "weekly", priority: 0.4 },
     { url: `${BASE_URL}/manga-list`,  changeFrequency: "daily", priority: 0.6 },
     { url: `${BASE_URL}/premium`,  changeFrequency: "monthly", priority: 0.5 },
@@ -184,12 +203,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // actually rank: filler guides, watch orders, dub guides, wiki and tools.
 
   // Dynamic: Popular anime "where to watch in India" guides (unique content)
+  //
+  // Two things silently emptied this section before:
+  //   1. `getPopular(100)` — AniList caps `perPage` at 50 and clamps silently,
+  //      so 100 was never actually 100.
+  //   2. Any AniList hiccup (rate limits are common at build time) threw here,
+  //      and the catch left the section empty for the whole 24h revalidate
+  //      window. The live sitemap had zero `/watch/` URLs because of it.
+  // Now: ask for 50 twice across two orderings (trending skews seasonal), and
+  // fall back to a baked, verified id list if AniList is unavailable.
   let watchGuidePages: MetadataRoute.Sitemap = [];
   try {
-    const popular = await getPopular(100);
-    watchGuidePages = popular.map((m) => ({
-      url: `${BASE_URL}/watch/${m.id}`,
-      lastModified: stableLastModified(m.startDate),
+    const [popular, trending] = await Promise.all([
+      getPopular(50).catch((): Media[] => []),
+      getTrending(50).catch((): Media[] => []),
+    ]);
+
+    const starts = new Map<number, Media["startDate"]>();
+    for (const m of [...popular, ...trending]) {
+      if (typeof m?.id === "number") starts.set(m.id, m.startDate);
+    }
+    if (starts.size === 0) {
+      for (const id of POPULAR_ANIME_FALLBACK_IDS) starts.set(id, undefined);
+    }
+
+    watchGuidePages = [...starts.entries()].map(([id, startDate]) => ({
+      url: `${BASE_URL}/watch/${id}`,
+      lastModified: stableLastModified(startDate),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     }));
@@ -242,6 +282,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  // Toon detail pages (static, original India-focused content: Chhota Bheem,
+  // Motu Patlu, Hindi-dubbed imports). These were indexable and linked from the
+  // footer/nav but missing from the sitemap entirely. No `lastModified`: the
+  // data is evergreen, and reporting `now` makes Google treat every entry as
+  // constantly updated (see the freshness-anchor note at the top of this file).
+  const toonPages: MetadataRoute.Sitemap = TOONS_DATABASE.map((t) => ({
+    url: `${BASE_URL}/toons/${t.id}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
   // Manga release countdowns (static, high SEO value — recurring weekly queries)
   const mangaReleasePages: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/manga-releases`,  changeFrequency: "daily" as const, priority: 0.8 },
@@ -277,6 +328,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...newsPages,
     ...alternativePages,
     ...indianDubGuidePages,
+    ...toonPages,
     ...mangaReleasePages,
     ...newsDeskPages,
     ...watchGuidePages,

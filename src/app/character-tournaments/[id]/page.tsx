@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const t = view?.tournament;
 
   const title = t
-    ? `${t.title} — ${t.size}-Player Character Tournament | ZyniVerse`
-    : "Character Tournament | ZyniVerse — Vote Your Favorite Anime Fan";
+    ? `${t.title} — ${t.size}-Player Character Tournament`
+    : "Character Tournament — Vote Your Favorite Anime Fan";
   const description = t
     ? `${t.description || `${t.title} — anime characters battle it out.`} Vote your favorite on ZyniVerse by @${t.creator.username}.`
     : "Anime characters fight in community tournaments. Build brackets, vote and crown champions on ZyniVerse.";

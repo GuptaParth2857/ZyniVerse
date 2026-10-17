@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   } catch {
     return {
       title: "Character Details",
-      description: "Explore detailed anime character information including voice actors, appearances, and trivia. India's #1 free anime platform.",
+      description: "Explore detailed anime character information including voice actors, appearances, and trivia. Free anime platform.",
       alternates: { canonical: `${BASE_URL}/character/${id}` },
       robots: { index: false, follow: true },
     };

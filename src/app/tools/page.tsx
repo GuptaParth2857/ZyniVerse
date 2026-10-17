@@ -8,6 +8,7 @@ export const metadata: Metadata = {
     "Free anime tools you can't find anywhere else. Calculate how many hours you'd save skipping filler, compare anime watch times, find your next binge & more. Bookmark these!",
   keywords: ["anime tools", "anime filler calculator", "anime watch time calculator", "how long to watch anime", "anime binge calculator", "free anime tools"],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Free Anime Tools — Filler Calculator, Watch Time & More",
     description: "Calculate hours saved skipping filler, compare watch times & more. Free tools for anime fans.",
     url: "https://zyverse.in/tools",

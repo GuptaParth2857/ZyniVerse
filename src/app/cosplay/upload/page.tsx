@@ -5,6 +5,8 @@ import CosplayUpload from "@/components/CosplayUpload";
 
 export const metadata: Metadata = {
   title: "Upload Cosplay",
+  description: "Share your anime cosplay with the ZyniVerse community.",
+  robots: { index: false, follow: true },
 };
 
 export default async function CosplayUploadPage() {

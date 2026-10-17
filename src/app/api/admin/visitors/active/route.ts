@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
 
+// `requireAdmin()` reads `headers()` through `auth()`. Without this, Next tries
+// to statically prerender the GET handler, the request-time error is caught by
+// the handler's try/catch, and the route answers 500 instead of reaching the
+// intended 401 (see the same fix in the forum stats route).
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     if (!(await requireAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -12,7 +18,7 @@ export async function GET() {
     const activeThreshold = new Date(now.getTime() - 90000);
     const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    const [liveCount, activeSessions, loggedInToday, anonToday, pageViewsToday, sessionsToday, todaySessionRows, hourlyRaw, deviceRows, osRows, countryRows] =
+    const [liveCount, activeSessions, loggedInToday, anonToday, pageViewsToday, sessionsToday, todaySessionRows, hourlyRaw, deviceRows, osRows, countryRows, topPages] =
       await Promise.all([
         prisma.userSession.count({
           where: { isActive: true, lastActiveAt: { gte: activeThreshold } },
@@ -68,6 +74,13 @@ export async function GET() {
           orderBy: { _count: { country: "desc" } },
           take: 8,
         }),
+        prisma.pageView.groupBy({
+          by: ["path"],
+          where: { createdAt: { gte: todayStart, lt: tomorrowStart } },
+          _count: { path: true },
+          orderBy: { _count: { path: "desc" } },
+          take: 10,
+        }),
       ]);
 
     const todayVisitors = loggedInToday.length + anonToday.length;
@@ -91,14 +104,6 @@ export async function GET() {
       const idx = Math.min(23, Math.max(0, Math.floor((pv.createdAt.getTime() - last24h.getTime()) / (60 * 60 * 1000))));
       hourlyPageViews[idx].count += 1;
     }
-
-    const topPages = await prisma.pageView.groupBy({
-      by: ["path"],
-      where: { createdAt: { gte: todayStart, lt: tomorrowStart } },
-      _count: { path: true },
-      orderBy: { _count: { path: "desc" } },
-      take: 10,
-    });
 
     const deviceBreakdown = deviceRows.map((d) => ({ device: d.device || "Unknown", count: d._count.device }));
     const osBreakdown = osRows.map((o) => ({ os: o.os || "Unknown", count: o._count.os }));

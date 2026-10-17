@@ -18,6 +18,7 @@ export const metadata: Metadata = {
     "shueisha free manga",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "MANGA MILLION: Shueisha's Free Manga Platform — Hindi & 100+ Languages",
     description:
       "Nearly 400 manga titles, 1 million pages, 100+ languages including Hindi — completely free with no registration. Here's everything Indian anime fans need to know.",

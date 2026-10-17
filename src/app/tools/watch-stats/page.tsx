@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Anime Watch Time Stats — How Long to Watch All Anime?",
   description: "Mind-blowing stats about anime watch time. How long would it take to watch every anime ever made? Total filler, genre breakdowns, and more.",
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Watch Time Stats",
     description: "Mind-blowing anime stats — total watch time, filler hours, genre breakdowns.",
   },

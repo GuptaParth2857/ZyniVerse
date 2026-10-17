@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   description:
     "Upgrade to ZyniVerse Pro. Get ad-free experience, advanced stats, CSV export, priority support, and exclusive features for just Rs 499/month.",
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "ZyniVerse Pro — Premium Anime Features",
     description:
       "Ad-free experience, advanced stats, CSV export, and more for Rs 499/month.",

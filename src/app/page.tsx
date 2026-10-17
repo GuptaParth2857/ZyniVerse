@@ -14,12 +14,14 @@ import {
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "ZyniVerse — Hindi Dub Schedule, Filler Guides & Watch Orders for India",
+  title: "ZyniVerse — Anime Watch Order, Filler Guides & Episode Schedule",
   description:
-    "Free anime hub for India: this week's Hindi dub schedule, Hindi/Tamil/Telugu dub tracking, filler guides for 200+ anime, and watch orders. No signup needed.",
+    "Anime watch orders, filler guides for 200+ series, episode schedules and episode-by-episode breakdowns — plus manga details, character pages and Hindi, Tamil & Telugu dub tracking. No signup needed.",
   keywords: [
     "anime",
     "filler guides",
+    "watch order",
+    "anime schedule",
     "indian dubs",
     "anime community",
     "anime website",
@@ -30,17 +32,18 @@ export const metadata: Metadata = {
     canonical: process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in",
   },
   openGraph: {
-    title: "ZyniVerse | India's #1 Anime Platform",
+    locale: "en_US",
+    title: "ZyniVerse — Anime Watch Order, Filler Guides & Schedule",
     description:
-      "Free anime platform with filler guides, Indian dub tracking, AI recommendations, and community.",
+      "Watch orders, filler guides, episode schedules, manga details and dub tracking — all in one place.",
     url: process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ZyniVerse | India's #1 Anime Platform",
+    title: "ZyniVerse — Anime Watch Order, Filler Guides & Schedule",
     description:
-      "Free anime platform with filler guides, Indian dub tracking, AI recommendations, and community.",
+      "Watch orders, filler guides, episode schedules, manga details and dub tracking — all in one place.",
   },
 };
 
@@ -73,7 +76,11 @@ import WhyZyniVerse from "@/components/WhyZyniVerse";
 import NeonBanner from "@/components/NeonBanner";
 import BrandPartners from "@/components/BrandPartners";
 import PoweredBy from "@/components/PoweredBy";
-import { prisma } from "@/lib/prisma";
+import {
+  getHomeUserCount,
+  getHomeLatestPosters,
+  getHomeFeaturedTournament,
+} from "@/lib/home-stats";
 import { posterCategoryOf } from "@/lib/post-types";
 import { DUBBED_ANIME_STATIC } from "@/lib/data/dubbed-static";
 
@@ -119,33 +126,14 @@ function featuredEndsInOf(featuredTournament: FeaturedTournament): string | null
 }
 
 export default async function Home() {
+  // The three community reads are cached in-process (`home-stats.ts`) — each is
+  // a round-trip to the remote pooler and this route renders per request.
   const [homepage, tickerRes, userCountRes, latestPostersRes, featuredTournamentRes] = await Promise.allSettled([
     getHomepageData(),
     loadAiringSchedule(),
-    prisma.user.count(),
-    prisma.post.findMany({
-      where: { image: { not: null } },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      select: { id: true, title: true, image: true, type: true },
-    }),
-    prisma.characterTournament.findFirst({
-      where: { status: { in: ["qualifying", "active"] } },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        size: true,
-        mode: true,
-        status: true,
-        currentRound: true,
-        qualifyingEndsAt: true,
-        roundEndsAt: true,
-        creator: { select: { username: true } },
-        _count: { select: { participants: true } },
-      },
-    }),
+    getHomeUserCount(),
+    getHomeLatestPosters(),
+    getHomeFeaturedTournament(),
   ] as const);
 
   // The homepage is statically prerendered, so whatever AniList returns during

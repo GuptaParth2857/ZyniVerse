@@ -315,6 +315,7 @@ function ReelsFeed({
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const viewedRef = useRef<Set<string>>(new Set());
+  const pendingViewRef = useRef<Set<string>>(new Set());
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTapRef = useRef<Record<string, number>>({});
   const bootstrappedRef = useRef(false);
@@ -361,13 +362,35 @@ function ReelsFeed({
     toastTimer.current = setTimeout(() => setToast(""), 2200);
   }, []);
 
-  const registerView = useCallback((id: string) => {
-    if (viewedRef.current.has(id)) return;
-    viewedRef.current.add(id);
-    fetch(`/api/reels/${id}/view`, { method: "POST" }).catch((e) =>
-      logError(e),
-    );
-  }, []);
+  const registerView = useCallback(
+    (id: string) => {
+      // viewedRef = "confirmed", pendingViewRef = "in flight". Only a
+      // *successful* response marks the reel as viewed: previously the id was
+      // added to viewedRef before the fetch, so a single failed POST (offline,
+      // 500, aborted by fast scrolling) blacklisted the reel for the whole
+      // session and that view was lost forever.
+      if (viewedRef.current.has(id) || pendingViewRef.current.has(id)) return;
+      pendingViewRef.current.add(id);
+      fetch(`/api/reels/${id}/view`, { method: "POST" })
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`view ${res.status}`);
+          const data = (await res.json()) as { counted?: boolean };
+          viewedRef.current.add(id);
+          // Reflect the increment locally so the visible counter actually
+          // moves the moment a view is counted.
+          if (data.counted) {
+            setReels((prev) =>
+              prev.map((r) => (r.id === id ? { ...r, views: r.views + 1 } : r)),
+            );
+          }
+        })
+        .catch((e) => logError(e))
+        .finally(() => {
+          pendingViewRef.current.delete(id);
+        });
+    },
+    [],
+  );
 
   const playActive = useCallback(() => {
     Object.entries(videoRefs.current).forEach(([id, vid]) => {
@@ -1044,7 +1067,11 @@ function ReelCard({
     <div
       onClick={handleCardTap}
       style={{ width: "min(100%, calc((100dvh - 10.5rem) * 0.5625))" }}
-      className="relative aspect-[9/16] touch-manipulation overflow-hidden rounded-2xl neon-rgb-border bg-black shadow-xl shadow-pink-500/10"
+      className={`relative aspect-[9/16] touch-manipulation overflow-hidden rounded-2xl neon-rgb-border bg-black shadow-xl transition-[transform,opacity,box-shadow] duration-500 ease-out ${
+        active
+          ? "scale-100 opacity-100 shadow-pink-500/25"
+          : "scale-[0.96] opacity-70 shadow-transparent"
+      }`}
     >
       <video
         ref={(el) => {
@@ -1056,7 +1083,7 @@ function ReelCard({
         playsInline
         loop
         muted={muted}
-        preload="metadata"
+        preload={active ? "metadata" : "none"}
         className="h-full w-full object-cover"
         onTimeUpdate={(e) => {
           const v = e.currentTarget;

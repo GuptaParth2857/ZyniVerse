@@ -22,6 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: `Browse ${username}'s anime watchlist and manga reading list on ZyniVerse. See what they're watching, reading, scoring, and following.`,
     alternates: { canonical: `${BASE_URL}/list/${username}` },
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
       title: `${username}'s Anime List`,
       description: `See what ${username} is watching and reading on ZyniVerse.`,
       url: `${BASE_URL}/list/${username}`,

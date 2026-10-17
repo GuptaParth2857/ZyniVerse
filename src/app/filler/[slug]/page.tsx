@@ -76,6 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       keywords: [keyword, `${slug.replace(/-/g, " ")} filler episodes`, "skip filler episodes", "anime filler list", "canon episodes list"],
       openGraph: {
+        images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
         title,
         description,
         url: `${BASE_URL}/filler/${slug}`,

@@ -61,7 +61,10 @@ type LikerRow = {
   avatar: string | null;
 };
 
-const CACHE_TTL_MS = 10_000;
+// 30s: the remote pooler makes an uncached feed cost 2 sequential round-trips,
+// and writers invalidate this cache explicitly (`invalidateReelsFeed`), so a
+// longer window only risks a viewer seeing a slightly stale like/comment count.
+const CACHE_TTL_MS = 30_000;
 
 interface Slot {
   body: ReelsFeedPayload;

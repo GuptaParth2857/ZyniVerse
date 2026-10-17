@@ -9,6 +9,37 @@ export function countryFromRequest(headers: Headers): string | null {
   return c && c !== "XX" && c !== "unknown" && c !== "T1" ? c.toUpperCase().slice(0, 2) : null;
 }
 
+const PAGEVIEW_COUNTER_KEY = "pageviews";
+
+/**
+ * Monotonic all-time page-view counter that survives the analytics log-prune
+ * (which trims the raw PageView table after LOG_RETENTION_DAYS). Without this,
+ * the "Total Views" KPI plateaus because pruned rows offset new ones.
+ */
+export async function incrementPageViewCounter(by: number) {
+  if (by <= 0) return;
+  try {
+    const value = BigInt(by);
+    await prisma.siteCounter.upsert({
+      where: { key: PAGEVIEW_COUNTER_KEY },
+      update: { value: { increment: value } },
+      create: { key: PAGEVIEW_COUNTER_KEY, value },
+    });
+  } catch (error) {
+    console.error("Failed to increment page view counter:", error);
+  }
+}
+
+/** All-time page-view total, or null when the counter row is missing. */
+export async function getTotalPageViews(): Promise<number | null> {
+  try {
+    const row = await prisma.siteCounter.findUnique({ where: { key: PAGEVIEW_COUNTER_KEY } });
+    return row ? Number(row.value) : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function trackPageView(params: {
   path: string;
   userId?: string | null;
@@ -18,22 +49,28 @@ export async function trackPageView(params: {
   country?: string | null;
 }) {
   try {
-    await prisma.pageView.create({
-      data: {
-        path: params.path,
-        userId: params.userId || null,
-        sessionId: params.sessionId || null,
-        referrer: params.referrer || null,
-        userAgent: params.userAgent || null,
-        country: params.country || null,
-      },
-    });
-    if (params.sessionId) {
-      await prisma.userSession.updateMany({
-        where: { sessionId: params.sessionId },
-        data: { pagesViewed: { increment: 1 }, lastActiveAt: new Date() },
-      });
-    }
+    // Independent writes — fire them together so the remote pooler is touched
+    // once instead of three times per view. `incrementPageViewCounter` swallows
+    // its own errors, so a counter failure can't drop the page_view row.
+    await Promise.all([
+      prisma.pageView.create({
+        data: {
+          path: params.path,
+          userId: params.userId || null,
+          sessionId: params.sessionId || null,
+          referrer: params.referrer || null,
+          userAgent: params.userAgent || null,
+          country: params.country || null,
+        },
+      }),
+      params.sessionId
+        ? prisma.userSession.updateMany({
+            where: { sessionId: params.sessionId },
+            data: { pagesViewed: { increment: 1 }, lastActiveAt: new Date() },
+          })
+        : Promise.resolve(),
+      incrementPageViewCounter(1),
+    ]);
   } catch (error) {
     console.error("Failed to track page view:", error);
   }
@@ -46,22 +83,27 @@ export async function trackPageViewBatch(entries: Array<{
   country?: string | null;
 }>) {
   if (entries.length === 0) return;
+  const sessionIds = [...new Set(entries.map((e) => e.sessionId).filter(Boolean))] as string[];
   try {
-    await prisma.pageView.createMany({
-      data: entries.map((e) => ({
-        path: e.path,
-        sessionId: e.sessionId || null,
-        referrer: e.referrer || null,
-        country: e.country || null,
-      })),
-    });
-    const sessionIds = [...new Set(entries.map((e) => e.sessionId).filter(Boolean))] as string[];
-    if (sessionIds.length > 0) {
-      await prisma.userSession.updateMany({
-        where: { sessionId: { in: sessionIds } },
-        data: { lastActiveAt: new Date() },
-      });
-    }
+    // These three writes are independent, but the pooler is remote — awaiting
+    // them one after another cost three round-trips (~3s) on every beacon.
+    await Promise.all([
+      prisma.pageView.createMany({
+        data: entries.map((e) => ({
+          path: e.path,
+          sessionId: e.sessionId || null,
+          referrer: e.referrer || null,
+          country: e.country || null,
+        })),
+      }),
+      sessionIds.length > 0
+        ? prisma.userSession.updateMany({
+            where: { sessionId: { in: sessionIds } },
+            data: { lastActiveAt: new Date() },
+          })
+        : Promise.resolve(),
+      incrementPageViewCounter(entries.length),
+    ]);
   } catch (error) {
     console.error("Failed to batch track page views:", error);
   }

@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${review.title} — Review by ${review.user.username}`,
     description: review.content.slice(0, 160),
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
       title: `${review.title} — ${review.mediaTitle}`,
       description: review.content.slice(0, 160),
       type: "article",

@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     "manga library",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "My Manga List | Track Reading Progress",
     description:
       "Track your manga, light novels, manhwa and manhua in one place. Progress, chapters, volumes and scores — synced across devices.",

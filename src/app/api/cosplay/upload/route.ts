@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { isR2Configured, r2Put, r2PublicUrl } from "@/lib/r2";
 import { apiLimiter } from "@/lib/rate-limiter";
+import sharp from "sharp";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -26,12 +27,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File too large. Max 5MB." }, { status: 400 });
     }
 
-    const ext = file.name.split(".").pop() || "jpg";
+    const raw = Buffer.from(await file.arrayBuffer());
+    // Downscale + re-encode every upload so galleries never ship multi-MB
+    // originals (cards are ~300px wide but uploads can be 5MB).
+    let body = raw;
+    let ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    let contentType = file.type;
+    try {
+      body = await sharp(raw, { animated: true })
+        .rotate()
+        .resize({ width: 1600, withoutEnlargement: true, fit: "inside" })
+        .webp({ quality: 80 })
+        .toBuffer();
+      ext = "webp";
+      contentType = "image/webp";
+    } catch {
+      // Fall back to the original bytes if sharp can't decode the file.
+    }
+
     const timestamp = Date.now();
     const path = `cosplay/${session.user.id}-${timestamp}.${ext}`;
 
     if (isR2Configured()) {
-      await r2Put(path, Buffer.from(await file.arrayBuffer()), file.type);
+      await r2Put(path, body, contentType);
       return NextResponse.json({ url: r2PublicUrl(path) });
     }
 
@@ -45,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
-      .upload(path, file, { upsert: false, contentType: file.type, cacheControl: '31536000' });
+      .upload(path, body, { upsert: false, contentType, cacheControl: '31536000' });
 
     if (uploadError) {
       console.error("[/api/cosplay/upload] Supabase error:", uploadError);

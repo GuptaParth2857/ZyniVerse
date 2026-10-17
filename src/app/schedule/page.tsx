@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   alternates: { canonical: `${BASE_URL}/schedule` },
   robots: { index: true, follow: true },
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Schedule in IST — Weekly Broadcast Board",
     description: "This week's anime broadcast schedule in IST with live ON AIR status — pulled live from AniList.",
     url: `${BASE_URL}/schedule`,

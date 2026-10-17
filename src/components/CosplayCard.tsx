@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ReportButton } from "@/components/ReportButton";
+import { imgThumb } from "@/lib/img";
 
 interface CosplayCardProps {
   cosplay: {
@@ -80,7 +81,7 @@ export default function CosplayCard({ cosplay, onLike, liked, index = 0 }: Cospl
             {cosplay.imageUrl ? (
               <div className="relative aspect-[3/4] overflow-hidden">
                 <Image
-                  src={cosplay.imageUrl}
+                  src={imgThumb(cosplay.imageUrl, 720)}
                   alt={cosplay.title}
                   fill
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
@@ -99,6 +100,8 @@ export default function CosplayCard({ cosplay, onLike, liked, index = 0 }: Cospl
                   </span>
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onLike?.(); }}
+                    aria-label={liked ? "Unlike this cosplay" : "Like this cosplay"}
+                    aria-pressed={liked}
                     className={`flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-md transition-all duration-300 ${
                       liked
                         ? "bg-red-500/30 border border-red-500/50 text-red-400 shadow-[0_0_12px_rgba(239,68,68,0.4)] scale-110"

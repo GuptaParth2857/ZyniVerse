@@ -61,40 +61,50 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "ZyniVerse — Anime Filler Guides, Indian Dubs & Manga Tracker",
+    default: "ZyniVerse — Anime Watch Order, Filler Guides & Schedule",
     template: "%s | ZyniVerse — Free Anime Platform",
   },
   description:
-    "India's #1 anime platform — skip filler in 200+ anime (Naruto, One Piece, Bleach), track Hindi/Tamil/Telugu dubs, get AI recommendations, build your watchlist, read manga, check anime schedules & join India's biggest anime community — all free.",
+    "Free anime platform for fans worldwide — filler guides for 200+ anime (Naruto, One Piece, Bleach), complete watch orders, weekly schedules, AI recommendations, manga reader & community. Hindi/Tamil/Telugu dub tracking for India.",
   manifest: "/manifest.json",
   keywords: [
     "anime", "anime filler list", "naruto filler list", "one piece filler list", "bleach filler list",
-    "hindi dubbed anime", "hindi anime", "tamil dubbed anime", "telugu dubbed anime", "indian anime dubs",
-    "anime tracker", "anime watchlist", "anime community india", "boruto filler list",
-    "anime schedule", "anime recommendations", "best anime 2026", "anime watch order",
+    "anime watch order", "anime release schedule", "anime episode guide", "anime database",
+    "anime tracker", "anime watchlist", "anime wiki", "anime recommendations",
+    "best anime 2026", "seasonal anime 2026", "anime airing schedule", "simulcast anime",
+    "anime filler episodes", "which episodes to skip", "boruto filler list",
     "dragon ball z filler list", "fairy tail filler list", "my hero academia filler list",
-    "anime sites", "free anime", "anime streaming india", "anime dubbed hindi",
-    "anime filler episodes", "which episodes to skip", "anime episode guide",
-    "manga reader india", "anime wiki", "anime conventions india",
-    "crunchyroll india", "anime alternative", "anime community",
-    "seasonal anime 2026", "anime airing schedule", "simulcast anime",
+    "anime sites", "free anime", "anime alternative", "anime community",
+    "manga reader", "manga tracker", "where to watch anime",
+    "hindi dubbed anime", "hindi anime", "tamil dubbed anime", "telugu dubbed anime", "indian anime dubs",
+    "anime community india", "anime streaming india", "anime dubbed hindi", "manga reader india",
+    "anime conventions india", "crunchyroll india",
   ],
   openGraph: {
-    title: "ZyniVerse — Anime Filler Guides, Indian Dubs & Manga Tracker",
-    description: "India's #1 anime platform — filler guides for 200+ anime, Hindi/Tamil/Telugu dubs, AI recommendations, watchlist, manga reader & anime community. Free.",
+    title: "ZyniVerse — Anime Watch Order, Filler Guides & Schedule",
+    description:
+      "Filler guides for 200+ anime, complete watch orders, weekly schedules, AI recommendations, manga reader & community — free. Hindi/Tamil/Telugu dub tracking for India.",
     type: "website",
     siteName: "ZyniVerse",
-    locale: "en_IN",
-    countryName: "India",
+    // Global-English default; India-specific routes keep their own targeting.
+    locale: "en_US",
     url: BASE_URL,
-    images: [{ url: `${BASE_URL}/logo.png`, width: 512, height: 512, alt: "ZyniVerse Logo" }],
+    // NOTE: no `images` here on purpose. The site-wide card comes from the
+    // file convention (src/app/opengraph-image.tsx), which Next applies only to
+    // routes that don't set `openGraph.images` themselves. Setting it here
+    // would win for every route that has no `openGraph` of its own and shadow
+    // the richer generated card.
   },
   twitter: {
     card: "summary_large_image",
     site: "@GuptaParth2857",
     creator: "@GuptaParth2857",
-    title: "ZyniVerse — Anime Filler Guides, Indian Dubs & Manga Tracker",
-    description: "India's #1 anime platform — filler guides for 200+ anime, Hindi/Tamil/Telugu dubs, AI recommendations & community. Free.",
+    title: "ZyniVerse — Anime Watch Order, Filler Guides & Schedule",
+    description:
+      "Filler guides for 200+ anime, watch orders, schedules, AI recommendations & manga reader — free. Hindi/Tamil/Telugu dub tracking for India.",
+    // Images are intentionally omitted: Next auto-fills `twitter.images` from
+    // the resolved `openGraph.images` (see inheritFromMetadata in
+    // next/dist/lib/metadata), so the site-wide card stays in one place.
   },
   robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   icons: {
@@ -105,7 +115,12 @@ export const metadata: Metadata = {
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || "",
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || process.env.GOOGLE_SITE_VERIFICATION || "",
+    other: {
+      "yandex-verification": process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || "",
+      "msvalidate.01": process.env.NEXT_PUBLIC_BING_MS_VALIDATE || "",
+      "facebook-domain-verification": process.env.NEXT_PUBLIC_FB_DOMAIN_VERIFICATION || "",
+    },
   },
 };
 
@@ -121,6 +136,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://s4.anilist.co" />
         <link rel="dns-prefetch" href="https://img.anili.st" />
         <link rel="dns-prefetch" href="https://s4.anilist.co" />
+        <link rel="alternate" type="application/rss+xml" title="ZyniVerse Feed" href="/feed.xml" />
+        <meta name="news_keywords" content="anime, filler guides, watch order, anime schedule, anime recommendations, manga, Hindi dub, Tamil dub, Telugu dub" />
         <Script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-1B5P1BSEB9"
@@ -152,7 +169,7 @@ export default function RootLayout({
                   },
                   "query-input": "required name=search_term_string",
                 },
-                description: "India's #1 anime platform — filler guides for 200+ anime, Indian dub tracking (Hindi/Tamil/Telugu), AI recommendations, watchlist, manga reader, cosplay gallery, and anime community.",
+                description: "ZyniVerse is a free anime platform for fans worldwide — filler guides for 200+ anime, watch order guides, weekly schedules, AI-powered recommendations, a manga reader, cosplay gallery, and community, plus Indian dub tracking (Hindi, Tamil, Telugu).",
                 inLanguage: ["en", "hi"],
                 publisher: {
                   "@type": "Organization",
@@ -167,7 +184,7 @@ export default function RootLayout({
                 alternateName: ["Zyni Verse", "Zyniverse", "Zyverse", "ZyniVerse Anime"],
                 url: BASE_URL,
                 logo: `${BASE_URL}/logo.png`,
-                description: "India's #1 anime platform. Filler guides, Indian dub tracking, AI recommendations, manga reader, cosplay gallery, and anime community for Indian anime fans.",
+                description: "Free anime platform for fans worldwide — filler guides, watch orders, schedules, AI recommendations, manga reader, cosplay gallery, and community, plus Indian dub tracking (Hindi, Tamil, Telugu) for anime fans in India.",
                 foundingDate: "2025",
                 areaServed: [
                   { "@type": "Country", name: "India" },
@@ -209,7 +226,7 @@ export default function RootLayout({
                     name: "What is ZyniVerse?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "ZyniVerse is India's #1 free anime platform. It provides filler guides for 200+ anime, Indian dub tracking (Hindi, Tamil, Telugu), AI-powered anime recommendations, a manga reader, cosplay gallery, watch parties, and a community for Indian anime fans. Visit zyverse.in to get started.",
+                      text: "ZyniVerse is a free anime platform used by fans worldwide. It provides filler guides for 200+ anime, watch order guides, weekly schedules, AI-powered anime recommendations, a manga reader, cosplay gallery, watch parties, and a community — plus Indian dub tracking (Hindi, Tamil, Telugu) for fans in India. Visit zyverse.in to get started.",
                     },
                   },
                   {

@@ -24,6 +24,7 @@ export const metadata: Metadata = {
     "anime sites shut down", "anime site alternatives", "best anime sites 2026",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Shut Down Anime Sites & Best Alternatives (2026)",
     description: "AnimixPlay, HiAnime, AniWatch, 9anime, KissAnime, Zoro.to, GogoAnime are down. Find the best free anime tracker and filler guide alternatives.",
     url: `${BASE_URL}/alternatives`,

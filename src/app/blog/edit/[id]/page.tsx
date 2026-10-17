@@ -3,7 +3,7 @@ import EditBlogClient from "./client";
 
 export const metadata: Metadata = {
   title: "Edit Post",
-  description: "Edit your anime blog post on ZyniVerse. Update reviews, news, seasonal previews, recommendations, and guides before publishing to India's anime community.",
+  description: "Edit your anime blog post on ZyniVerse. Update reviews, news, seasonal previews, recommendations, and guides before publishing to the anime community.",
 };
 
 interface Props {

@@ -25,7 +25,7 @@ function timeAgo(date: Date) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  let title = "Post | ZyniVerse";
+  let title = "Post";
   let description = "A post on ZyniVerse.";
   let image: string | null = null;
   try {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     });
     if (post) {
       const cat = posterCategoryOf(post.type);
-      title = `${post.title} | ${cat.label} Post | ZyniVerse`;
+      title = `${post.title} | ${cat.label} Post`;
       description = (post.content || "").slice(0, 160) || description;
       image = post.image;
     }

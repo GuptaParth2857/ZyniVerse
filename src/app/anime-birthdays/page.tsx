@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     "anime characters born today", "this week anime birthdays", "anime birthday calendar",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Birthdays — Today & This Week",
     description: "Today's anime birthdays and the full 2026 calendar — Naruto, Luffy, Gojo, Levi and more.",
     url: `${BASE_URL}/anime-birthdays`,

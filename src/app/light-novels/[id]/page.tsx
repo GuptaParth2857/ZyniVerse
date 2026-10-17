@@ -14,6 +14,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import MangaProgress from "@/components/MangaProgress";
 import AffiliateLink from "@/components/AffiliateLink";
+import ShareButton from "@/components/ShareButton";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/manga";
 import type { MediaMangaFull } from "@/lib/anilist";
 import { logError } from "@/lib/logger";
@@ -220,6 +221,7 @@ export default function LightNovelDetailsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
+            whileHover={{ y: -6, transition: { duration: 0.25, ease: "easeOut" } }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             className="relative shrink-0 h-64 w-44 sm:h-80 sm:w-56 rounded-xl border border-[var(--color-line)] shadow-2xl overflow-hidden"
           >
@@ -301,6 +303,12 @@ export default function LightNovelDetailsPage() {
                   className="rounded-full bg-[var(--color-cyan)] px-5 py-2 text-sm font-semibold text-black hover:opacity-90 transition-opacity"
                 >Sign in to track</Link>
               )}
+              <ShareButton
+                mediaId={ln.id}
+                title={title}
+                href={`https://zyverse.in/light-novels/${ln.id}`}
+                kind="novel"
+              />
             </div>
           </div>
         </div>
@@ -310,16 +318,26 @@ export default function LightNovelDetailsPage() {
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-12 min-w-0">
           {/* Story */}
-          <section>
+          <Reveal>
             <SectionTitle>Story</SectionTitle>
             <p className="leading-relaxed text-[var(--color-mute)] whitespace-pre-line">
               {stripHtml(ln.description) || "No description available."}
             </p>
-          </section>
+            {ln.tags && ln.tags.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {ln.tags.filter((t) => t.rank >= 60 && !t.isMediaSpoiler).slice(0, 12).map((t) => (
+                  <span key={t.id} className="rounded-full bg-[var(--color-void)] px-2.5 py-1 text-[10px] text-[var(--color-mute)] border border-[var(--color-line)]">
+                    {t.name}
+                    {t.isAdult && <span className="ml-1 text-[var(--color-magenta)]">●</span>}
+                  </span>
+                ))}
+              </div>
+            )}
+          </Reveal>
 
           {/* Chapter list */}
           {entry && showChapters && chapters.length > 0 && (
-            <section>
+            <Reveal>
               <SectionTitle>Chapter List</SectionTitle>
               <div className="rounded-xl border border-[var(--color-line)] divide-y divide-[var(--color-line)] max-h-80 overflow-y-auto">
                 {chapters.map((ch) => (
@@ -343,12 +361,12 @@ export default function LightNovelDetailsPage() {
                   </button>
                 ))}
               </div>
-            </section>
+            </Reveal>
           )}
 
           {/* Rankings */}
           {rankings.length > 0 && (
-            <section>
+            <Reveal>
               <SectionTitle>Rankings</SectionTitle>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {rankings.slice(0, 6).map((r) => (
@@ -360,12 +378,12 @@ export default function LightNovelDetailsPage() {
                   </div>
                 ))}
               </div>
-            </section>
+            </Reveal>
           )}
 
           {/* Characters */}
           {chars.length > 0 && (
-            <section>
+            <Reveal>
               <SectionTitle>Characters</SectionTitle>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {chars.slice(0, 20).map((edge) => (
@@ -382,12 +400,12 @@ export default function LightNovelDetailsPage() {
                   </Link>
                 ))}
               </div>
-            </section>
+            </Reveal>
           )}
 
           {/* Staff */}
           {staffEdges.length > 0 && (
-            <section>
+            <Reveal>
               <SectionTitle>
                 Staff
                 {staffEdges.length > 15 && (
@@ -411,12 +429,12 @@ export default function LightNovelDetailsPage() {
                   </Link>
                 ))}
               </div>
-            </section>
+            </Reveal>
           )}
 
           {/* Relations */}
           {relations.length > 0 && (
-            <section>
+            <Reveal>
               <SectionTitle>Related</SectionTitle>
               <Carousel3D
                 items={relations.map((r) => ({
@@ -429,24 +447,24 @@ export default function LightNovelDetailsPage() {
                 accent="magenta"
                 hrefFn={mediaHref}
               />
-            </section>
+            </Reveal>
           )}
 
           {/* Recommendations */}
           {recs.length > 0 && (
-            <section>
+            <Reveal>
               <SectionTitle>You May Also Like</SectionTitle>
               <Carousel3D
                 items={recs.map((e) => e.node.mediaRecommendation)}
                 accent="magenta"
                 hrefFn={mediaHref}
               />
-            </section>
+            </Reveal>
           )}
         </div>
 
         {/* Sidebar */}
-        <aside className="space-y-6">
+        <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
           {/* Progress (when added to list) */}
           {entry && (
             <MangaProgress
@@ -506,7 +524,13 @@ export default function LightNovelDetailsPage() {
                   <div key={s.score} className="flex items-center gap-2 text-[11px]">
                     <span className="w-4 text-right font-mono text-[var(--color-mute)]">{s.score * 10}%</span>
                     <div className="flex-1 h-2 rounded-full bg-[var(--color-line)] overflow-hidden">
-                      <div className="h-full rounded-full bg-[var(--color-cyan)]" style={{ width: `${Math.min(100, (s.amount / Math.max(...scoreDist.map((d) => d.amount))) * 100)}%` }} />
+                      <motion.div
+                        className="h-full rounded-full bg-[var(--color-cyan)]"
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${Math.min(100, (s.amount / Math.max(...scoreDist.map((d) => d.amount))) * 100)}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                      />
                     </div>
                     <span className="w-8 text-right font-mono text-[var(--color-mute)]">{s.amount}</span>
                   </div>
@@ -529,6 +553,20 @@ export default function LightNovelDetailsPage() {
         </aside>
       </div>
     </div></ErrorBoundary></PageTransition>
+  );
+}
+
+function Reveal({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <motion.section
+      className={className}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.section>
   );
 }
 

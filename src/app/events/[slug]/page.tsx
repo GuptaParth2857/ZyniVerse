@@ -22,6 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${event.name} — Anime Events`,
     description: `${event.name} at ${event.location}. ${event.startDate} — ${event.endDate}. ${event.description.slice(0, 160)}`,
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
       title: `${event.name} — Anime Events`,
       description: event.description.slice(0, 160),
       url: `${baseUrl}/events/${slug}`,

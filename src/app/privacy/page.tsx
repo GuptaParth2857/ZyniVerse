@@ -5,7 +5,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "ZyniVerse privacy policy. Learn how we collect, use, and protect your data on India's #1 free anime platform.",
+  description: "ZyniVerse privacy policy. Learn how we collect, use, and protect your data on ZyniVerse, a free anime platform.",
   alternates: { canonical: `${BASE_URL}/privacy` },
   robots: { index: true, follow: true },
 };

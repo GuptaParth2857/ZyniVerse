@@ -106,7 +106,7 @@ const FEATURES = [
   {
     icon: "💬",
     title: "Community",
-    desc: "Clubs, watch parties, cosplay gallery, polls and more — built for Indian anime fans.",
+    desc: "Clubs, watch parties, cosplay gallery, polls and more — built for anime fans.",
     href: "/community",
   },
 ];
@@ -142,7 +142,7 @@ export default function AboutClient() {
           transition={{ duration: 0.6, delay: 0.12 }}
           className="mt-5 max-w-2xl text-lg text-[var(--color-mute)]"
         >
-          The all-in-one anime platform for Indian anime fans — filler guides, watch orders,
+          The all-in-one anime platform for fans worldwide — filler guides, watch orders,
           Indian dubs, AI recommendations, manga, cosplay and a thriving community.
         </motion.p>
 

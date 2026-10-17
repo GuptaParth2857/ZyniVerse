@@ -8,7 +8,11 @@ interface CacheEntry {
 }
 
 let fillerCache: CacheEntry | null = null;
-const CACHE_TTL = 3600 * 1000;
+// Matches the 24h `next: { revalidate }` below. Every cold instance pays one
+// 3.3MB GitHub download (Next's data cache refuses entries over 2MB), so a
+// longer in-memory TTL directly cuts repeated 3.3MB fetches per instance.
+// AniFiller publishes weekly, so 24h staleness is harmless.
+const CACHE_TTL = 24 * 3600 * 1000;
 
 // Serve the last good copy even past the TTL. This file is a single 3.2MB
 // GitHub download, so a transient failure would otherwise blank every filler

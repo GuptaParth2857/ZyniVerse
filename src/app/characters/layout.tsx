@@ -6,6 +6,7 @@ export const metadata: Metadata = {
     "Explore 10,000+ anime characters. Voice actor details, appearances, favorites count & rankings. Find your waifu or husbando.",
   keywords: ["anime characters", "anime voice actors", "anime character database", "best anime characters", "anime rankings", "waifu list"],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Characters Database — Voice Actors, Rankings & Stats",
     description: "Explore 10,000+ anime characters. Voice actor details, appearances & rankings.",
     url: "https://zyverse.in/characters",

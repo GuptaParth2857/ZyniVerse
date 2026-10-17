@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   description:
     "Track anime events worldwide — Anime Expo, AnimeJapan, Jump Festa, Comic Market, Anime NYC and more. See all announcements, trailers, reveals, and key visuals from major anime events.",
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Events & Announcements",
     description:
       "Track anime events worldwide and see all announcements, trailers, and reveals.",

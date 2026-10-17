@@ -2,14 +2,30 @@
 
 import { useState } from "react";
 
-export default function ShareButton({ mediaId, title, episode }: { mediaId: number; title: string; episode?: number }) {
+export default function ShareButton({
+  mediaId,
+  title,
+  episode,
+  href,
+  kind = "anime",
+}: {
+  mediaId: number;
+  title: string;
+  episode?: number;
+  href?: string;
+  kind?: "anime" | "manga" | "novel";
+}) {
   const [copied, setCopied] = useState(false);
 
   const text = episode
     ? `I just watched episode ${episode} of ${title} on ZyniVerse! 📺`
-    : `I'm watching ${title} on ZyniVerse! 📺`;
+    : kind === "anime"
+      ? `I'm watching ${title} on ZyniVerse! 📺`
+      : kind === "novel"
+        ? `I'm reading ${title} on ZyniVerse! 📖`
+        : `I'm reading ${title} on ZyniVerse! 📚`;
 
-  const shareUrl = `https://zyverse.in/anime/${mediaId}`;
+  const shareUrl = href ?? `https://zyverse.in/anime/${mediaId}`;
 
   const copy = async () => {
     await navigator.clipboard.writeText(`${text}\n${shareUrl}`);

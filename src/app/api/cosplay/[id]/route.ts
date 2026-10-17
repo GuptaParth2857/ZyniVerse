@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiLimiter } from "@/lib/rate-limiter";
+import { invalidateCached } from "@/lib/wiki-cache";
 
 export async function GET(
   req: NextRequest,
@@ -58,6 +59,8 @@ export async function PUT(
     },
   });
 
+  invalidateCached("cosplay:");
+
   return NextResponse.json({ cosplay: updated });
 }
 
@@ -83,5 +86,6 @@ export async function DELETE(
   }
 
   await prisma.cosplay.delete({ where: { id } });
+  invalidateCached("cosplay:");
   return NextResponse.json({ success: true });
 }

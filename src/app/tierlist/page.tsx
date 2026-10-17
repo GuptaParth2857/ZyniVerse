@@ -7,6 +7,7 @@ export const metadata = {
   description:
     "Create and share anime tier lists. Rank your favorite series, compare with friends, and discover what others think.",
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Tier Lists — Rank Your Favorites",
     description:
       "Create and share anime tier lists. Rank your favorite series, compare with friends, and discover what others think.",

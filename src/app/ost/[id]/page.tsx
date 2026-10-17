@@ -23,6 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${ost.title} — ${ost.artist} Music`,
     description: `${ost.title} by ${ost.artist} from ${ost.animeTitle}. ${ost.type} — ${ost.year}.`,
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
       title: `${ost.title} — ${ost.artist}`,
       description: `${ost.type} from ${ost.animeTitle} (${ost.year})`,
     },

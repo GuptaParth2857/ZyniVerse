@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "myanimelist alternative", "anime watchlist site",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Best Anime Sites 2026 — Free Anime Tracker & Filler Lists",
     description: "ZyniVerse: free filler guides for 200+ anime, Hindi/Tamil/Telugu dub tracking, AI recommendations & community.",
     url: `${BASE_URL}/best-anime-sites`,
@@ -33,7 +34,7 @@ const sites = [
   {
     name: "ZyniVerse",
     url: BASE_URL,
-    description: "India's #1 free anime platform. Filler guides for 200+ anime, Hindi/Tamil/Telugu dub tracking, AI recommendations, watchlist, manga reader, cosplay gallery & community.",
+    description: "Free anime platform for fans worldwide. Filler guides for 200+ anime, Hindi/Tamil/Telugu dub tracking, AI recommendations, watchlist, manga reader, cosplay gallery & community.",
     features: ["Filler Guides", "Hindi/Tamil/Telugu Dubs", "AI Recommendations", "Watch Tracker", "Manga Reader", "Community Forums", "Watch Parties"],
     rating: "4.9",
     color: "#d946ef",
@@ -130,22 +131,27 @@ export default function BestAnimeSitesPage() {
         <h2 className="font-display text-2xl font-bold sm:text-3xl">Why ZyniVerse is the Best Free Anime Site</h2>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            { emoji: "🎯", title: "200+ Filler Guides", desc: "Skip filler in Naruto, One Piece, Bleach & more with our detailed episode guides." },
-            { emoji: "🇮🇳", title: "Hindi/Tamil/Telugu Dubs", desc: "Track Indian dubbed anime across all major languages. Get alerts for new episodes." },
-            { emoji: "🤖", title: "AI Recommendations", desc: "Get personalized anime suggestions based on your taste and watch history." },
-            { emoji: "📋", title: "Free Watch Tracker", desc: "Track your anime progress across devices. Never lose your place." },
-            { emoji: "📖", title: "Manga Reader", desc: "Read manga directly on ZyniVerse. Large library with regular updates." },
-            { emoji: "💬", title: "Community", desc: "Join forums, discussions, challenges & connect with Indian anime fans." },
+            { emoji: "🎯", title: "200+ Filler Guides", desc: "Skip filler in Naruto, One Piece, Bleach & more with our detailed episode guides.", href: "/filler" },
+            { emoji: "🇮🇳", title: "Hindi/Tamil/Telugu Dubs", desc: "Track Indian dubbed anime across all major languages. Get alerts for new episodes.", href: "/indian-dubs" },
+            { emoji: "🤖", title: "AI Recommendations", desc: "Get personalized anime suggestions based on your taste and watch history.", href: "/recommendations" },
+            { emoji: "📋", title: "Free Watch Tracker", desc: "Track your anime progress across devices. Never lose your place.", href: "/discover" },
+            { emoji: "📖", title: "Manga Reader", desc: "Read manga directly on ZyniVerse. Large library with regular updates.", href: "/manga" },
+            { emoji: "💬", title: "Community", desc: "Join forums, discussions, challenges & connect with anime fans.", href: "/forum" },
           ].map((f) => (
-            <div key={f.title} className="rounded-xl neon-rgb-border bg-black/30 p-5">
+            <Link
+              key={f.title}
+              href={f.href}
+              className="group rounded-xl neon-rgb-border bg-black/30 p-5 transition-colors hover:border-[var(--color-cyan)]/60"
+            >
               <span className="text-2xl block mb-2">{f.emoji}</span>
-              <h3 className="font-display text-sm font-bold">{f.title}</h3>
+              <h3 className="font-display text-sm font-bold transition-colors group-hover:text-[var(--color-cyan)]">{f.title}</h3>
               <p className="mt-1 text-xs text-[var(--color-mute)] leading-relaxed">{f.desc}</p>
-            </div>
+              <span className="mt-3 inline-block text-xs font-semibold text-[var(--color-cyan)]">Explore →</span>
+            </Link>
           ))}
         </div>
         <div className="mt-8 text-center">
-          <Link href="/search" className="inline-flex rounded-full bg-[var(--color-magenta)] px-8 py-3 text-sm font-bold text-black hover:opacity-90 transition-opacity">
+          <Link href="/filler" className="inline-flex rounded-full bg-[var(--color-magenta)] px-8 py-3 text-sm font-bold text-black hover:opacity-90 transition-opacity">
             Start Using ZyniVerse Free →
           </Link>
         </div>
@@ -157,7 +163,7 @@ export default function BestAnimeSitesPage() {
           {[
             { q: "Is ZyniVerse really free?", a: "Yes! ZyniVerse is 100% free. No premium subscription required. All features including filler guides, watch tracking, AI recommendations, and community access are completely free." },
             { q: "What makes ZyniVerse better than other anime sites?", a: "ZyniVerse is the only anime site that combines filler guides, Indian dub tracking (Hindi/Tamil/Telugu), AI recommendations, manga reading, and community features — all in one platform and completely free." },
-            { q: "Does ZyniVerse work in India?", a: "Yes! ZyniVerse is built specifically for Indian anime fans. We track Hindi, Tamil, and Telugu dubs, Indian TV schedules, and local anime conventions." },
+            { q: "Does ZyniVerse work in India?", a: "Yes! ZyniVerse works worldwide and has India-specific features too: Hindi, Tamil and Telugu dub tracking, Indian TV schedules, and local anime conventions." },
             { q: "How often is the filler list updated?", a: "Our filler guides are updated weekly. We track every episode of 200+ anime and mark them as canon, filler, or mixed." },
           ].map((faq) => (
             <details key={faq.q} className="group rounded-xl neon-rgb-border bg-[var(--color-panel)] p-5">
@@ -168,6 +174,30 @@ export default function BestAnimeSitesPage() {
               <p className="mt-3 text-sm text-[var(--color-mute)] leading-relaxed">{faq.a}</p>
             </details>
           ))}
+        </div>
+      </section>
+
+      <section className="mt-16 rounded-2xl neon-rgb-border bg-[var(--color-panel)]/40 p-6 sm:p-8">
+        <h2 className="font-display text-lg font-bold">More ZyniVerse Guides</h2>
+        <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+          <Link href="/filler" className="text-[var(--color-mute)] underline decoration-[var(--color-line)] underline-offset-4 transition-colors hover:text-[var(--color-cyan)]">
+            Anime filler guides
+          </Link>
+          <Link href="/watch-order" className="text-[var(--color-mute)] underline decoration-[var(--color-line)] underline-offset-4 transition-colors hover:text-[var(--color-cyan)]">
+            Anime watch orders
+          </Link>
+          <Link href="/indian-dubs" className="text-[var(--color-mute)] underline decoration-[var(--color-line)] underline-offset-4 transition-colors hover:text-[var(--color-cyan)]">
+            Hindi, Tamil &amp; Telugu dub guides
+          </Link>
+          <Link href="/manga" className="text-[var(--color-mute)] underline decoration-[var(--color-line)] underline-offset-4 transition-colors hover:text-[var(--color-cyan)]">
+            Read manga
+          </Link>
+          <Link href="/toons" className="text-[var(--color-mute)] underline decoration-[var(--color-line)] underline-offset-4 transition-colors hover:text-[var(--color-cyan)]">
+            Indian &amp; international cartoons
+          </Link>
+          <Link href="/alternatives" className="text-[var(--color-mute)] underline decoration-[var(--color-line)] underline-offset-4 transition-colors hover:text-[var(--color-cyan)]">
+            Shut-down anime site alternatives
+          </Link>
         </div>
       </section>
     </div>

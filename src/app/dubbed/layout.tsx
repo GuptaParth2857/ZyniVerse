@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "hindi anime episodes", "sony yay hungama cartoon network anime",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Hindi, Tamil & Telugu Dubbed Anime",
     description: "Track every Hindi, Tamil, and Telugu dubbed anime. Complete list with episode schedules and release dates.",
     url: `${BASE_URL}/dubbed`,

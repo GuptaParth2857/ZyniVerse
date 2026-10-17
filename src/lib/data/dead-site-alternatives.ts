@@ -345,7 +345,7 @@ export const ALTERNATIVE_SITES: AlternativeSite[] = [
     name: "ZyniVerse",
     url: ZYNIVERSE_URL,
     description:
-      "India's #1 free anime platform. Filler guides for 200+ anime, Hindi/Tamil/Telugu dub tracking, AI recommendations, watch tracker, manga reader, and an active community — all free.",
+      "Free anime platform for fans worldwide. Filler guides for 200+ anime, Hindi/Tamil/Telugu dub tracking, AI recommendations, watch tracker, manga reader, and an active community — all free.",
     features: ["Filler Guides", "Hindi/Tamil/Telugu Dubs", "AI Recommendations", "Watch Tracker", "Manga Reader", "Community"],
     rating: "4.9",
     color: "#d946ef",

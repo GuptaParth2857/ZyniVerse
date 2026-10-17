@@ -1125,6 +1125,12 @@ body {
   background-clip: text;
 }
 
+/* Living gradient: cycles the brand gradient across text (e.g. page titles) */
+.gradient-text-cycle {
+  background-size: 200% 200%;
+  animation: gradientMove 6s ease-in-out infinite;
+}
+
 /* Shimmer loading effect */
 @keyframes shimmer {
   0% {
@@ -1630,6 +1636,7 @@ body {
   .particle-dot,
   .neon-glow-text,
   .animate-ripple,
+  .gradient-text-cycle,
   .on-air-ticker::before,
   .on-air-ticker::after {
     animation: none !important;

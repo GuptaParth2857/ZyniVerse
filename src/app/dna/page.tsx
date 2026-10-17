@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "My Anime DNA",
-  description: "Apna Anime DNA dekho — watchlist, genres aur streaks se bana visual taste profile. Share karo, compare karo.",
+  description: "See your Anime DNA — a visual taste profile built from your watchlist, genres and streaks. Share it and compare with friends.",
   robots: { index: false, follow: true },
 };
 

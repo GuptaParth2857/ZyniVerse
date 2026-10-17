@@ -18,6 +18,7 @@ export const metadata: Metadata = {
     "hindi dub release date", "dubbed anime schedule india", "indian anime schedule", "hindi anime this week",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Hindi Dub Anime Schedule This Week",
     description: "Live Hindi, Tamil & Telugu dub uploads from the official Indian anime YouTube channels.",
     url: `${BASE_URL}/hindi-dub-schedule`,

@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Anime OST Database — Soundtracks & Music",
   description: "Browse a curated database of anime opening themes, ending themes, and soundtracks. Find your favorite anime songs and artists.",
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime OST Database — Soundtracks & Music",
     description: "Browse a curated database of anime opening themes, ending themes, and soundtracks.",
   },

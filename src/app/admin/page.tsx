@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import RevealLabel from "@/components/RevealLabel";
+import { FadeIn } from "@/components/PageTransition";
 
 interface OverviewData {
   totalUsers: number;
@@ -195,24 +197,34 @@ export default function AdminOverviewPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  // null = no failure yet · "denied" = not an admin · "failed" = network/5xx
+  const [failed, setFailed] = useState<null | "denied" | "failed">(null);
 
   const load = useCallback(async () => {
-    const res = await fetch("/api/admin/overview");
-    if (res.ok) {
-      setData(await res.json());
-      setLastUpdated(new Date());
+    // Live dashboard: never let a cached snapshot stand in for fresh numbers.
+    try {
+      const res = await fetch("/api/admin/overview", { cache: "no-store" });
+      if (res.status === 401 || res.status === 403) {
+        setFailed("denied");
+      } else if (!res.ok) {
+        setFailed("failed");
+      } else {
+        setData(await res.json());
+        setLastUpdated(new Date());
+        setFailed(null);
+      }
+    } catch {
+      setFailed("failed");
     }
     setLoading(false);
     setRefreshing(false);
   }, []);
 
   useEffect(() => {
-    const id = setTimeout(() => load(), 0);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    load();
     const interval = setInterval(() => { if (!document.hidden) load(); }, 120000);
-    return () => {
-      clearTimeout(id);
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, [load]);
 
   const refresh = () => {
@@ -237,15 +249,31 @@ export default function AdminOverviewPage() {
   }
 
   if (!data) {
+    const denied = failed === "denied";
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <div className="text-4xl mb-3">🔒</div>
-          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-          <p className="text-[var(--color-mute)] text-sm">Admin access required.</p>
-          <Link href="/" className="inline-block mt-4 text-sm text-[var(--color-cyan)] hover:underline">
-            Back to site
-          </Link>
+          <div className="text-4xl mb-3">{denied ? "🔒" : "⚠️"}</div>
+          <h1 className="text-2xl font-bold mb-2">
+            {denied ? "Access Denied" : "Couldn't load the dashboard"}
+          </h1>
+          <p className="text-[var(--color-mute)] text-sm">
+            {denied
+              ? "Admin access required."
+              : "The request failed — check your connection and try again."}
+          </p>
+          {denied ? (
+            <Link href="/" className="inline-block mt-4 text-sm text-[var(--color-cyan)] hover:underline">
+              Back to site
+            </Link>
+          ) : (
+            <button
+              onClick={refresh}
+              className="mt-4 rounded-full neon-rgb-border bg-[var(--color-void)]/60 px-5 py-2 text-sm text-[var(--color-cyan)] transition-colors"
+            >
+              Retry
+            </button>
+          )}
         </div>
       </div>
     );
@@ -254,9 +282,13 @@ export default function AdminOverviewPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <section className="mb-8">
-        <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-magenta)]/40 bg-[var(--color-magenta)]/10 px-3 py-1 font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)] shadow-[0_0_16px_rgba(255,64,146,0.25)]">
+        <RevealLabel
+          className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-magenta)]/40 bg-[var(--color-magenta)]/10 px-3 py-1 font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-magenta)] shadow-[0_0_16px_rgba(255,64,146,0.25)]"
+          spacing="0.2em"
+          fromSpacing="0.4em"
+        >
           ✦ Admin Overview
-        </p>
+        </RevealLabel>
         <div className="neon-rgb-border inline-block rounded-2xl px-5 py-3">
           <h1 className="bg-gradient-to-r from-[var(--color-cyan)] via-white to-[var(--color-magenta)] bg-clip-text font-display text-3xl font-bold text-transparent sm:text-4xl">
             Command Center
@@ -287,22 +319,22 @@ export default function AdminOverviewPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+      <FadeIn className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         <KpiCard icon="👥" label="Total Users" value={data.totalUsers} color="var(--color-cyan)" sub={`+${data.todayUsers} today`} />
         <KpiCard icon="👁️" label="Live Now" value={data.liveVisitors} color="#4ade80" sub="last 90s" />
         <KpiCard icon="📄" label="Views Today" value={data.todayPageViews} color="var(--color-violet)" sub="page views" />
         <KpiCard icon="🔌" label="Sessions Today" value={data.todaySessions} color="var(--color-amber)" sub="started today" />
         <KpiCard icon="💬" label="Pending Feedback" value={data.pendingFeedback} color="#f59e0b" sub="needs review" />
         <KpiCard icon="📊" label="Total Views" value={data.totalPageViews} color="#ff2d78" sub="all time" />
-      </div>
+      </FadeIn>
 
-      <div className="mt-8">
+      <FadeIn className="mt-8">
         <BarChart
           title="New Signups · Last 7 Days"
           accent="var(--color-cyan)"
           data={data.weeklySignups}
         />
-      </div>
+      </FadeIn>
 
       <div className="mt-10">
         <div className="mb-4 flex items-center gap-3">

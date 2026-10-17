@@ -47,6 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       "anime kis order me dekhe", "anime ka sahi order", "anime serial order hindi", "one piece watch order hindi", "naruto watch order hindi",
     ],
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
       title: `${animeName} Watch Order`,
       description: order.description,
       url: `${BASE_URL}/watch-order/${id}`,

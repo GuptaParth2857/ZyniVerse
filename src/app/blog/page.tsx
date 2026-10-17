@@ -3,11 +3,12 @@ import BlogPageClient from "@/components/BlogPageClient";
 
 export const metadata: Metadata = {
   title: "Anime Blog — Reviews, News & Fan Stories",
-  description: "Read anime reviews, news, seasonal previews & fan stories. Write your own blog and share with India's anime community.",
+  description: "Read anime reviews, news, seasonal previews & fan stories. Write your own blog and share with the anime community.",
   keywords: ["anime blog", "anime reviews", "anime news", "seasonal anime", "anime opinions", "indian anime blog"],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Blog — Reviews, News & Fan Stories",
-    description: "Read anime reviews, news, seasonal previews & fan stories. Join India's anime community.",
+    description: "Read anime reviews, news, seasonal previews & fan stories. Join the anime community on ZyniVerse.",
     url: "https://zyverse.in/blog",
     type: "website",
   },

@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   keywords: ["anime fan theories", "theory votes", "ZyniVerse community", "predictions leaderboard"],
   alternates: { canonical: `${BASE_URL}/theories` },
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Top Fan Theories by Community Votes",
     description: "Community-ranked anime fan theories from the Zyni AI Lab — vote on predictions, see the leaderboard.",
   },

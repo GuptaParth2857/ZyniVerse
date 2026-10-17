@@ -33,6 +33,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       "ZyniVerse Posts — collaboration posters, creator spotlights, anime news cards and community threads & critiques in one main feed.",
     alternates: { canonical: `${BASE_URL}/posts` },
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
       title: `${baseTitle}`,
       description: "Posters, creator spotlights, news cards and community posts.",
       url: `${BASE_URL}/posts`,

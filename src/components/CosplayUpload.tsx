@@ -96,6 +96,76 @@ function NeonBorder({ children, highlighted = false }: { children: React.ReactNo
   );
 }
 
+const DRAFT_KEY = "zyniverse_cosplay_draft";
+
+/**
+ * Downscale + re-encode a picked image in the browser (max 1600px, WebP) so we
+ * don't push multi-MB originals over the network — the server re-encodes again.
+ * GIFs (possible animation) and anything we can't decode are returned as-is.
+ */
+async function downscaleImage(file: File): Promise<File> {
+  try {
+    if (file.type === "image/gif" || !file.type.startsWith("image/")) return file;
+    if (typeof createImageBitmap !== "function") return file;
+    const bitmap = await createImageBitmap(file);
+    const MAX = 1600;
+    const { width, height } = bitmap;
+    if (width <= MAX && height <= MAX && file.size <= 900 * 1024) {
+      bitmap.close?.();
+      return file;
+    }
+    const scale = Math.min(1, MAX / Math.max(width, height));
+    const w = Math.max(1, Math.round(width * scale));
+    const h = Math.max(1, Math.round(height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      bitmap.close?.();
+      return file;
+    }
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close?.();
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob((b) => resolve(b), "image/webp", 0.82));
+    if (!blob || blob.size >= file.size) return file;
+    const name = file.name.replace(/\.[^.]+$/, "") || "cosplay";
+    return new File([blob], `${name}.webp`, { type: "image/webp" });
+  } catch {
+    return file;
+  }
+}
+
+/** Preview that shows a placeholder instead of a broken image, and recovers
+ *  when the source changes (remounted via `key`). */
+function PreviewImage({ src, alt }: { src: string; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="relative aspect-video max-h-56">
+      {failed ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center" style={{ background: "rgba(0,0,0,0.4)" }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--color-mute)]">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
+          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Image couldn&apos;t be loaded</p>
+        </div>
+      ) : (
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes="640px"
+          className="object-contain"
+          style={{ background: "rgba(0,0,0,0.4)" }}
+          onError={() => setFailed(true)}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function CosplayUpload({ initialData, onUpdate }: {
   initialData?: {
     id: string;
@@ -137,6 +207,7 @@ export default function CosplayUpload({ initialData, onUpdate }: {
   const [imageMode, setImageMode] = useState<"url" | "upload">(initialData?.imageUrl ? "url" : "upload");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [draftRestored, setDraftRestored] = useState(false);
 
   const animeRef = useRef<HTMLDivElement>(null);
   const charRef = useRef<HTMLDivElement>(null);
@@ -144,6 +215,7 @@ export default function CosplayUpload({ initialData, onUpdate }: {
   const animeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const charTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasContentRef = useRef(false);
 
   useEffect(() => {
     fetch("/api/cosplay/tags")
@@ -161,6 +233,66 @@ export default function CosplayUpload({ initialData, onUpdate }: {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Track whether there's unsaved content so we can warn before leaving.
+  useEffect(() => {
+    hasContentRef.current = !isEdit && !success && Object.values(form).some((v) => v.trim().length > 0);
+  });
+
+  // Restore an in-progress draft (create flow only).
+  useEffect(() => {
+    if (isEdit) return;
+    let raw: string | null = null;
+    try { raw = localStorage.getItem(DRAFT_KEY); } catch { return; }
+    if (!raw) return;
+    try {
+      const d = JSON.parse(raw);
+      if (!d || typeof d !== "object") return;
+      const hasContent = ["title", "character", "animeTitle", "description", "tags", "imageUrl"].some(
+        (k) => typeof d[k] === "string" && d[k].trim().length > 0
+      );
+      if (!hasContent) return;
+      /* eslint-disable react-hooks/set-state-in-effect */
+      setForm({
+        title: d.title || "",
+        character: d.character || "",
+        animeTitle: d.animeTitle || "",
+        imageUrl: d.imageUrl || "",
+        description: d.description || "",
+        tags: d.tags || "",
+      });
+      setAnimeId(typeof d.animeId === "number" ? d.animeId : null);
+      setDraftRestored(true);
+      /* eslint-enable react-hooks/set-state-in-effect */
+    } catch {
+      // malformed draft — ignore
+    }
+  }, [isEdit]);
+
+  // Persist the draft as the user types (debounced).
+  useEffect(() => {
+    if (isEdit || success) return;
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...form, animeId }));
+      } catch {
+        // storage full / unavailable — ignore
+      }
+    }, 600);
+    return () => clearTimeout(t);
+  }, [isEdit, success, form, animeId]);
+
+  // Warn before closing the tab with unsaved work.
+  useEffect(() => {
+    if (isEdit) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!hasContentRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isEdit]);
 
   const fetchAnime = useCallback((q: string) => {
     clearTimeout(animeTimer.current);
@@ -232,11 +364,27 @@ export default function CosplayUpload({ initialData, onUpdate }: {
     setShowTagDropdown(false);
   }
 
-  async function handleFileUpload(file: File) {
-    if (file.size > 5 * 1024 * 1024) {
-      setError("File too large. Max 5MB allowed.");
-      return;
-    }
+  function removeTag(tag: string) {
+    const parts = form.tags.split(",").map((s) => s.trim()).filter(Boolean).filter((t) => t !== tag);
+    setForm((prev) => ({ ...prev, tags: parts.join(", ") }));
+  }
+
+  function commitTag() {
+    const parts = form.tags.split(",").map((s) => s.trim()).filter(Boolean);
+    if (parts.length === 0) return;
+    setForm((prev) => ({ ...prev, tags: parts.join(", ") + ", " }));
+    setTagSuggestions([]);
+    setShowTagDropdown(false);
+  }
+
+  function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+    setForm({ title: "", character: "", animeTitle: "", imageUrl: "", description: "", tags: "" });
+    setAnimeId(null);
+    setDraftRestored(false);
+  }
+
+  const handleFileUpload = useCallback(async (file: File) => {
     if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
       setError("Invalid file type. Use JPG, PNG, WebP, or GIF.");
       return;
@@ -247,8 +395,15 @@ export default function CosplayUpload({ initialData, onUpdate }: {
     setError(null);
 
     try {
+      // Shrink in the browser first so we don't upload a multi-MB original.
+      const optimized = await downscaleImage(file);
+      if (optimized.size > 5 * 1024 * 1024) {
+        setError("File too large. Max 5MB allowed.");
+        return;
+      }
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", optimized);
 
       const xhr = new XMLHttpRequest();
       const url = await new Promise<string>((resolve, reject) => {
@@ -278,7 +433,23 @@ export default function CosplayUpload({ initialData, onUpdate }: {
     } finally {
       setUploading(false);
     }
-  }
+  }, []);
+
+  // Paste an image straight from the clipboard (screenshots, copied covers).
+  useEffect(() => {
+    function onPaste(e: ClipboardEvent) {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      const imageItem = Array.from(items).find((i) => i.type.startsWith("image/"));
+      if (!imageItem) return;
+      const file = imageItem.getAsFile();
+      if (!file) return;
+      setImageMode("upload");
+      void handleFileUpload(file);
+    }
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [handleFileUpload]);
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -309,6 +480,8 @@ export default function CosplayUpload({ initialData, onUpdate }: {
       if (isEdit) {
         onUpdate?.();
       } else {
+        try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+        setDraftRestored(false);
         setSuccess(true);
         setTimeout(() => router.push(`/cosplay/${data.cosplay.id}`), 1500);
       }
@@ -318,6 +491,8 @@ export default function CosplayUpload({ initialData, onUpdate }: {
       setSubmitting(false);
     }
   }
+
+  const tagChips = form.tags.split(",").map((s) => s.trim()).filter(Boolean);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -331,7 +506,7 @@ export default function CosplayUpload({ initialData, onUpdate }: {
       <NeonOrbs />
       <Particles />
 
-      <div className="relative z-10 mx-auto max-w-2xl px-4 py-12 sm:px-6">
+      <div className="relative z-10 mx-auto max-w-5xl px-4 py-12 sm:px-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -349,6 +524,30 @@ export default function CosplayUpload({ initialData, onUpdate }: {
             {isEdit ? "Update your cosplay details" : "Share your amazing cosplay with the community"}
           </p>
         </motion.div>
+
+        {draftRestored && !success && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-[var(--color-cyan)]/20 bg-[var(--color-cyan)]/5 px-4 py-3"
+          >
+            <p className="flex items-center gap-2 text-xs text-[var(--color-cyan)]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M23 4v6h-6" />
+                <path d="M1 20v-6h6" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              Restored your unsaved draft.
+            </p>
+            <button
+              type="button"
+              onClick={clearDraft}
+              className="shrink-0 rounded-lg border border-[var(--color-line)] px-3 py-1.5 text-[11px] font-semibold text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors"
+            >
+              Discard
+            </button>
+          </motion.div>
+        )}
 
         <AnimatePresence mode="wait">
           {success ? (
@@ -378,11 +577,12 @@ export default function CosplayUpload({ initialData, onUpdate }: {
               exit={{ opacity: 0 }}
               transition={{ delay: 0.2 }}
             >
+              <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
               <NeonBorder>
                 <form onSubmit={handleSubmit} className="neon-rgb-border rounded-[24px] p-8 space-y-5">
                   {/* Title */}
                   <div>
-                    <label className="block font-mono text-[10px] uppercase tracking-[0.15em] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>Title *</label>
+                    <label htmlFor="cosplay-title" className="block font-mono text-[10px] uppercase tracking-[0.15em] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>Title *</label>
                     <div className="rgb-border">
                       <div className="flex items-center rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/90 backdrop-blur-sm overflow-hidden transition-all duration-300">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
@@ -391,6 +591,7 @@ export default function CosplayUpload({ initialData, onUpdate }: {
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                         </svg>
                         <input
+                          id="cosplay-title"
                           name="title"
                           value={form.title}
                           onChange={handleChange}
@@ -559,13 +760,8 @@ export default function CosplayUpload({ initialData, onUpdate }: {
                             </div>
                           ) : (
                             <div className="relative rounded-[16px] overflow-hidden" style={{ border: "1px solid rgba(0,255,224,0.15)" }}>
-                              <div className="relative aspect-video max-h-56">
-                                <Image src={form.imageUrl} alt="Preview"
-                                  fill sizes="640px"
-                                  className="object-contain" style={{ background: "rgba(0,0,0,0.4)" }}
-                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                              </div>
+                              <PreviewImage key={form.imageUrl} src={form.imageUrl} alt="Preview" />
+                              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                               <div className="absolute bottom-0 inset-x-0 p-3 flex items-center justify-between">
                                 <span className="text-[10px] font-mono truncate max-w-[70%]" style={{ color: "rgba(255,255,255,0.4)" }}>{form.imageUrl}</span>
                                 <div className="flex gap-2">
@@ -607,12 +803,7 @@ export default function CosplayUpload({ initialData, onUpdate }: {
                           </div>
                           {form.imageUrl && (
                             <div className="relative rounded-[16px] overflow-hidden" style={{ border: "1px solid rgba(0,255,224,0.1)" }}>
-                              <div className="relative aspect-video max-h-48">
-                                <Image src={form.imageUrl} alt="Preview"
-                                  fill sizes="640px"
-                                  className="object-contain" style={{ background: "rgba(0,0,0,0.4)" }}
-                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                              </div>
+                              <PreviewImage key={form.imageUrl} src={form.imageUrl} alt="Preview" />
                             </div>
                           )}
                         </motion.div>
@@ -652,6 +843,13 @@ export default function CosplayUpload({ initialData, onUpdate }: {
                               setShowTagDropdown(filtered.length > 0);
                             }
                           }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === "Tab") {
+                              if (showTagDropdown && tagSuggestions.length > 0) return;
+                              e.preventDefault();
+                              commitTag();
+                            }
+                          }}
                           placeholder="handmade, convention, 2024"
                           className="w-full bg-transparent py-3 pl-3 pr-4 text-sm text-white placeholder-[var(--color-mute)]/50 outline-none" />
                       </div>
@@ -662,6 +860,25 @@ export default function CosplayUpload({ initialData, onUpdate }: {
                           <button key={tag} type="button" onClick={() => selectTag(tag)}
                             className="w-full px-3 py-2 text-left text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
                             <span className="glass-tag text-[10px]">{tag}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {tagChips.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {tagChips.map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => removeTag(tag)}
+                            aria-label={`Remove tag ${tag}`}
+                            className="glass-tag transition-colors hover:text-red-400 hover:ring-red-500/30"
+                          >
+                            {tag}
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="opacity-60">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
                           </button>
                         ))}
                       </div>
@@ -704,6 +921,57 @@ export default function CosplayUpload({ initialData, onUpdate }: {
                   </button>
                 </form>
               </NeonBorder>
+
+                <aside className="hidden lg:block">
+                  <div className="sticky top-8 space-y-3">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      Live Preview
+                    </p>
+                    <div className="neon-rgb-border overflow-hidden rounded-2xl bg-[var(--color-panel)]/60">
+                      <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-void)]">
+                        {form.imageUrl ? (
+                          <Image src={form.imageUrl} alt="" fill sizes="300px" className="object-cover" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-[var(--color-mute)]/40">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                              <circle cx="8.5" cy="8.5" r="1.5" />
+                              <polyline points="21 15 16 10 5 21" />
+                            </svg>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                        <div className="absolute inset-x-0 top-0 p-2.5">
+                          <span className="glass-badge text-[var(--color-cyan)]">COSPLAY</span>
+                        </div>
+                        <div className="absolute inset-x-0 bottom-0 space-y-1 p-3">
+                          <h3 className="font-display text-sm font-bold leading-tight text-white line-clamp-2">
+                            {form.character || "Character"}
+                          </h3>
+                          <p className="truncate text-[11px] text-white/60">{form.animeTitle || "Anime"}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 p-3">
+                        {tagChips.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {tagChips.slice(0, 3).map((t) => (
+                              <span key={t} className="rounded-full bg-[var(--color-cyan)]/10 px-1.5 py-0.5 text-[8px] font-medium text-[var(--color-cyan)] ring-1 ring-[var(--color-cyan)]/15">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <p className="line-clamp-2 text-xs font-semibold text-[var(--color-ink)]">
+                          {form.title || "Your cosplay title"}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      Roughly how your post will appear in the gallery.
+                    </p>
+                  </div>
+                </aside>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

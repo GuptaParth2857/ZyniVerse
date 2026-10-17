@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://zyverse.in/bingo" },
   robots: { index: true, follow: true },
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Anime Bingo Cards",
     description: "Generate seasonal anime bingo cards and track your watching habits.",
     url: "https://zyverse.in/bingo",

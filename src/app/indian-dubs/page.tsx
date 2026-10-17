@@ -30,6 +30,7 @@ export const metadata: Metadata = {
     "doraemon hindi", "shin chan hindi", "pokemon in hindi", "solo leveling hindi dub",
   ],
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ZyniVerse — anime filler guides, watch orders and dub tracking" }],
     title: "Hindi, Tamil & Telugu Dubbed Anime — Indian Dub Meter",
     description: "India's live dub meter: IST schedules, weekly countdowns and where to watch every Indian anime dub.",
     url: `${BASE_URL}/indian-dubs`,
