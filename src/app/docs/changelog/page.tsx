@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "API Changelog — ZyniVerse API Updates",
   description: "View the complete changelog for the ZyniVerse Public API. Track versions, features, fixes, and breaking changes.",
+  alternates: { canonical: "https://zyverse.in/docs/changelog" },
 };
 
 const CHANGELOG = [

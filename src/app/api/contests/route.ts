@@ -4,13 +4,72 @@ import { getCurrentContests } from "@/lib/contests";
 import { finalizeContests } from "@/lib/contests-finalize";
 import { NextRequest, NextResponse } from "next/server";
 
+// Anonymous viewers get a shared-cacheable payload (no vote state in it), so
+// repeat visits to /contests are served by the CDN instead of re-running the
+// weekly upserts + entry query against a remote pooler. `Vary: Cookie` keeps a
+// cached anonymous body from ever being served to someone with a session.
+const ANON_CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+  Vary: "Cookie",
+};
+
+// finalizeContests() is housekeeping, not part of rendering a page. Cron and the
+// admin endpoint still finalize immediately; this guard just stops every page
+// view from paying for the expired-contest scan.
+let lastFinalizeSweep = 0;
+const FINALIZE_SWEEP_INTERVAL = 5 * 60 * 1000;
+
+async function sweepFinalize() {
+  const now = Date.now();
+  if (now - lastFinalizeSweep < FINALIZE_SWEEP_INTERVAL) return;
+  lastFinalizeSweep = now;
+  await finalizeContests();
+}
+
 export async function GET() {
   const session = await auth();
-  await finalizeContests();
+  await sweepFinalize();
   const contests = await getCurrentContests();
 
   if (!session?.user?.id) {
-    return NextResponse.json({
+    return NextResponse.json(
+      {
+        contests: contests.map((c) => ({
+          id: c.id,
+          title: c.title,
+          type: c.type,
+          description: c.description,
+          rewardXp: c.rewardXp,
+          weekStart: c.weekStart.toISOString(),
+          weekEnd: c.weekEnd.toISOString(),
+          entries: c.entries
+            .sort((a, b) => b.upvotes - a.upvotes)
+            .map((e) => ({ id: e.id, title: e.title, image: e.image, caption: e.caption, upvotes: e.upvotes, user: e.user })),
+        })),
+      },
+      { headers: ANON_CACHE_HEADERS },
+    );
+  }
+
+  const userId = session.user.id;
+  const contestIds = contests.map((c) => c.id);
+  const [myVotes, myEntries] = await Promise.all([
+    prisma.contentContestVote.findMany({
+      where: { userId, contestId: { in: contestIds } },
+      select: { entryId: true, contestId: true },
+    }),
+    prisma.contentContestEntry.findMany({
+      where: { userId, contestId: { in: contestIds } },
+      select: { id: true, contestId: true },
+    }),
+  ]);
+  const votedContests = new Set(myVotes.map((v) => v.contestId));
+  const votedEntry = new Map(myVotes.map((v) => [v.contestId, v.entryId]));
+  const submittedContests = new Set(myEntries.map((e) => e.contestId));
+  const myEntryIds = new Set(myEntries.map((e) => e.id));
+
+  return NextResponse.json(
+    {
       contests: contests.map((c) => ({
         id: c.id,
         title: c.title,
@@ -19,41 +78,24 @@ export async function GET() {
         rewardXp: c.rewardXp,
         weekStart: c.weekStart.toISOString(),
         weekEnd: c.weekEnd.toISOString(),
-        entries: c.entries.map((e) => ({ id: e.id, title: e.title, image: e.image, caption: e.caption, upvotes: e.upvotes, user: e.user })),
+        hasVoted: votedContests.has(c.id),
+        votedEntryId: votedEntry.get(c.id),
+        hasSubmitted: submittedContests.has(c.id),
+        entries: c.entries
+          .sort((a, b) => b.upvotes - a.upvotes)
+          .map((e) => ({
+            id: e.id,
+            title: e.title,
+            image: e.image,
+            caption: e.caption,
+            upvotes: e.upvotes,
+            user: e.user,
+            isMine: myEntryIds.has(e.id),
+          })),
       })),
-    });
-  }
-
-  const userId = session.user.id;
-  const myVotes = await prisma.contentContestVote.findMany({
-    where: { userId, contestId: { in: contests.map((c) => c.id) } },
-    select: { entryId: true, contestId: true },
-  });
-  const votedContests = new Set(myVotes.map((v) => v.contestId));
-  const votedEntry = new Map(myVotes.map((v) => [v.contestId, v.entryId]));
-  const myEntries = await prisma.contentContestEntry.findMany({
-    where: { userId, contestId: { in: contests.map((c) => c.id) } },
-    select: { id: true, contestId: true },
-  });
-  const submittedContests = new Set(myEntries.map((e) => e.contestId));
-
-  return NextResponse.json({
-    contests: contests.map((c) => ({
-      id: c.id,
-      title: c.title,
-      type: c.type,
-      description: c.description,
-      rewardXp: c.rewardXp,
-      weekStart: c.weekStart.toISOString(),
-      weekEnd: c.weekEnd.toISOString(),
-      hasVoted: votedContests.has(c.id),
-      votedEntryId: votedEntry.get(c.id),
-      hasSubmitted: submittedContests.has(c.id),
-      entries: c.entries
-        .sort((a, b) => b.upvotes - a.upvotes)
-        .map((e) => ({ id: e.id, title: e.title, image: e.image, caption: e.caption, upvotes: e.upvotes, user: e.user })),
-    })),
-  });
+    },
+    { headers: { "Cache-Control": "private, no-store" } },
+  );
 }
 
 export async function POST(req: NextRequest) {

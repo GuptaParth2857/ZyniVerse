@@ -10,10 +10,12 @@ interface Props {
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { id: _id } = await params;
   const sp = await searchParams;
-  const title = sp.title || "Manga";
+  const raw = sp.title || "Manga";
+  const safeTitle = raw.replace(/[<>{}"\\]/g, "").trim().slice(0, 80);
   return {
-    title: `Reading ${title}`,
-    description: `Read ${title} online for free through legal sources.`,
+    title: `Reading ${safeTitle}`,
+    description: `Read ${safeTitle} online for free through legal sources.`,
+    robots: { index: false, follow: false },
   };
 }
 

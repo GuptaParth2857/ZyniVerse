@@ -50,6 +50,7 @@ export const EARN_RATES: Record<string, EconomyAward> = {
   FORUM_POST: { coins: 8, xp: 4 },
   FOLLOW_PEER: { coins: 5, xp: 2 },
   COMMENT_POSTED: { coins: 3, xp: 1 },
+  CONTEST_WIN: { coins: 50, xp: 100 },
 };
 
 /** Human labels for ledger rows; anything unknown falls back to the raw code. */
@@ -59,6 +60,7 @@ export const REASON_LABEL: Record<string, string> = {
   FORUM_POST: "Forum post",
   FOLLOW_PEER: "Followed a member",
   COMMENT_POSTED: "Comment",
+  CONTEST_WIN: "Contest win",
   SHOP_BUY_FREEZE: "Streak freeze",
 };
 

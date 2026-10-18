@@ -23,9 +23,7 @@ export const metadata: Metadata = {
     title: "Search 10,000+ Anime & Manga — Find Your Next Show",
     description: "Filter by genre, season, year, format & score. 10,000+ titles — completely free.",
   },
-  alternates: {
-    canonical: `${BASE_URL}/search`,
-  },
+  alternates: { canonical: `${BASE_URL}/search` },
   robots: { index: false, follow: true },
 };
 

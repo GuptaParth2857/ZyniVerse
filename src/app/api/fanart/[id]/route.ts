@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { apiLimiter } from "@/lib/rate-limiter";
+import { invalidateCached } from "@/lib/wiki-cache";
 
 export async function GET(
   _req: NextRequest,
@@ -25,6 +27,9 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const rateLimited = await apiLimiter.middleware(req);
+  if (rateLimited) return rateLimited;
+
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -52,6 +57,8 @@ export async function PUT(
     },
   });
 
+  invalidateCached("fanart:");
+
   return NextResponse.json({ fanArt: updated });
 }
 
@@ -59,6 +66,9 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const rateLimited = await apiLimiter.middleware(_req);
+  if (rateLimited) return rateLimited;
+
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -68,5 +78,6 @@ export async function DELETE(
   if (existing.userId !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   await prisma.fanArt.delete({ where: { id } });
+  invalidateCached("fanart:");
   return NextResponse.json({ success: true });
 }

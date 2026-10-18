@@ -148,10 +148,10 @@ export default function Footer() {
             Discover, track, and discuss anime & manga. Your ultimate anime companion for Indian fans.
           </p>
           <div className="flex flex-wrap gap-4 items-center mb-4">
-            <a href="mailto:contact.zenvyx@gmail.com" className="flex items-center gap-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors">
+            <Link href="/contact" className="flex items-center gap-2 text-xs text-[var(--color-mute)] hover:text-[var(--color-cyan)] transition-colors">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 4l-10 8L2 4" /></svg>
-              contact.zenvyx@gmail.com
-            </a>
+              Contact Us
+            </Link>
             <span className="flex items-center gap-2 text-xs text-[var(--color-mute)]">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
               Delhi, India
@@ -295,7 +295,7 @@ export default function Footer() {
               {[
                 { label: "Privacy", href: "/privacy" },
                 { label: "Terms", href: "/terms" },
-                { label: "Contact", href: "/community" },
+                { label: "Contact", href: "/contact" },
                 { label: "Developer", href: "/developer" },
               ].map((link) => (
                 <Link

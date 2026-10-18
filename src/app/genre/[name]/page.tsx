@@ -89,7 +89,7 @@ export default function GenrePage() {
                 ))}
               </div>
               {!loading && list.length === 0 && (
-                <EmptyState icon="film" title={`No ${type.toLowerCase()} found in this genre.`} description="Try a different genre or browse all." actionLabel="Browse All" actionHref="/browse" />
+                <EmptyState icon="film" title={`No ${type.toLowerCase()} found in this genre.`} description="Try a different genre or discover trending titles." actionLabel="Discover" actionHref="/discover" />
               )}
             </>
           )}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import BlogPostDetailView from "./client";
 import { logError } from "@/lib/logger";
 
@@ -8,17 +9,29 @@ interface Props {
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
+// Fallback for slugless/broken slugs. noindex on purpose: without it every
+// missing slug would render HTTP 200 + the same "Blog Post" title, which
+// Google indexes as mass-duplicate soft-404s (seen in GSC as "Crawled -
+// not indexed"). Real 404s are handled by notFound() in the page below; this
+// only covers transient API failures that happen while rendering.
+const FALLBACK_METADATA: Metadata = {
+  title: "Blog Post",
+  description:
+    "Read the latest anime blog posts on ZyniVerse - news, reviews, recommendations, and guides for anime fans worldwide.",
+  robots: { index: false, follow: true },
+};
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { slug } = await params;
     const res = await fetch(`${BASE_URL}/api/blog/${slug}`, { cache: "no-store" });
 
-    if (!res.ok) return { title: "Blog Post", description: "Read the latest anime blog posts on ZyniVerse - news, reviews, recommendations, and guides for anime fans worldwide.", robots: { index: true, follow: true } };
+    if (!res.ok) return FALLBACK_METADATA;
 
     const data = await res.json();
     const post = data.post;
 
-    if (!post || !post.title) return { title: "Blog Post", description: "Read the latest anime blog posts on ZyniVerse - news, reviews, recommendations, and guides for anime fans worldwide.", robots: { index: true, follow: true } };
+    if (!post || !post.title) return FALLBACK_METADATA;
 
     return {
       title: `${post.title} Blog`,
@@ -35,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch {
-    return { title: "Blog Post", description: "Read the latest anime blog posts on ZyniVerse - news, reviews, recommendations, and guides for anime fans worldwide.", robots: { index: true, follow: true } };
+    return FALLBACK_METADATA;
   }
 }
 
@@ -43,13 +56,28 @@ export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
 
   let post = null;
+  let definitivelyMissing = false;
   try {
     const res = await fetch(`${BASE_URL}/api/blog/${slug}`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
-      post = data.post;
+      post = data.post || null;
+      // API answered but sent no post - treat as missing, not as a render.
+      if (!post) definitivelyMissing = true;
+    } else if (res.status === 404) {
+      // Deleted/never-existed/draft-for-you slugs must be real 404s so they
+      // drop out of the index instead of piling up as duplicate soft-404s.
+      definitivelyMissing = true;
     }
-  } catch (e) { logError(e); }
+    // Non-404 failures (5xx/network blips) fall through and render: the
+    // client component retries the same API call and shows the real state.
+  } catch (e) {
+    // Network blip while SSR-ing - render and let the client retry rather
+    // than 404ing a perfectly valid post.
+    logError(e);
+  }
+
+  if (definitivelyMissing) notFound();
 
   const jsonLd = post?.title
     ? {

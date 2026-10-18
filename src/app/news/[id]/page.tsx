@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description: item.summary?.slice(0, 200) || "",
       },
       alternates: {
-        canonical: item.url && item.url.startsWith("http") ? item.url : `${BASE_URL}/news/${encodeURIComponent(item.id)}`,
+        canonical: `${BASE_URL}/news/${encodeURIComponent(item.id)}`,
       },
       robots: { index: true, follow: true },
     };
@@ -78,7 +78,7 @@ export default async function NewsDetailPage({ params }: Props) {
     "@type": "NewsArticle",
     headline: item.title,
     description: item.summary?.slice(0, 200) || "",
-    url: item.url && item.url.startsWith("http") ? item.url : `${BASE_URL}/news/${encodeURIComponent(item.id)}`,
+    url: `${BASE_URL}/news/${encodeURIComponent(item.id)}`,
     datePublished: item.publishedAt,
     dateModified: item.publishedAt,
     author: { "@type": "Organization", name: "ZyniVerse", url: BASE_URL },

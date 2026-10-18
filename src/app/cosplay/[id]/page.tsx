@@ -98,7 +98,7 @@ export default async function CosplayDetail({ params }: { params: Promise<{ id: 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
       )}
-      <CosplayDetailPage id={id} initialData={cosplay} />
+      <CosplayDetailPage key={id} id={id} initialData={cosplay} />
     </>
   );
 }

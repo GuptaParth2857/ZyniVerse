@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { ReportButton } from "@/components/ReportButton";
+import { imgThumb } from "@/lib/img";
 
 interface FanArtItem {
   id: string;
@@ -50,10 +51,13 @@ function timeAgo(dateStr: string) {
   return `${months}mo ago`;
 }
 
-export default function FanArtCard({ item, index = 0 }: { item: FanArtItem; index?: number }) {
+export default function FanArtCard({ item, index = 0, liked = false, onLike }: {
+  item: FanArtItem;
+  index?: number;
+  liked?: boolean;
+  onLike?: (id: string) => void;
+}) {
   const { data: session } = useSession();
-  const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(item.likes);
   const [imgError, setImgError] = useState(false);
 
   const type = ART_TYPES[item.artType] || ART_TYPES.digital;
@@ -62,13 +66,9 @@ export default function FanArtCard({ item, index = 0 }: { item: FanArtItem; inde
     e.preventDefault();
     e.stopPropagation();
     if (!session?.user?.id) return;
-
-    try {
-      const res = await fetch(`/api/fanart/${item.id}/like`, { method: "POST" });
-      const data = await res.json();
-      setLiked(data.liked);
-      setLikes(data.likes);
-    } catch {}
+    // The gallery owns the like state (it seeds it from /api/fanart/likes and
+    // updates the count), so this only delegates back up.
+    onLike?.(item.id);
   };
 
   return (
@@ -87,7 +87,7 @@ export default function FanArtCard({ item, index = 0 }: { item: FanArtItem; inde
           {/* Image */}
           <div className="relative aspect-[3/4] overflow-hidden bg-[#0a0a14]">
             <Image
-              src={item.imageUrl}
+              src={imgThumb(item.imageUrl, 720)}
               alt={item.title}
               fill
               onError={() => setImgError(true)}
@@ -116,7 +116,8 @@ export default function FanArtCard({ item, index = 0 }: { item: FanArtItem; inde
             {/* Like Button */}
             <button
               onClick={handleLike}
-              aria-label="Like"
+              aria-label={liked ? "Unlike this fan art" : "Like this fan art"}
+              aria-pressed={liked}
               className={`absolute right-2.5 top-2.5 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-md transition-all duration-300 active:scale-90 ${
                 liked
                   ? "bg-[var(--color-magenta)] text-white shadow-[0_0_16px_-2px_var(--color-magenta)]"
@@ -148,7 +149,7 @@ export default function FanArtCard({ item, index = 0 }: { item: FanArtItem; inde
                 <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
-                {formatLikes(likes)}
+                {formatLikes(item.likes)}
               </span>
             </div>
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
+import { detectBot } from "@/lib/bot-detect";
 
 // ---------------------------------------------------------------------------
 // Proxy runs on the Node.js runtime in Next.js 16 (middleware was renamed to
@@ -13,6 +14,12 @@ import type { NextRequest } from "next/server";
 //   - The matcher excludes /api/* entirely, so API beacons no longer pay
 //     "proxy + route handler" = 2 invocations per browser request.
 // Only the public page CDN cache rules remain here.
+//
+// The one addition is *crawler hit reporting*: bots do not run JavaScript, so
+// the client-side analytics beacon can never see Googlebot / OAI-SearchBot /
+// PerplexityBot traffic. A cheap User-Agent check + fire-and-forget
+// `event.waitUntil()` POST is the only way to observe it (see the handler
+// below). Humans pay nothing for it beyond the regex test.
 // ---------------------------------------------------------------------------
 
 // Public, non-personalized content pages that crawlers + CDN hits hammer.
@@ -52,7 +59,41 @@ function getPublicCacheSeconds(path: string): number | null {
   return null;
 }
 
-export function proxy(request: NextRequest) {
+export function proxy(request: NextRequest, event: NextFetchEvent) {
+  // -------------------------------------------------------------------------
+  // Crawler / bot hit reporting (see /api/internal/bot-hit + src/lib/bot-stats).
+  //
+  // Only dispatched when the User-Agent matches a known crawler, so normal
+  // visitors cost exactly one extra in-memory regex test. The DB write happens
+  // in a route handler (inside `event.waitUntil`, after the response is sent)
+  // to keep Prisma out of the Proxy bundle and off the critical path.
+  //
+  // The matcher never includes /api/*, so this cannot re-enter itself.
+  // -------------------------------------------------------------------------
+  if (request.method === "GET" || request.method === "HEAD") {
+    const userAgent = request.headers.get("user-agent");
+    if (userAgent && detectBot(userAgent)) {
+      const report = new URL("/api/internal/bot-hit", request.url);
+      event.waitUntil(
+        fetch(report, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            path: request.nextUrl.pathname,
+            userAgent,
+            // The self-fetch is served from a datacenter IP, so the visitor's
+            // country has to be copied from the original request headers.
+            country: request.headers.get("x-vercel-ip-country"),
+          }),
+          cache: "no-store",
+        }).then(
+          () => undefined,
+          () => undefined
+        )
+      );
+    }
+  }
+
   if (request.method === "GET") {
     const path = request.nextUrl.pathname;
     if (!hasAuthCookie(request)) {
@@ -80,8 +121,14 @@ export const config = {
   // `api/`, `_next/*` and static assets stay excluded: they set their own
   // Cache-Control in their handlers and must not pay a "proxy + route" double
   // invocation.
+  //
+  // `/sitemap.xml` and `/robots.txt` are the only non-page entries: no human
+  // traffic reaches them, and knowing when Googlebot / the AI crawlers fetch
+  // them is the strongest early signal that a new deploy is being picked up.
   matcher: [
     "/",
+    "/sitemap.xml",
+    "/robots.txt",
     "/character-tournaments/:path*",
     "/anime/:path*",
     "/character/:path*",

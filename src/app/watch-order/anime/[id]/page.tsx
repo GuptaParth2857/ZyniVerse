@@ -16,7 +16,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const animeId = parseInt(id);
-  if (isNaN(animeId)) return { title: "Watch Order", description: "Find the correct watch order for any anime series including sequels, prequels, movies, and OVAs. Never watch out of order again.", robots: { index: true, follow: true } };
+  if (isNaN(animeId)) return { title: "Watch Order", description: "Find the correct watch order for any anime series including sequels, prequels, movies, and OVAs. Never watch out of order again.", robots: { index: false, follow: true } };
 
   try {
     const anime = await getAnimeDetailFull(animeId);
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       robots: { index: true, follow: true },
     };
   } catch {
-    return { title: "Watch Order", description: "Find the correct watch order for any anime series including sequels, prequels, movies, and OVAs. Never watch out of order again.", robots: { index: true, follow: true } };
+    return { title: "Watch Order", description: "Find the correct watch order for any anime series including sequels, prequels, movies, and OVAs. Never watch out of order again.", robots: { index: false, follow: true } };
   }
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useSyncExternalStore } from "react";
+import { useState, useRef, useCallback, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,6 +12,80 @@ const ART_TYPES = [
   { value: "manga", label: "Manga Style", icon: "📖" },
   { value: "pixel", label: "Pixel Art", icon: "👾" },
 ];
+
+const DRAFT_KEY = "zyniverse_fanart_draft";
+
+/**
+ * Downscale + re-encode a picked image in the browser (max 1600px, WebP) so we
+ * don't push multi-MB originals over the network — the server re-encodes again.
+ * GIFs (possible animation) and anything we can't decode are returned as-is.
+ */
+async function downscaleImage(file: File): Promise<File> {
+  try {
+    if (file.type === "image/gif" || !file.type.startsWith("image/")) return file;
+    if (typeof createImageBitmap !== "function") return file;
+    const bitmap = await createImageBitmap(file);
+    const MAX = 1600;
+    const { width, height } = bitmap;
+    if (width <= MAX && height <= MAX && file.size <= 900 * 1024) {
+      bitmap.close?.();
+      return file;
+    }
+    const scale = Math.min(1, MAX / Math.max(width, height));
+    const w = Math.max(1, Math.round(width * scale));
+    const h = Math.max(1, Math.round(height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      bitmap.close?.();
+      return file;
+    }
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close?.();
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((b) => resolve(b), "image/webp", 0.82)
+    );
+    if (!blob || blob.size >= file.size) return file;
+    const name = file.name.replace(/\.[^.]+$/, "") || "fanart";
+    return new File([blob], `${name}.webp`, { type: "image/webp" });
+  } catch {
+    return file;
+  }
+}
+
+/** Preview that shows a placeholder instead of a broken image. */
+function PreviewImage({ src, alt }: { src: string; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="relative aspect-video max-h-64">
+      {failed ? (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center"
+          style={{ background: "rgba(0,0,0,0.4)" }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
+          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Image couldn&apos;t be loaded</p>
+        </div>
+      ) : (
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes="640px"
+          className="object-contain"
+          style={{ background: "rgba(0,0,0,0.4)" }}
+          onError={() => setFailed(true)}
+        />
+      )}
+    </div>
+  );
+}
 
 function NeonOrbs() {
   return (
@@ -114,14 +188,125 @@ export default function FanArtUpload({ initialData, onUpdate }: {
   const [imageMode, setImageMode] = useState<"url" | "upload">(initialData?.imageUrl ? "url" : "upload");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const tagRef = useRef<HTMLDivElement>(null);
+  const hasContentRef = useRef(false);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   }, []);
 
-  async function handleFileUpload(file: File) {
+  // Restore an in-progress draft (create flow only).
+  useEffect(() => {
+    if (isEdit) return;
+    let raw: string | null = null;
+    try { raw = localStorage.getItem(DRAFT_KEY); } catch { return; }
+    if (!raw) return;
+    try {
+      const d = JSON.parse(raw);
+      if (!d || typeof d !== "object") return;
+      const hasContent = ["title", "description", "animeTitle", "character", "tags", "imageUrl"].some(
+        (k) => typeof d[k] === "string" && d[k].trim().length > 0
+      );
+      if (!hasContent) return;
+      /* eslint-disable react-hooks/set-state-in-effect */
+      setForm({
+        title: d.title || "",
+        description: d.description || "",
+        animeTitle: d.animeTitle || "",
+        character: d.character || "",
+        artType: d.artType || "digital",
+        tags: d.tags || "",
+        imageUrl: d.imageUrl || "",
+      });
+      setDraftRestored(true);
+      /* eslint-enable react-hooks/set-state-in-effect */
+    } catch {
+      // Malformed draft — ignore it.
+    }
+  }, [isEdit]);
+
+  // Persist the draft as the user types (debounced).
+  useEffect(() => {
+    if (isEdit || success) return;
+    const t = setTimeout(() => {
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(form)); } catch { /* ignore */ }
+    }, 600);
+    return () => clearTimeout(t);
+  }, [isEdit, success, form]);
+
+  // Track whether there's unsaved content so we can warn before leaving.
+  useEffect(() => {
+    hasContentRef.current =
+      !isEdit && !success && Object.values(form).some((v) => v.trim().length > 0);
+  });
+
+  // Warn before closing the tab with unsaved work.
+  useEffect(() => {
+    if (isEdit) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!hasContentRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isEdit]);
+
+  // Tag autocomplete from existing art.
+  useEffect(() => {
+    fetch("/api/fanart/tags")
+      .then((r) => r.json())
+      .then((d) => setAllTags(d.tags || []))
+      .catch(() => {});
+  }, []);
+
+  // Close the tag dropdown on outside click.
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (tagRef.current && !tagRef.current.contains(e.target as Node)) setShowTagDropdown(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function selectTag(tag: string) {
+    const parts = form.tags.split(",").map((s) => s.trim()).filter(Boolean);
+    parts[parts.length - 1] = tag;
+    setForm((prev) => ({ ...prev, tags: parts.join(", ") + ", " }));
+    setTagSuggestions([]);
+    setShowTagDropdown(false);
+  }
+
+  function removeTag(tag: string) {
+    const parts = form.tags.split(",").map((s) => s.trim()).filter(Boolean).filter((t) => t !== tag);
+    setForm((prev) => ({ ...prev, tags: parts.join(", ") }));
+  }
+
+  function commitTag() {
+    const parts = form.tags.split(",").map((s) => s.trim()).filter(Boolean);
+    if (parts.length === 0) return;
+    setForm((prev) => ({ ...prev, tags: parts.map((t) => t.trim()).join(", ") + ", " }));
+    setTagSuggestions([]);
+    setShowTagDropdown(false);
+  }
+
+  function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+    setForm({ title: "", description: "", animeTitle: "", character: "", artType: "digital", tags: "", imageUrl: "" });
+    setDraftRestored(false);
+  }
+
+  const handleFileUpload = useCallback(async (file: File) => {
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
+      setError("Invalid file type. Use JPG, PNG, WebP, or GIF.");
+      return;
+    }
     if (file.size > 10 * 1024 * 1024) {
       setError("File too large. Max 10MB allowed.");
       return;
@@ -131,8 +316,10 @@ export default function FanArtUpload({ initialData, onUpdate }: {
     setError(null);
 
     try {
+      // Shrink in the browser first so we don't upload a multi-MB original.
+      const optimized = await downscaleImage(file);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", optimized);
 
       const url = await new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -158,13 +345,28 @@ export default function FanArtUpload({ initialData, onUpdate }: {
     } finally {
       setUploading(false);
     }
-  }
+  }, []);
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith("image/")) handleFileUpload(file);
   }
+
+  // Paste an image straight from the clipboard to upload it.
+  useEffect(() => {
+    if (isEdit) return;
+    function onPaste(e: ClipboardEvent) {
+      const file = e.clipboardData?.files?.[0];
+      if (file && file.type.startsWith("image/")) {
+        e.preventDefault();
+        setImageMode("upload");
+        handleFileUpload(file);
+      }
+    }
+    document.addEventListener("paste", onPaste);
+    return () => document.removeEventListener("paste", onPaste);
+  }, [isEdit, handleFileUpload]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -189,6 +391,7 @@ export default function FanArtUpload({ initialData, onUpdate }: {
       if (isEdit) {
         onUpdate?.();
       } else {
+        try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
         setSuccess(true);
         setTimeout(() => router.push(`/fanart/${data.fanArt.id}`), 1500);
       }
@@ -198,6 +401,8 @@ export default function FanArtUpload({ initialData, onUpdate }: {
       setSubmitting(false);
     }
   }
+
+  const tagChips = form.tags.split(",").map((s) => s.trim()).filter(Boolean);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -229,6 +434,30 @@ export default function FanArtUpload({ initialData, onUpdate }: {
             {isEdit ? "Update your artwork details" : "Share your amazing fan art with the community"}
           </p>
         </motion.div>
+
+        {draftRestored && !success && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-[var(--color-cyan)]/20 bg-[var(--color-cyan)]/5 px-4 py-3"
+          >
+            <p className="flex items-center gap-2 text-xs text-[var(--color-cyan)]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M23 4v6h-6" />
+                <path d="M1 20v-6h6" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              Restored your unsaved draft.
+            </p>
+            <button
+              type="button"
+              onClick={clearDraft}
+              className="text-[11px] font-semibold text-[var(--color-mute)] transition-colors hover:text-[var(--color-ink)]"
+            >
+              Discard
+            </button>
+          </motion.div>
+        )}
 
         <AnimatePresence mode="wait">
           {success ? (
@@ -265,9 +494,7 @@ export default function FanArtUpload({ initialData, onUpdate }: {
 
                     {form.imageUrl ? (
                       <div className="relative rounded-xl overflow-hidden border border-white/10">
-                        <div className="relative aspect-video">
-                          <Image src={form.imageUrl} alt="Preview" fill className="object-contain bg-[#0a0a14]" />
-                        </div>
+                        <PreviewImage key={form.imageUrl} src={form.imageUrl} alt="Preview" />
                         <button type="button" onClick={() => setForm((p) => ({ ...p, imageUrl: "" }))}
                           className="absolute top-2 right-2 rounded-lg bg-black/60 px-3 py-1 text-xs text-white/80 hover:bg-red-500/60 transition-colors backdrop-blur">
                           Remove
@@ -288,25 +515,33 @@ export default function FanArtUpload({ initialData, onUpdate }: {
                           <>
                             <span className="text-3xl mb-2">🎨</span>
                             <p className="text-sm text-white/40">Drop your art here or click to browse</p>
-                            <p className="text-[10px] text-white/20 mt-1">PNG, JPG, GIF, WebP up to 10MB</p>
+                            <p className="text-[10px] text-white/20 mt-1">PNG, JPG, GIF, WebP up to 10MB · or paste (Ctrl+V)</p>
                           </>
                         )}
                         <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
                           onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); }} />
                       </div>
                     ) : (
-                      <div className="rgb-border">
-                        <div className="flex items-center rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/90 backdrop-blur-sm overflow-hidden">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                            className="ml-3 shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <polyline points="21 15 16 10 5 21" />
-                          </svg>
-                          <input name="imageUrl" value={form.imageUrl} onChange={handleChange}
-                            placeholder="https://example.com/art.jpg"
-                            className="w-full bg-transparent py-3 pl-3 pr-4 text-sm text-white placeholder-white/20 outline-none" />
+                      <div className="space-y-3">
+                        <div className="rgb-border">
+                          <div className="flex items-center rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/90 backdrop-blur-sm overflow-hidden">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                              className="ml-3 shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                              <circle cx="8.5" cy="8.5" r="1.5" />
+                              <polyline points="21 15 16 10 5 21" />
+                            </svg>
+                            <input name="imageUrl" value={form.imageUrl} onChange={handleChange}
+                              aria-label="Image URL"
+                              placeholder="https://example.com/art.jpg"
+                              className="w-full bg-transparent py-3 pl-3 pr-4 text-sm text-white placeholder-white/20 outline-none" />
+                          </div>
                         </div>
+                        {form.imageUrl.trim().length > 0 && (
+                          <div className="relative rounded-xl overflow-hidden border border-[var(--color-cyan)]/15">
+                            <PreviewImage key={form.imageUrl} src={form.imageUrl} alt="URL preview" />
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -389,20 +624,65 @@ export default function FanArtUpload({ initialData, onUpdate }: {
                   </div>
 
                   {/* Tags */}
-                  <div>
-                    <label className="block font-mono text-[10px] uppercase tracking-[0.15em] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>Tags (comma separated)</label>
+                  <div ref={tagRef} className="relative">
+                    <label htmlFor="fanart-tags" className="block font-mono text-[10px] uppercase tracking-[0.15em] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>Tags</label>
                     <div className="rgb-border">
-                      <div className="flex items-center rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/90 backdrop-blur-sm overflow-hidden">
+                      <div className="flex items-center rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/90 backdrop-blur-sm overflow-hidden transition-all">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                           className="ml-3 shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>
                           <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                           <line x1="7" y1="7" x2="7.01" y2="7" />
                         </svg>
-                        <input name="tags" value={form.tags} onChange={handleChange}
+                        <input id="fanart-tags" name="tags" value={form.tags} onChange={handleChange}
+                          onFocus={() => {
+                            const parts = form.tags.split(",").map((s) => s.trim()).filter(Boolean);
+                            const last = parts[parts.length - 1] || "";
+                            if (last.length >= 1) {
+                              const filtered = allTags.filter((t) => t.toLowerCase().startsWith(last.toLowerCase()) && !parts.includes(t));
+                              setTagSuggestions(filtered.slice(0, 5));
+                              setShowTagDropdown(filtered.length > 0);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === "Tab") {
+                              if (showTagDropdown && tagSuggestions.length > 0) return;
+                              e.preventDefault();
+                              commitTag();
+                            }
+                          }}
                           placeholder="e.g. shonen, digital, fanart"
                           className="w-full bg-transparent py-3 pl-3 pr-4 text-sm text-white placeholder-white/20 outline-none" />
                       </div>
                     </div>
+                    {showTagDropdown && tagSuggestions.length > 0 && (
+                      <div className="absolute z-50 mt-1 w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] shadow-2xl backdrop-blur-xl">
+                        {tagSuggestions.map((tag) => (
+                          <button key={tag} type="button" onClick={() => selectTag(tag)}
+                            className="w-full px-3 py-2 text-left text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
+                            <span className="glass-tag text-[10px]">{tag}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {tagChips.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {tagChips.map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => removeTag(tag)}
+                            aria-label={`Remove tag ${tag}`}
+                            className="glass-tag transition-colors hover:text-red-400 hover:ring-red-500/30"
+                          >
+                            {tag}
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="opacity-60">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Error */}

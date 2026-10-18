@@ -22,7 +22,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const order = WATCH_ORDERS_DATA[id as keyof typeof WATCH_ORDERS_DATA];
-  if (!order) return { title: "Watch Order", description: "Find the correct watch order for popular anime series including Naruto, One Piece, Attack on Titan, Demon Slayer, and more. Watch in the right order with ZyniVerse.", robots: { index: true, follow: true } };
+  if (!order) return { title: "Watch Order", description: "Find the correct watch order for popular anime series including Naruto, One Piece, Attack on Titan, Demon Slayer, and more. Watch in the right order with ZyniVerse.", robots: { index: false, follow: true } };
 
   const slugToAnimeName: Record<string, string> = {
     rezero: "Re:Zero", sao: "Sword Art Online", fate: "Fate",

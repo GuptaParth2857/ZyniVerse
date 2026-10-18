@@ -6,6 +6,8 @@ import WatchHistoryTimeline from "@/components/WatchHistoryTimeline";
 export const metadata: Metadata = {
   title: "Watch History Timeline",
   description: "Visualize your anime journey with an interactive timeline of every episode you've watched.",
+  alternates: { canonical: "https://zyverse.in/stats/timeline" },
+  robots: { index: true, follow: true },
 };
 
 export default function TimelinePage() {

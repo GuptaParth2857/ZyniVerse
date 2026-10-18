@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import FanArtCard from "@/components/FanArtCard";
 
 interface FanArtItem {
@@ -34,18 +34,30 @@ const SORT_OPTIONS = [
   { value: "popular", label: "Popular", icon: "🔥" },
 ];
 
+const SORT_VALUES = SORT_OPTIONS.map((o) => o.value);
+
 export default function FanArtGallery() {
   const { data: session } = useSession();
   const [items, setItems] = useState<FanArtItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(false);
+  const [error, setError] = useState(false);
   const [sort, setSort] = useState("recent");
   const [artTypeFilter, setArtTypeFilter] = useState("");
   const [animeFilter, setAnimeFilter] = useState("");
+  const [debouncedAnime, setDebouncedAnime] = useState("");
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const [likeNudge, setLikeNudge] = useState(false);
+  // URL filters are read after mount (rather than via `useSearchParams`) so the
+  // component — hero and all — is server-rendered into the static HTML. Using
+  // `useSearchParams` would make Next client-render this whole Suspense subtree.
+  const [hydrated, setHydrated] = useState(false);
 
   const mountedRef = useRef(true);
-  const prevFiltersRef = useRef({ sort, artTypeFilter, animeFilter });
+  const likedFetchedRef = useRef<Set<string>>(new Set());
+  const prevFiltersRef = useRef({ sort: "recent", artType: "", anime: "" });
+  const prevNavRef = useRef({ sort: "recent", artType: "", anime: "" });
   const pageRef = useRef(1);
   const [totalCount, setTotalCount] = useState(0);
   const [fetchKey, setFetchKey] = useState(0);
@@ -55,21 +67,86 @@ export default function FanArtGallery() {
     return () => { mountedRef.current = false; };
   }, []);
 
+  // Read filters from the URL once on mount (deep links, Back/Forward). This is
+  // a one-time sync with the URL (an external store), not a render cascade.
   useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const s = sp.get("sort") ?? "";
+    const nextSort = SORT_VALUES.includes(s) ? s : "recent";
+    const a = sp.get("artType") ?? "";
+    const n = sp.get("anime") ?? "";
+    prevFiltersRef.current = { sort: nextSort, artType: a, anime: n };
+    prevNavRef.current = { sort: nextSort, artType: a, anime: n };
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setSort(nextSort);
+    setArtTypeFilter(a);
+    setAnimeFilter(n);
+    setDebouncedAnime(n);
+    setHydrated(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
+
+  // Restore filter state when the user navigates back/forward.
+  useEffect(() => {
+    function onPop() {
+      const sp = new URLSearchParams(window.location.search);
+      const s = sp.get("sort") ?? "";
+      const nextSort = SORT_VALUES.includes(s) ? s : "recent";
+      const a = sp.get("artType") ?? "";
+      const n = sp.get("anime") ?? "";
+      prevFiltersRef.current = { sort: nextSort, artType: a, anime: n };
+      prevNavRef.current = { sort: nextSort, artType: a, anime: n };
+      setSort(nextSort);
+      setArtTypeFilter(a);
+      setAnimeFilter(n);
+      setDebouncedAnime(n);
+    }
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  // Debounce the text filter so typing doesn't fire a request per keystroke
+  // against the remote (Tokyo) database.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedAnime(animeFilter), 400);
+    return () => clearTimeout(t);
+  }, [animeFilter]);
+
+  // Keep filters in the URL so links are shareable and Back/Forward works.
+  useEffect(() => {
+    if (!hydrated || typeof window === "undefined") return;
+    const sp = new URLSearchParams();
+    if (sort !== "recent") sp.set("sort", sort);
+    if (artTypeFilter) sp.set("artType", artTypeFilter);
+    if (debouncedAnime.trim()) sp.set("anime", debouncedAnime.trim());
+    const qs = sp.toString();
+    const target = `${window.location.pathname}${qs ? `?${qs}` : ""}`;
+    const current = `${window.location.pathname}${window.location.search}`;
+    if (target === current) return;
+    const prev = prevNavRef.current;
+    const discrete = prev.sort !== sort || prev.artType !== artTypeFilter;
+    prevNavRef.current = { sort, artType: artTypeFilter, anime: debouncedAnime };
+    if (discrete) window.history.pushState(null, "", target);
+    else window.history.replaceState(null, "", target);
+  }, [hydrated, sort, artTypeFilter, debouncedAnime]);
+
+  useEffect(() => {
+    if (!hydrated) return;
     let cancelled = false;
     const prev = prevFiltersRef.current;
-    if (prev.sort !== sort || prev.artTypeFilter !== artTypeFilter || prev.animeFilter !== animeFilter) {
-      prevFiltersRef.current = { sort, artTypeFilter, animeFilter };
+    if (prev.sort !== sort || prev.artType !== artTypeFilter || prev.anime !== debouncedAnime) {
+      prevFiltersRef.current = { sort, artType: artTypeFilter, anime: debouncedAnime };
       pageRef.current = 1;
     }
     const currentPage = pageRef.current;
 
     async function load() {
-      setLoading(true);
+      if (currentPage === 1) setLoading(true);
+      setError(false);
       try {
         const params = new URLSearchParams({ sort, page: String(currentPage), perPage: "30" });
         if (artTypeFilter) params.set("artType", artTypeFilter);
-        if (animeFilter.trim()) params.set("anime", animeFilter.trim());
+        if (debouncedAnime.trim()) params.set("anime", debouncedAnime.trim());
         const res = await fetch(`/api/fanart?${params}`);
         const data = await res.json();
         if (!cancelled && mountedRef.current) {
@@ -83,7 +160,8 @@ export default function FanArtGallery() {
         }
       } catch {
         if (!cancelled && mountedRef.current) {
-          setItems([]);
+          if (currentPage === 1) setItems([]);
+          setError(true);
           setLoading(false);
           setLoadingMore(false);
         }
@@ -91,7 +169,65 @@ export default function FanArtGallery() {
     }
     load();
     return () => { cancelled = true; };
-  }, [sort, artTypeFilter, animeFilter, fetchKey]);
+  }, [hydrated, sort, artTypeFilter, debouncedAnime, fetchKey]);
+
+  // Seed per-user like state for the loaded cards. The gallery list is cached
+  // and shared between visitors, so the flags come from a separate no-store
+  // endpoint and are merged in once the signed-in user is known.
+  useEffect(() => {
+    const uid = session?.user?.id;
+    if (!uid) {
+      likedFetchedRef.current = new Set();
+      return;
+    }
+    const ids = items.map((c) => c.id).filter((id) => !likedFetchedRef.current.has(id));
+    if (ids.length === 0) return;
+    let cancelled = false;
+    fetch(`/api/fanart/likes?ids=${ids.join(",")}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !d) return;
+        ids.forEach((id) => likedFetchedRef.current.add(id));
+        const liked = new Set<string>(d.likedIds || []);
+        if (liked.size === 0) return;
+        setLikedIds((prev) => {
+          const next = new Set(prev);
+          liked.forEach((id) => next.add(id));
+          return next;
+        });
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [session?.user?.id, items]);
+
+  async function handleLike(fanArtId: string) {
+    if (!session?.user?.id) {
+      setLikeNudge(true);
+      setTimeout(() => setLikeNudge(false), 3000);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/fanart/${fanArtId}/like`, { method: "POST" });
+      const data = await res.json();
+      setItems((prev) =>
+        prev.map((c) => (c.id === fanArtId ? { ...c, likes: data.likes } : c))
+      );
+      setLikedIds((prev) => {
+        const next = new Set(prev);
+        if (data.liked) next.add(fanArtId);
+        else next.delete(fanArtId);
+        return next;
+      });
+    } catch {
+      // Transient like failure — leave the current state untouched.
+    }
+  }
+
+  function retry() {
+    pageRef.current = 1;
+    setError(false);
+    setFetchKey((k) => k + 1);
+  }
 
   async function loadMore() {
     if (loadingMore || !hasNextPage) return;
@@ -104,7 +240,8 @@ export default function FanArtGallery() {
   const isFiltered = activeFilters > 0 || sort !== "recent";
 
   return (
-    <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6">
+    <>
+    <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 animate-page-in">
       {/* Background glow */}
       <div
         aria-hidden
@@ -294,6 +431,27 @@ export default function FanArtGallery() {
               </div>
             ))}
           </div>
+        ) : error ? (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-panel flex flex-col items-center justify-center py-20 text-center"
+          >
+            <div className="relative mb-6 flex h-24 w-24 items-center justify-center">
+              <div className="absolute inset-0 animate-[spin_6s_linear_infinite] rounded-3xl border-2 border-dashed border-red-500/40" />
+              <span className="text-5xl">😵</span>
+            </div>
+            <p className="font-display text-xl font-bold text-white">Couldn&apos;t load the gallery</p>
+            <p className="mt-2 max-w-sm text-sm text-[var(--color-mute)]">
+              Something went wrong while fetching fan art. Check your connection and try again.
+            </p>
+            <button
+              onClick={retry}
+              className="neon-btn btn-magnetic mt-6 rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-2.5 font-display text-xs font-bold uppercase tracking-widest text-[var(--color-mute)] transition-colors hover:text-[var(--color-cyan)]"
+            >
+              ↻ Retry
+            </button>
+          </motion.div>
         ) : items.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -323,7 +481,13 @@ export default function FanArtGallery() {
           <>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {items.map((item, i) => (
-                <FanArtCard key={item.id} item={item} index={i} />
+                <FanArtCard
+                  key={item.id}
+                  item={item}
+                  index={i}
+                  liked={likedIds.has(item.id)}
+                  onLike={() => handleLike(item.id)}
+                />
               ))}
             </div>
 
@@ -352,5 +516,28 @@ export default function FanArtGallery() {
         )}
       </div>
     </div>
+
+    {/* Guest like nudge */}
+    <AnimatePresence>
+      {likeNudge && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
+          className="fixed bottom-6 left-1/2 z-[110] -translate-x-1/2"
+        >
+          <Link
+            href="/login"
+            className="flex items-center gap-2 rounded-full border border-[var(--color-cyan)]/30 bg-[var(--color-panel)]/95 px-5 py-2.5 text-sm font-semibold text-[var(--color-cyan)] shadow-lg backdrop-blur-md transition-colors hover:bg-[var(--color-cyan)]/10"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            Sign in to like fan art
+          </Link>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   );
 }

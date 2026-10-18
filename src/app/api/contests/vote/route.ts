@@ -17,6 +17,16 @@ export async function POST(req: NextRequest) {
   const now = new Date();
   if (now < contest.weekStart || now > contest.weekEnd) return NextResponse.json({ error: "Voting closed for this contest." }, { status: 400 });
 
+  // One vote per contest (the DB unique is per entry, so the UI alone used to
+  // be the only thing stopping a double vote via two API calls).
+  const existing = await prisma.contentContestVote.findFirst({
+    where: { contestId: entry.contestId, userId: session.user.id },
+    select: { entryId: true },
+  });
+  if (existing) {
+    return NextResponse.json({ error: "You already voted in this contest.", votedEntryId: existing.entryId }, { status: 409 });
+  }
+
   try {
     await prisma.contentContestVote.create({ data: { contestId: entry.contestId, entryId, userId: session.user.id } });
     await prisma.contentContestEntry.update({ where: { id: entryId }, data: { upvotes: { increment: 1 } } });

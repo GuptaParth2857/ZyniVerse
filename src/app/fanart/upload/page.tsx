@@ -5,6 +5,7 @@ import FanArtUpload from "@/components/FanArtUpload";
 
 export const metadata: Metadata = {
   title: "Upload Fan Art",
+  robots: { index: false, follow: true },
 };
 
 export default async function FanArtUploadPage() {
