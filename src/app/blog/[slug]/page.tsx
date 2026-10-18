@@ -9,6 +9,16 @@ interface Props {
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
+// Empty `generateStaticParams` => no build-time prerender, but Next.js only
+// enables on-demand ISR for a dynamic segment when it exists. Without it the
+// route renders dynamically on every request (no-store self-fetch also forced
+// that; it now uses a time-based revalidate instead).
+export const revalidate = 3600;
+
+export function generateStaticParams() {
+  return [];
+}
+
 // Fallback for slugless/broken slugs. noindex on purpose: without it every
 // missing slug would render HTTP 200 + the same "Blog Post" title, which
 // Google indexes as mass-duplicate soft-404s (seen in GSC as "Crawled -
@@ -24,7 +34,9 @@ const FALLBACK_METADATA: Metadata = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const res = await fetch(`${BASE_URL}/api/blog/${slug}`, { cache: "no-store" });
+    const res = await fetch(`${BASE_URL}/api/blog/${slug}`, {
+      next: { revalidate: 3600 },
+    });
 
     if (!res.ok) return FALLBACK_METADATA;
 
@@ -58,7 +70,9 @@ export default async function BlogPostPage({ params }: Props) {
   let post = null;
   let definitivelyMissing = false;
   try {
-    const res = await fetch(`${BASE_URL}/api/blog/${slug}`, { cache: "no-store" });
+    const res = await fetch(`${BASE_URL}/api/blog/${slug}`, {
+      next: { revalidate: 3600 },
+    });
     if (res.ok) {
       const data = await res.json();
       post = data.post || null;

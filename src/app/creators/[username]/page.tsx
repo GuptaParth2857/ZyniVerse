@@ -7,6 +7,13 @@ import { safeDecode } from "@/lib/url-params";
 
 export const revalidate = 172800;
 
+// Next.js only enables on-demand ISR for a dynamic segment when
+// `generateStaticParams` exists. Empty array => no build-time prerender, but
+// hits after the first are served from the CDN instead of a billed Node render.
+export function generateStaticParams() {
+  return [];
+}
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
 interface PageProps {

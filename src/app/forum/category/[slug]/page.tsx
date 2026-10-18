@@ -2,6 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ForumCategoryClient from "./ForumCategoryClient";
 
+// Next.js only enables on-demand ISR for a dynamic segment when
+// `generateStaticParams` exists. Empty array => no build-time prerender, but
+// hits after the first are served from the CDN instead of a billed Node render.
+export const revalidate = 1800;
+
+export function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const name = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, " ");

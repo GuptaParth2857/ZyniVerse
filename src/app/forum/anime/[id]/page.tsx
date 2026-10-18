@@ -2,6 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ForumAnimeClient from "./ForumAnimeClient";
 
+// Next.js only enables on-demand ISR for a dynamic segment when
+// `generateStaticParams` exists. Empty array => no build-time prerender, but
+// hits after the first are served from the CDN instead of a billed Node render.
+export const revalidate = 1800;
+
+export function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   return {

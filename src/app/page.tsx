@@ -4,14 +4,17 @@ import Image from "next/image";
 import {
   getHomepageData, getAiringSchedule,
 } from "@/lib/anilist";
+import { logError } from "@/lib/logger";
 
-// Dynamic on purpose: the homepage fetches AniList data. A static prerender
-// at build time gets rate-limited (AniList allows ~30 req/min per IP while a
-// build prerenders hundreds of pages) and with an empty shared cache the
-// old guard threw and killed every deployment. Rendering per request keeps
-// the build green and serves fresh data every visit; SEO HTML is unaffected
-// (still fully server-rendered).
-export const dynamic = "force-dynamic";
+// ISR, not per-request rendering. This was `force-dynamic` because a build-time
+// prerender can be rate-limited by AniList (~30 req/min per IP) and the
+// empty-data guard below then failed the whole deploy. Two things changed:
+// every other dynamic route now exports an empty `generateStaticParams`, so the
+// build no longer fires hundreds of AniList requests from one IP, and the
+// AniList calls fall back to the Prisma-backed cache when the live fetch fails.
+// The guard below is non-fatal too, so a bad prerender can never break a
+// deploy — ISR simply regenerates the page in the background.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "ZyniVerse — Anime Watch Order, Filler Guides & Episode Schedule",
@@ -47,7 +50,6 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 3600;
 import { FadeIn, PageTransition } from "@/components/PageTransition";
 import AuroraParticles from "@/components/AuroraParticles";
 import RevealTitle from "@/components/RevealTitle";
@@ -154,11 +156,15 @@ export default async function Home() {
     homepageData.topRated.length > 0;
 
   if (isBuild && !hasAnyAnime) {
-    throw new Error(
-      "Homepage prerender produced no AniList data. AniList rate-limits at 30 req/min " +
-        "per IP and a build prerenders hundreds of pages from one IP, so the live fetch " +
-        "is rate-limited and the shared Prisma cache had nothing to fall back on. " +
-        "Bailing out instead of shipping an empty homepage to the CDN.",
+    // Non-fatal on purpose. Failing the deploy is not obviously better than
+    // serving the static shell for one revalidate window, and this route is now
+    // ISR: the next request after the window regenerates it in the background.
+    logError(
+      new Error(
+        "Homepage prerender produced no AniList data. AniList rate-limits at 30 req/min " +
+          "per IP and a build prerenders hundreds of pages from one IP, so the live fetch " +
+          "may have been rate-limited and the shared Prisma cache had nothing to fall back on.",
+      ),
     );
   }
 

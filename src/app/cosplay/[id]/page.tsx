@@ -3,6 +3,15 @@ import CosplayDetailPage from "./client";
 
 const SITE = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
+// Next.js only enables on-demand ISR for a dynamic segment when
+// `generateStaticParams` exists. Empty array => no build-time prerender, but
+// hits after the first are served from the CDN instead of a billed Node render.
+export const revalidate = 21600;
+
+export function generateStaticParams() {
+  return [];
+}
+
 interface CosplayMeta {
   id: string;
   title: string;

@@ -133,7 +133,12 @@ async function fetchSource(cfg: SourceConfig): Promise<DubFeedSource> {
 
   try {
     const res = await fetch(cfg.feedUrl, {
-      cache: "no-store",
+      // Was `cache: "no-store"`, which forced every route that reads dub feeds
+      // (/hindi-dub-schedule/[channel], /indian-dubs) to render dynamically on
+      // every request — so the page-level `revalidate` never applied and every
+      // hit was a billed Node render. `next.revalidate` keeps the same ~30min
+      // freshness while letting those pages become ISR/CDN-cacheable again.
+      next: { revalidate: 1800 },
       headers: { "User-Agent": "ZyniVerse/1.0 (+https://zyverse.in)" },
     });
     if (!res.ok) throw new Error(`feed status ${res.status}`);

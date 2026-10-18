@@ -4,6 +4,15 @@ import { logError } from "@/lib/logger";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
+// Empty `generateStaticParams` => no build-time prerender, but Next.js only
+// enables on-demand ISR for a dynamic segment when it exists. Without it the
+// route renders dynamically on every request.
+export const revalidate = 86400;
+
+export function generateStaticParams() {
+  return [];
+}
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
@@ -11,7 +20,9 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const res = await fetch(`${BASE_URL}/api/wiki/${slug}`, { cache: "no-store" });
+    const res = await fetch(`${BASE_URL}/api/wiki/${slug}`, {
+      next: { revalidate: 86400 },
+    });
     if (res.ok) {
       const data = await res.json();
       return {

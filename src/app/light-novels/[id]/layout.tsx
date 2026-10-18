@@ -6,6 +6,15 @@ const getLightNovelCached = cache(getLightNovelDetail);
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
+// Next.js only enables on-demand ISR for a dynamic segment when
+// `generateStaticParams` exists (page.tsx here is a Client Component, so the
+// config lives in this layout). Empty array => no build-time prerender.
+export const revalidate = 172800;
+
+export function generateStaticParams() {
+  return [];
+}
+
 interface Props {
   params: Promise<{ id: string }>;
 }

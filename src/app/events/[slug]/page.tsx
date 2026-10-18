@@ -11,6 +11,15 @@ import EventDetailHero from "@/components/EventDetailHero";
 import EventDetailInfo from "@/components/EventDetailInfo";
 import EventTimeline from "@/components/EventTimeline";
 
+// Next.js only enables on-demand ISR for a dynamic segment when
+// `generateStaticParams` exists. Empty array => no build-time prerender, but
+// hits after the first are served from the CDN instead of a billed Node render.
+export const revalidate = 21600;
+
+export function generateStaticParams() {
+  return [];
+}
+
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
