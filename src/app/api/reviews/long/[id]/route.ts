@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { logError } from "@/lib/logger";
+import { withPublicCache } from "@/lib/api-cache";
 
 export async function GET(
   req: NextRequest,
@@ -13,26 +14,20 @@ export async function GET(
 
   try {
     const { id } = await params;
-    const session = await auth();
-    const userId = session?.user?.id;
 
     const review = await prisma.longReview.findUnique({
       where: { id },
       include: {
         user: { select: { id: true, username: true, avatar: true } },
-        ...(userId
-          ? { votes: { where: { userId }, select: { value: true } } }
-          : {}),
       },
     });
 
     if (!review) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    const { votes, ...rest } = review as typeof review & { votes?: { value: number }[] };
-
-    return NextResponse.json({
-      review: { ...rest, userVote: votes?.[0]?.value ?? null },
-    });
+    // The visitor's own review vote is fetched separately from
+    // /api/viewer-state, so this response is identical for everyone and can be
+    // served from the CDN.
+    return withPublicCache(NextResponse.json({ review }));
   } catch (e) {
     logError(e, "long-review-get");
     return NextResponse.json({ error: "Failed to fetch review" }, { status: 500 });

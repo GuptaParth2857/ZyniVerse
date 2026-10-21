@@ -5,6 +5,7 @@ import { apiLimiter } from "@/lib/rate-limiter";
 import { logError } from "@/lib/logger";
 import { notifyAllWebhooks } from "@/lib/webhook-dispatcher";
 import { awardForReason } from "@/lib/economy";
+import { withPublicCache } from "@/lib/api-cache";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
@@ -20,9 +21,6 @@ export async function GET(req: NextRequest) {
 
     if (!mediaId) return NextResponse.json({ error: "mediaId is required" }, { status: 400 });
 
-    const session = await auth();
-    const userId = session?.user?.id;
-
     const where = { mediaId: parseInt(mediaId) };
     const orderBy = sort === "recent"
       ? { createdAt: "desc" as const }
@@ -36,26 +34,19 @@ export async function GET(req: NextRequest) {
         take: limit,
         include: {
           user: { select: { id: true, username: true, avatar: true } },
-          ...(userId
-            ? { votes: { where: { userId }, select: { value: true } } }
-            : {}),
         },
       }),
       prisma.longReview.count({ where }),
     ]);
 
-    const items = reviews.map((r) => {
-      const { votes, ...rest } = r as typeof r & { votes?: { value: number }[] };
-      return {
-        ...rest,
-        userVote: votes?.[0]?.value ?? null,
-      };
-    });
-
-    return NextResponse.json({
-      reviews: items,
+    // The visitor's own review vote is fetched separately from
+    // /api/viewer-state, so this response is identical for everyone and can be
+    // served from the CDN.
+    const res = NextResponse.json({
+      reviews,
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
+    return withPublicCache(res);
   } catch (e) {
     logError(e, "long-reviews-get");
     return NextResponse.json({ error: "Failed to fetch reviews" }, { status: 500 });

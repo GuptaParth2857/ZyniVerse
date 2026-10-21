@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import MemeCard from "./MemeCard";
 import InfiniteScroll from "./InfiniteScroll";
 import { useSession } from "next-auth/react";
+import { applyUserVotes, fetchViewerState } from "@/lib/client/viewer-state";
 
 interface MemeItem {
   id: string;
@@ -76,14 +77,22 @@ export default function MemeFeed() {
         return;
       }
       const data = await res.json();
+      const next: MemeItem[] = data.items || [];
 
-      setItems((prev) => (append ? [...prev, ...data.items] : data.items));
+      if (status === "authenticated") {
+        // The visitor's own vote is fetched separately, so the feed itself
+        // stays identical for everyone and can come from the CDN.
+        const states = await fetchViewerState("memeVotes", next.map((m) => m.id));
+        applyUserVotes(next, states);
+      }
+
+      setItems((prev) => (append ? [...prev, ...next] : next));
       setHasNextPage(data.hasNextPage);
     } catch {
       if (!append) setError("Failed to load memes");
     }
     setLoading(false);
-  }, []);
+  }, [status]);
 
   const changeFilters = (newSort: string, newTag: string) => {
     setSort(newSort);
@@ -93,10 +102,11 @@ export default function MemeFeed() {
   };
 
   useEffect(() => {
+    if (status === "loading") return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchMemes(1, false, sort, tag);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [status]);
 
   const loadMore = () => {
     const nextPage = page + 1;

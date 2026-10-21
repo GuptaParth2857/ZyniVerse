@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { TOURNAMENT_SIZES, createTournament } from "@/lib/character-tournaments";
+import { withPrivateCache, withPublicCache } from "@/lib/api-cache";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
@@ -10,13 +11,13 @@ export async function GET(req: NextRequest) {
   const mine = url.searchParams.get("mine") === "1";
   const limit = Math.min(Number(url.searchParams.get("limit")) || 50, 100);
 
-  const session = await auth();
-
-  const where = mine
-    ? session?.user?.id
-      ? { creatorId: session.user.id }
-      : { id: "none" }
-    : {};
+  // Only the `mine=1` view is scoped to the visitor, so the session is only
+  // read on that path.
+  let where: Record<string, unknown> = {};
+  if (mine) {
+    const session = await auth();
+    where = session?.user?.id ? { creatorId: session.user.id } : { id: "none" };
+  }
 
   const statusOrder: Record<string, number> = { active: 0, upcoming: 1, completed: 2, cancelled: 3 };
 
@@ -36,7 +37,10 @@ export async function GET(req: NextRequest) {
       b.createdAt.getTime() - a.createdAt.getTime()
   );
 
-  return NextResponse.json(tournaments);
+  const res = NextResponse.json(tournaments);
+  // The public list is identical for everyone and can be served from the CDN;
+  // `?mine=1` is the visitor's own tournaments and must stay private.
+  return mine ? withPrivateCache(res) : withPublicCache(res);
 }
 
 export async function POST(req: NextRequest) {

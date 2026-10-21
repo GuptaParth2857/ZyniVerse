@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function GET_inner(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   const members = await prisma.clubMember.findMany({
@@ -46,4 +47,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   });
 
   return NextResponse.json({ member: updated });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

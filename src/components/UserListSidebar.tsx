@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 interface ListSummary {
   id: string;
@@ -11,16 +12,20 @@ interface ListSummary {
 }
 
 export default function UserListSidebar({ userId }: { userId: string }) {
+  const { data: session } = useSession();
   const [lists, setLists] = useState<ListSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/lists?userId=${userId}&limit=5`)
+    // `mine=1` is the owner's own view: it may include their private lists and
+    // is therefore never served from the CDN cache.
+    const mine = session?.user?.id && session.user.id === userId ? "&mine=1" : "";
+    fetch(`/api/lists?userId=${userId}&limit=5${mine}`)
       .then((r) => r.json())
       .then((d) => setLists(d.lists || []))
       .catch(() => setLists([]))
       .finally(() => setLoading(false));
-  }, [userId]);
+  }, [userId, session?.user?.id]);
 
   if (loading) return null;
   if (lists.length === 0) return null;

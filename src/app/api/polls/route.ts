@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { createPoll, getPolls } from "@/lib/polls";
+import { withPublicCache } from "@/lib/api-cache";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
@@ -10,9 +11,10 @@ export async function GET(req: NextRequest) {
   const perPage = Math.min(50, Math.max(1, Number(searchParams.get("perPage")) || 20));
 
   try {
-    const session = await auth();
-    const result = await getPolls(activeOnly, page, perPage, session?.user?.id);
-    return NextResponse.json(result);
+    // The visitor's own vote is fetched separately from /api/viewer-state, so
+    // this response is identical for everyone and can be served from the CDN.
+    const result = await getPolls(activeOnly, page, perPage);
+    return withPublicCache(NextResponse.json(result));
   } catch {
     return NextResponse.json({ error: "Failed to fetch polls" }, { status: 500 });
   }

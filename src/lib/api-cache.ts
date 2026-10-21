@@ -42,3 +42,21 @@ export function withPublicCache(res: Response): Response {
   }
   return res;
 }
+
+/**
+ * Marks a response as visitor-specific: it must never be stored in the shared
+ * CDN cache.
+ *
+ * Needed by routes that answer with the same URL but a different body per
+ * caller (a private list, `?mine=1` views). Vercel's CDN only skips the cache
+ * for requests carrying an `Authorization` header — a session *cookie* does
+ * not skip it — so a personalized response has to opt out explicitly.
+ */
+export function withPrivateCache(res: Response): Response {
+  try {
+    res.headers.set("Cache-Control", "private, no-store, max-age=0");
+  } catch {
+    // Immutable headers — the route already decides its own caching.
+  }
+  return res;
+}

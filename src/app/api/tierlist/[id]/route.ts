@@ -1,11 +1,10 @@
 import { prisma } from "@/lib/prisma";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+async function GET_inner(req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   const tierList = await prisma.tierList.findUnique({
@@ -84,4 +83,9 @@ export async function DELETE(
 
   await prisma.tierList.delete({ where: { id } });
   return NextResponse.json({ ok: true });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

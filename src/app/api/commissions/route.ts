@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const category = searchParams.get("category");
   const search = searchParams.get("search");
@@ -89,4 +90,9 @@ export async function POST(req: NextRequest) {
       _count: undefined,
     },
   });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

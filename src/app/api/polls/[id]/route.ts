@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getPollById, deletePoll } from "@/lib/polls";
+import { withPublicCache } from "@/lib/api-cache";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
   const { id } = await params;
-  const userId = session?.user?.id;
 
   try {
-    const poll = await getPollById(id, userId);
+    // The visitor's own vote is fetched separately from /api/viewer-state, so
+    // this response is identical for everyone and can be served from the CDN.
+    const poll = await getPollById(id);
     if (!poll) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json({ poll });
+    return withPublicCache(NextResponse.json({ poll }));
   } catch {
     return NextResponse.json({ error: "Failed to fetch poll" }, { status: 500 });
   }

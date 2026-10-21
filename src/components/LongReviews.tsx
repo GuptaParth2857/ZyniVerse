@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { applyUserVotes, fetchViewerState } from "@/lib/client/viewer-state";
 
 interface ReviewUser {
   id: string;
@@ -67,7 +68,7 @@ function renderMarkdown(text: string) {
 }
 
 export default function LongReviews({ mediaId, mediaTitle, mediaImage }: Props) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [reviews, setReviews] = useState<LongReviewData[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -95,10 +96,19 @@ export default function LongReviews({ mediaId, mediaTitle, mediaImage }: Props) 
         return;
       }
       const data = await res.json();
+      const list: LongReviewData[] = data.reviews || [];
+
+      if (status === "authenticated") {
+        // The visitor's own review vote is fetched separately, so the review
+        // list stays identical for everyone and can come from the CDN.
+        const states = await fetchViewerState("reviewVotes", list.map((r) => r.id));
+        applyUserVotes(list, states);
+      }
+
       if (append) {
-        setReviews((prev) => [...prev, ...data.reviews]);
+        setReviews((prev) => [...prev, ...list]);
       } else {
-        setReviews(data.reviews || []);
+        setReviews(list);
       }
       setHasMore(data.pagination?.page < data.pagination?.totalPages);
     } catch {
@@ -107,13 +117,14 @@ export default function LongReviews({ mediaId, mediaTitle, mediaImage }: Props) 
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [mediaId]);
+  }, [mediaId, status]);
 
   useEffect(() => {
+    if (status === "loading") return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
     fetchReviews(1, sort, false);
-  }, [sort, fetchReviews]);
+  }, [sort, fetchReviews, status]);
 
   useEffect(() => {
     if (page > 1) {

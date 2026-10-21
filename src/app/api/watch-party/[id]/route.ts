@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import {
   getParty, updateEpisode, startParty, endParty,
   sendPartyMessage, setVideoSource, updatePlaybackState,
 } from "@/lib/watch-party";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+async function GET_inner(req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const party = await getParty(id);
   if (!party) {
@@ -74,4 +73,9 @@ export async function DELETE(
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 400 });
   }
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

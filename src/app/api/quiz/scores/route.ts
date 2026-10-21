@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ id: quizScore.id });
 }
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const category = searchParams.get("category");
   const difficulty = searchParams.get("difficulty");
@@ -66,4 +67,9 @@ export async function GET(req: NextRequest) {
     .slice(0, limit);
 
   return NextResponse.json({ scores: result });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

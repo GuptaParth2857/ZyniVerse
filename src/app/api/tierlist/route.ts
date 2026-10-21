@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
   const sort = searchParams.get("sort") || "recent";
@@ -89,4 +90,9 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({ tierList: { ...tierList, voteCount: tierList._count.votes, _count: undefined } }, { status: 201 });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

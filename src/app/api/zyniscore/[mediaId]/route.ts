@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import { getZyniScore, submitRating } from "@/lib/zyniscore";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ mediaId: string }> }
-) {
+async function GET_inner(_req: NextRequest,
+  { params }: { params: Promise<{ mediaId: string }> }) {
   const { mediaId: mediaIdStr } = await params;
   const mediaId = Number(mediaIdStr);
   if (!mediaId) return NextResponse.json({ error: "Invalid mediaId" }, { status: 400 });
@@ -32,4 +31,9 @@ export async function POST(
 
   const score = await submitRating(session.user.id, mediaId, Number(rating));
   return NextResponse.json(score);
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

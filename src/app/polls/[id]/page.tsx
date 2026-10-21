@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import Loader from "@/components/Loader";
+import { fetchViewerState } from "@/lib/client/viewer-state";
 
 interface PollOption {
   id: string;
@@ -27,28 +28,43 @@ interface Poll {
 
 export default function PollDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [poll, setPoll] = useState<Poll | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (status === "loading") return;
     fetch(`/api/polls/${id}`)
       .then((r) => r.json())
-      .then((data) => setPoll(data.poll))
+      .then(async (data) => {
+        const current: Poll | undefined = data.poll;
+        if (current && status === "authenticated") {
+          // The visitor's own vote is fetched separately, so the poll itself
+          // stays identical for everyone and can come from the CDN.
+          const states = await fetchViewerState("pollVotes", [current.id]);
+          const vote = states[current.id];
+          if (vote !== undefined) current.userVote = (vote as string | null) ?? null;
+        }
+        return current;
+      })
+      .then((current) => setPoll(current ?? null))
       .catch(() => setPoll(null))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, status]);
 
   async function handleVote(optionId: string) {
     if (poll?.userVote || !session) return;
-    await fetch(`/api/polls/${id}/vote`, {
+    const res = await fetch(`/api/polls/${id}/vote`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ optionId }),
     });
-    const data = await fetch(`/api/polls/${id}`).then((r) => r.json());
-    setPoll(data.poll);
+    if (res.ok) {
+      // The vote response already carries the visitor's own vote.
+      const data = await res.json();
+      setPoll(data.poll);
+    }
   }
 
   if (loading) return <Loader />;

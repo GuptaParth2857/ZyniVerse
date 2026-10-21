@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { checkAndAwardAchievement } from "@/lib/achievements-server";
 import { awardForReason } from "@/lib/economy";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function GET_inner(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "1");
@@ -65,4 +66,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (replyCount >= 50) checkAndAwardAchievement(session.user.id, "HELPER").catch(() => {});
 
   return NextResponse.json({ post }, { status: 201 });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

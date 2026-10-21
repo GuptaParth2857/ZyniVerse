@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function GET_inner(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   const club = await prisma.club.findFirst({
@@ -105,4 +106,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   await prisma.club.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

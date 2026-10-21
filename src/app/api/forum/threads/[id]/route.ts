@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function GET_inner(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "1");
@@ -84,4 +85,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   });
 
   return NextResponse.json({ success: true });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
 import { auth } from "@/lib/auth";
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function GET_inner(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const comments = await prisma.reelComment.findMany({
@@ -48,4 +49,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     logError(e);
     return NextResponse.json({ error: "Failed to post comment" }, { status: 500 });
   }
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

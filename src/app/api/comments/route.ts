@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { awardForReason } from "@/lib/economy";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const postId = searchParams.get("postId");
   if (!postId) return NextResponse.json({ error: "Missing postId" }, { status: 400 });
@@ -42,4 +43,9 @@ export async function POST(req: NextRequest) {
   awardForReason(session.user.id, "COMMENT_POSTED", comment.id).catch(() => {});
 
   return NextResponse.json({ comment }, { status: 201 });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -53,7 +54,7 @@ function getDailyAnime(): DailyAnime {
   return POPULAR_ANIME[dayIndex % POPULAR_ANIME.length];
 }
 
-export async function GET() {
+async function GET_inner() {
   const daily = getDailyAnime();
   return NextResponse.json({
     mediaId: daily.mediaId,
@@ -174,4 +175,9 @@ export async function POST(req: NextRequest) {
     gameOver: isGameOver,
     target: isGameOver ? { title: daily.title } : undefined,
   });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
 import { resolveUserId } from "@/lib/resolve-user";
@@ -20,7 +21,7 @@ async function getOrCreateAnonymousUser() {
   return anon.id;
 }
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
@@ -109,4 +110,9 @@ export async function POST(req: NextRequest) {
     logError(e);
     return NextResponse.json({ error: "Failed to save moment" }, { status: 500 });
   }
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

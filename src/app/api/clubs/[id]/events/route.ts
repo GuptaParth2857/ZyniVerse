@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+async function GET_inner(_req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }) {
   const { id: clubId } = await params;
   const events = await prisma.clubEvent.findMany({
     where: { clubId },
@@ -83,4 +82,9 @@ export async function PUT(
   });
 
   return NextResponse.json({ event });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

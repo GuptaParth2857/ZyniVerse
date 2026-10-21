@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { invalidateCached } from "@/lib/wiki-cache";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+async function GET_inner(_req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const fanArt = await prisma.fanArt.findUnique({
     where: { id },
@@ -80,4 +79,9 @@ export async function DELETE(
   await prisma.fanArt.delete({ where: { id } });
   invalidateCached("fanart:");
   return NextResponse.json({ success: true });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

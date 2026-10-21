@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string; postId: string }> }
-) {
+async function GET_inner(_req: NextRequest,
+  { params }: { params: Promise<{ id: string; postId: string }> }) {
   const { id: _clubId, postId } = await params;
   const comments = await prisma.clubPostComment.findMany({
     where: { clubPostId: postId },
@@ -47,4 +46,9 @@ export async function POST(
   }).catch(() => {});
 
   return NextResponse.json({ comment }, { status: 201 });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

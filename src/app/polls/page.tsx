@@ -7,20 +7,32 @@ import { PageTransition } from "@/components/PageTransition";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import PollCard from "@/components/PollCard";
 import Loader from "@/components/Loader";
+import { applyUserVotes, fetchViewerState } from "@/lib/client/viewer-state";
 import type { PollData } from "@/lib/polls";
 
 export default function PollsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [polls, setPolls] = useState<PollData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (status === "loading") return;
     fetch("/api/polls?perPage=50")
       .then((r) => r.json())
-      .then((data) => setPolls(data.polls || []))
+      .then(async (data) => {
+        const list: PollData[] = data.polls || [];
+        if (status === "authenticated") {
+          // The visitor's own vote is fetched separately, so the poll list
+          // itself stays identical for everyone and can come from the CDN.
+          const states = await fetchViewerState("pollVotes", list.map((p) => p.id));
+          applyUserVotes(list, states);
+        }
+        return list;
+      })
+      .then((list) => setPolls(list))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [status]);
 
   async function handleVote(pollId: string, optionId: string) {
     const res = await fetch(`/api/polls/${pollId}/vote`, {

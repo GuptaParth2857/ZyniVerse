@@ -807,16 +807,20 @@ function timeAgo(dateStr: string): string {
 }
 
 function ProfileLists({ userId, themeColor }: { userId: string; themeColor: string }) {
+  const { data: session } = useSession();
   const [lists, setLists] = useState<Array<{ id: string; title: string; type: string; isPublic: boolean; itemCount: number; likes: number; createdAt: string }>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/lists?userId=${userId}&sort=recent&limit=50`)
+    // `mine=1` is the owner's own view: it may include their private lists and
+    // is therefore never served from the CDN cache.
+    const mine = session?.user?.id && session.user.id === userId ? "&mine=1" : "";
+    fetch(`/api/lists?userId=${userId}&sort=recent&limit=50${mine}`)
       .then((r) => r.json())
       .then((d) => setLists(d.lists || []))
       .catch(() => setLists([]))
       .finally(() => setLoading(false));
-  }, [userId]);
+  }, [userId, session?.user?.id]);
 
   if (loading) return (
     <div className="space-y-2">

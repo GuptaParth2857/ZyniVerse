@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { dedupedFetch, invalidateCached } from "@/lib/wiki-cache";
+import { withPublicCache } from "@/lib/api-cache";
 export const dynamic = "force-dynamic";
 
 // See the cosplay route: the remote pooler makes an uncached page read
@@ -12,7 +13,6 @@ const FEED_TTL_MS = 30_000;
 
 const memeInclude = {
   user: { select: { id: true, username: true, avatar: true } },
-  votes: { select: { value: true } },
 } satisfies Prisma.MemeInclude;
 
 type MemeRow = Prisma.MemeGetPayload<{ include: typeof memeInclude }>;
@@ -80,27 +80,16 @@ export async function GET(req: NextRequest) {
     FEED_TTL_MS,
   );
 
-  const session = await auth();
-  const userId = session?.user?.id;
-  let idToUserVote = new Map<string, number>();
-  if (userId && memes.length > 0) {
-    const mine = await prisma.memeVote.findMany({
-      where: { userId, memeId: { in: memes.map((m) => m.id) } },
-      select: { memeId: true, value: true },
-    });
-    idToUserVote = new Map(mine.map((v) => [v.memeId, v.value]));
-  }
-
-  const items = memes.map((m) => ({ ...m, userVote: idToUserVote.get(m.id) ?? 0 }));
-
-  return NextResponse.json({
-    items,
+  // The feed is public: the visitor's own vote is fetched separately from
+  // /api/viewer-state so this response can be served from the CDN cache.
+  const res = NextResponse.json({
+    items: memes,
     total,
     page,
     hasNextPage: page * perPage < total,
   });
+  return withPublicCache(res);
 }
-
 export async function POST(req: NextRequest) {
   const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;

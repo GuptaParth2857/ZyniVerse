@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { withPublicCache } from "@/lib/api-cache";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const language = searchParams.get("language") || "HINDI";
   const requests = await prisma.dubRequest.groupBy({
@@ -35,4 +36,9 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Already requested" }, { status: 409 });
   }
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

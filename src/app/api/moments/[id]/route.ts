@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function GET_inner(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const moment = await prisma.moment.findUnique({
@@ -56,4 +57,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     logError(e);
     return NextResponse.json({ error: "Failed to delete moment" }, { status: 500 });
   }
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

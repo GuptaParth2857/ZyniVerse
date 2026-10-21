@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { hasValidAnimeTag, getAnimeTagError } from "@/lib/blog-tags";
 import { submitToIndexNow } from "@/lib/indexnow";
+import { withPrivateCache, withPublicCache } from "@/lib/api-cache";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,7 +15,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     include: {
       user: { select: { id: true, username: true, avatar: true } },
       _count: { select: { comments: true, likes: true } },
-      ...(userId ? { likes: { where: { userId }, select: { id: true } } } : {}),
     },
   });
 
@@ -26,20 +26,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     await prisma.blogPost.update({ where: { id: post.id }, data: { viewCount: { increment: 1 } } });
   }
 
-  const isLiked = userId ? ((post as { likes?: { id: string }[] }).likes?.length ?? 0) > 0 : false;
-
-  return NextResponse.json({
+  // The visitor's own like is fetched separately from /api/viewer-state, so a
+  // published post can be served from the CDN cache. A draft is only visible
+  // to its author and must never be shared.
+  const res = NextResponse.json({
     post: {
       ...post,
       commentCount: post._count.comments,
       likeCount: post._count.likes,
-      isLiked,
       _count: undefined,
-      likes: undefined,
     },
     author: post.user,
-    isLiked,
   });
+  return post.isDraft ? withPrivateCache(res) : withPublicCache(res);
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

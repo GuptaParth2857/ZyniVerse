@@ -3,11 +3,15 @@ import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { checkAndAwardAchievement } from "@/lib/achievements-server";
+import { withPrivateCache, withPublicCache } from "@/lib/api-cache";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
+  // `mine=1` is the owner's own view: it may include their private lists and
+  // is therefore never shared through the CDN.
+  const mine = searchParams.get("mine") === "1";
   const sort = searchParams.get("sort") || "recent";
   const search = searchParams.get("search");
   const category = searchParams.get("category");
@@ -20,7 +24,9 @@ export async function GET(req: NextRequest) {
   const where: Record<string, unknown> = {};
   if (userId) {
     where.userId = userId;
-    if (ownerId !== userId) where.isPublic = true;
+    // Without `mine=1` only public lists are returned, so the response is the
+    // same for every visitor and can be cached by the CDN.
+    if (!mine || ownerId !== userId) where.isPublic = true;
   } else {
     where.isPublic = true;
   }
@@ -68,7 +74,10 @@ export async function GET(req: NextRequest) {
     items: undefined,
   }));
 
-  return NextResponse.json({ lists: result, total });
+  const res = NextResponse.json({ lists: result, total });
+  // The owner's own view can contain private lists, so it must never be stored
+  // in the shared cache. Every other view is public data.
+  return mine ? withPrivateCache(res) : withPublicCache(res);
 }
 
 export async function POST(req: NextRequest) {

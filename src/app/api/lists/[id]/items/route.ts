@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
+import { withPrivateCache, withPublicCache } from "@/lib/api-cache";
 export const dynamic = "force-dynamic";
 
 export async function GET(
@@ -20,7 +21,11 @@ export async function GET(
     orderBy: { order: "asc" },
   });
 
-  return NextResponse.json({ items });
+  const res = NextResponse.json({ items });
+  // The contents of a public list are the same for every visitor, so the CDN
+  // can serve them. A private list is only visible to its owner and must never
+  // be stored in the shared cache.
+  return list.isPublic ? withPublicCache(res) : withPrivateCache(res);
 }
 
 export async function POST(

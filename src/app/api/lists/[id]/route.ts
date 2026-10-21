@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 import { NextRequest, NextResponse } from "next/server";
+import { withPrivateCache, withPublicCache } from "@/lib/api-cache";
 
 export async function GET(
   req: NextRequest,
@@ -22,25 +23,13 @@ export async function GET(
   if (!list) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!list.isPublic && list.userId !== session?.user?.id) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  let isLiked = false;
-  let voteValue = 0;
-  if (session?.user?.id) {
-    const like = await prisma.userListLike.findUnique({
-      where: { listId_userId: { listId: id, userId: session.user.id } },
-    });
-    isLiked = !!like;
-    const vote = await prisma.listVote.findUnique({
-      where: { listId_userId: { listId: id, userId: session.user.id } },
-    });
-    voteValue = vote?.value ?? 0;
-  }
-
-  return NextResponse.json({
+  // The visitor's own like / vote / ownership is fetched separately from
+  // /api/viewer-state, so a public list can be served from the CDN cache. A
+  // private list is only visible to its owner and must never be shared.
+  const res = NextResponse.json({
     list: { ...list, itemCount: list._count.items, _count: undefined },
-    isOwner: session?.user?.id === list.userId,
-    isLiked,
-    voteValue,
   });
+  return list.isPublic ? withPublicCache(res) : withPrivateCache(res);
 }
 
 export async function PUT(
