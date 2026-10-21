@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { fetchWeeklyAiringSchedule } from "@/lib/anilist-schedule";
 
 // Dynamic, not ISR: this route hits the AniList GraphQL API. ISR was
 // forcing a build-time prerender that could hang `next build`.
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+async function GET_inner() {
   try {
     const schedule = await fetchWeeklyAiringSchedule();
     const grouped: Record<string, typeof schedule> = {};
@@ -29,4 +30,10 @@ export async function GET() {
       error: error instanceof Error ? error.message : "Failed to fetch",
     });
   }
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

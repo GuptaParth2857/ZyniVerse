@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { getBracketData } from "@/lib/zyni-awards";
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ year: string }> }
-) {
+async function GET_inner(req: NextRequest,
+  { params }: { params: Promise<{ year: string }> }) {
   const { year: yearStr } = await params;
   const year = Number(yearStr);
   const { searchParams } = new URL(req.url);
@@ -18,4 +17,10 @@ export async function GET(
 
   const bracket = await getBracketData(year, category, round);
   return NextResponse.json({ bracket, round });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

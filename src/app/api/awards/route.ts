@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { ALL_AWARDS, AWARD_YEARS, AWARD_PLATFORMS, AWARD_TYPES, getAwardsByFilters } from "@/lib/awards-data";
 import { resolveImage } from "@/lib/image-resolver";
@@ -6,7 +7,7 @@ import { logError } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const yearParam = searchParams.get("year");
   const platformParam = searchParams.get("platform");
@@ -100,4 +101,10 @@ export async function GET(req: NextRequest) {
     types: AWARD_TYPES,
     source: "static",
   });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

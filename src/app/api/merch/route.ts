@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+async function GET_inner() {
   try {
     const products = await prisma.product.findMany({
       where: { active: true },
@@ -27,4 +28,9 @@ export async function GET() {
   } catch {
     return NextResponse.json({ error: "Failed to load products" }, { status: 500 });
   }
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

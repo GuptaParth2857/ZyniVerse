@@ -6,7 +6,7 @@ import { getRSSNewsById } from "@/lib/news";
 // Next.js only enables on-demand ISR for a dynamic segment when
 // `generateStaticParams` exists. Empty array => no build-time prerender, but
 // hits after the first are served from the CDN instead of a billed Node render.
-export const revalidate = 3600;
+export const revalidate = 21600;
 
 export function generateStaticParams() {
   return [];
@@ -81,6 +81,14 @@ export default async function NewsDetailPage({ params }: Props) {
     item = null;
   }
   if (!item) notFound();
+
+  // Both RSS feeds report `source: "News"`, so the publisher is derived from
+  // the item id prefix instead of the source field.
+  const publisher = item.id.startsWith("ann-")
+    ? "Anime News Network"
+    : item.id.startsWith("mal-")
+      ? "MyAnimeList"
+      : item.source;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -158,21 +166,38 @@ export default async function NewsDetailPage({ params }: Props) {
 
         <div className="h-px bg-gradient-to-r from-transparent via-[var(--color-line)] to-transparent mb-8" />
 
-        {item.content ? (
-          <div
-            className="prose-custom text-[var(--color-mute)] leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: item.content }}
-          />
-        ) : (
-          <div className="text-center py-10">
-            <p className="text-sm text-[var(--color-mute)] mb-4">Full article content available on the original source.</p>
-          </div>
-        )}
+        {/*
+          Excerpt only. The RSS feed carries the *full* upstream article HTML,
+          and republishing it verbatim duplicated the source (plus its ad and
+          tracking markup) on every news page. The article body is therefore
+          not rendered here: the summary above is a plain-text excerpt and the
+          only copy of the full story is a link to the original publisher.
+        */}
+        <div className="rounded-2xl neon-rgb-border bg-[var(--color-panel)]/60 p-6 sm:p-8">
+          <p className="text-sm text-[var(--color-mute)] leading-relaxed">
+            That is the excerpt. The full article is published by{" "}
+            <span className="text-[var(--color-cyan)] font-semibold">
+              {publisher}
+            </span>
+            , and ZyniVerse links out instead of republishing it.
+          </p>
+          {item.url && item.url.startsWith("http") && (
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 rounded-full neon-rgb-border px-5 py-2 text-xs font-bold text-[var(--color-cyan)] hover:bg-[var(--color-cyan)]/5 transition-all"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+              Read the full article at the source
+            </a>
+          )}
+        </div>
 
         {item.url && item.url.startsWith("http") && (
           <div className="mt-12 rounded-2xl neon-rgb-border bg-[var(--color-panel)] p-6 text-center">
             <p className="text-xs text-[var(--color-mute)] mb-3">
-              Originally published on {item.source === "News" ? "Anime News Network" : "MyAnimeList"}
+              Originally published on {publisher}
             </p>
             <a
               href={item.url}

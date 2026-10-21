@@ -54,7 +54,12 @@ async function fetchEpgPwDay(channelId: number, date: Date): Promise<EpgPwEntry[
   const url = `${EPG_PW_BASE}?channel_id=${channelId}&lang=en&date=${dateStr}&timezone=Asia%2FKolkata`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 1800 }, signal: AbortSignal.timeout(10000) });
+    // 24h, not 30 minutes. Next.js takes the *lowest* `next.revalidate` inside a
+    // route as that route's effective ISR window, so a 30-minute fetch dragged
+    // every page that renders an EPG grid down to a 30-minute TTL — and each of
+    // those pages then rewrote its cache entry 48 times a day. The EPG grid is
+    // a daily channel listing that only changes once a day.
+    const res = await fetch(url, { next: { revalidate: 86400 }, signal: AbortSignal.timeout(10000) });
     if (!res.ok) return [];
     const data: EpgPwResponse = await res.json();
     if (data.error_message || !data.epg_list) return [];

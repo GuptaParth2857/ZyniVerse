@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { getCharacter, getAnimeDetailFull, getAnimeCharacters } from "@/lib/anilist";
 import { anilistLimiter } from "@/lib/rate-limiter";
 
@@ -8,7 +9,7 @@ function normalizeName(s: string) {
   return (s || "").toLowerCase().replace(/[\s\-_.'"]+/g, "");
 }
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const rateCheck = await anilistLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
@@ -58,4 +59,10 @@ export async function GET(req: NextRequest) {
   } catch {
     return NextResponse.json({ image: null, source: null });
   }
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

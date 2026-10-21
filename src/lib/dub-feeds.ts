@@ -138,7 +138,10 @@ async function fetchSource(cfg: SourceConfig): Promise<DubFeedSource> {
       // every request — so the page-level `revalidate` never applied and every
       // hit was a billed Node render. `next.revalidate` keeps the same ~30min
       // freshness while letting those pages become ISR/CDN-cacheable again.
-      next: { revalidate: 1800 },
+      // 6h, not 30 minutes: this fetch is the lowest `next.revalidate` inside
+      // every dub-schedule route, so it used to set their effective ISR window
+      // to 30 minutes. Dub listings change at most once a day.
+      next: { revalidate: 21600 },
       headers: { "User-Agent": "ZyniVerse/1.0 (+https://zyverse.in)" },
     });
     if (!res.ok) throw new Error(`feed status ${res.status}`);

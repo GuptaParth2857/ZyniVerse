@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { getLiveAdConfig } from "@/lib/ad-config";
 
 export const revalidate = 86400;
 
-export async function GET() {
+async function GET_inner() {
   try {
     const placements = await getLiveAdConfig();
     return NextResponse.json({
@@ -22,4 +23,10 @@ export async function GET() {
   } catch {
     return NextResponse.json({ placements: [] }, { status: 500 });
   }
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

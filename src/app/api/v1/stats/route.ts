@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+async function GET_inner() {
   try {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -29,4 +30,10 @@ export async function GET() {
     console.error("API stats error:", e);
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

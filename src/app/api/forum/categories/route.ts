@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+async function GET_inner() {
   const categories = await prisma.forumCategory.findMany({
     where: { isActive: true },
     orderBy: { sortOrder: "asc" },
@@ -20,4 +21,10 @@ export async function GET() {
       threadCount: c._count.threads,
     })),
   });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

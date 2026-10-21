@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { THEME_SONGS } from "@/lib/data/themes";
 import { logError } from "@/lib/logger";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ mediaId: string }> }) {
+async function GET_inner(req: NextRequest, { params }: { params: Promise<{ mediaId: string }> }) {
   const { mediaId } = await params;
   const id = parseInt(mediaId, 10);
   if (isNaN(id)) return NextResponse.json({ error: "Invalid mediaId" }, { status: 400 });
@@ -42,4 +43,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ medi
   }
 
   return NextResponse.json({ themes: [] });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

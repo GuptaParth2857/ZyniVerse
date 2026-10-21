@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { withPublicCache } from "@/lib/api-cache";
 import { NextResponse } from "next/server";
 import { resolveUserId } from "@/lib/resolve-user";
 
 const REACTIONS = ["wow", "hype", "cry", "lol", "sleep"] as const;
 
-export async function GET(request: Request, { params }: { params: Promise<{ mediaId: string; ep: string }> }) {
+async function GET_inner(request: Request, { params }: { params: Promise<{ mediaId: string; ep: string }> }) {
   const { mediaId, ep } = await params;
   const mediaIdNum = Number(mediaId);
   const epNum = Number(ep);
@@ -72,4 +73,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ med
   for (const r of reactions) counts[r.reaction] = (counts[r.reaction] || 0) + 1;
 
   return NextResponse.json({ counts, mine, total: reactions.length });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

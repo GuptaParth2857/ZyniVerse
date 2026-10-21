@@ -83,7 +83,10 @@ function setCache(key: string, data: unknown): void {
 async function fetchJson(path: string): Promise<{ items?: unknown[] }> {
   const sep = path.includes("?") ? "&" : "?";
   const res = await fetch(`${ENDPOINT}${path}${sep}key=${API_KEY}`, {
-    next: { revalidate: 12 * 60 * 60 },
+    // 24h — YouTube video metadata is effectively static, and this fetch is the
+    // lowest `next.revalidate` inside the routes that use it, so it sets their
+    // effective ISR window.
+    next: { revalidate: 24 * 60 * 60 },
   });
   if (!res.ok) {
     throw new Error(`YouTube API request failed (${res.status})`);

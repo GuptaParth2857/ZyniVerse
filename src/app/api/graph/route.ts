@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { getAnimeCharacters, getCharacter, bestTitle } from "@/lib/anilist";
 import {
   dedupe,
@@ -67,7 +68,7 @@ function seedOf(raw: string | null): string | null {
     : nodeId("anime", trimmed);
 }
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const params = req.nextUrl.searchParams;
   const seed = seedOf(params.get("seed"));
   const to = seedOf(params.get("to"));
@@ -289,4 +290,9 @@ async function fromAnime(id: string): Promise<Built> {
   );
 
   return { nodes, edges, failures };
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

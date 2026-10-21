@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { withPublicCache } from "@/lib/api-cache";
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
 
-export async function GET(request: Request) {
+async function GET_inner(request: Request) {
   const url = new URL(request.url);
   const gender = url.searchParams.get("gender");
   const ageFrom = url.searchParams.get("ageFrom");
@@ -35,4 +36,9 @@ export async function GET(request: Request) {
   ]);
 
   return NextResponse.json({ characters: results, page, perPage, total, hasMore: page * perPage < total });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

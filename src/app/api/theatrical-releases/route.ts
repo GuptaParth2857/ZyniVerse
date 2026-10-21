@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { computeTheatricalStats, THEATRICAL_STATS } from "@/lib/theatrical-releases";
 import { getTheatricalEntries } from "@/lib/editorial";
 export const dynamic = "force-dynamic";
 
-export async function GET(request: Request) {
+async function GET_inner(request: Request) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status") as "released" | "upcoming" | "all" | null;
   const year = searchParams.get("year");
@@ -37,4 +38,10 @@ export async function GET(request: Request) {
     stats: { ...computeTheatricalStats(entries), lastUpdated: lastUpdated ?? THEATRICAL_STATS.lastUpdated },
     total: filtered.length,
   });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

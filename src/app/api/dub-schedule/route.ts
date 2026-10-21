@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { getDubbedEntries } from "@/lib/editorial";
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ interface DubAnime {
   score: string;
 }
 
-export async function GET(request: Request) {
+async function GET_inner(request: Request) {
   const { searchParams } = new URL(request.url);
   const language = searchParams.get("language") || "all";
 
@@ -74,4 +75,9 @@ export async function GET(request: Request) {
       recent,
     },
   });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { dedupedFetch } from "@/lib/wiki-cache";
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ async function fetchDevToArticle(id: string): Promise<DevToArticle | null> {
   }
 }
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
@@ -70,4 +71,10 @@ export async function GET(req: NextRequest) {
   };
 
   return NextResponse.json({ post });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

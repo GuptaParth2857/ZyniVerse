@@ -29,7 +29,7 @@ interface CosplayMeta {
 async function fetchCosplay(id: string): Promise<CosplayMeta | null> {
   try {
     const res = await fetch(`${SITE}/api/cosplay/${id}`, {
-      next: { revalidate: 1800 },
+      next: { revalidate: 21600 },
     });
     if (!res.ok) return null;
     const data = await res.json();

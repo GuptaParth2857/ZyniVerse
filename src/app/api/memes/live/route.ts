@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { apiLimiter } from "@/lib/rate-limiter";
 export const dynamic = "force-dynamic";
@@ -39,7 +40,7 @@ async function dbFallback(count: number): Promise<unknown[]> {
   }
 }
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
@@ -101,4 +102,9 @@ export async function GET(req: NextRequest) {
 
   cache.set(cacheKey, { items, ts: Date.now() });
   return NextResponse.json({ items, cached: false });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { searchMedia, bestTitle } from "@/lib/anilist";
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q")?.trim();
   if (!q || q.length < 2) {
     return NextResponse.json({ results: [] });
@@ -23,4 +24,10 @@ export async function GET(req: NextRequest) {
     console.error("[/api/watch-party/search] error:", e);
     return NextResponse.json({ results: [], error: "Search failed" });
   }
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

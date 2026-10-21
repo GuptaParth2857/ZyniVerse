@@ -38,7 +38,7 @@ interface FanArtMeta {
 async function fetchFanArt(id: string): Promise<FanArtMeta | null> {
   try {
     const res = await fetch(`${SITE}/api/fanart/${id}`, {
-      next: { revalidate: 1800 },
+      next: { revalidate: 21600 },
     });
     if (!res.ok) return null;
     const data = await res.json();

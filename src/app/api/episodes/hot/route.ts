@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { withPublicCache } from "@/lib/api-cache";
 import { NextResponse } from "next/server";
 import { getMediaBatch } from "@/lib/anilist";
 export const dynamic = "force-dynamic";
 
 
-export async function GET(request: Request) {
+async function GET_inner(request: Request) {
   const url = new URL(request.url);
   const days = Math.min(Math.max(Number(url.searchParams.get("days")) || 7, 1), 30);
   const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || 6, 1), 20);
@@ -44,4 +45,9 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({ hot, titles, since });
+}
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

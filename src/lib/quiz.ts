@@ -177,7 +177,11 @@ async function fetchCharactersBatch(animeIds: number[]): Promise<Map<number, { n
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json", "User-Agent": "ZyniVerse/1.0 (https://zyverse.in)", "Origin": "https://anilist.co", "Referer": "https://anilist.co/" },
       body: JSON.stringify({ query, variables: { ids: animeIds } }),
-      next: { revalidate: 21600 },
+      // 24h. The lowest `next.revalidate` in a route becomes that route's
+      // effective ISR window, so short fetch windows make every page that
+      // embeds them rewrite its cache entry many times a day. Character art
+      // and names do not change.
+      next: { revalidate: 86400 },
     });
     const data = (await res.json()) as { Page?: { media?: AniListMedia[] } };
     const map = new Map<number, { name: string; image?: string }[]>();
@@ -198,7 +202,7 @@ async function generateQuestionsFromAnime(count: number): Promise<QuizQuestion[]
         query: `query ($p: Int) { Page(page: 1, perPage: $p) { media(sort: POPULARITY_DESC, type: ANIME, isAdult: false) { id title { romaji english } coverImage { large } studios(isMain: true) { nodes { id name } } episodes duration format source(version: 2) genres startDate { year } averageScore } } }`,
         variables: { p: count + 10 },
       }),
-      next: { revalidate: 21600 },
+      next: { revalidate: 86400 },
     });
     const data = (await res.json()) as { Page?: { media?: AniListMedia[] } };
     const mediaList = data.Page?.media || [];

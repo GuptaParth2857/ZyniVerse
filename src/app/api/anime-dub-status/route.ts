@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 export const dynamic = "force-dynamic";
 
 const ANITALY_BASE = "https://anitally.in/api";
@@ -13,7 +14,7 @@ interface RegionalDubEntry {
   coming_soon_languages: string | null;
 }
 
-export async function GET(request: Request) {
+async function GET_inner(request: Request) {
   const { searchParams } = new URL(request.url);
   const malId = searchParams.get("malId");
 
@@ -83,4 +84,10 @@ export async function GET(request: Request) {
   } catch {
     return NextResponse.json({ success: false, error: "Failed to check dub status" }, { status: 500 });
   }
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

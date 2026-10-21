@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { getMangaDexChapters } from "@/lib/manga-reader";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const source = searchParams.get("source") || "mangadex";
   const mangaId = searchParams.get("mangaId");
@@ -18,4 +19,10 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({ chapters: [] });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

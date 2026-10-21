@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ mangaId: string }> }) {
+async function GET_inner(req: NextRequest, { params }: { params: Promise<{ mangaId: string }> }) {
   const { mangaId } = await params;
   const id = parseInt(mangaId, 10);
   if (isNaN(id)) return NextResponse.json({ error: "Invalid mangaId" }, { status: 400 });
@@ -54,4 +55,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ mang
   });
 
   return NextResponse.json({ chapters: saved });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

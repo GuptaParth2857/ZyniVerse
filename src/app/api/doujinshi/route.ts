@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { getDoujinshi } from "@/lib/mangadex-api";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") || undefined;
   const sort = (searchParams.get("sort") as "popular" | "latest" | "rating" | "title") || "popular";
@@ -28,4 +29,10 @@ export async function GET(req: NextRequest) {
       { status: 502 },
     );
   }
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

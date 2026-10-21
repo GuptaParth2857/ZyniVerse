@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 
-export async function GET(request: NextRequest) {
+async function GET_inner(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const title = searchParams.get("title") || "Anime Episode";
   const begin = searchParams.get("begin");
@@ -34,4 +35,10 @@ END:VCALENDAR`;
       "Content-Disposition": `attachment; filename="${title.replace(/[^a-zA-Z0-9]/g, "_")}.ics"`,
     },
   });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

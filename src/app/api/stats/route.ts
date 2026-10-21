@@ -1,9 +1,10 @@
 import { getUserStats } from "@/lib/stats";
+import { withPublicCache } from "@/lib/api-cache";
 import { NextRequest, NextResponse } from "next/server";
 import { apiLimiter } from "@/lib/rate-limiter";
 import { resolveUserId } from "@/lib/resolve-user";
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
@@ -16,4 +17,10 @@ export async function GET(req: NextRequest) {
 
   const stats = await getUserStats(userId, year);
   return NextResponse.json(stats);
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

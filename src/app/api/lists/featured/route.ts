@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import { withPublicCache } from "@/lib/api-cache";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(_req: NextRequest) {
+async function GET_inner(_req: NextRequest) {
   const lists = await prisma.userList.findMany({
     where: { isFeatured: true, isPublic: true },
     orderBy: { sortOrder: "asc" },
@@ -21,4 +22,10 @@ export async function GET(_req: NextRequest) {
   }));
 
   return NextResponse.json({ lists: result });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

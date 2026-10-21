@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { apiLimiter } from "@/lib/rate-limiter";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function GET_inner(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
@@ -33,4 +34,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     uniqueVoters: uniqueVoters.length,
     breakdown,
   });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

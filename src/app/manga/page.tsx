@@ -4,7 +4,7 @@ import MangaBrowseClient from "./client";
 
 // ISR: refresh the server-rendered first tab every 10 minutes. An AniList
 // hiccup degrades to an empty grid, which the client immediately refetches.
-export const revalidate = 600;
+export const revalidate = 3600;
 
 const SITE = "https://zyverse.in";
 

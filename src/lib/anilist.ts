@@ -199,12 +199,13 @@ const MAX_RETRIES = 2;
 //
 // List/schedule queries are low-cardinality (a few variable sets), so a short
 // window stays cheap while keeping data fresh. Per-id detail queries are the
-// dominant ISR-write driver, so they now get 48h — another 2x cut on top of the
-// 24h window, which is what brings the monthly total back under the Hobby cap.
-// The only freshness cost is a *detail* page's `nextAiringEpisode` (the live
-// countdown rails read the 6h list queries, so they are unaffected).
-const LIST_REVALIDATE = 6 * 60 * 60; // 6h
-const DETAIL_REVALIDATE = 48 * 60 * 60; // 48h
+// dominant ISR-write driver, so they now get 72h — another 1.5x cut on top of
+// the 24h window, which is what brings the monthly total back under the Hobby
+// cap. The list window is 12h rather than 6h for the same reason: it is the
+// lowest `next.revalidate` inside most pages, and Next.js drags a route's
+// effective ISR window down to its lowest fetch window.
+const LIST_REVALIDATE = 12 * 60 * 60; // 12h
+const DETAIL_REVALIDATE = 72 * 60 * 60; // 72h
 
 async function fetchAniList(
   query: string,

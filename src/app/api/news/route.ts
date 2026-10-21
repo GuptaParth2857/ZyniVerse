@@ -58,7 +58,11 @@ export async function GET(req: NextRequest) {
 
   news.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
-  return NextResponse.json({ news }, {
+  // Excerpt-only: the RSS body (full upstream article HTML) never leaves the
+  // server. `summary` is a plain-text excerpt and `url` points at the source.
+  const payload = news.map((n) => ({ ...n, content: undefined }));
+
+  return NextResponse.json({ news: payload }, {
     headers: {
       "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
     },

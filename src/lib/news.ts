@@ -18,6 +18,64 @@ export interface NewsItem {
   tags: string[];
 }
 
+const HTML_ENTITIES: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  nbsp: " ",
+  hellip: "…",
+  mdash: "—",
+  ndash: "–",
+  rsquo: "’",
+  lsquo: "‘",
+  ldquo: "“",
+  rdquo: "”",
+};
+
+function decodeHtmlEntities(text: string): string {
+  return text.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (match, entity: string) => {
+    const key = entity.toLowerCase();
+    if (key.startsWith("#x")) {
+      const code = parseInt(key.slice(2), 16);
+      return Number.isFinite(code) && code > 0 ? String.fromCodePoint(code) : match;
+    }
+    if (key.startsWith("#")) {
+      const code = parseInt(key.slice(1), 10);
+      return Number.isFinite(code) && code > 0 ? String.fromCodePoint(code) : match;
+    }
+    return HTML_ENTITIES[key] ?? match;
+  });
+}
+
+function stripHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/(?:p|div|li|h[1-6])>/gi, " ")
+    .replace(/<[^>]+>/g, " ");
+}
+
+/**
+ * Plain-text excerpt of an RSS article.
+ *
+ * RSS gives us the *full* upstream article HTML. Republishing it verbatim on
+ * ZyniVerse duplicates the source (and the source's own ad/tracking markup),
+ * so the news pages render this excerpt and link to the original instead.
+ * The result is safe to render as text — no tags, no entities.
+ */
+function buildExcerpt(html: string, maxLength = 320): string {
+  const text = decodeHtmlEntities(stripHtml(html || "")).replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  if (text.length <= maxLength) return text;
+  const cut = text.slice(0, maxLength);
+  const lastSpace = cut.lastIndexOf(" ");
+  const body = lastSpace > maxLength * 0.6 ? cut.slice(0, lastSpace) : cut;
+  return `${body.trimEnd()}…`;
+}
+
 function _timeAgo(date: Date): string {
   const now = Date.now();
   const diff = now - date.getTime();
@@ -259,7 +317,7 @@ export async function getANNNews(): Promise<NewsItem[]> {
         return {
           id: `ann-${simpleHash(guid)}`,
           title: item.title || "Anime News Network Update",
-          summary: item.contentSnippet?.slice(0, 150) || content.slice(0, 150),
+          summary: buildExcerpt(content),
           url: item.link || "https://www.animenewsnetwork.com",
           image: extractImageFromHTML(content),
           content,
@@ -297,7 +355,7 @@ export async function getMALNews(): Promise<NewsItem[]> {
         return {
           id: `mal-${simpleHash(guid)}`,
           title: item.title || "MyAnimeList Update",
-          summary: item.contentSnippet?.slice(0, 150) || content.slice(0, 150),
+          summary: buildExcerpt(content),
           url: item.link || "https://myanimelist.net/news",
           image: thumb || extractImageFromHTML(content),
           content,

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getUnifiedFeed } from "@/lib/feed";
 import FeedClient from "@/components/FeedClient";
 
-export const revalidate = 300;
+export const revalidate = 1800;
 
 export const metadata: Metadata = {
   title: "My Feed",

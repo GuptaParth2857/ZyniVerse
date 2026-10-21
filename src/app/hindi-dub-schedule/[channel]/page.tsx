@@ -11,7 +11,7 @@ import {
 import { ScheduleTable, ChannelNav } from "@/components/dub-weekly/ScheduleTable";
 import NativeBannerAd from "@/components/NativeBannerAd";
 
-export const revalidate = 1800;
+export const revalidate = 21600;
 export const dynamicParams = false;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";

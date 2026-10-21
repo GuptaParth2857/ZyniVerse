@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { withPublicCache } from "@/lib/api-cache";
 import { getUnifiedSuggestions } from "@/lib/anilist";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q")?.trim() || "";
   if (q.length < 2) {
     return NextResponse.json({ anime: [], manga: [], users: [], wiki: [], forum: [], blog: [] });
@@ -48,4 +49,10 @@ export async function GET(req: NextRequest) {
     forum: forum.status === "fulfilled" ? forum.value : [],
     blog: blog.status === "fulfilled" ? blog.value : [],
   });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

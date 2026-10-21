@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 import { fetchLiveStreamingSchedules } from "@/lib/streaming-live";
 import { TV_CHANNELS, getDayName, CHANNEL_SCHEDULES } from "@/lib/tv-channels";
@@ -92,7 +93,7 @@ async function scrapeAndCache(): Promise<Map<string, Record<string, LiveSchedule
   return epgMap;
 }
 
-export async function GET() {
+async function GET_inner() {
   try {
     const allDayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
     const epgChannelIds = [
@@ -219,4 +220,10 @@ export async function GET() {
       error: error instanceof Error ? error.message : "Failed to fetch",
     });
   }
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

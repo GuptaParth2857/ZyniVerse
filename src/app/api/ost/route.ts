@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { getOSTs } from "@/lib/ost";
 import { apiLimiter } from "@/lib/rate-limiter";
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   const rateCheck = await apiLimiter.middleware(req);
   if (rateCheck) return rateCheck;
 
@@ -21,4 +22,10 @@ export async function GET(req: NextRequest) {
   const paginated = results.slice(start, start + limit);
 
   return NextResponse.json({ osts: paginated, total, page, limit });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

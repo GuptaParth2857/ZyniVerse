@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { prisma } from "@/lib/prisma";
 
 // Dynamic, not ISR: forum stats are live DB counts; prerendering at build
 // would freeze them and add a DB dependency to `next build`.
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+async function GET_inner() {
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
@@ -24,4 +25,10 @@ export async function GET() {
   }
 
   return NextResponse.json({ totalThreads, totalMembers, postsToday, onlineCount });
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

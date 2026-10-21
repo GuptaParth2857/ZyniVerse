@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withPublicCache } from "@/lib/api-cache";
 import { TV_CHANNELS, getScheduleForChannel, getDayName, getNext7Days } from "@/lib/tv-channels";
 
-export async function GET(req: NextRequest) {
+async function GET_inner(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const channel = searchParams.get("channel");
@@ -38,4 +39,10 @@ export async function GET(req: NextRequest) {
     const message = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+
+export async function GET(...args: Parameters<typeof GET_inner>) {
+  const res = await GET_inner(...args);
+  return withPublicCache(res);
 }

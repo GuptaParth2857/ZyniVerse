@@ -23,7 +23,23 @@ function mergeUpdates(base: LiveActionAnime[], updates: Record<string, LiveActio
   });
 }
 
-export async function getAllLiveAction(): Promise<LiveActionAnime[]> {
+// `getAllLiveAction()` is called twice per rendered page (generateMetadata +
+// the page component) and once per prerendered `/live-action/[id]` route
+// during `next build`. Every call opened its own round of DB reads (update
+// cache + poster cache + catalogue), so the build of N detail pages issued
+// 2 x N of them and — together with the other prerendered routes — was one of
+// the things that exhausted the database connection pool mid-build.
+//
+// The merged result is identical for the whole process, so it is now read
+// once and shared for a short window. Five minutes is long enough to collapse
+// a build storm into one read per worker and short enough that a running
+// instance still picks up catalogue changes quickly.
+const LIVE_ACTION_TTL_MS = 5 * 60 * 1000;
+
+let cached: { at: number; data: LiveActionAnime[] } | null = null;
+let inflight: Promise<LiveActionAnime[]> | null = null;
+
+async function loadAllLiveAction(): Promise<LiveActionAnime[]> {
   const [cache, posterCache] = await Promise.all([
     getLiveActionUpdateCache(),
     getPosterCache(),
@@ -41,4 +57,27 @@ export async function getAllLiveAction(): Promise<LiveActionAnime[]> {
     .map(catalogToLiveAction);
 
   return [...data, ...discovered];
+}
+
+export async function getAllLiveAction(): Promise<LiveActionAnime[]> {
+  if (cached && Date.now() - cached.at < LIVE_ACTION_TTL_MS) return cached.data;
+
+  if (!inflight) {
+    inflight = loadAllLiveAction()
+      .then((data) => {
+        cached = { at: Date.now(), data };
+        return data;
+      })
+      .finally(() => {
+        inflight = null;
+      })
+      .catch((err) => {
+        // Never cache a failure: a transient database error must not poison
+        // the process for the rest of its lifetime.
+        cached = null;
+        throw err;
+      });
+  }
+
+  return inflight;
 }
