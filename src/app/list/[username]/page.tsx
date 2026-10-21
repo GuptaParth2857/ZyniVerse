@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { safeDecode } from "@/lib/url-params";
 import { MyListShareRow } from "@/app/u/[username]/manga/share-row";
 
-export const revalidate = 21600;
+export const revalidate = 43200;
 
 // Next.js only enables on-demand ISR for a dynamic segment when
 // `generateStaticParams` exists. Empty array => no build-time prerender, but

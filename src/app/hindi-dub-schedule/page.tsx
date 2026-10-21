@@ -4,7 +4,7 @@ import { getLiveDubWeekly, getThisWeekRange, type LiveDubEntry } from "@/lib/dub
 import { ScheduleTable, ChannelNav } from "@/components/dub-weekly/ScheduleTable";
 import NativeBannerAd from "@/components/NativeBannerAd";
 
-export const revalidate = 21600;
+export const revalidate = 43200;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 

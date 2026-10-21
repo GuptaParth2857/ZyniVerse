@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { searchMedia, getTrending, getTopRated, getUpcoming, bestTitle } from "@/lib/anilist";
 import type { Media } from "@/lib/anilist";
 import { getAIRecommendations } from "@/lib/ai-recommender";
+import { withPrivateCache, withPublicCache } from "@/lib/api-cache";
 import { logError } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 
@@ -96,7 +97,7 @@ export async function GET(request: NextRequest) {
       orderBy: order === "new" ? { createdAt: "desc" } : { upvotes: "desc" },
       take: 50,
     });
-    return NextResponse.json({ recommendations: recs });
+    return withPublicCache(NextResponse.json({ recommendations: recs }));
   }
 
   // Discovery mode (fixes the Recommendations page)
@@ -109,7 +110,14 @@ export async function GET(request: NextRequest) {
   try {
     const body = await discovery(type, genre, userId);
     if (body instanceof NextResponse) return body;
-    return NextResponse.json({ recommendations: body });
+    // "ai" / "personalized" are built from the signed-in user's taste profile,
+    // so their response is visitor-specific and must stay out of the shared
+    // CDN cache. Every other mode (trending / top rated / upcoming / genre /
+    // fan recommendations) is identical for every visitor and can be answered
+    // by the CDN instead of a billed function invocation.
+    const visitorSpecific = type === "ai" || type === "personalized";
+    const res = NextResponse.json({ recommendations: body });
+    return visitorSpecific ? withPrivateCache(res) : withPublicCache(res);
   } catch (e) {
     logError(e);
     return NextResponse.json({ error: "Failed to load recommendations, try again shortly." }, { status: 502 });

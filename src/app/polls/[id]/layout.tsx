@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 // Next.js only enables on-demand ISR for a dynamic segment when
 // `generateStaticParams` exists (page.tsx here is a Client Component, so the
 // config lives in this layout). Empty array => no build-time prerender.
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export function generateStaticParams() {
   return [];

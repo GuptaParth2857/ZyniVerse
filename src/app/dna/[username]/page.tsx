@@ -7,7 +7,7 @@ import { safeDecode } from "@/lib/url-params";
 import { logError } from "@/lib/logger";
 import DnaExplorer from "@/components/DnaExplorer";
 
-export const revalidate = 21600;
+export const revalidate = 43200;
 
 // Next.js only enables on-demand ISR for a dynamic segment when
 // `generateStaticParams` exists. Empty array => no build-time prerender, but

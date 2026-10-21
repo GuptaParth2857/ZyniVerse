@@ -7,7 +7,7 @@ import RichCaption from "@/components/RichCaption";
 import ReelShare from "./ReelShare";
 import ReelViewReporter from "./ReelViewReporter";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 // Next.js only enables on-demand ISR for a dynamic segment when
 // `generateStaticParams` exists. Empty array => no build-time prerender, but

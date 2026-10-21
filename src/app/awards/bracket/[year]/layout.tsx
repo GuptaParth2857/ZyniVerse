@@ -2,7 +2,7 @@
 // `generateStaticParams` exists. page.tsx here is a Client Component, so the
 // route segment config lives in this layout instead. Empty array means no
 // build-time prerender; hits after the first are served from the CDN.
-export const revalidate = 21600;
+export const revalidate = 43200;
 
 export function generateStaticParams() {
   return [];

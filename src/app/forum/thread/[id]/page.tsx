@@ -5,7 +5,7 @@ import { logError } from "@/lib/logger";
 // Next.js only enables on-demand ISR for a dynamic segment when
 // `generateStaticParams` exists. Empty array => no build-time prerender, but
 // hits after the first are served from the CDN instead of a billed Node render.
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export function generateStaticParams() {
   return [];
@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
-    const res = await fetch(`${baseUrl}/api/forum/threads/${id}`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${baseUrl}/api/forum/threads/${id}`, { next: { revalidate: 86400 } });
     if (res.ok) {
       const data = await res.json();
       return {

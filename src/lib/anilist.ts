@@ -58,6 +58,14 @@ function logAnilistFailure(
 ): void {
   const preview =
     cacheKey.length > 120 ? `${cacheKey.slice(0, 120)}...` : cacheKey;
+  // One report per key per cooldown. The upstream being down is a single
+  // incident, not one incident per request, and the old behaviour printed the
+  // same stack of lines for every visitor.
+  const now = Date.now();
+  const lastLogged = errorLogCooldownByKey.get(cacheKey) ?? 0;
+  if (now - lastLogged < ERROR_LOG_COOLDOWN_MS) return;
+  if (errorLogCooldownByKey.size >= MAX_DEGRADED_KEYS) errorLogCooldownByKey.clear();
+  errorLogCooldownByKey.set(cacheKey, now);
   if (recovery === "stale") {
     // Expected transient throttling - availability is preserved, so stay in
     // the background instead of flooding the logs with per-429 console.error.
@@ -136,6 +144,92 @@ function enterDegradedMode(key: string): void {
   degradedUntilByKey.set(key, Date.now() + DEGRADED_COOLDOWN_MS);
 }
 
+// ---------------------------------------------------------------------------
+// Global circuit breaker
+// ---------------------------------------------------------------------------
+//
+// AniList switched its whole API off with a 403 ("The AniList API has been
+// temporarily disabled due to severe stability issues"). Every proxy route in
+// this app is a live pass-through to that API, so while it was down each
+// request walked the entire retry ladder — three upstream calls plus ~2.4s of
+// backoff sleeps — before finally giving up and logging "NO stale available".
+//
+// On a site with this much traffic that is thousands of wasted seconds of
+// *function duration* per hour, and function duration is exactly what paused
+// the Vercel project (903 GB-hrs against a 300 GB-hrs hard limit).
+//
+// The breaker counts upstream failures across all query keys inside a short
+// window. Once the API is clearly down for everyone it opens and *no live
+// request is made at all*: the cached payload is served (or a clean
+// "unavailable" error is raised) in a few milliseconds.
+const GLOBAL_BREAKER_THRESHOLD = 3;
+const GLOBAL_BREAKER_WINDOW_MS = 60 * 1000;
+const GLOBAL_BREAKER_COOLDOWN_MS = 5 * 60 * 1000;
+
+let globalBreakerUntil = 0;
+let globalFailureTimestamps: number[] = [];
+
+// Memoised answers for "the upstream is down", keyed by query key. Without
+// this the persistent (Prisma) stale-cache lookup would run again for every
+// single request while the breaker is open — a database round trip on the hot
+// path of every AniList-backed render. One lookup per key per breaker window
+// is enough.
+const downAnswers = new Map<string, { until: number; data: unknown | null }>();
+
+// The "NO stale available" line used to be printed on every failed request,
+// which is what filled the logs with the same error over and over. Each key
+// reports at most once per cooldown; the repeats are silently absorbed.
+const errorLogCooldownByKey = new Map<string, number>();
+const ERROR_LOG_COOLDOWN_MS = 5 * 60 * 1000;
+
+function isGlobalBreakerOpen(): boolean {
+  if (globalBreakerUntil === 0) return false;
+  if (Date.now() >= globalBreakerUntil) {
+    globalBreakerUntil = 0;
+    globalFailureTimestamps = [];
+    downAnswers.clear();
+    return false;
+  }
+  return true;
+}
+
+function noteUpstreamFailure(reason: string): void {
+  const now = Date.now();
+  globalFailureTimestamps = globalFailureTimestamps.filter(
+    (t) => now - t < GLOBAL_BREAKER_WINDOW_MS,
+  );
+  globalFailureTimestamps.push(now);
+  if (
+    globalFailureTimestamps.length >= GLOBAL_BREAKER_THRESHOLD &&
+    globalBreakerUntil === 0
+  ) {
+    globalBreakerUntil = now + GLOBAL_BREAKER_COOLDOWN_MS;
+    console.warn(
+      `[anilist] upstream is failing repeatedly (${reason}) - live requests paused for ${Math.round(
+        GLOBAL_BREAKER_COOLDOWN_MS / 1000,
+      )}s, serving cached data in the meantime.`,
+    );
+  }
+}
+
+function noteUpstreamSuccess(): void {
+  globalFailureTimestamps = [];
+}
+
+function memoizeDownAnswer(key: string, data: unknown | null): void {
+  if (downAnswers.size >= MAX_DEGRADED_KEYS) downAnswers.clear();
+  downAnswers.set(key, { until: globalBreakerUntil, data });
+}
+
+class AniListFailure extends Error {
+  permanent: boolean;
+  constructor(message: string, permanent = false) {
+    super(message);
+    this.name = "AniListFailure";
+    this.permanent = permanent;
+  }
+}
+
 function getCacheKey(
   query: string,
   variables: Record<string, unknown>,
@@ -179,6 +273,11 @@ export function clearAnilistCache(): void {
   // empty cache, and every subsequent request fails without ever touching the
   // network.
   degradedUntilByKey.clear();
+  // Same for the global breaker and the memoised "upstream is down" answers.
+  globalBreakerUntil = 0;
+  globalFailureTimestamps = [];
+  downAnswers.clear();
+  errorLogCooldownByKey.clear();
 }
 
 export function getAnilistCacheStats(): { size: number } {
@@ -199,18 +298,18 @@ const MAX_RETRIES = 2;
 //
 // List/schedule queries are low-cardinality (a few variable sets), so a short
 // window stays cheap while keeping data fresh. Per-id detail queries are the
-// dominant ISR-write driver, so they now get 72h — another 1.5x cut on top of
-// the 24h window, which is what brings the monthly total back under the Hobby
-// cap. The list window is 12h rather than 6h for the same reason: it is the
-// lowest `next.revalidate` inside most pages, and Next.js drags a route's
-// effective ISR window down to its lowest fetch window.
-const LIST_REVALIDATE = 12 * 60 * 60; // 12h
-const DETAIL_REVALIDATE = 72 * 60 * 60; // 72h
+// dominant ISR-write driver, so they get a full week — another 1.5x cut on top
+// of the previous 72h window. The list window is 24h because it is the lowest
+// `next.revalidate` inside most pages, and Next.js drags a route's effective
+// ISR window down to its lowest fetch window.
+const LIST_REVALIDATE = 24 * 60 * 60; // 24h
+const DETAIL_REVALIDATE = 168 * 60 * 60; // 7 days
 
 async function fetchAniList(
   query: string,
   variables: Record<string, unknown> = {},
   revalidate: number = LIST_REVALIDATE,
+  noStore = false,
 ) {
   const cacheKey = getCacheKey(query, variables);
   const cached = getFromCache(cacheKey);
@@ -218,7 +317,19 @@ async function fetchAniList(
 
   let lastError: Error | null = null;
 
-  if (!isDegraded(cacheKey)) {
+  // The global breaker short-circuits *before* any network call. Everything
+  // below (memory cache -> persistent cache -> "unavailable") is local, so an
+  // open breaker turns a multi-second upstream failure into milliseconds.
+  if (isGlobalBreakerOpen()) {
+    const memo = downAnswers.get(cacheKey);
+    if (memo && memo.until > Date.now()) {
+      if (memo.data !== null && memo.data !== undefined) return memo.data;
+      throw new AniListUnavailableError(
+        "AniList upstream is temporarily unavailable",
+      );
+    }
+    lastError = new Error("AniList upstream is temporarily unavailable");
+  } else if (!isDegraded(cacheKey)) {
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       try {
         const controller = new AbortController();
@@ -235,14 +346,14 @@ async function fetchAniList(
           },
           body: JSON.stringify({ query, variables }),
           signal: controller.signal,
-          cache: "force-cache",
-          // Callers pick the window (list = 6h, per-id detail = 24h). A route's
-          // revalidate is dragged down to its lowest fetch value, and every
-          // distinct id becomes its own cache entry, so short windows on the
-          // high-cardinality detail queries were rewriting ~1M+ entries/month.
-          // Only successful responses reach this point — 429s and errors throw
-          // before caching — so a long window can't pin a rate-limited payload.
-          next: { revalidate },
+          // Queries keyed by something the visitor typed (search terms) have
+          // unbounded cardinality: every distinct term would own a Next data
+          // cache entry that is rewritten on every revalidation window. Those
+          // queries skip the data cache entirely and rely on the in-process
+          // cache plus the persistent stale cache instead.
+          ...(noStore
+            ? { cache: "no-store" as const }
+            : { cache: "force-cache" as const, next: { revalidate } }),
         });
 
         clearTimeout(timer);
@@ -259,7 +370,7 @@ async function fetchAniList(
               continue;
             }
             enterDegradedMode(cacheKey);
-            throw new Error("Rate limited by AniList — try again later.");
+            throw new AniListFailure("Rate limited by AniList — try again later.");
           }
           const body = await res.text().catch(() => "");
           if (attempt < MAX_RETRIES && res.status >= 500) {
@@ -267,8 +378,13 @@ async function fetchAniList(
             continue;
           }
           enterDegradedMode(cacheKey);
-          throw new Error(
+          // Any other 4xx is permanent (the API is disabled, the query is
+          // malformed, the id does not exist...). Retrying it only burns
+          // function duration — and function duration is what paused the
+          // project.
+          throw new AniListFailure(
             `AniList request failed (${res.status}): ${body.slice(0, 200)}`,
+            res.status < 500,
           );
         }
 
@@ -280,10 +396,11 @@ async function fetchAniList(
             continue;
           }
           enterDegradedMode(cacheKey);
-          throw new Error(msg);
+          throw new AniListFailure(msg, true);
         }
 
         setCache(cacheKey, json.data);
+        noteUpstreamSuccess();
         const activeAdapter = getActiveAdapter();
         if (activeAdapter) {
           // Fire-and-forget: awaiting this put a cross-region DB write (Prisma →
@@ -300,18 +417,30 @@ async function fetchAniList(
         if (lastError.name === "AbortError") {
           lastError = new Error("AniList request timed out — try again.");
         }
-        if (attempt >= MAX_RETRIES) {
+        const permanent =
+          lastError instanceof AniListFailure && lastError.permanent;
+        if (attempt >= MAX_RETRIES || permanent) {
           enterDegradedMode(cacheKey);
+          noteUpstreamFailure(lastError.message);
         }
+        // A permanent failure is never retried, and neither is a failure that
+        // already put this key into degraded mode: one upstream attempt per
+        // key per cooldown is the budget.
+        if (permanent) break;
         // Timeouts usually mean the network path is slow/dead — retry a hung
         // request at most once, then fail over to stale cache / degraded UI.
         const timeoutRetryable =
           lastError.name !== "AniList request timed out — try again." ||
           attempt === 0;
-        if (attempt < MAX_RETRIES && timeoutRetryable) {
+        if (
+          attempt < MAX_RETRIES &&
+          timeoutRetryable &&
+          !isDegraded(cacheKey)
+        ) {
           await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
           continue;
         }
+        break;
       }
     }
   }
@@ -325,6 +454,7 @@ async function fetchAniList(
   const inMemoryStale = getStaleFromCache(cacheKey);
   if (inMemoryStale !== null && inMemoryStale !== undefined) {
     logAnilistFailure(cacheKey, lastError, "stale");
+    if (isGlobalBreakerOpen()) memoizeDownAnswer(cacheKey, inMemoryStale);
     return inMemoryStale;
   }
 
@@ -335,6 +465,7 @@ async function fetchAniList(
       if (stale !== null && stale !== undefined) {
         setCache(cacheKey, stale);
         logAnilistFailure(cacheKey, lastError, "stale");
+        if (isGlobalBreakerOpen()) memoizeDownAnswer(cacheKey, stale);
         return stale;
       }
     } catch {
@@ -344,6 +475,15 @@ async function fetchAniList(
 
   // Genuinely nothing left - availability is broken, this deserves attention.
   logAnilistFailure(cacheKey, lastError, "none");
+  if (isGlobalBreakerOpen()) {
+    // Memoise the "nothing available" answer too, so the persistent-cache
+    // lookup above is not repeated for every request while the upstream is
+    // down.
+    memoizeDownAnswer(cacheKey, null);
+    throw new AniListUnavailableError(
+      lastError?.message ?? "AniList upstream is temporarily unavailable",
+    );
+  }
   if (isDegraded(cacheKey)) {
     // Thrown only after the persistent stale cache was tried above, so a
     // 5xx here means we genuinely have nothing. Routes wrap this into a
@@ -362,6 +502,7 @@ async function gql(
   query: string,
   variables: Record<string, unknown> = {},
   revalidate: number = LIST_REVALIDATE,
+  noStore = false,
 ): GqlResult {
   const cacheKey = getCacheKey(query, variables);
   const cached = getFromCache(cacheKey);
@@ -370,9 +511,11 @@ async function gql(
   const existing = inFlight.get(cacheKey);
   if (existing) return existing;
 
-  const promise = fetchAniList(query, variables, revalidate).finally(() => {
-    inFlight.delete(cacheKey);
-  });
+  const promise = fetchAniList(query, variables, revalidate, noStore).finally(
+    () => {
+      inFlight.delete(cacheKey);
+    },
+  );
   inFlight.set(cacheKey, promise);
   return promise;
 }
@@ -603,7 +746,7 @@ export async function searchMedia({
   for (const [k, v] of Object.entries(rawVars)) {
     if (v !== null && v !== undefined && v !== "") variables[k] = v;
   }
-  const d = await gql(q, variables);
+  const d = await gql(q, variables, LIST_REVALIDATE, Boolean(search));
   const itemAll = d.Page.media as Media[];
   if (genreOp === "AND" && genre && genre2) {
     // AniList has no server-side AND for genres — genre_in only returns the OR
@@ -965,7 +1108,7 @@ export async function searchCharacters(query: string, page = 1, perPage = 20) {
         }
       }
     }`;
-  const data = await gql(q, { s: query, p: page, pp: perPage });
+  const data = await gql(q, { s: query, p: page, pp: perPage }, LIST_REVALIDATE, true);
   return {
     page,
     perPage,
@@ -985,7 +1128,7 @@ export async function searchStaff(query: string, page = 1, perPage = 20) {
         }
       }
     }`;
-  const data = await gql(q, { s: query, p: page, pp: perPage });
+  const data = await gql(q, { s: query, p: page, pp: perPage }, LIST_REVALIDATE, true);
   return {
     page,
     perPage,
@@ -1293,7 +1436,10 @@ export async function searchAll({
   for (const [k, v] of Object.entries(rawVars)) {
     if (v !== null && v !== undefined && v !== "") variables[k] = v;
   }
-  const data = await gql(q, variables);
+  // A visitor-typed search term has unbounded cardinality, so it must not own
+  // a Next data-cache entry (every distinct term would be rewritten on every
+  // revalidation window — the "ISR writes" overage on Vercel).
+  const data = await gql(q, variables, LIST_REVALIDATE, Boolean(search));
   let anime = data.anime.media as Media[];
   let manga = data.manga.media as Media[];
   if (genreOp === "AND" && genre && genre2) {
@@ -1329,7 +1475,7 @@ export async function getSuggestions(query: string) {
         }
       }
     }`;
-  const data = await gql(q, { s: query });
+  const data = await gql(q, { s: query }, LIST_REVALIDATE, true);
   return data.Page.media.map((item: Media) => ({
     id: item.id,
     title: item.title.english || item.title.romaji,
@@ -1376,7 +1522,7 @@ export async function getUnifiedSuggestions(
         }
       }
     }`;
-  const data = await gql(q, { s: query });
+  const data = await gql(q, { s: query }, LIST_REVALIDATE, true);
   const map = (items: Media[], type: "ANIME" | "MANGA"): UnifiedSuggestion[] =>
     (items || []).map((item) => ({
       id: item.id,
