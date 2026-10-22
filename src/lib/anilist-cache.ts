@@ -22,6 +22,21 @@ const PRUNE_MIN_INTERVAL_MS = 5 * 60 * 1000;
 
 let lastPruneAt = 0;
 
+/**
+ * Is this the pool saying "every connection is busy serving a request"?
+ *
+ * That is the expected failure mode for the prune during a crawl storm, and
+ * it is not a bug: the prune is best-effort housekeeping, so it has to be
+ * reported as a skip rather than as an error, and the caller must not be
+ * affected by it.
+ */
+function isPoolContention(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  if (code === "P2024") return true;
+  const message = error instanceof Error ? error.message : String(error);
+  return /timed out fetching a new connection|connection pool/i.test(message);
+}
+
 async function pruneAniListCache(): Promise<void> {
   try {
     lastPruneAt = Date.now();
@@ -43,6 +58,13 @@ async function pruneAniListCache(): Promise<void> {
       MAX_CACHE_ROWS
     );
   } catch (error) {
+    if (isPoolContention(error)) {
+      // Every connection is serving a request, so there is no room for
+      // housekeeping right now. The next window (and the weekly db-prune
+      // cron, which owns the hard row cap) will take care of it.
+      console.warn("AniList cache prune skipped: connection pool busy");
+      return;
+    }
     console.error("Failed to prune AniList cache:", error);
   }
 }
