@@ -17,8 +17,10 @@ name: ZyniVerse crons
 #   - variable BASE_URL        e.g. https://zyverse.in
 #
 # Note: schedules are UTC, and GitHub queues them during peak load, so a run
-# can land up to ~15 minutes late. These jobs are daily/weekly/monthly batch
-# jobs, so that drift is harmless.
+# can land up to ~15 minutes late — sometimes hours. These jobs are daily/weekly
+# monthly batch jobs, so that drift is harmless: the job is picked from
+# `github.event.schedule` (the cron expression that triggered the run), never
+# from the wall-clock hour at run time.
 
 on:
   schedule:
@@ -52,11 +54,9 @@ jobs:
         id: due
         env:
           MANUAL: ${{ inputs.endpoint }}
+          SCHEDULE: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
-          DOW=$(date -u +%w)   # 0 = Sunday
-          DOM=$(date -u +%d)   # 01-31
-          HOUR=$(date -u +%H)
 
           if [ -n "${MANUAL:-}" ]; then
             echo "list=${MANUAL}" >> "$GITHUB_OUTPUT"
@@ -64,23 +64,62 @@ jobs:
             exit 0
           fi
 
-          # Each of the 8 original vercel.json schedules had a distinct hour, so
-          # routing on the hour reproduces them exactly — including keeping
-          # event-alerts (Mon 05:00) and indexnow (Mon 08:00) as separate runs.
+          # `github.event.schedule` holds the cron expression that triggered
+          # this run. It is the ONLY reliable way to know which job is due.
+          #
+          # The previous version derived the job from the wall-clock hour
+          # (case "$HOUR"). GitHub queues scheduled workflows during peak load
+          # and can start them hours late — observed runs: "0 3 * * 0"
+          # (db-prune) starting at 12:55 UTC, "0 9 * * *" starting at 14:17 UTC.
+          # Every one of those runs resolved to "<nothing>" and no cron ever
+          # fired, so the database was never pruned (7.4 MB/day of growth) and
+          # the daily analytics snapshot stopped on 2026-10-16.
+          #
+          # Mapping the schedule string instead is delay-proof: a late run
+          # still executes the job it was scheduled for.
+          SCHEDULE_NORM="$(printf '%s' "${SCHEDULE:-}" | tr -s '[:space:]' ' ' | sed -e 's/^ //' -e 's/ $//')"
+
           LIST=""
-          case "$HOUR" in
-            00) [ "$DOM" = "01" ] && LIST="refresh-schedules" ;;
-            02) [ "$DOM" = "01" ] && LIST="refresh-awards" ;;
-            03) [ "$DOW" = "0" ]  && LIST="db-prune" ;;
-            04) [ "$DOM" = "01" ] && LIST="refresh-posters" ;;
-            05) [ "$DOW" = "1" ]  && LIST="event-alerts" ;;
-            06) [ "$DOM" = "01" ] && LIST="analytics" ;;
-            08) [ "$DOW" = "1" ]  && LIST="indexnow" ;;
-            09) LIST="character-tournaments" ;;
+          case "$SCHEDULE_NORM" in
+            "0 9 * * *") LIST="character-tournaments" ;;
+            "0 3 * * 0") LIST="db-prune" ;;
+            "0 5 * * 1") LIST="event-alerts" ;;
+            "0 8 * * 1") LIST="indexnow" ;;
+            "0 0 1 * *") LIST="refresh-schedules" ;;
+            "0 2 1 * *") LIST="refresh-awards" ;;
+            "0 4 1 * *") LIST="refresh-posters" ;;
+            "0 6 1 * *") LIST="analytics" ;;
+            "")           LIST="__manual__" ;;
+            *)            LIST="" ;;
           esac
 
+          if [ "$LIST" = "__manual__" ]; then
+            # Reached only when the workflow was started without a schedule
+            # context and without an explicit endpoint: fall back to the
+            # time-based routing so a manual run still does something.
+            DOW=$(date -u +%w)   # 0 = Sunday
+            DOM=$(date -u +%d)   # 01-31
+            HOUR=$(date -u +%H)
+            case "$HOUR" in
+              00) [ "$DOM" = "01" ] && LIST="refresh-schedules" ;;
+              02) [ "$DOM" = "01" ] && LIST="refresh-awards" ;;
+              03) [ "$DOW" = "0" ]  && LIST="db-prune" ;;
+              04) [ "$DOM" = "01" ] && LIST="refresh-posters" ;;
+              05) [ "$DOW" = "1" ]  && LIST="event-alerts" ;;
+              06) [ "$DOM" = "01" ] && LIST="analytics" ;;
+              08) [ "$DOW" = "1" ]  && LIST="indexnow" ;;
+              09) LIST="character-tournaments" ;;
+              *)  LIST="" ;;
+            esac
+            echo "No schedule context — fell back to time routing at UTC $(date -u)"
+          fi
+
           echo "list=${LIST}" >> "$GITHUB_OUTPUT"
-          echo "UTC $(date -u) (dow=$DOW dom=$DOM hour=$HOUR) -> due: ${LIST:-<nothing>}"
+          echo "schedule='${SCHEDULE_NORM}' -> due: ${LIST:-<nothing>}"
+
+          if [ -z "$LIST" ]; then
+            echo "::warning::No endpoint mapped for schedule '${SCHEDULE_NORM}' — nothing ran"
+          fi
 
       - name: Hit cron endpoints
         if: steps.due.outputs.list != ''

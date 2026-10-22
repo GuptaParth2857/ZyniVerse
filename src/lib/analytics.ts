@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { detectBot } from "@/lib/bot-detect";
 
 export function countryFromRequest(headers: Headers): string | null {
   const c =
@@ -7,6 +8,36 @@ export function countryFromRequest(headers: Headers): string | null {
     headers.get("x-country") ||
     "";
   return c && c !== "XX" && c !== "unknown" && c !== "T1" ? c.toUpperCase().slice(0, 2) : null;
+}
+
+/**
+ * True when a request cannot have come from a real browser.
+ *
+ * The analytics ingest endpoints are called by the client-side tracker, so
+ * every hit is one serverless invocation plus one database write. During the
+ * 2026-10-11..20 crawl storm that was ~19.6k sessions/day, and 94% of the
+ * resulting rows were `Chrome / Linux` with a US/DE/GB/FR datacenter
+ * country — a headless scraper fleet, not visitors. Those rows are pure cost:
+ * they inflate the admin dashboard's DAU/session numbers and they are what
+ * filled the 500 MB Supabase free-tier database budget.
+ *
+ * A known crawler/tool User-Agent (the catalogue in `lib/bot-detect`) or a
+ * missing User-Agent header is enough to skip the write. Requests that look
+ * automated but spoof a browser UA are caught client-side by
+ * `AnalyticsTracker` (navigator.webdriver), which never sends the request at
+ * all — cheaper than a server-side check.
+ */
+export function isAutomatedRequest(headers: Headers): boolean {
+  const ua = headers.get("user-agent");
+  if (!ua || !ua.trim()) return true;
+  return detectBot(ua) !== null;
+}
+
+/** User-Agent of the request, falling back to the client-sent value. */
+export function userAgentFromRequest(headers: Headers, fallback?: string | null): string | null {
+  const ua = headers.get("user-agent");
+  if (ua && ua.trim()) return ua;
+  return fallback && fallback.trim() ? fallback : null;
 }
 
 const PAGEVIEW_COUNTER_KEY = "pageviews";
@@ -81,6 +112,7 @@ export async function trackPageViewBatch(entries: Array<{
   sessionId?: string | null;
   referrer?: string | null;
   country?: string | null;
+  userAgent?: string | null;
 }>) {
   if (entries.length === 0) return;
   const sessionIds = [...new Set(entries.map((e) => e.sessionId).filter(Boolean))] as string[];
@@ -94,6 +126,9 @@ export async function trackPageViewBatch(entries: Array<{
           sessionId: e.sessionId || null,
           referrer: e.referrer || null,
           country: e.country || null,
+          // Stored so the admin view can tell a real visitor from a crawler
+          // later; it used to be written as NULL on every single row.
+          userAgent: e.userAgent || null,
         })),
       }),
       sessionIds.length > 0

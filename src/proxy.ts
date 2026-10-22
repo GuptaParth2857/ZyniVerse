@@ -14,7 +14,8 @@ import { detectBot } from "@/lib/bot-detect";
 // the page itself is served from the ISR cache and costs zero Function
 // invocations. So the matcher below is deliberately narrow.
 //
-// This file therefore does exactly one thing: crawler hit reporting.
+// This file therefore does exactly two things: crawler hit reporting and
+// refusing crawlers at the analytics ingest endpoints.
 //
 // REMOVED — the old `PUBLIC_CDN_PATHS` + `Cache-Control` block:
 // It never had any effect. Next.js owns the `Cache-Control` header of the
@@ -31,6 +32,32 @@ import { detectBot } from "@/lib/bot-detect";
 // ---------------------------------------------------------------------------
 
 export function proxy(request: NextRequest, event: NextFetchEvent) {
+  const pathname = request.nextUrl.pathname;
+  const method = request.method;
+  const userAgent = request.headers.get("user-agent");
+  const isBot = userAgent ? detectBot(userAgent) !== null : false;
+
+  // -------------------------------------------------------------------------
+  // Analytics ingest: refuse crawlers here.
+  //
+  // /api/analytics/session and /api/analytics/pageview are called by the
+  // client-side tracker, so a crawler that executes JavaScript hits them once
+  // per page. The 2026-10-11..20 crawl storm produced ~19.6k sessions/day
+  // this way: one Vercel invocation plus one database row per call.
+  //
+  // Answering from the Proxy means the route handler never runs, so a bot
+  // costs no function invocation at all. Search engines and AI crawlers do
+  // not run JavaScript and never reach these endpoints, so nothing that we
+  // want to be cited is affected.
+  // -------------------------------------------------------------------------
+  if (pathname.startsWith("/api/analytics/")) {
+    const analyticsUa = request.headers.get("user-agent");
+    if (!analyticsUa || !analyticsUa.trim() || detectBot(analyticsUa)) {
+      return new NextResponse(null, { status: 204 });
+    }
+    return NextResponse.next();
+  }
+
   // -------------------------------------------------------------------------
   // Crawler / bot hit reporting (see /api/internal/bot-hit + src/lib/bot-stats).
   //
@@ -41,28 +68,40 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
   //
   // The matcher never includes /api/*, so this cannot re-enter itself.
   // -------------------------------------------------------------------------
-  if (request.method === "GET" || request.method === "HEAD") {
-    const userAgent = request.headers.get("user-agent");
-    if (userAgent && detectBot(userAgent)) {
-      const report = new URL("/api/internal/bot-hit", request.url);
-      event.waitUntil(
-        fetch(report, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            path: request.nextUrl.pathname,
-            userAgent,
-            // The self-fetch is served from a datacenter IP, so the visitor's
-            // country has to be copied from the original request headers.
-            country: request.headers.get("x-vercel-ip-country"),
-          }),
-          cache: "no-store",
-        }).then(
-          () => undefined,
-          () => undefined
-        )
-      );
-    }
+  if ((method === "GET" || method === "HEAD") && userAgent && isBot) {
+    const report = new URL("/api/internal/bot-hit", request.url);
+    event.waitUntil(
+      fetch(report, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          path: pathname,
+          userAgent,
+          // The self-fetch is served from a datacenter IP, so the visitor's
+          // country has to be copied from the original request headers.
+          country: request.headers.get("x-vercel-ip-country"),
+        }),
+        cache: "no-store",
+      }).then(
+        () => undefined,
+        () => undefined
+      )
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // /forum/create — the most-crawled non-content path (1,869 page views
+  // during the crawl storm). It is a "create post" form and robots.txt already
+  // disallows /forum/ for every crawler, so a bot fetching it is pure waste:
+  // a page render, its database queries and an analytics beacon.
+  //
+  // Answering 404 from the Proxy skips the render completely. Only bots are
+  // affected — the path stays fully usable for people. The scope is kept to
+  // the single form page on purpose: the rest of /forum/ has indexed threads
+  // and must keep answering crawlers normally.
+  // -------------------------------------------------------------------------
+  if (pathname === "/forum/create" && (method === "GET" || method === "HEAD") && isBot) {
+    return new NextResponse(null, { status: 404 });
   }
 
   return NextResponse.next();
@@ -86,10 +125,16 @@ export const config = {
   // `api/`, `_next/*` and static assets stay excluded: they set their own
   // Cache-Control in their handlers and must not pay a "proxy + route" double
   // invocation.
+  //
+  // The one exception is the analytics ingest pair: they are matched so a
+  // crawler can be answered with a 204 from the Proxy, which saves the route
+  // invocation entirely. Human traffic pays one extra (cheap) Proxy
+  // invocation there; crawler traffic — which was ~99% of it — pays none.
   matcher: [
     "/",
     "/sitemap.xml",
     "/robots.txt",
+    "/api/analytics/:path*",
     "/anime/:path*",
     "/character/:path*",
     "/manga/:path*",

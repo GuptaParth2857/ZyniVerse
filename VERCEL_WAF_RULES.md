@@ -11,7 +11,8 @@ nothing against Function Duration.
 
 The proxy blocklist was removed in the same change. **If you skip this step,
 bot traffic is no longer blocked at all.** The rules below are the ones that
-are **live on the `zyni-verse` project** (verified 2026-10-13).
+are **live on the `zyni-verse` project** (verified 2026-10-13, re-applied and
+re-verified 2026-10-21).
 
 > Discoverability rule of thumb: **never block AI-search / answer crawlers or
 > search engines.** We want ChatGPT Search, Perplexity, Claude, Google and Bing
@@ -28,6 +29,42 @@ take effect immediately — **no redeploy required**:
 - `POST  /v1/security/firewall/config/draft/activate?projectId=…&teamId=…` to publish
 
 Hobby allows **up to 3 custom rules** — exactly the 3 below.
+
+## Applying them: `scripts/vercel-firewall-apply.mjs`
+
+The rules are **project configuration, not repository content**. Every new
+Vercel project starts with an empty firewall — that is exactly what happened
+when the project was moved to the `parthgup0102-2490s-projects` scope: the old
+project still had these 3 rules, the new one had none, and the crawler flood
+came straight back.
+
+```bash
+# list the current rules
+node scripts/vercel-firewall-apply.mjs --project prj_XXXX --list
+
+# apply the 3 rules (idempotent: updates rules with the same name, inserts the rest)
+node scripts/vercel-firewall-apply.mjs --project prj_XXXX
+
+# apply + turn off Vercel Authentication (Deployment Protection)
+node scripts/vercel-firewall-apply.mjs --project prj_XXXX --disable-sso
+
+# show what would happen, write nothing
+node scripts/vercel-firewall-apply.mjs --project prj_XXXX --dry-run
+```
+
+Authentication is resolved in this order:
+
+1. `--token <token>`
+2. `VERCEL_TOKEN` environment variable
+3. the Vercel CLI's own auth file (used only while its session token is valid)
+4. the Vercel CLI itself (`npx vercel api …`) — the CLI refreshes its own
+   session, so `vercel login` as an account that owns the target scope is
+   enough.
+
+**The token has to belong to the scope that owns the project.** The CLI
+session in this workspace is logged in as `devilgamerparth009` and can only
+see `gupta-s1` (`zyni-verse`), so the new scope had to be driven with a token
+that has access to `parthgup0102-2490s-projects`.
 
 ## Live rules
 
@@ -66,6 +103,38 @@ go-http-client, curl/, wget/, java/, http-client, axios/, okhttp-utils
 `google-extended` and `ccbot` are **not** blocked either, so Google's / Common
 Crawl's AI pipelines can still learn about the site.
 
+## The scraper fleet (2026-10-11 → 2026-10-20) — what the WAF cannot see
+
+The flood that blew the Hobby overage was **not** made of the User-Agents
+above. Measured on the database:
+
+| signal | value |
+| --- | --- |
+| `UserSession` rows | 123,897 (54.8 MB) |
+| `Chrome / Linux` | 116,595 (94%) |
+| country US / DE / GB / FR / SG | 86,154 / 8,965 / 8,422 / 7,017 / 4,961 |
+| country IN | 533 (0.4%) |
+| peak day (2026-10-19) | 19,608 sessions vs 8,824 page views (2.2 sessions / page view — impossible for humans) |
+| hits caught by the bot catalogue | 25,754 in total (Reflectionbot 15,948, ExaSearchBot 4,834, Applebot 1,468 …) |
+
+So ~99% of the traffic was a **headless browser fleet with a spoofed, perfectly
+ordinary Chrome User-Agent** — it executes JavaScript (it produced session rows
+and page views) and it rotates IP addresses, so neither the WAF rules nor an
+per-IP rate limit can see it. Only 0.6% of the classified bot hits were on
+`/forum/*`, and `/forum/create` (1,869 page views) was crawled by this
+unclassified fleet.
+
+Three layers now stop it (implemented 2026-10-21):
+
+1. **Client side** — `src/lib/automation-detect.ts`: `navigator.webdriver` and
+   the "no plugins + no `window.chrome`" headless signature. The tracker then
+   never sends the request: **0 serverless invocations, 0 database rows**.
+2. **Proxy** — `src/proxy.ts` answers `/api/analytics/*` with `204` for known
+   crawlers, so the route handler is never invoked.
+3. **Route** — `src/app/api/analytics/{session,pageview}/route.ts` skip the
+   write for a known crawler or a missing User-Agent, and the page view now
+   stores the real User-Agent (it used to be `NULL` on 100% of rows).
+
 ## Verify
 
 ```bash
@@ -73,7 +142,7 @@ Crawl's AI pipelines can still learn about the site.
 curl -s -o /dev/null -w '%{http_code}\n' -A "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" https://zyverse.in/
 curl -s -o /dev/null -w '%{http_code}\n' -A "Mozilla/5.0 (compatible; OAI-SearchBot/1.0; +https://openai.com/searchbot)" https://zyverse.in/
 curl -s -o /dev/null -w '%{http_code}\n' -A "Mozilla/5.0 (compatible; PerplexityBot/1.0; +https://perplexity.ai/perplexitybot)" https://zyverse.in/
-curl -s -o /dev/null -w '%{http_code}\n' -A "Mozilla/5.0 (compatible; ClaudeBot/1.0; +claudebot@anthropic.com)" https://zyverse.in/
+curl -s -o /dev/null -w '%{http_code}\n' -A "Mozilla/5.0 (compatible; ClaudeBot/1.0; +claude-bot@anthropic.com)" https://zyverse.in/
 
 # blocked (expect 403)
 curl -s -o /dev/null -w '%{http_code}\n' -A "Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com/robot/)" https://zyverse.in/
@@ -83,11 +152,38 @@ curl -s -o /dev/null -w '%{http_code}\n' -A "python-requests/2.31.0" https://zyv
 Then re-check Vercel → Observability → Firewall (Traffic → User Agents) to see
 what is still driving Function Duration.
 
+## Deployment Protection (Vercel Authentication)
+
+**A new project has Vercel Authentication ON by default.** Every visitor then
+gets a login wall — the site looked "broken" (302 → `vercel.com/login`) until
+it was turned off.
+
+```bash
+# via the API (script)
+node scripts/vercel-firewall-apply.mjs --project prj_XXXX --disable-sso
+
+# via the API (raw)
+curl -X PATCH "https://api.vercel.com/v9/projects/prj_XXXX" \
+  -H "Authorization: Bearer $VERCEL_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"ssoProtection": null}'
+```
+
+Dashboard equivalent: Project → Settings → **Deployment Protection** →
+*Vercel Authentication* → **Disabled**. There is no `PATCH /v10/projects/…`
+for this — the `ssoProtection` field lives on `PATCH /v9/projects/{idOrName}`.
+
 ## Still open
 
-Function Duration is still burned by high-volume **dynamic page renders**
-(catalog enumeration of `/character/*`, `/manga/*`, `/staff/*`, `/anime/*`).
-The durable, discoverability-safe fix is edge caching / `revalidate` on those
-routes so repeat crawls are served as CDN HITs instead of Node renders — see
-`src/proxy.ts` (public cache-control block) and add `export const revalidate`
-to the catalog route files.
+- **Function Duration is still burned by high-volume dynamic page renders**
+  (catalog enumeration of `/character/*`, `/manga/*`, `/staff/*`, `/anime/*`).
+  The durable, discoverability-safe fix is edge caching / `revalidate` on those
+  routes so repeat crawls are served as CDN HITs instead of Node renders.
+- **The new project still needs the 3 firewall rules + Deployment Protection
+  off** (see above). Until that happens it has no bot protection at all.
+- **Egress is not measurable from the database** — the Supabase free tier
+  allows 5 GB/month and the dashboard has to be checked separately.
+- The GitHub Actions cron was silently running to completion without calling
+  any endpoint for five days (it routed on the wall-clock hour, and GitHub
+  starts scheduled runs late). It now routes on `github.event.schedule` —
+  see `.github/workflows/cron.yml` and `src/__tests__/cron-workflow.test.ts`.

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { detectBot, describeBot, type BotInfo, type BotKind } from "@/lib/bot-detect";
+import { maybePruneBotCounters } from "@/lib/db-prune";
 
 /**
  * Crawler/bot hit counters, stored in the existing `SiteCounter` key/value
@@ -87,6 +88,11 @@ export async function recordBotHit(params: {
   } catch (error) {
     console.error("Failed to record bot hit:", error);
   }
+
+  // The `bot:*` counter keys grow by one per (bot, path) pair and are only
+  // cleaned by the db-prune cron. That cron silently stopped running for five
+  // days, so this opportunistic prune keeps the table bounded regardless.
+  maybePruneBotCounters();
 
   return bot;
 }

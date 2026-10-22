@@ -1875,11 +1875,13 @@ model UserSession {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId, startedAt])
-  @@index([sessionId])
   @@index([startedAt])
   // "Is anyone online right now?" — the visitors monitor polls this on every
   // refresh; (isActive, lastActiveAt) lets it answer from the index.
   @@index([isActive, lastActiveAt])
+  // NOTE: `sessionId @unique` already creates a unique B-tree index, so an
+  // extra `@@index([sessionId])` was a pure duplicate — it doubled the index
+  // footprint of this table (36.3 MB of the 54.8 MB total) for nothing.
 }
 
 model SearchLog {

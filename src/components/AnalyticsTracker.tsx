@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { isAutomatedBrowser } from "@/lib/automation-detect";
 
 const BATCH_KEY = "analytics_pending_pageviews";
 const BATCH_SIZE = 10;
@@ -29,7 +30,12 @@ function addPending(entry: PendingEntry) {
 }
 
 function postEntries(payload: { batch: PendingEntry[]; sessionId: string }) {
-  const body = JSON.stringify(payload);
+  // The User-Agent is sent as a fallback for the request header (a proxy in
+  // front of the app can strip it) so the stored page view is never NULL.
+  const body = JSON.stringify({
+    ...payload,
+    userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+  });
   // sendBeacon is the only delivery method browsers reliably complete while a
   // page is being unloaded. A plain fetch() (even with keepalive) is often
   // cancelled here, which silently dropped most page views.
@@ -72,6 +78,11 @@ export default function AnalyticsTracker() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Automated browsers are never counted: no session row, no page view, no
+    // network call. This keeps the analytics tables and the Vercel invocation
+    // bill proportional to real visitors.
+    if (isAutomatedBrowser()) return;
+
     let id = sessionStorage.getItem("analytics_session_id");
     if (!id) {
       id = crypto.randomUUID();
@@ -99,7 +110,7 @@ export default function AnalyticsTracker() {
     fetch("/api/analytics/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId: id, device, browser, os }),
+      body: JSON.stringify({ sessionId: id, device, browser, os, userAgent: ua }),
     }).catch(() => {});
   }, []);
 
