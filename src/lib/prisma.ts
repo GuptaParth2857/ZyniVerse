@@ -26,10 +26,11 @@ function rewriteImageFields<T>(value: T): T {
 // serverless instance. Forcing `connection_limit=1` made those queries queue on
 // a single connection; any slow query (e.g. the large epgCache JSON rows) then
 // pushed the rest past `pool_timeout` and surfaced as Prisma P2024 errors.
-// Respect an explicit `connection_limit` from the URL (Supabase pooler URLs set
-// one) and only apply a small default otherwise. The transaction pooler
-// (Supavisor / pgBouncer on 6543) needs `pgbouncer=true` so prepared statements
-// are disabled.
+// The serverless branch below therefore uses a small *upper bound* instead of
+// a fixed value, so the pool survives both the explicit `connection_limit` that
+// Supabase pooler URLs carry and the concurrency a crawl storm brings. The
+// transaction pooler (Supavisor / pgBouncer on 6543) needs `pgbouncer=true` so
+// prepared statements are disabled.
 function pooledDatabaseUrl(raw: string | undefined): string | undefined {
   if (!raw) return raw;
   try {
@@ -55,12 +56,25 @@ function pooledDatabaseUrl(raw: string | undefined): string | undefined {
         url.searchParams.set("pool_timeout", "60");
       }
     } else if (serverless) {
-      if (!url.searchParams.has("connection_limit")) {
-        url.searchParams.set("connection_limit", "5");
-      }
-      if (!url.searchParams.has("pool_timeout")) {
-        url.searchParams.set("pool_timeout", "20");
-      }
+      // Two hard rules for the serverless runtime.
+      //
+      // 1. A pool checkout must never outlive the platform's function
+      //    timeout (10s on Vercel Hobby). When the deadline hits, the
+      //    function is killed with its transaction still open, so the pooler
+      //    backend stays pinned in "idle in transaction". A handful of those
+      //    kills starves the shared pool for every other instance — we saw
+      //    `ECHECKOUTTIMEOUT` plus a 504 storm across all DB routes. Waiting
+      //    less than the deadline lets Prisma fail fast with P2024 and hand
+      //    the connection back instead of leaking it.
+      // 2. Every connection that is mid-transaction holds a pooler backend,
+      //    and Vercel runs many instances at once, so a large per-instance
+      //    limit multiplies into global pool pressure. Cap it.
+      const limit = Number(url.searchParams.get("connection_limit") ?? "") || 5;
+      url.searchParams.set("connection_limit", String(Math.min(limit, 3)));
+      const timeout = Number(url.searchParams.get("pool_timeout") ?? "") || 20;
+      url.searchParams.set("pool_timeout", String(Math.min(timeout, 5)));
+      const connect = Number(url.searchParams.get("connect_timeout") ?? "") || 10;
+      url.searchParams.set("connect_timeout", String(Math.min(connect, 5)));
     } else if (!url.searchParams.has("connection_limit")) {
       url.searchParams.set("connection_limit", "3");
     }

@@ -6,9 +6,9 @@ import { prisma } from "./prisma";
  *
  * The EPG grid and the live-action caches are written on a cron cadence but
  * read on almost every render. Uncached, each read opens a Prisma connection.
- * On serverless `prisma.ts` forces `connection_limit=1`, so when many renders
+ * On serverless `prisma.ts` keeps the Prisma pool small, so when many renders
  * run in parallel — most notably `next build` static generation — the
- * Supabase pooler is quickly saturated and waits exceed `pool_timeout=20s`,
+ * Supabase pooler is quickly saturated and waits exceed `pool_timeout`,
  * producing `P2024` ("Timed out fetching a new connection from the connection
  * pool") log spam.
  *

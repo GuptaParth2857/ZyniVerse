@@ -8,32 +8,55 @@ const MIN_PAYLOAD_CHARS = 50;
 const MAX_PAYLOAD_BYTES = 32 * 1024;
 const MAX_CACHE_ROWS = 10_000;
 const PRUNE_PROBABILITY = 0.2;
+/**
+ * Minimum gap between two prunes on the same instance.
+ *
+ * The prune is a maintenance job, not part of the request. Running it on a
+ * fraction of every `persist()` meant that during a crawl storm — when many
+ * anime pages are persisted at once — a single instance fired dozens of prune
+ * bursts, each one several slow round trips to the database. That is exactly
+ * the load that pushed the connection pool into checkout timeouts, so the
+ * prune is now both rate-limited and off the request path.
+ */
+const PRUNE_MIN_INTERVAL_MS = 5 * 60 * 1000;
+
+let lastPruneAt = 0;
 
 async function pruneAniListCache(): Promise<void> {
   try {
+    lastPruneAt = Date.now();
+
     // Deterministic age-based prune (skip nothing old)
     const cutoff = new Date(Date.now() - MAX_CACHE_AGE_MS);
     await prisma.aniListCache.deleteMany({ where: { updatedAt: { lt: cutoff } } });
 
     // Hard row cap: if we exceed MAX_CACHE_ROWS, evict the oldest rows
     // so the cache can never bloat the DB (keeps Supabase under quota).
-    const count = await prisma.aniListCache.count();
-    const over = count - MAX_CACHE_ROWS;
-    if (over > 0) {
-      const oldest = await prisma.aniListCache.findMany({
-        orderBy: { updatedAt: "asc" },
-        take: over,
-        select: { key: true },
-      });
-      if (oldest.length > 0) {
-        await prisma.aniListCache.deleteMany({
-          where: { key: { in: oldest.map((r) => r.key) } },
-        });
-      }
-    }
+    // Done as one statement instead of count -> findMany -> deleteMany:
+    // the row cap only ever removes a handful of rows, so the extra
+    // round trips cost more than the delete itself.
+    await prisma.$executeRawUnsafe(
+      `DELETE FROM "AniListCache" WHERE "key" IN (
+         SELECT "key" FROM "AniListCache" ORDER BY "updatedAt" ASC
+         LIMIT GREATEST((SELECT COUNT(*) FROM "AniListCache") - $1, 0)
+       )`,
+      MAX_CACHE_ROWS
+    );
   } catch (error) {
     console.error("Failed to prune AniList cache:", error);
   }
+}
+
+/**
+ * Schedule a prune without blocking the caller.
+ *
+ * Pruning is best-effort housekeeping: it must never add latency to a page
+ * render or to a cache write, and it must never reject into the caller.
+ */
+function schedulePrune(): void {
+  if (Math.random() >= PRUNE_PROBABILITY) return;
+  if (Date.now() - lastPruneAt < PRUNE_MIN_INTERVAL_MS) return;
+  void pruneAniListCache();
 }
 
 function hashKey(key: string): string {
@@ -59,9 +82,8 @@ export const anilistCacheAdapter: AniListCacheAdapter = {
       create: { key: hash, data: data as Prisma.InputJsonValue },
       update: { data: data as Prisma.InputJsonValue },
     });
-    if (Math.random() < PRUNE_PROBABILITY) {
-      await pruneAniListCache();
-    }
+    // Pruning is housekeeping — it must not add latency to the write path.
+    schedulePrune();
   },
   async load(key) {
     const hash = hashKey(key);
