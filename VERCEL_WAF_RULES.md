@@ -81,11 +81,39 @@ engines and AI crawlers are exempt, and static asset paths do not count.
 > Note: a *distributed* crawler (many IPs) is not stopped by an per-IP limit.
 
 ### Rule 2 — Block SEO / backlink scrapers (action: `deny`)
-pure commercial SEO tools only:
+pure commercial SEO tools plus the catalog harvesters measured in the app's own
+`bot:*` counters (see below):
 ```
 ahrefsbot, semrushbot, mj12bot, dotbot, dataforseobot, barkrowler, linkdexbot,
-meanpathbot, exabot, serpstat, rogerbot, screamingfrog, seokicks, sistrix
+meanpathbot, exabot, serpstat, rogerbot, screamingfrog, seokicks, sistrix,
+serankingbacklinksbot, reflectionbot, exasearchbot,
+tokenfoundrybot, aionbot, astracia(bot|previewbot), mybzzbot, eteonbot,
+tablifbot, vexelsearchbot, agenttrustbot, mochiimagecrawler, yisouspider
 ```
+
+> **2026-10-23 update — this was the actual overage driver.** The Hobby plan
+> hit `ISR Writes 461K/200K` and `Function Duration 133/100 GB-Hrs` with
+> `Function Invocations 502K` ≈ `ISR Writes 461K`, i.e. almost every invocation
+> was a page render that then wrote to the ISR cache. Cause, from the
+> `bot:day:*` / `bot:path:*` counters:
+>
+> | bot | hits / 14d | distinct URLs |
+> | --- | --- | --- |
+> | `SERankingBacklinksBot` | 23,218 | 23,236 |
+> | `Reflectionbot` | 22,072 | 17,948 |
+> | `ExaSearchBot` | 10,281 | 9,977 |
+> | everything else | 6,314 | — |
+>
+> 90% of 61,885 bot hits came from those three, and on 2026-10-23 alone they
+> made 19,234 of 20,632 hits (≈600k renders/month at that run-rate). None of
+> them was in the rule-2 regex, so the WAF let every one through. After adding
+> them: those UAs get `403`, while Googlebot / Bingbot / Applebot /
+> OAI-SearchBot / PerplexityBot still get `200` (verified).
+>
+> `ExaSearchBot` is an AI *search* index rather than a backlink tool. It is
+> blocked because it was crawling ~700 URLs/day for a site with ~30 page views
+> a day; remove `|exasearchbot` from the rule-2 regex if its citations ever
+> matter more than the quota.
 
 ### Rule 3 — Block generic non-browser clients (action: `deny`)
 ```
@@ -177,8 +205,11 @@ for this — the `ssoProtection` field lives on `PATCH /v9/projects/{idOrName}`.
 
 - **Function Duration is still burned by high-volume dynamic page renders**
   (catalog enumeration of `/character/*`, `/manga/*`, `/staff/*`, `/anime/*`).
-  The durable, discoverability-safe fix is edge caching / `revalidate` on those
-  routes so repeat crawls are served as CDN HITs instead of Node renders.
+  The 2026-10-23 measurement above showed the volume was not organic: it was
+  three self-identified harvesters, now denied at the edge and disallowed in
+  `robots.txt`. Watch Observability → Firewall for a week; if catalog renders
+  are still the top consumer, the next step is edge caching / a longer
+  `revalidate` on those routes so repeat crawls are CDN HITs, not Node renders.
 - **The new project still needs the 3 firewall rules + Deployment Protection
   off** (see above). Until that happens it has no bot protection at all.
 - **Egress is not measurable from the database** — the Supabase free tier

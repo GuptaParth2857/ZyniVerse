@@ -199,7 +199,8 @@ const RULES = [
   },
   {
     name: "Block SEO/backlink scrapers",
-    description: "Commercial SEO/backlink crawlers only",
+    description:
+      "Commercial SEO/backlink crawlers and catalog-harvesting bots (no search/AI-answer crawler)",
     action: { mitigate: { action: "deny" } },
     active: true,
     conditionGroup: [
@@ -209,7 +210,15 @@ const RULES = [
             type: "user_agent",
             op: "re",
             value:
-              "(ahrefsbot|semrushbot|mj12bot|dotbot|dataforseobot|barkrowler|linkdexbot|meanpathbot|exabot|serpstat|rogerbot|screamingfrog|seokicks|sistrix)",
+              "(ahrefsbot|semrushbot|mj12bot|dotbot|dataforseobot|barkrowler|linkdexbot|meanpathbot|exabot|serpstat|rogerbot|screamingfrog|seokicks|sistrix" +
+              // Measured 2026-10-09 → 2026-10-23 in `bot:path:*`: these three
+              // alone crawled ~51k distinct URLs (SERankingBacklinksBot 23.2k,
+              // Reflectionbot 17.9k, ExaSearchBot 10.0k) out of 61.9k bot hits,
+              // and every first fetch of a URL is a Node render + an ISR write.
+              // None of them is a search engine or an AI answer surface.
+              "|serankingbacklinksbot|reflectionbot|exasearchbot" +
+              // Long tail of self-identified harvesters seen in the same data.
+              "|tokenfoundrybot|aionbot|astracia|mybzzbot|eteonbot|tablifbot|vexelsearchbot|agenttrustbot|mochiimagecrawler|yisouspider)",
           },
         ],
       },

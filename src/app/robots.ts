@@ -118,6 +118,34 @@ const AI_TRAINING_BOTS = [
 // now fall through to the wildcard rule like Googlebot/Bingbot — blocking
 // them was hiding the site from Yandex/Czech/French/Huawei search.
 
+// Self-identified catalog harvesters measured in the app's own bot counters
+// (2026-10-09 → 2026-10-23). These three crawled ~51k distinct URLs between
+// them — SERankingBacklinksBot 23.2k, Reflectionbot 17.9k, ExaSearchBot 10.0k —
+// out of 61.9k total bot hits. On 2026-10-23 alone they accounted for 19,234
+// of 20,632 hits. Every first fetch of a URL is a Node render plus an ISR
+// write, which is what pushed the Hobby plan over its ISR/function quota.
+//
+// None of these is a search engine or an AI *answer* surface (the ones that
+// send real users are in AI_SEARCH_BOTS above). The same identifiers are
+// denied at the edge in `scripts/vercel-firewall-apply.mjs` rule 2 — this
+// group only saves the well-behaved ones a full catalog crawl.
+const CATALOG_HARVESTERS = [
+  "SERankingBacklinksBot",
+  "Reflectionbot",
+  "ExaSearchBot",
+  "TokenFoundryBot",
+  "AionBot",
+  "AstraciaBot",
+  "AstraciaPreviewBot",
+  "MybzzBot",
+  "EteonBot",
+  "TablifBot",
+  "VexelSearchBot",
+  "AgentTrustBot",
+  "MochiImageCrawler",
+  "YisouSpider",
+];
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -134,6 +162,10 @@ export default function robots(): MetadataRoute.Robots {
       // Google's Gemini training pipeline via Google-Extended — while the
       // wildcard rule keeps the site fully indexable for search engines.
       { userAgent: AI_TRAINING_BOTS, disallow: "/" },
+      // Catalog harvesters: whole-site opt-out. They ignore it often enough
+      // that the WAF rule is the actual enforcement; this just stops the
+      // polite ones from downloading every dynamic route.
+      { userAgent: CATALOG_HARVESTERS, disallow: "/" },
     ],
     // Main sitemap covers all public pages, including /news, /blog and
     // /news/desk/*. The dedicated news-sitemap was removed: an empty news
