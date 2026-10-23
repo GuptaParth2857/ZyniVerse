@@ -5,7 +5,7 @@ import { PageTransition } from "@/components/PageTransition";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://zyverse.in";
 
-export const revalidate = 3600;
+export const revalidate = 21600;
 
 export const metadata: Metadata = {
   title: "Top Fan Theories by Community Votes",

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { getMangaTrending, bestTitle, type Media } from "@/lib/anilist";
 import MangaBrowseClient from "./client";
 
-// ISR: refresh the server-rendered first tab every 10 minutes. An AniList
+// ISR: refresh the server-rendered first tab every 6 hours. An AniList
 // hiccup degrades to an empty grid, which the client immediately refetches.
-export const revalidate = 3600;
+export const revalidate = 21600;
 
 const SITE = "https://zyverse.in";
 

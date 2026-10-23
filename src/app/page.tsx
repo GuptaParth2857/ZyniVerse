@@ -14,7 +14,7 @@ import { logError } from "@/lib/logger";
 // AniList calls fall back to the Prisma-backed cache when the live fetch fails.
 // The guard below is non-fatal too, so a bad prerender can never break a
 // deploy — ISR simply regenerates the page in the background.
-export const revalidate = 3600;
+export const revalidate = 10800;
 
 export const metadata: Metadata = {
   title: "ZyniVerse — Anime Watch Order, Filler Guides & Episode Schedule",

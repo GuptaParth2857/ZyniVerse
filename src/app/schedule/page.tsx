@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 // week roll-over — are client-driven in the board, which re-anchors to the new
 // week within 30s of a Sunday boundary, so a ≤5min-stale snapshot is invisible.
 // `loading.tsx` streams the skeleton while the first render generates.
-export const revalidate = 3600;
+export const revalidate = 10800;
 
 /** Schedule-specific structured data so the board can win rich results. */
 function buildScheduleJsonLd(schedule: AiringScheduleEntry[]) {
