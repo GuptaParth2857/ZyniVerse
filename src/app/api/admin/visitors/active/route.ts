@@ -20,11 +20,17 @@ export async function GET() {
 
     const [liveCount, activeSessions, loggedInToday, anonToday, pageViewsToday, sessionsToday, todaySessionRows, hourlyRaw, deviceRows, osRows, countryRows, topPages] =
       await Promise.all([
+        // `pagesViewed > 0` is the only reliable "a human actually read a page"
+        // signal. About 1,000 session rows a day come from headless browsers
+        // that run JS long enough to POST /api/analytics/session and then die
+        // before the page-view flush (Chrome UA, datacenter countries, zero
+        // page views). Counting those made "Sessions Today" read ~1,000 while
+        // Vercel counted ~30 events — see the note in the page header.
         prisma.userSession.count({
-          where: { isActive: true, lastActiveAt: { gte: activeThreshold } },
+          where: { isActive: true, lastActiveAt: { gte: activeThreshold }, pagesViewed: { gt: 0 } },
         }),
         prisma.userSession.findMany({
-          where: { isActive: true, lastActiveAt: { gte: activeThreshold } },
+          where: { isActive: true, lastActiveAt: { gte: activeThreshold }, pagesViewed: { gt: 0 } },
           orderBy: { lastActiveAt: "desc" },
           take: 50,
           include: {
@@ -43,10 +49,10 @@ export async function GET() {
           where: { createdAt: { gte: todayStart, lt: tomorrowStart } },
         }),
         prisma.userSession.count({
-          where: { startedAt: { gte: todayStart, lt: tomorrowStart } },
+          where: { startedAt: { gte: todayStart, lt: tomorrowStart }, pagesViewed: { gt: 0 } },
         }),
         prisma.userSession.findMany({
-          where: { startedAt: { gte: todayStart, lt: tomorrowStart } },
+          where: { startedAt: { gte: todayStart, lt: tomorrowStart }, pagesViewed: { gt: 0 } },
           select: { startedAt: true, lastActiveAt: true, pagesViewed: true },
         }),
         prisma.pageView.findMany({
@@ -55,21 +61,21 @@ export async function GET() {
         }),
         prisma.userSession.groupBy({
           by: ["device"],
-          where: { startedAt: { gte: todayStart, lt: tomorrowStart }, device: { not: null } },
+          where: { startedAt: { gte: todayStart, lt: tomorrowStart }, device: { not: null }, pagesViewed: { gt: 0 } },
           _count: { device: true },
           orderBy: { _count: { device: "desc" } },
           take: 6,
         }),
         prisma.userSession.groupBy({
           by: ["os"],
-          where: { startedAt: { gte: todayStart, lt: tomorrowStart }, os: { not: null } },
+          where: { startedAt: { gte: todayStart, lt: tomorrowStart }, os: { not: null }, pagesViewed: { gt: 0 } },
           _count: { os: true },
           orderBy: { _count: { os: "desc" } },
           take: 6,
         }),
         prisma.userSession.groupBy({
           by: ["country"],
-          where: { startedAt: { gte: todayStart, lt: tomorrowStart }, country: { not: null } },
+          where: { startedAt: { gte: todayStart, lt: tomorrowStart }, country: { not: null }, pagesViewed: { gt: 0 } },
           _count: { country: true },
           orderBy: { _count: { country: "desc" } },
           take: 8,

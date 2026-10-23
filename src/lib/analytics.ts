@@ -115,7 +115,15 @@ export async function trackPageViewBatch(entries: Array<{
   userAgent?: string | null;
 }>) {
   if (entries.length === 0) return;
-  const sessionIds = [...new Set(entries.map((e) => e.sessionId).filter(Boolean))] as string[];
+  // How many views belong to each session. Prisma's updateMany can only apply
+  // one increment to every matched row, so a batch that covers more than one
+  // session needs one update per session — in practice a batch is always a
+  // single session, because the client flushes its own queue.
+  const viewsPerSession = new Map<string, number>();
+  for (const e of entries) {
+    if (!e.sessionId) continue;
+    viewsPerSession.set(e.sessionId, (viewsPerSession.get(e.sessionId) ?? 0) + 1);
+  }
   try {
     // These three writes are independent, but the pooler is remote — awaiting
     // them one after another cost three round-trips (~3s) on every beacon.
@@ -131,12 +139,16 @@ export async function trackPageViewBatch(entries: Array<{
           userAgent: e.userAgent || null,
         })),
       }),
-      sessionIds.length > 0
-        ? prisma.userSession.updateMany({
-            where: { sessionId: { in: sessionIds } },
-            data: { lastActiveAt: new Date() },
-          })
-        : Promise.resolve(),
+      // `pagesViewed` used to be skipped on this path, so every session that
+      // went through the batched route (i.e. all of them, since 4434f7d) showed
+      // 0 pages. That made the admin panel unable to tell a real visitor from a
+      // bot session that never delivered a page view.
+      ...[...viewsPerSession].map(([sessionId, views]) =>
+        prisma.userSession.updateMany({
+          where: { sessionId },
+          data: { pagesViewed: { increment: views }, lastActiveAt: new Date() },
+        })
+      ),
       incrementPageViewCounter(entries.length),
     ]);
   } catch (error) {

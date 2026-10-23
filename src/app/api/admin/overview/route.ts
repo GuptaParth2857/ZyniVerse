@@ -50,11 +50,14 @@ export async function GET() {
         where: {
           isActive: true,
           lastActiveAt: { gte: activeThreshold },
+          // A session with no recorded page view is a JS-running bot, not a
+          // visitor — see the note in api/admin/visitors/active/route.ts.
+          pagesViewed: { gt: 0 },
         },
       }),
       getTotalPageViews(),
       prisma.pageView.count(),
-      prisma.userSession.count({ where: { startedAt: { gte: todayStart } } }),
+      prisma.userSession.count({ where: { startedAt: { gte: todayStart }, pagesViewed: { gt: 0 } } }),
       prisma.feedback.findMany({
         orderBy: { createdAt: "desc" },
         take: 5,

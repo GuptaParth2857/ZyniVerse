@@ -88,16 +88,18 @@ function KpiCard({
   const n = useCountUp(value);
   const shown = decimals > 0 ? n.toFixed(decimals) : n.toLocaleString("en-IN");
   return (
-    <div className="neon-premium rounded-[20px]">
+    <div className="neon-premium min-w-0 rounded-[20px]">
       <div className="neon-premium-track" />
       <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
-      <div className="neon-premium-content rounded-[20px] p-5">
+      <div className="neon-premium-content flex min-h-[104px] flex-col justify-center rounded-[20px] p-5">
         <div className="flex items-center justify-between gap-2">
-          <p className="font-mono text-xs uppercase tracking-wider text-[var(--color-mute)]">{label}</p>
-          <span className="text-base" style={{ filter: `drop-shadow(0 0 6px ${color}aa)` }}>{icon}</span>
+          <p className="truncate font-mono text-xs uppercase tracking-wider text-[var(--color-mute)]">{label}</p>
+          <span className="shrink-0 text-base" style={{ filter: `drop-shadow(0 0 6px ${color}aa)` }}>{icon}</span>
         </div>
-        <p className="mt-2 font-mono text-2xl font-bold" style={{ color }}>{shown}</p>
-        {sub && <p className="mt-1 text-[10px] font-mono text-[var(--color-mute)]">{sub}</p>}
+        {/* tabular-nums keeps the digits from changing width while the count-up
+            animates, so the card does not reflow on every 2-minute refresh. */}
+        <p className="mt-2 whitespace-nowrap font-mono text-2xl font-bold tabular-nums" style={{ color }}>{shown}</p>
+        {sub && <p className="mt-1 truncate text-[10px] font-mono text-[var(--color-mute)]">{sub}</p>}
       </div>
     </div>
   );
@@ -125,9 +127,9 @@ function BarChart({ title, accent, data }: { title: string; accent: string; data
           <p className="text-sm text-[var(--color-mute)]">No visits in the last 24 hours yet.</p>
         ) : (
           <>
-            <div className="flex h-40 items-end gap-1">
+            <div className="flex h-40 items-end gap-[2px]">
               {data.map((d, i) => (
-                <div key={`${d.label}-${i}`} className="group relative flex h-full flex-1 items-end">
+                <div key={`${d.label}-${i}`} className="group relative flex h-full min-w-0 flex-1 items-end">
                   <div
                     className="w-full rounded-t-md transition-all duration-700 ease-out"
                     style={{
@@ -165,13 +167,13 @@ function RankList({ title, accent, items, empty }: { title: string; accent: stri
   }, []);
 
   return (
-    <div className="neon-premium rounded-[20px]">
+    <div className="neon-premium min-w-0 rounded-[20px]">
       <div className="neon-premium-track" />
       <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
       <div className="neon-premium-content rounded-[20px] p-6">
         <div className="mb-4 flex items-center gap-2">
-          <span className="h-4 w-1 rounded-full" style={{ background: accent }} />
-          <h2 className="font-display text-lg font-bold text-[var(--color-ink)]">{title}</h2>
+          <span className="h-4 w-1 shrink-0 rounded-full" style={{ background: accent }} />
+          <h2 className="min-w-0 truncate font-display text-lg font-bold text-[var(--color-ink)]">{title}</h2>
           {items.length > 0 && (
             <span className="ml-auto text-[10px] font-mono text-[var(--color-mute)]">{items.length} items</span>
           )}
@@ -221,37 +223,21 @@ function RankList({ title, accent, items, empty }: { title: string; accent: stri
 }
 
 function SessionCard({ session, index }: { session: ActiveSession; index: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const px = (e.clientX - cx) / (rect.width / 2);
-    const py = (e.clientY - cy) / (rect.height / 2);
-    el.style.transform = `perspective(900px) rotateY(${px * 5}deg) rotateX(${-py * 5}deg) scale(1.02)`;
-  }, []);
-
-  const handlePointerLeave = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg) scale(1)";
-  }, []);
-
   const isAnon = session.userId === null || session.username === "Anonymous";
 
+  // No pointer-tracked 3D tilt here. It wrote `el.style.transform` directly on
+  // a framer-motion element, so the two fought over `transform`: the entrance
+  // animation stuttered, and `scale(1.02)` + `rotate` made each card overflow
+  // its grid cell and cover its neighbours — which reads as the whole grid
+  // sliding up/down/left/right while the pointer moves. A plain hover lift is
+  // stable and does not leave the card's own box.
   return (
     <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 26, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 26 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -3, transition: { duration: 0.18, delay: 0 } }}
       transition={{ duration: 0.45, delay: (index % 9) * 0.07, ease: [0.22, 1, 0.36, 1] }}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
-      className="neon-premium rounded-[20px]"
-      style={{ transition: "transform 0.2s ease-out" }}
+      className="neon-premium min-w-0 rounded-[20px]"
     >
       <div className="neon-premium-track" />
       <div className="neon-premium-overlay" style={{ background: "rgba(10,10,15,0.92)" }} />
@@ -409,6 +395,12 @@ export default function AdminVisitorsPage() {
         <p className="mt-4 max-w-2xl text-sm text-[var(--color-mute)]">
           Real-time visitor tracking powered by live session heartbeats — auto-refreshes every 2 minutes.
         </p>
+        <p className="mt-2 max-w-2xl text-xs text-[var(--color-mute)]/80">
+          These numbers come from ZyniVerse&apos;s own tracker: JavaScript page views from real browsers, with
+          crawlers and bot sessions removed. Vercel&apos;s dashboard counts something different — CDN requests
+          include every asset and crawler hit, and Function Invocations include every serverless run — so the two
+          will never match. Only brand-new sessions with at least one delivered page view are counted here.
+        </p>
       </section>
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -463,7 +455,7 @@ export default function AdminVisitorsPage() {
             <KpiCard icon="⚡" label="Live Now" value={data.liveCount} color="#4ade80" sub="active · last 90s" />
             <KpiCard icon="👁️" label="Visitors Today" value={data.todayVisitors} color="var(--color-cyan)" sub={`${data.anonymousVisitors} anonymous`} />
             <KpiCard icon="👀" label="Page Views Today" value={data.pageViewsToday} color="var(--color-amber)" sub="total pageviews" />
-            <KpiCard icon="🔌" label="Sessions Today" value={data.sessionsToday} color="var(--color-violet)" sub="started today" />
+            <KpiCard icon="🔌" label="Sessions Today" value={data.sessionsToday} color="var(--color-violet)" sub="with ≥1 page view" />
             <KpiCard icon="🎭" label="Anonymous Today" value={data.anonymousVisitors} color="var(--color-magenta)" sub="no login" />
             <KpiCard icon="⏱️" label="Avg Session" value={data.avgSessionMinutesToday} color="var(--color-amber)" sub="minutes · today" decimals={1} />
           </FadeIn>

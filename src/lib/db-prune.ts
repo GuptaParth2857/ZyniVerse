@@ -66,6 +66,15 @@ export async function pruneLogs(): Promise<Record<string, number>> {
   deleted.adImpression = adImpression;
   deleted.searchLog = searchLog;
 
+  // Ghost sessions: clients that ran JS long enough to POST
+  // /api/analytics/session and then vanished before the page-view flush. They
+  // were ~1,000 rows/day (Chrome UA, datacenter countries, pagesViewed = 0) and
+  // are pure growth — they can never produce a page view after an hour.
+  const ghostSessions = await prisma.userSession
+    .deleteMany({ where: { pagesViewed: { lte: 0 }, startedAt: { lt: cutoff(1 / 24) } } })
+    .then((r) => r.count);
+  deleted.userSession += ghostSessions;
+
   return deleted;
 }
 
